@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.10)
 # CMAKE_PREFIX_PATH is empty before any call to project()
 # Because set_project_version() does not exist,
 # we call the project command twice (is there a cleaner solution?)
-project(_Project_name_)
+project(MdtDeployUtils)
 
 #######################
 # Conan
@@ -33,7 +33,7 @@ else()
   mdt_cmake_project_version_from_git_tag(INITIAL_PROJECT_VERSION DEFAULT_VERSION 0.1.0)
 endif()
 
-project(_Project_name_ VERSION ${INITIAL_PROJECT_VERSION} LANGUAGES CXX)
+project(MdtDeployUtils VERSION ${INITIAL_PROJECT_VERSION} LANGUAGES CXX)
 
 unset(INITIAL_PROJECT_VERSION)
 
@@ -44,9 +44,6 @@ unset(INITIAL_PROJECT_VERSION)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/Modules/")
 
 option(BUILD_DOCS "Build the documentations" OFF)
-if(BUILD_DOCS)
-  add_subdirectory("doc")
-endif()
 
 
 
@@ -59,4 +56,12 @@ if(BUILD_DOCS)
 
   include(FindDoxygen)
   find_package(Doxygen REQUIRED dot)
+endif()
+
+#######################
+# Sources
+#######################
+
+if(BUILD_DOCS)
+  add_subdirectory("doc")
 endif()
