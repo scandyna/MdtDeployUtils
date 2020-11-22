@@ -23,7 +23,6 @@ Here are the available options:
 | -----------------|:------- |:----------------:|--------------|
 | shared           | True    |  [True, False]   | Build as shared library |
 | use_conan_qt     | False   |  [True, False]   | Use [conan Qt](https://github.com/bincrafters/conan-qt) as conan dependency |
-| build_tests      | False   |  [True, False]   | If True, will also require Catch2 |
 
 ## Using Conan profiles
 
@@ -56,7 +55,7 @@ cd build
 
 Install the dependencies:
 ```bash
-conan install -s build_type=Debug -o build_tests=True --build=missing ..
+conan install -s build_type=Debug --build=missing ..
 ```
 
 Configure MdtDeployUtils:
@@ -65,7 +64,25 @@ cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON ..
 cmake-gui .
 ```
 
-To build , run:
+To build, run:
 ```cmd
-cmake --build .
+make -j4
+```
+
+## Instrumented build with Gcc on Linux
+
+Install the dependencies:
+```bash
+conan install --profile linux_gcc7_x86_64 -s build_type=RelWithDebInfo --build=missing ..
+```
+
+Configure MdtDeployUtils:
+```bash
+cmake -DCMAKE_BUILD_TYPE=Instrumented -DBUILD_TESTS=ON -DSANITIZER_ENABLE_ADDRESS=ON -DSANITIZER_ENABLE_UNDEFINED=ON ..
+cmake-gui .
+```
+
+To build, run:
+```cmd
+make -j4
 ```
