@@ -13,10 +13,16 @@ and deploy a application with shared libs, plugins, etc...
 
 ## Command line tools
 
+```bash
+mdtdeployutils get-shared-libraries-target-depends-on "someExe"
+
+mdtdeployutils install-executable "someExe"
+```
+
 ## CMake API
 
 For the available CMake modules, and their usage,
-see [the C++ API documentation](https://scandyna.gitlab.io/mdtdeployutils/cmake-api)
+see [the CMake API documentation](https://scandyna.gitlab.io/mdtdeployutils/cmake-api)
 
 ## C++ API
 
