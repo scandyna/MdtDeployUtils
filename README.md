@@ -14,7 +14,9 @@ and deploy a application with shared libs, plugins, etc...
 ## Command line tools
 
 ```bash
-mdtdeployutils get-shared-libraries-target-depends-on "someExe"
+mdtdeployutils get-shared-libraries-target-depends-on "path/to/some/executable"
+
+mdtdeployutils copy-shared-libraries-target-depends-on "path/to/some/executable" "path/to/destination/directory"
 
 mdtdeployutils install-executable "someExe"
 ```
