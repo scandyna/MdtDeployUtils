@@ -112,6 +112,7 @@ endif()
 
 find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(Mdt0 COMPONENTS ConsoleApplication REQUIRED)
 
 if(BUILD_TESTS OR BUILD_BENCHMARKS)
   find_package(Catch2 REQUIRED)
@@ -158,8 +159,55 @@ if(BUILD_TYPE_INSTRUMENTED_DEFINE_NDEBUG)
 endif()
 
 #######################
+# Install
+#######################
+
+set(MDT_INSTALL_PACKAGE_NAME Mdt${PROJECT_VERSION_MAJOR})
+include(GNUInstallDirs)
+include(MdtInstallDirs)
+include(MdtPackageConfigHelpers)
+
+mdt_install_namespace_package_config_file(
+  INSTALL_NAMESPACE ${MDT_INSTALL_PACKAGE_NAME}
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${MDT_INSTALL_PACKAGE_NAME}"
+  COMPONENT Mdt_Dev
+)
+
+#######################
+# Qt
+#######################
+
+# TODO: not a target property, will it be propagated trough projects ??
+add_definitions(-DQT_NO_CAST_DEFINITIONS -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_BYTEARRAY)
+
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+
+######################
+# Tests and benchmarks
+######################
+
+if(BUILD_TESTS OR BUILD_BENCHMARKS)
+  add_library(Mdt_Catch2Main STATIC Catch2Main.cpp)
+  target_link_libraries(Mdt_Catch2Main PUBLIC Catch2::Catch2)
+  add_library(Mdt::Catch2Main ALIAS Mdt_Catch2Main)
+
+  enable_testing()
+endif()
+
+if(BUILD_BENCHMARKS)
+  target_compile_definitions(Mdt_Catch2Main
+    PUBLIC
+      CATCH_CONFIG_ENABLE_BENCHMARKING
+  )
+endif()
+
+#######################
 # Sources
 #######################
+
+add_subdirectory(apps/DeployUtils_Cli)
 
 if(BUILD_DOCS)
   add_subdirectory("doc")
