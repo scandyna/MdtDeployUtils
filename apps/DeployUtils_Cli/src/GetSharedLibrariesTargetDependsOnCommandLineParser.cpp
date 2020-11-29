@@ -80,7 +80,7 @@ void GetSharedLibrariesTargetDependsOnCommandLineParser::showHelp()
     "%5"
   ).arg( QCoreApplication::applicationName(), commandName(), mParser.applicationDescription(), optionsHelpText(), argumentsHelpText() );
 
-  showErrorMessage(message);
+  showMessage(message);
 }
 
 QString GetSharedLibrariesTargetDependsOnCommandLineParser::commandName()
