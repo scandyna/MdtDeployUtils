@@ -18,22 +18,17 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_COMMAND_LINE_PARSER_H
-#define MDT_COMMAND_LINE_PARSER_H
+#ifndef COPY_SHARED_LIBRARIES_TARGET_DEPENDS_ON_COMMAND_LINE_PARSER_H
+#define COPY_SHARED_LIBRARIES_TARGET_DEPENDS_ON_COMMAND_LINE_PARSER_H
 
 #include <QObject>
 #include <QCommandLineParser>
+#include <QString>
 #include <QStringList>
 
-/*! \brief \todo document
+/*! \brief Command line parser for copy-shared-libraries-target-depends-on subcommand
  */
-struct CommandLineParserResult
-{
-};
-
-/*! \brief Command line parser for mdtdeployutils
- */
-class CommandLineParser : public QObject
+class CopySharedLibrariesTargetDependsOnCommandLineParser : public QObject
 {
   Q_OBJECT
 
@@ -41,20 +36,35 @@ class CommandLineParser : public QObject
 
   /*! \brief Construct a command line parser
    */
-  explicit CommandLineParser(QObject *parent = nullptr);
+  explicit CopySharedLibrariesTargetDependsOnCommandLineParser(QObject *parent = nullptr);
 
-  /*! \brief Process arguments given to the application
+  /*! \brief Process arguments given to the command
    */
-  CommandLineParserResult process();
+  void process(const QStringList & arguments);
 
  private:
 
   void setApplicationDescription();
-  void addCommandArgument();
-  CommandLineParserResult processGetSharedLibrariesTargetDependsOn(const QStringList & arguments);
-  CommandLineParserResult processCopySharedLibrariesTargetDependsOn(const QStringList & arguments);
+
+  /*
+   * QCommandLineParser's showHelp() and helpText() cannot be used
+   * because they show the form:
+   * Usage: mdtdeployutils [options]
+   *
+   * Internally, the application name given by QCoreApplication is used.
+   */
+  void showHelp();
+
+  static
+  QString commandName();
+
+  static
+  QString optionsHelpText();
+
+  static
+  QString argumentsHelpText();
 
   QCommandLineParser mParser;
 };
 
-#endif // #ifndef MDT_COMMAND_LINE_PARSER_H
+#endif // #ifndef COPY_SHARED_LIBRARIES_TARGET_DEPENDS_ON_COMMAND_LINE_PARSER_H

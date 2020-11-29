@@ -28,6 +28,8 @@ QString commandName( CommandLineCommand command)
       return QLatin1String("Unknown");
     case CommandLineCommand::GetSharedLibrariesTargetDependsOn:
       return QLatin1String("get-shared-libraries-target-depends-on");
+    case CommandLineCommand::CopySharedLibrariesTargetDependsOn:
+      return QLatin1String("copy-shared-libraries-target-depends-on");
   }
   return QString();
 }
@@ -36,6 +38,9 @@ CommandLineCommand commandFromString(const QString & command)
 {
   if( command == commandName( CommandLineCommand::GetSharedLibrariesTargetDependsOn) ){
     return CommandLineCommand::GetSharedLibrariesTargetDependsOn;
+  }
+  if( command == commandName( CommandLineCommand::CopySharedLibrariesTargetDependsOn) ){
+    return CommandLineCommand::CopySharedLibrariesTargetDependsOn;
   }
 
   return CommandLineCommand::Unknown;

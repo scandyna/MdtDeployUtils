@@ -23,6 +23,10 @@
 
 #include <QString>
 
+/*! \brief Show a message
+ */
+void showMessage(const QString & message);
+
 /*! \brief Show a error message
  */
 void showErrorMessage(const QString & message);

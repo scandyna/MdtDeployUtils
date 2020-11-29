@@ -28,7 +28,8 @@
 enum class CommandLineCommand
 {
   Unknown,                            /*!< Unknown command */
-  GetSharedLibrariesTargetDependsOn   /*!< get-shared-libraries-target-depends-on command */
+  GetSharedLibrariesTargetDependsOn,  /*!< get-shared-libraries-target-depends-on command */
+  CopySharedLibrariesTargetDependsOn  /*!< copy-shared-libraries-target-depends-on command */
 };
 
 /*! \brief Get command name for \a command

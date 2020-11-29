@@ -3,6 +3,7 @@ add_library(Mdt_DeployUtils_Cli STATIC
   DeployUtilsMain.cpp
   CommandLineParser.cpp
   GetSharedLibrariesTargetDependsOnCommandLineParser.cpp
+  CopySharedLibrariesTargetDependsOnCommandLineParser.cpp
   CommandLineCommand.cpp
   MessageLogger.cpp
 )

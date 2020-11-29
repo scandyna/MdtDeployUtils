@@ -23,6 +23,11 @@
 #include <string>
 #include <iostream>
 
+void showMessage(const QString & message)
+{
+  std::cout << message.toLocal8Bit().toStdString() << std::endl;
+}
+
 void showErrorMessage(const QString & message)
 {
   std::cerr << message.toLocal8Bit().toStdString() << std::endl;

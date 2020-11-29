@@ -22,6 +22,7 @@
 #include "MessageLogger.h"
 #include "CommandLineCommand.h"
 #include "GetSharedLibrariesTargetDependsOnCommandLineParser.h"
+#include "CopySharedLibrariesTargetDependsOnCommandLineParser.h"
 #include <QString>
 #include <QLatin1String>
 #include <QCoreApplication>
@@ -54,6 +55,8 @@ CommandLineParserResult CommandLineParser::process()
   switch(command){
     case CommandLineCommand::GetSharedLibrariesTargetDependsOn:
       return processGetSharedLibrariesTargetDependsOn(positionalArguments);
+    case CommandLineCommand::CopySharedLibrariesTargetDependsOn:
+      return processCopySharedLibrariesTargetDependsOn(positionalArguments);
     case CommandLineCommand::Unknown:
       break;
   }
@@ -68,6 +71,15 @@ CommandLineParserResult CommandLineParser::process()
 CommandLineParserResult CommandLineParser::processGetSharedLibrariesTargetDependsOn(const QStringList & arguments)
 {
   GetSharedLibrariesTargetDependsOnCommandLineParser parser;
+
+  parser.process(arguments);
+
+  return CommandLineParserResult{};
+}
+
+CommandLineParserResult CommandLineParser::processCopySharedLibrariesTargetDependsOn(const QStringList& arguments)
+{
+  CopySharedLibrariesTargetDependsOnCommandLineParser parser;
 
   parser.process(arguments);
 
@@ -89,8 +101,9 @@ void CommandLineParser::setApplicationDescription()
 
 void CommandLineParser::addCommandArgument()
 {
-  const QString description = tr("Command to execute. Available commands are:\n%1")
-                              .arg( commandName( CommandLineCommand::GetSharedLibrariesTargetDependsOn) );
+  const QString description = tr("Command to execute. Available commands are:\n%1\n%2")
+                              .arg( commandName( CommandLineCommand::GetSharedLibrariesTargetDependsOn),
+                                    commandName( CommandLineCommand::CopySharedLibrariesTargetDependsOn) );
 
   mParser.addPositionalArgument( QLatin1String("command"), description, tr("command <command-args>") );
 }
