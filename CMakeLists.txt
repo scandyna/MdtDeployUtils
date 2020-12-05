@@ -207,6 +207,7 @@ endif()
 # Sources
 #######################
 
+add_subdirectory(libs/DeployUtils_Core)
 add_subdirectory(apps/DeployUtils_Cli)
 
 if(BUILD_DOCS)

@@ -6,6 +6,11 @@ add_library(Mdt_DeployUtils_Cli STATIC
   CopySharedLibrariesTargetDependsOnCommandLineParser.cpp
   CommandLineCommand.cpp
   MessageLogger.cpp
+  BashCompletionGeneratorOption.cpp
+  BashCompletionGeneratorArgument.cpp
+  BashCompletionGeneratorCommand.cpp
+  BashCompletionGenerator.cpp
+  DeployUtilsBashCompletionGenerator.cpp
 )
 add_library(Mdt::DeployUtils_Cli ALIAS Mdt_DeployUtils_Cli)
 
@@ -23,6 +28,7 @@ target_include_directories(Mdt_DeployUtils_Cli
 
 target_link_libraries(Mdt_DeployUtils_Cli
   PUBLIC
+    Mdt::DeployUtils
     Mdt0::ConsoleApplication
     Qt5::Core
 )

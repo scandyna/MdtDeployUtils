@@ -1,9 +1,9 @@
 include(MdtAddTest)
 
-# mdt_add_test(
-#   NAME HelloTest
-#   TARGET helloTest
-#   DEPENDENCIES Mdt::A Mdt::Catch2Main
-#   SOURCE_FILES
-#     src/HelloTest.cpp
-# )
+mdt_add_test(
+  NAME BashCompletionGeneratorTest
+  TARGET bashCompletionGeneratorTest
+  DEPENDENCIES Mdt::DeployUtils_Cli Mdt::Catch2Main
+  SOURCE_FILES
+    src/BashCompletionGeneratorTest.cpp
+)

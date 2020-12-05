@@ -16,7 +16,7 @@ _mdtdeployutils_completions()
 #     $(compgen -W "get-shared-libraries-target-depends-on copy-shared-libraries-target-depends-on -h --help" "${COMP_WORDS[1]}")
 #   )
 
-  # Arguments available for the main parser
+  # Arguments available for the main command
   if [ "${#COMP_WORDS[@]}" == "2" ]
   then
     COMPREPLY=($(compgen -W "get-shared-libraries-target-depends-on copy-shared-libraries-target-depends-on -h --help" -- "${COMP_WORDS[1]}"))
