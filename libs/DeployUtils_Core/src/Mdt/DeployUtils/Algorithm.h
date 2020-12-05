@@ -31,6 +31,7 @@ namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Joint each strings in \a list to a single string with each element seperated by given \a separator
    */
+  inline
   std::string joinToStdString(const std::vector<std::string> & list, char separator)
   {
     using sizeType = std::vector<std::string>::size_type;
