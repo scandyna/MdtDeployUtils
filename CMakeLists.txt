@@ -210,6 +210,10 @@ endif()
 add_subdirectory(libs/DeployUtils_Core)
 add_subdirectory(apps/DeployUtils_Cli)
 
+if(UNIX)
+  add_subdirectory(apps/DeployUtils_Cli_BashCompletion)
+endif()
+
 if(BUILD_DOCS)
   add_subdirectory("doc")
 endif()
