@@ -18,10 +18,24 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-// #include "DeployUtilsMain.h"
+#include "DeployUtilsBashCompletionGenerator.h"
+#include <iostream>
+#include <string>
+#include <cassert>
 
 int main(int argc, char **argv)
 {
+  if(argc != 2){
+    assert( argc >= 1 );
+    std::cerr << argv[0] << ": missing file path" << std::endl;
+    return 1;
+  }
+  assert( argc >= 1 );
 
-  return 1;
+  const std::string filePath = argv[1];
+
+  /// \todo Exceptions
+  generateBashCompletionScript(filePath);
+
+  return 0;
 }

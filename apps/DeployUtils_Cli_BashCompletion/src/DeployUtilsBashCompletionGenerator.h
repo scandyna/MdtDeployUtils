@@ -21,10 +21,19 @@
 #ifndef DEPLOY_UTILS_BASH_COMPLETION_GENERATOR_H
 #define DEPLOY_UTILS_BASH_COMPLETION_GENERATOR_H
 
-/*! \brief
+#include <string>
+
+/*! \brief Generate the bash completion script for the mdtdeployutils command line tool
+ *
+ * \pre \a filePath must not be empty
+ * \todo exceptions
  */
-class DeployUtilsBashCompletionGenerator
-{
-};
+void generateBashCompletionScript(const std::string & filePath);
+
+// /*! \brief Bash completion generator for the mdtdeployutils command line tool
+//  */
+// class DeployUtilsBashCompletionGenerator
+// {
+// };
 
 #endif // #ifndef DEPLOY_UTILS_BASH_COMPLETION_GENERATOR_H

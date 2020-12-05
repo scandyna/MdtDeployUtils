@@ -26,25 +26,37 @@ target_link_libraries(Mdt_DeployUtils_Cli_BashCompletion
 )
 
 
-add_executable(generateMdtdeployutilsBashCompletionScript
+add_executable(mdtdeployutilsBashCompletionScriptGenerator
   main.cpp
   DeployUtilsBashCompletionGenerator.cpp
 )
 
 if(BUILD_USE_IPO_LTO)
-  set_target_properties(generateMdtdeployutilsBashCompletionScript
+  set_target_properties(mdtdeployutilsBashCompletionScriptGenerator
     PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE
   )
 endif()
 
-target_include_directories(generateMdtdeployutilsBashCompletionScript
+target_include_directories(mdtdeployutilsBashCompletionScriptGenerator
   PRIVATE
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
 
-target_link_libraries(generateMdtdeployutilsBashCompletionScript
+target_link_libraries(mdtdeployutilsBashCompletionScriptGenerator
   PRIVATE
     Mdt::DeployUtils_Cli_BashCompletion
-    Mdt::DeployUtils
+    Mdt::DeployUtils_Cli
 )
+
+add_custom_target(generateMdtdeployutilsBashCompletionScript ALL
+  COMMAND mdtdeployutilsBashCompletionScriptGenerator "${CMAKE_CURRENT_BINARY_DIR}/mdtdeployutils-completion.bash"
+  COMMENT "Generating mdtdeployutils-completion.bash"
+  VERBATIM
+)
+
+# add_custom_command(OUTPUT mdtdeployutils-completion.bash
+#   COMMAND generateMdtdeployutilsBashCompletionScript "$<TARGET_FILE:mdtdeployutils-completion.bash>"
+#   COMMENT "Generating mdtdeployutils-completion.bash"
+#   VERBATIM
+# )

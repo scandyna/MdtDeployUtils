@@ -19,3 +19,19 @@
  **
  ****************************************************************************/
 #include "DeployUtilsBashCompletionGenerator.h"
+#include "CommandLineParser.h"
+#include "BashCompletionGenerator.h"
+#include <cassert>
+
+#include <iostream>
+
+void generateBashCompletionScript(const std::string& filePath)
+{
+  assert( !filePath.empty() );
+
+  CommandLineParser parser;
+  BashCompletionGenerator generator;
+
+
+  std::cout << "generating to " << filePath << std::endl;
+}
