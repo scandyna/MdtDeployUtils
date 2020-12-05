@@ -24,10 +24,101 @@
 #include "BashCompletionGenerator.h"
 #include "BashCompletionGeneratorCommand.h"
 #include "BashCompletionGeneratorOption.h"
+#include "Mdt/DeployUtils/Algorithm.h"
 #include <string>
+#include <vector>
 
 namespace BashCompletionGenerator_Impl{
 
+  inline
+  void addCommandOptionToWordList(const BashCompletionGeneratorOption & option, std::vector<std::string> & wordList)
+  {
+    if( option.hasShortName() ){
+      wordList.push_back( option.shortNameWithDash() );
+    }
+    wordList.push_back( option.nameWithDashes() );
+  }
+
+  inline
+  void addCommandOptionsToWordList(const BashCompletionGeneratorCommand& command, std::vector<std::string> & wordList)
+  {
+    for( const auto & option : command.options() ){
+      addCommandOptionToWordList(option, wordList);
+    }
+  }
+
+  inline
+  void addCommandArgumentsAndOptionsToWordList(const BashCompletionGeneratorCommand& command, std::vector<std::string> & wordList)
+  {
+    Mdt::DeployUtils::appendToStdVector(command.arguments(), wordList);
+    addCommandOptionsToWordList(command, wordList);
+  }
+
+  /// \todo should restrict level range
+  inline
+  std::string generateCompreplyUsingCompgenWithWordList(int level, const BashCompletionGeneratorCommand& command)
+  {
+    using namespace std::string_literals;
+
+    std::vector<std::string> wordList;
+    addCommandArgumentsAndOptionsToWordList(command, wordList);
+    const std::string wordListStr = Mdt::DeployUtils::joinToStdString(wordList, ' ');
+    const std::string levelStr = std::to_string(level+1);
+
+    return "    COMPREPLY=($(compgen -W \""s + wordListStr + "\" -- \"${COMP_WORDS[" + levelStr + "]}\"))";
+  }
+
+  inline
+  std::string generateAddCompreplyUsingCompgenForDirectoryCompletionIfEnabled(const BashCompletionGeneratorCommand & command)
+  {
+    if( command.directoryCompletionEnabled() ){
+      return "    COMPREPLY+=($(compgen -A directory))\n";
+    }
+    return "";
+  }
+
+  /// \todo should restrict level range
+  inline
+  std::string generateCommandBlock(int level, const BashCompletionGeneratorCommand& command, const std::string & comment)
+  {
+    using namespace std::string_literals;
+
+    const std::string blockComment = "  # "s + comment;
+
+    return blockComment + "\n"
+        + "  if [ \"${#COMP_WORDS[@]}\" == \""s + std::to_string(level+1) + "\" ]\n"
+        + "  then\n"
+        +      generateCompreplyUsingCompgenWithWordList(level, command) + "\n"
+        +      generateAddCompreplyUsingCompgenForDirectoryCompletionIfEnabled(command)
+        + "  fi";
+  }
+
+  inline
+  std::string generateMainCommandBlock(const BashCompletionGeneratorCommand& command)
+  {
+    return generateCommandBlock(1, command, std::string("Arguments available for the ") + command.name() + " command");
+  }
+
+  inline
+  std::string generateSubCommandBlock(const BashCompletionGeneratorCommand& command)
+  {
+    return generateCommandBlock(2, command, std::string("Arguments available for the ") + command.name() + " command");
+  }
+
+  inline
+  std::string generateSubCommandBlocksIfAny(const std::vector<BashCompletionGeneratorCommand>& commands)
+  {
+    if( commands.empty() ){
+      return "";
+    }
+
+    std::string blocks;
+    for(const BashCompletionGeneratorCommand & command : commands){
+      blocks += "\n\n" + generateSubCommandBlock(command);
+    }
+
+    return blocks;
+  }
 
 } // namespace BashCompletionGenerator_Impl{
 

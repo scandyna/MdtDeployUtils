@@ -20,9 +20,9 @@
  ****************************************************************************/
 #include "BashCompletionGenerator.h"
 #include "BashCompletionGenerator_Impl.h"
-#include "BashCompletionGeneratorOption.h"
 #include "Mdt/DeployUtils/Algorithm.h"
 #include <cassert>
+#include <fstream>
 
 void BashCompletionGenerator::setApplicationName(const std::string& name)
 {
@@ -50,6 +50,7 @@ std::string BashCompletionGenerator::generateScript() const
   assert( !mMainCommand->isEmpty() );
 
   using namespace std::string_literals;
+  using namespace BashCompletionGenerator_Impl;
 
   const std::string scriptInclude = "#/usr/bin/env bash";
   const std::string completeFunctionName = "_"s + mApplicationName + "_completions()";
@@ -65,81 +66,27 @@ std::string BashCompletionGenerator::generateScript() const
   return scriptInclude + "\n\n" + completeFunction + "\n\n" + completeCommand + "\n";
 }
 
-void addCommandOptionToWordList(const BashCompletionGeneratorOption & option, std::vector<std::string> & wordList)
+void BashCompletionGenerator::generateScriptToFile(const std::string & directoryPath) const
 {
-  if( option.hasShortName() ){
-    wordList.push_back( option.shortNameWithDash() );
-  }
-  wordList.push_back( option.nameWithDashes() );
-}
+  assert( !directoryPath.empty() );
+  assert( !mApplicationName.empty() );
+  assert( mMainCommand.get() != nullptr );
+  assert( !mMainCommand->isEmpty() );
 
-void BashCompletionGenerator::addCommandOptionsToWordList(const BashCompletionGeneratorCommand& command, std::vector<std::string> & wordList)
-{
-  for( const auto & option : command.options() ){
-    addCommandOptionToWordList(option, wordList);
-  }
-}
-
-void BashCompletionGenerator::addCommandArgumentsAndOptionsToWordList(const BashCompletionGeneratorCommand& command, std::vector<std::string> & wordList)
-{
-  Mdt::DeployUtils::appendToStdVector(command.arguments(), wordList);
-  addCommandOptionsToWordList(command, wordList);
-}
-
-std::string BashCompletionGenerator::generateCompreplyUsingCompgenWithWordList(int level, const BashCompletionGeneratorCommand& command)
-{
-  using namespace std::string_literals;
-
-  std::vector<std::string> wordList;
-  addCommandArgumentsAndOptionsToWordList(command, wordList);
-  const std::string wordListStr = Mdt::DeployUtils::joinToStdString(wordList, ' ');
-  const std::string levelStr = std::to_string(level+1);
-
-  return "    COMPREPLY=($(compgen -W \""s + wordListStr + "\" -- \"${COMP_WORDS[" + levelStr + "]}\"))";
-}
-
-std::string BashCompletionGenerator::generateAddCompreplyUsingCompgenForDirectoryCompletionIfEnabled(const BashCompletionGeneratorCommand & command)
-{
-  if( command.directoryCompletionEnabled() ){
-    return "    COMPREPLY+=($(compgen -A directory))\n";
-  }
-  return "";
-}
-
-std::string BashCompletionGenerator::generateCommandBlock(int level, const BashCompletionGeneratorCommand& command, const std::string & comment)
-{
-  using namespace std::string_literals;
-
-  const std::string blockComment = "  # "s + comment;
-
-  return blockComment + "\n"
-       + "  if [ \"${#COMP_WORDS[@]}\" == \""s + std::to_string(level+1) + "\" ]\n"
-       + "  then\n"
-       +      generateCompreplyUsingCompgenWithWordList(level, command) + "\n"
-       +      generateAddCompreplyUsingCompgenForDirectoryCompletionIfEnabled(command)
-       + "  fi";
-}
-
-std::string BashCompletionGenerator::generateMainCommandBlock(const BashCompletionGeneratorCommand& command)
-{
-  return generateCommandBlock(1, command, std::string("Arguments available for the ") + command.name() + " command");
-}
-
-std::string BashCompletionGenerator::generateSubCommandBlock(const BashCompletionGeneratorCommand& command)
-{
-  return generateCommandBlock(2, command, std::string("Arguments available for the ") + command.name() + " command");
-}
-
-std::string BashCompletionGenerator::generateSubCommandBlocksIfAny(const std::vector<BashCompletionGeneratorCommand>& commands)
-{
-  if( commands.empty() ){
-    return "";
+  const std::string filePath = directoryPath + "/" + mApplicationName + "-completion.bash";
+  std::ofstream stream(filePath, std::ios_base::out | std::ios_base::trunc);
+  if( stream.bad() || stream.fail() ){
+    stream.close();
+    const std::string what = "open file '" + filePath + "' failed";
+    throw BashCompletionScriptFileWriteError(what);
   }
 
-  std::string blocks;
-  for(const BashCompletionGeneratorCommand & command : commands){
-    blocks += "\n\n" + generateSubCommandBlock(command);
+  try{
+    stream << generateScript();
+    stream.close();
+  }catch(...){
+    stream.close();
+    const std::string what = "write file '" + filePath + "' failed";
+    throw BashCompletionScriptFileWriteError(what);
   }
-
-  return blocks;
 }

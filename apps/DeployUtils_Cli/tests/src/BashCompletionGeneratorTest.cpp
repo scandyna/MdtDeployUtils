@@ -21,8 +21,21 @@
 #include "catch2/catch.hpp"
 #include "BashCompletionGenerator.h"
 #include "BashCompletionGenerator_Impl.h"
+#include <QTemporaryDir>
+#include <QDir>
+#include <QString>
+#include <QLatin1String>
+#include <QByteArray>
+#include <QFileInfo>
 
 #include <iostream>
+
+bool fileExists(const QTemporaryDir & dir, const std::string & fileName)
+{
+  const QString filePath = QDir::cleanPath(dir.path() + QLatin1String("/") + QString::fromLocal8Bit( QByteArray::fromStdString(fileName) ) );
+
+  return QFileInfo::exists(filePath);
+}
 
 TEST_CASE("option")
 {
@@ -60,8 +73,11 @@ TEST_CASE("ApplicationName")
   REQUIRE( generator.applicationName() == std::string("mytool") );
 }
 
-TEST_CASE("sandbox")
+TEST_CASE("generateScriptToFile")
 {
+  QTemporaryDir dir;
+  REQUIRE( dir.isValid() );
+
   BashCompletionGenerator generator;
   generator.setApplicationName("mytool");
 
@@ -78,8 +94,10 @@ TEST_CASE("sandbox")
   copyCommand.addOption('i', "interactive");
   generator.addSubCommand(copyCommand);
 
-
   std::cout << generator.generateScript() << std::endl;
-  
-  REQUIRE(false);
+
+  const std::string fileName = "mytool-completion.bash";
+  REQUIRE( !fileExists(dir, fileName) );
+  generator.generateScriptToFile( dir.path().toLocal8Bit().toStdString() );
+  REQUIRE( fileExists(dir, fileName) );
 }

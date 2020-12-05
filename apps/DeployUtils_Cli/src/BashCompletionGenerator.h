@@ -22,6 +22,7 @@
 #define BASH_COMPLETION_GENERATOR_H
 
 #include "BashCompletionGeneratorCommand.h"
+#include "BashCompletionScriptFileWriteError.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -78,33 +79,19 @@ class BashCompletionGenerator
    */
   std::string generateScript() const;
 
+  /*! \brief Generate the script to a file in a directory
+   *
+   * \pre The application name must have been set
+   * \pre At least the main command must have been set
+   * \sa setApplicationName()
+   * \sa setMainCommand()
+   * \pre \a directoryPath must not be empty
+   * \warning if a file of the form applicationName-completion.bash exists in the given directory, it will be overwritten
+   * \exception BashCompletionScriptFileWriteError
+   */
+  void generateScriptToFile(const std::string & directoryPath) const;
+
  private:
-
-  static
-  void addCommandOptionsToWordList(const BashCompletionGeneratorCommand & command, std::vector<std::string> & wordList);
-
-  static
-  void addCommandArgumentsAndOptionsToWordList(const BashCompletionGeneratorCommand & command, std::vector<std::string> & wordList);
-
-  /// \todo should restrict level range
-  static
-  std::string generateCompreplyUsingCompgenWithWordList(int level, const BashCompletionGeneratorCommand & command);
-
-  static
-  std::string generateAddCompreplyUsingCompgenForDirectoryCompletionIfEnabled(const BashCompletionGeneratorCommand & command);
-
-  /// \todo should restrict level range
-  static
-  std::string generateCommandBlock(int level, const BashCompletionGeneratorCommand & command, const std::string & comment);
-
-  static
-  std::string generateMainCommandBlock(const BashCompletionGeneratorCommand & command);
-
-  static
-  std::string generateSubCommandBlock(const BashCompletionGeneratorCommand & command);
-
-  static
-  std::string generateSubCommandBlocksIfAny(const std::vector<BashCompletionGeneratorCommand> & commands);
 
   std::string mApplicationName;
   std::unique_ptr<BashCompletionGeneratorCommand> mMainCommand;
