@@ -22,6 +22,7 @@
 #define BASH_COMPLETION_GENERATOR_COMMAND_H
 
 #include "BashCompletionGeneratorOption.h"
+#include <QCommandLineParser>
 #include <string>
 #include <vector>
 #include <cassert>
@@ -34,7 +35,11 @@ class BashCompletionGeneratorCommand
 {
  public:
 
-  BashCompletionGeneratorCommand() = delete;
+  /*! \brief Construct a command with no name
+   *
+   * This is useful for the main command
+   */
+  BashCompletionGeneratorCommand() = default;
 
   /*! \brief Construct a command
    *
@@ -61,6 +66,13 @@ class BashCompletionGeneratorCommand
   /*! \brief Move assign \a other to this command
    */
   BashCompletionGeneratorCommand & operator=(const BashCompletionGeneratorCommand & other) = default;
+
+  /*! \brief Check if this command has a name
+   */
+  bool hasName() const noexcept
+  {
+    return !mName.empty();
+  }
 
   /*! \brief Get the name of this command
    */
@@ -93,7 +105,7 @@ class BashCompletionGeneratorCommand
    */
   bool isEmpty() const noexcept
   {
-    return mArguments.empty();
+    return mArguments.empty() && mOptions.empty();
   }
 
   /*! \brief Add a command line option
@@ -154,6 +166,13 @@ class BashCompletionGeneratorCommand
   {
     return mDirectoryCompletionEnabled;
   }
+
+  /*! \brief Get a command from \a parser
+   *
+   * \pre \a commandName must not be empty
+   */
+  static
+  BashCompletionGeneratorCommand fromParser(const QCommandLineParser & parser, const std::string & commandName);
 
  private:
 

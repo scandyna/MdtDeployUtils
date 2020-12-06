@@ -19,3 +19,8 @@
  **
  ****************************************************************************/
 #include "BashCompletionGeneratorCommand.h"
+
+BashCompletionGeneratorCommand BashCompletionGeneratorCommand::fromParser(const QCommandLineParser& parser, const std::string& commandName)
+{
+  assert( !commandName.empty() );
+}

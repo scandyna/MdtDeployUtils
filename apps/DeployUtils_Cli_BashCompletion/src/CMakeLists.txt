@@ -23,6 +23,7 @@ target_include_directories(Mdt_DeployUtils_Cli_BashCompletion
 target_link_libraries(Mdt_DeployUtils_Cli_BashCompletion
   PUBLIC
     Mdt::DeployUtils
+    Qt5::Core
 )
 
 
@@ -49,11 +50,11 @@ target_link_libraries(mdtdeployutilsBashCompletionScriptGenerator
     Mdt::DeployUtils_Cli
 )
 
-add_custom_target(generateMdtdeployutilsBashCompletionScript ALL
-  COMMAND mdtdeployutilsBashCompletionScriptGenerator "${CMAKE_CURRENT_BINARY_DIR}/mdtdeployutils-completion.bash"
-  COMMENT "Generating mdtdeployutils-completion.bash"
-  VERBATIM
-)
+# add_custom_target(generateMdtdeployutilsBashCompletionScript ALL
+#   COMMAND mdtdeployutilsBashCompletionScriptGenerator "${CMAKE_CURRENT_BINARY_DIR}/mdtdeployutils-completion.bash"
+#   COMMENT "Generating mdtdeployutils-completion.bash"
+#   VERBATIM
+# )
 
 # add_custom_command(OUTPUT mdtdeployutils-completion.bash
 #   COMMAND generateMdtdeployutilsBashCompletionScript "$<TARGET_FILE:mdtdeployutils-completion.bash>"

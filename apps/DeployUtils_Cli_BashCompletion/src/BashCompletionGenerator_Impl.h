@@ -63,7 +63,7 @@ namespace BashCompletionGenerator_Impl{
     std::vector<std::string> wordList;
     addCommandArgumentsAndOptionsToWordList(command, wordList);
     const std::string wordListStr = Mdt::DeployUtils::joinToStdString(wordList, ' ');
-    const std::string levelStr = std::to_string(level+1);
+    const std::string levelStr = std::to_string(level);
 
     return "    COMPREPLY=($(compgen -W \""s + wordListStr + "\" -- \"${COMP_WORDS[" + levelStr + "]}\"))";
   }
@@ -77,6 +77,19 @@ namespace BashCompletionGenerator_Impl{
     return "";
   }
 
+  inline
+  std::string generateCommandBlockIfStatement(int level, const BashCompletionGeneratorCommand& command)
+  {
+    using namespace std::string_literals;
+
+    std::string statement = "if [ \"${#COMP_WORDS[@]}\" == \""s + std::to_string(level+1) + "\" ]";
+    if( (level > 1)&&(command.hasName()) ){
+      statement += " && [ \"${COMP_WORDS[" + std::to_string(level-1) + "]}\" == \"" + command.name() + "\" ]";
+    }
+
+    return statement;
+  }
+
   /// \todo should restrict level range
   inline
   std::string generateCommandBlock(int level, const BashCompletionGeneratorCommand& command, const std::string & comment)
@@ -86,7 +99,7 @@ namespace BashCompletionGenerator_Impl{
     const std::string blockComment = "  # "s + comment;
 
     return blockComment + "\n"
-        + "  if [ \"${#COMP_WORDS[@]}\" == \""s + std::to_string(level+1) + "\" ]\n"
+        + "  " + generateCommandBlockIfStatement(level, command) + "\n"
         + "  then\n"
         +      generateCompreplyUsingCompgenWithWordList(level, command) + "\n"
         +      generateAddCompreplyUsingCompgenForDirectoryCompletionIfEnabled(command)
@@ -96,7 +109,7 @@ namespace BashCompletionGenerator_Impl{
   inline
   std::string generateMainCommandBlock(const BashCompletionGeneratorCommand& command)
   {
-    return generateCommandBlock(1, command, std::string("Arguments available for the ") + command.name() + " command");
+    return generateCommandBlock(1, command, std::string("Arguments available for the main command"));
   }
 
   inline

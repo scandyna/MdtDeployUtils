@@ -60,8 +60,24 @@ TEST_CASE("Command_isEmpty")
   BashCompletionGeneratorCommand command("command");
   REQUIRE( command.isEmpty() );
 
-  command.addArgument("arg-a");
-  REQUIRE( !command.isEmpty() );
+  SECTION("arguments")
+  {
+    command.addArgument("arg-a");
+    REQUIRE( !command.isEmpty() );
+  }
+
+  SECTION("options")
+  {
+    command.addOption('h', "help");
+    REQUIRE( !command.isEmpty() );
+  }
+
+  SECTION("arguments and options")
+  {
+    command.addArgument("arg-a");
+    command.addOption('h', "help");
+    REQUIRE( !command.isEmpty() );
+  }
 }
 
 TEST_CASE("ApplicationName")
@@ -81,7 +97,7 @@ TEST_CASE("generateScriptToFile")
   BashCompletionGenerator generator;
   generator.setApplicationName("mytool");
 
-  BashCompletionGeneratorCommand mainCommand("main");
+  BashCompletionGeneratorCommand mainCommand;
   mainCommand.addArgument("copy");
   mainCommand.addOption('h', "help");
   generator.setMainCommand(mainCommand);

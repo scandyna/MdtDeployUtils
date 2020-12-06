@@ -25,7 +25,6 @@
 #include "BashCompletionScriptFileWriteError.h"
 #include <string>
 #include <vector>
-#include <memory>
 
 /*! \brief Helper class to generate Bash completion script
  *
@@ -34,7 +33,7 @@
  * BashCompletionGenerator generator;
  * generator.setApplicationName("mytool");
  *
- * BashCompletionGeneratorCommand mainCommand("main-command");
+ * BashCompletionGeneratorCommand mainCommand;
  * mainCommand.addArgument("source");
  * mainCommand.setDirectoryCompletionEnabled(true);
  * mainCommand.addOption('h', "help");
@@ -67,6 +66,9 @@ class BashCompletionGenerator
   void setMainCommand(const BashCompletionGeneratorCommand & command);
 
   /*! \brief Add a subcommand
+   *
+   * \pre \a command must not be empty
+   * \pre \a command must have a name
    */
   void addSubCommand(const BashCompletionGeneratorCommand & command);
 
@@ -94,7 +96,7 @@ class BashCompletionGenerator
  private:
 
   std::string mApplicationName;
-  std::unique_ptr<BashCompletionGeneratorCommand> mMainCommand;
+  BashCompletionGeneratorCommand mMainCommand;
   std::vector<BashCompletionGeneratorCommand> mSubCommands;
 };
 

@@ -35,19 +35,21 @@ void BashCompletionGenerator::setMainCommand(const BashCompletionGeneratorComman
 {
   assert( !command.isEmpty() );
 
-  mMainCommand.reset(new BashCompletionGeneratorCommand(command) );
+  mMainCommand = command;
 }
 
 void BashCompletionGenerator::addSubCommand(const BashCompletionGeneratorCommand& command)
 {
+  assert( !command.isEmpty() );
+  assert( command.hasName() );
+
   mSubCommands.push_back(command);
 }
 
 std::string BashCompletionGenerator::generateScript() const
 {
   assert( !mApplicationName.empty() );
-  assert( mMainCommand.get() != nullptr );
-  assert( !mMainCommand->isEmpty() );
+  assert( !mMainCommand.isEmpty() );
 
   using namespace std::string_literals;
   using namespace BashCompletionGenerator_Impl;
@@ -59,7 +61,7 @@ std::string BashCompletionGenerator::generateScript() const
   const std::string completeFunction
     = completeFunctionName
     + "\n{\n"
-    + generateMainCommandBlock(*mMainCommand)
+    + generateMainCommandBlock(mMainCommand)
     + generateSubCommandBlocksIfAny(mSubCommands)
     + "\n}";
 
@@ -70,8 +72,7 @@ void BashCompletionGenerator::generateScriptToFile(const std::string & directory
 {
   assert( !directoryPath.empty() );
   assert( !mApplicationName.empty() );
-  assert( mMainCommand.get() != nullptr );
-  assert( !mMainCommand->isEmpty() );
+  assert( !mMainCommand.isEmpty() );
 
   const std::string filePath = directoryPath + "/" + mApplicationName + "-completion.bash";
   std::ofstream stream(filePath, std::ios_base::out | std::ios_base::trunc);
