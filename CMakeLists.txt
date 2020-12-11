@@ -208,6 +208,9 @@ endif()
 #######################
 
 add_subdirectory(libs/DeployUtils_Core)
+
+add_subdirectory(libs/CommandLineParser)
+
 add_subdirectory(apps/DeployUtils_Cli)
 
 if(UNIX)

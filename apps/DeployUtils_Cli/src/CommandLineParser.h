@@ -21,6 +21,7 @@
 #ifndef MDT_COMMAND_LINE_PARSER_H
 #define MDT_COMMAND_LINE_PARSER_H
 
+#include "Mdt/CommandLineParser/ParserDefinition.h"
 #include <QObject>
 #include <QCommandLineParser>
 #include <QStringList>
@@ -47,13 +48,23 @@ class CommandLineParser : public QObject
    */
   CommandLineParserResult process();
 
+  /*! \brief Access the internal parser
+   */
+  const QCommandLineParser & parser() const noexcept
+  {
+    return mParser;
+  }
+
  private:
 
   void setApplicationDescription();
   void addCommandArgument();
+  void addGetSharedLibrariesTargetDependsOnCommand();
+  void addCopySharedLibrariesTargetDependsOnCommand();
   CommandLineParserResult processGetSharedLibrariesTargetDependsOn(const QStringList & arguments);
   CommandLineParserResult processCopySharedLibrariesTargetDependsOn(const QStringList & arguments);
 
+  Mdt::CommandLineParser::ParserDefinition mParserDefinition;
   QCommandLineParser mParser;
 };
 

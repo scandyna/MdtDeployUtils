@@ -23,11 +23,14 @@
 #include "CommandLineCommand.h"
 #include "GetSharedLibrariesTargetDependsOnCommandLineParser.h"
 #include "CopySharedLibrariesTargetDependsOnCommandLineParser.h"
+#include "Mdt/CommandLineParser/ParserDefinitionCommand.h"
 #include <QString>
 #include <QLatin1String>
 #include <QCoreApplication>
 
 #include <QDebug>
+
+using Mdt::CommandLineParser::ParserDefinitionCommand;
 
 CommandLineParser::CommandLineParser(QObject *parent)
  : QObject(parent)
@@ -48,6 +51,14 @@ CommandLineParserResult CommandLineParser::process()
 
   if( positionalArguments.count() < 1 ){
     showErrorMessage( tr("No command provided") );
+    
+    showMessage(QLatin1String("***** Begin Mdt def help *******"));
+    
+    showMessage( mParserDefinition.getHelpText() );
+    
+    showMessage(QLatin1String("***** Begin Qt help *******"));
+    
+    
     mParser.showHelp(1);
   }
 
@@ -96,6 +107,7 @@ void CommandLineParser::setApplicationDescription()
     "%1 %2 --help"
   ).arg( QCoreApplication::applicationName(), commandName( CommandLineCommand::GetSharedLibrariesTargetDependsOn) );
 
+  mParserDefinition.setApplicationDescription(description);
   mParser.setApplicationDescription(description);
 }
 
@@ -105,5 +117,45 @@ void CommandLineParser::addCommandArgument()
                               .arg( commandName( CommandLineCommand::GetSharedLibrariesTargetDependsOn),
                                     commandName( CommandLineCommand::CopySharedLibrariesTargetDependsOn) );
 
+  
+
   mParser.addPositionalArgument( QLatin1String("command"), description, tr("command <command-args>") );
+  
+  mParser.addPositionalArgument( QLatin1String("command-2"), description, tr("command-2 <command-2-args>") );
+}
+
+void CommandLineParser::addGetSharedLibrariesTargetDependsOnCommand()
+{
+  ParserDefinitionCommand command( QLatin1String("get-shared-libraries-target-depends-on") );
+
+  const QString description = tr(
+    "Get shared libraries a target depends on.\n"
+    "The list of shared libraries is returned HOW ??\n"
+    "Example:\n"
+    "%1 %2 /home/me/opt/libs/someLib.so"
+  ).arg( QCoreApplication::applicationName(), command.name() );
+  command.setDescription(description);
+
+  command.addPositionalArgument( QLatin1String("target"), tr("Path to a executable or a shared library.") );
+  command.addHelpOption();
+
+  mParserDefinition.addSubCommand(command);
+}
+
+void CommandLineParser::addCopySharedLibrariesTargetDependsOnCommand()
+{
+  ParserDefinitionCommand command( QLatin1String("copy-shared-libraries-target-depends-on") );
+
+  const QString description = tr(
+    "Copy shared libraries a target depends on to a destination.\n"
+    "Example:\n"
+    "%1 %2 /home/me/dev/build/myapp/src/myapp /home/me/opt/myapp/lib/"
+  ).arg( QCoreApplication::applicationName(), command.name() );
+  command.setDescription(description);
+
+  command.addPositionalArgument( QLatin1String("target"), tr("Path to a executable or a shared library.") );
+  command.addPositionalArgument( QLatin1String("destination"), tr("Path to the destination directory.") );
+  command.addHelpOption();
+
+  mParserDefinition.addSubCommand(command);
 }

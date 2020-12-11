@@ -57,6 +57,11 @@ void CopySharedLibrariesTargetDependsOnCommandLineParser::process(const QStringL
 //   mParser.process(arguments);
 }
 
+QString CopySharedLibrariesTargetDependsOnCommandLineParser::commandName()
+{
+  return ::commandName(CommandLineCommand::CopySharedLibrariesTargetDependsOn);
+}
+
 void CopySharedLibrariesTargetDependsOnCommandLineParser::setApplicationDescription()
 {
   const QString message = tr(
@@ -80,11 +85,6 @@ void CopySharedLibrariesTargetDependsOnCommandLineParser::showHelp()
   ).arg( QCoreApplication::applicationName(), commandName(), mParser.applicationDescription(), optionsHelpText(), argumentsHelpText() );
 
   showMessage(message);
-}
-
-QString CopySharedLibrariesTargetDependsOnCommandLineParser::commandName()
-{
-  return ::commandName(CommandLineCommand::CopySharedLibrariesTargetDependsOn);
 }
 
 QString CopySharedLibrariesTargetDependsOnCommandLineParser::optionsHelpText()

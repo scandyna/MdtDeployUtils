@@ -42,6 +42,18 @@ class CopySharedLibrariesTargetDependsOnCommandLineParser : public QObject
    */
   void process(const QStringList & arguments);
 
+  /*! \brief Get the command name of this parser
+   */
+  static
+  QString commandName();
+
+//   /*! \brief Access the internal parser
+//    */
+//   const QCommandLineParser & parser() const noexcept
+//   {
+//     return mParser;
+//   }
+
  private:
 
   void setApplicationDescription();
@@ -54,9 +66,6 @@ class CopySharedLibrariesTargetDependsOnCommandLineParser : public QObject
    * Internally, the application name given by QCoreApplication is used.
    */
   void showHelp();
-
-  static
-  QString commandName();
 
   static
   QString optionsHelpText();
