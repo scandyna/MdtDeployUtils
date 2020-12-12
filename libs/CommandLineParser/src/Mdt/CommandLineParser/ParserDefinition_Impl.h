@@ -24,6 +24,8 @@
 #include "ParserDefinition.h"
 #include "ParserDefinitionOption.h"
 #include "ParserDefinitionPositionalArgument.h"
+#include "ParserDefinitionCommand.h"
+#include "Algorithm.h"
 #include <QString>
 #include <QLatin1String>
 #include <QLatin1Char>
@@ -43,12 +45,37 @@ namespace Mdt{ namespace CommandLineParser{
    public:
 
     static
-    QString getUsageText(const QString & applicationName, const std::vector<ParserDefinitionOption> & options, const std::vector<ParserDefinitionPositionalArgument> & arguments)
+    QString argumentToUsageString(const ParserDefinitionPositionalArgument & argument)
+    {
+      if( argument.hasSyntax() ){
+        return argument.syntax();
+      }
+      return argument.name();
+    }
+
+    static
+    QString argumentListToUsageString(const std::vector<ParserDefinitionPositionalArgument> & arguments)
+    {
+      return joinToQString(arguments, ' ', argumentToUsageString);
+    }
+
+    static
+    QString getUsageText(const QString & applicationName, const std::vector<ParserDefinitionOption> & options,
+                         const std::vector<ParserDefinitionPositionalArgument> & arguments,
+                         const std::vector<ParserDefinitionCommand> & subCommands)
     {
       QString usageText = tr("Usage: %1").arg(applicationName);
 
       if( !options.empty() ){
         usageText += QLatin1String(" [") % tr("options") % QLatin1Char(']');
+      }
+
+      if( !arguments.empty() ){
+        usageText += QLatin1Char(' ') % argumentListToUsageString(arguments);
+      }
+
+      if( !subCommands.empty() ){
+        usageText += QLatin1Char(' ') % tr("command");
       }
 
       return usageText;

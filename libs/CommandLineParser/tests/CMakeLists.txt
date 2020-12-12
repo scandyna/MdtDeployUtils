@@ -21,6 +21,14 @@
 include(MdtAddTest)
 
 mdt_add_test(
+  NAME AlgorithmTest_MdtApplication
+  TARGET algorithmTest_MdtApplication
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main
+  SOURCE_FILES
+    src/AlgorithmTest.cpp
+)
+
+mdt_add_test(
   NAME CommandLineParserTest
   TARGET commandLineParserTest
   DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main

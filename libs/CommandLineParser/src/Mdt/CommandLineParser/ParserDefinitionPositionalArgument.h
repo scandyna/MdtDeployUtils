@@ -23,6 +23,7 @@
 
 #include "mdt_commandlineparser_export.h"
 #include <QString>
+#include <cassert>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -37,11 +38,13 @@ namespace Mdt{ namespace CommandLineParser{
     /*! \brief Construct a argument with a name, a optional description and a optional syntax
      *
      * \pre \a name must not be empty
-     *
-     * \todo enforce those precontidions
      */
-    ParserDefinitionPositionalArgument(const QString & name, const QString & description = QString(), const QString & syntax = QString())
+    ParserDefinitionPositionalArgument(const QString & name, const QString & description, const QString & syntax = QString())
+     : mName( name.trimmed() ),
+       mDescription( description.trimmed() ),
+       mSyntax( syntax.trimmed() )
     {
+      assert( !name.trimmed().isEmpty() );
     }
 
     /*! \brief Copy construct a argument from \a other
@@ -60,6 +63,39 @@ namespace Mdt{ namespace CommandLineParser{
      */
     ParserDefinitionPositionalArgument & operator=(ParserDefinitionPositionalArgument && other) = default;
 
+    /*! \brief Get the name of this argument
+     */
+    const QString & name() const noexcept
+    {
+      return mName;
+    }
+
+    /*! \brief Get the description of this argument
+     */
+    const QString & description() const noexcept
+    {
+      return mDescription;
+    }
+
+    /*! \brief Check if this argument has a syntax
+     */
+    bool hasSyntax() const noexcept
+    {
+      return !mSyntax.isEmpty();
+    }
+
+    /*! \brief Get the syntax of this argument
+     */
+    const QString & syntax() const noexcept
+    {
+      return mSyntax;
+    }
+
+   private:
+
+    QString mName;
+    QString mDescription;
+    QString mSyntax;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

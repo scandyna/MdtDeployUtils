@@ -25,7 +25,7 @@
 #include <QLatin1String>
 #include <vector>
 
-#include <QDebug>
+// #include <QDebug>
 
 using namespace Mdt::CommandLineParser;
 
@@ -39,9 +39,11 @@ bool isValidName(const QString & name)
   return ParserDefinitionOption::isValidName(name);
 }
 
-QString getUsageText(const QString & applicationName, const std::vector<ParserDefinitionOption> & options, const std::vector<ParserDefinitionPositionalArgument> & arguments)
+QString getUsageText(const QString & applicationName, const std::vector<ParserDefinitionOption> & options,
+                     const std::vector<ParserDefinitionPositionalArgument> & arguments,
+                     const std::vector<ParserDefinitionCommand> & subCommands)
 {
-  return ParserDefinition_Impl::getUsageText(applicationName, options, arguments);
+  return ParserDefinition_Impl::getUsageText(applicationName, options, arguments, subCommands);
 }
 
 TEST_CASE("ParserDefinitionOption_isValidShortName")
@@ -163,40 +165,103 @@ TEST_CASE("ParserDefinitionOption")
   }
 }
 
+TEST_CASE("ParserDefinitionPositionalArgument")
+{
+  SECTION("With syntax")
+  {
+    ParserDefinitionPositionalArgument argument( QLatin1String("source"), QLatin1String("Source file"), QLatin1String("[path]") );
+    REQUIRE( argument.name() == QLatin1String("source") );
+    REQUIRE( argument.description() == QLatin1String("Source file") );
+    REQUIRE( argument.hasSyntax() );
+    REQUIRE( argument.syntax() == QLatin1String("[path]") );
+  }
+
+  SECTION("With spaces")
+  {
+    ParserDefinitionPositionalArgument argument( QLatin1String(" source"), QLatin1String(" Source file"), QLatin1String(" [path]") );
+    REQUIRE( argument.name() == QLatin1String("source") );
+    REQUIRE( argument.description() == QLatin1String("Source file") );
+    REQUIRE( argument.hasSyntax() );
+    REQUIRE( argument.syntax() == QLatin1String("[path]") );
+  }
+
+  SECTION("No syntax")
+  {
+    ParserDefinitionPositionalArgument argument( QLatin1String("source"), QLatin1String("Source file") );
+    REQUIRE( argument.name() == QLatin1String("source") );
+    REQUIRE( argument.description() == QLatin1String("Source file") );
+    REQUIRE( !argument.hasSyntax() );
+  }
+}
+
 TEST_CASE("getUsageText")
 {
   const QString applicationName = QLatin1String("parser-def-test");
   std::vector<ParserDefinitionOption> options;
   std::vector<ParserDefinitionPositionalArgument> arguments;
+  std::vector<ParserDefinitionCommand> subCommands;
 
   SECTION("No arguments and no options")
   {
     const QString expectedText = QLatin1String("Usage: parser-def-test");;
-    REQUIRE( getUsageText(applicationName, options, arguments) == expectedText );
+    REQUIRE( getUsageText(applicationName, options, arguments, subCommands) == expectedText );
   }
 
   SECTION("Arguments")
   {
-    ParserDefinitionPositionalArgument argument( QLatin1String("argument-1") );
+    ParserDefinitionPositionalArgument argument( QLatin1String("source"), QLatin1String("Path to the source file") );
+    arguments.push_back(argument);
 
-    const QString expectedText = QLatin1String("Usage: parser-def-test argument-1");
-    REQUIRE( getUsageText(applicationName, options, arguments) == expectedText );
+    const QString expectedText = QLatin1String("Usage: parser-def-test source");
+    REQUIRE( getUsageText(applicationName, options, arguments, subCommands) == expectedText );
+  }
+
+  SECTION("Arguments with syntax")
+  {
+    ParserDefinitionPositionalArgument argument( QLatin1String("source"), QLatin1String("Path to the source file"), QLatin1String("[file]") );
+    arguments.push_back(argument);
+
+    const QString expectedText = QLatin1String("Usage: parser-def-test [file]");
+    REQUIRE( getUsageText(applicationName, options, arguments, subCommands) == expectedText );
   }
 
   SECTION("Options")
   {
     ParserDefinitionOption option( QLatin1String("option-1") );
+    options.push_back(option);
 
     const QString expectedText = QLatin1String("Usage: parser-def-test [options]");
-    REQUIRE( getUsageText(applicationName, options, arguments) == expectedText );
+    REQUIRE( getUsageText(applicationName, options, arguments, subCommands) == expectedText );
   }
 
   SECTION("Options and arguments")
   {
     ParserDefinitionOption option( QLatin1String("option-1") );
-    ParserDefinitionPositionalArgument argument( QLatin1String("argument-1") );
+    options.push_back(option);
+    ParserDefinitionPositionalArgument argument( QLatin1String("argument-1"), QLatin1String("Argument 1 description") );
+    arguments.push_back(argument);
 
     const QString expectedText = QLatin1String("Usage: parser-def-test [options] argument-1");
-    REQUIRE( getUsageText(applicationName, options, arguments) == expectedText );
+    REQUIRE( getUsageText(applicationName, options, arguments, subCommands) == expectedText );
+  }
+
+  SECTION("sub-command")
+  {
+    ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+    subCommands.push_back(copyCommand);
+
+    const QString expectedText = QLatin1String("Usage: parser-def-test command");
+    REQUIRE( getUsageText(applicationName, options, arguments, subCommands) == expectedText );
+  }
+
+  SECTION("Options and sub-command")
+  {
+    ParserDefinitionOption option( QLatin1String("option-1") );
+    options.push_back(option);
+    ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+    subCommands.push_back(copyCommand);
+
+    const QString expectedText = QLatin1String("Usage: parser-def-test [options] command");
+    REQUIRE( getUsageText(applicationName, options, arguments, subCommands) == expectedText );
   }
 }

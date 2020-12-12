@@ -23,6 +23,7 @@ include(MdtInstallLibrary)
 
 add_library(Mdt_CommandLineParser
   Mdt/CommandLineParser.cpp
+  Mdt/CommandLineParser/Algorithm.cpp
   Mdt/CommandLineParser/ParserDefinitionOption.cpp
   Mdt/CommandLineParser/ParserDefinitionPositionalArgument.cpp
   Mdt/CommandLineParser/ParserDefinitionCommand.cpp
