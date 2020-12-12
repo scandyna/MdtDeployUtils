@@ -101,37 +101,37 @@ namespace Mdt{ namespace CommandLineParser{
      */
     void setApplicationDescription(const QString &description);
 
+    /*! \brief Check if this parser has a application description
+     */
+    bool hasApplicationDescription() const noexcept
+    {
+      return !mApplicationDescription.isEmpty();
+    }
+
     /*! \brief Get the application description
      */
-    QString applicationDescription() const
+    const QString & applicationDescription() const noexcept
     {
       return mApplicationDescription;
     }
 
     /*! \brief Add a option
-     *
-     * \todo precontidions ?
      */
     void addOption(const ParserDefinitionOption & option);
 
     /*! \brief Add a option
      *
-     * \pre \a name must not be empty
-     * \pre \a name must not begin with a dash or a slash
-     * \pre \a name must not contain any equal
-     *
-     * \todo enforce those precontidions
+     * \pre \a name must be a valid option name
+     * \sa ParserDefinitionOption::isValidName()
      */
     void addOption(const QString & name, const QString & description);
 
     /*! \brief Add a option
      *
-     * \pre \a shortName must be a letter [a-z]
-     * \pre \a name must not be empty
-     * \pre \a name must not begin with a dash or a slash
-     * \pre \a name must not contain any equal
-     *
-     * \todo enforce those precontidions
+     * \pre \a shortName must be a valid option short name
+     * \pre \a name must be a valid option name
+     * \sa ParserDefinitionOption::isValidShortName()
+     * \sa ParserDefinitionOption::isValidName()
      */
     void addOption(char shortName, const QString & name, const QString & description);
 
@@ -139,11 +139,25 @@ namespace Mdt{ namespace CommandLineParser{
      */
     void addHelpOption();
 
+    /*! \brief Check if this parser has options
+     */
+    bool hasOptions() const noexcept
+    {
+      return mMainCommand.hasOptions();
+    }
+
     /*! \brief Add a positional argument
      *
      * \pre \a name must not be empty
      */
-    void addPositionalArgument(const QString & name, const QString & description, const QString & sytax = QString());
+    void addPositionalArgument(const QString & name, const QString & description, const QString & syntax = QString());
+
+    /*! \brief Check if this parser has positional arguments
+     */
+    bool hasPositionalArguments() const noexcept
+    {
+      return mMainCommand.hasPositionalArguments();
+    }
 
     /*! \brief Get the main command
      */
@@ -154,10 +168,16 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Add a subcommand
      *
-     * \pre \a command must not be empty
      * \pre \a command must have a name
      */
     void addSubCommand(const ParserDefinitionCommand & command);
+
+    /*! \brief Check if this parser has at least one subcommand
+     */
+    bool hasSubCommands() const noexcept
+    {
+      return !mSubCommands.empty();
+    }
 
     /*! \brief Get subcommands
      */
@@ -178,6 +198,9 @@ namespace Mdt{ namespace CommandLineParser{
     }
 
     QString getUsageText() const;
+    QString getOptionsHelpText() const;
+    QString getPositionalArgumentsHelpText() const;
+    QString getAvailableSubCommandsHelpText() const;
 
     QString mApplicationDescription;
     ParserDefinitionCommand mMainCommand;

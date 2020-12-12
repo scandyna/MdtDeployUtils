@@ -25,6 +25,9 @@
 #include "ParserDefinitionPositionalArgument.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
+#include <QLatin1String>
+#include <QCoreApplication>
+#include <vector>
 #include <cassert>
 
 namespace Mdt{ namespace CommandLineParser{
@@ -33,6 +36,8 @@ namespace Mdt{ namespace CommandLineParser{
    */
   class MDT_COMMANDLINEPARSER_EXPORT ParserDefinitionCommand
   {
+    Q_DECLARE_TR_FUNCTIONS(ParserDefinitionCommand)
+
    public:
 
     /*! \brief Construct a command
@@ -44,6 +49,7 @@ namespace Mdt{ namespace CommandLineParser{
      * \pre \a name must not be empty
      */
     ParserDefinitionCommand(const QString & name)
+     : mName( name.trimmed() )
     {
       assert( !name.trimmed().isEmpty() );
     }
@@ -52,17 +58,21 @@ namespace Mdt{ namespace CommandLineParser{
      */
     bool hasName() const noexcept
     {
-//       return !mName.empty();
+      return !mName.isEmpty();
     }
 
-    QString name() const
+    /*! \brief Get the name of this command
+     */
+    const QString & name() const noexcept
     {
+      return mName;
     }
 
     /*! \brief Check if this command is empty
      *
      * Return true if this command has no arguments and no options
      */
+    [[deprecated]]
     bool isEmpty() const noexcept
     {
 //       return mArguments.empty() && mOptions.empty();
@@ -72,48 +82,102 @@ namespace Mdt{ namespace CommandLineParser{
      */
     void setDescription(const QString & description)
     {
+      mDescription = description;
+    }
+
+    /*! \brief Get the description of this command
+     */
+    const QString & description() const noexcept
+    {
+      return mDescription;
+    }
+
+    /*! \brief Add a option
+     */
+    void addOption(const ParserDefinitionOption & option)
+    {
+      mOptions.push_back(option);
     }
 
     /*! \brief Add a option
      *
-     * \todo precontidions ?
+     * \pre \a name must be a valid option name
+     * \sa ParserDefinitionOption::isValidName()
      */
-    void addOption(const ParserDefinitionOption & option);
+    void addOption(const QString & name, const QString & description)
+    {
+      assert( ParserDefinitionOption::isValidName(name) );
+
+      addOption( ParserDefinitionOption(name, description) );
+    }
 
     /*! \brief Add a option
      *
-     * \pre \a name must not be empty
-     * \pre \a name must not begin with a dash or a slash
-     * \pre \a name must not contain any equal
-     *
-     * \todo enforce those precontidions
+     * \pre \a shortName must be a valid option short name
+     * \pre \a name must be a valid option name
+     * \sa ParserDefinitionOption::isValidShortName()
+     * \sa ParserDefinitionOption::isValidName()
      */
-    void addOption(const QString & name, const QString & description);
+    void addOption(char shortName, const QString & name, const QString & description)
+    {
+      assert( ParserDefinitionOption::isValidShortName(shortName) );
+      assert( ParserDefinitionOption::isValidName(name) );
 
-    /*! \brief Add a option
-     *
-     * \pre \a shortName must be a letter [a-z]
-     * \pre \a name must not be empty
-     * \pre \a name must not begin with a dash or a slash
-     * \pre \a name must not contain any equal
-     *
-     * \todo enforce those precontidions
-     */
-    void addOption(char shortName, const QString & name, const QString & description);
+      addOption( ParserDefinitionOption(shortName, name, description) );
+    }
 
     /*! \brief Add the help option
      */
-    void addHelpOption();
+    void addHelpOption()
+    {
+      addOption( 'h', QLatin1String("help"), tr("Displays help on commandline options.") );
+    }
+
+    /*! \brief Check if this command has at least 1 option
+     */
+    bool hasOptions() const noexcept
+    {
+      return !mOptions.empty();
+    }
+
+    /*! \brief Get the options of this command
+     */
+    const std::vector<ParserDefinitionOption> & options() const noexcept
+    {
+      return mOptions;
+    }
 
     /*! \brief Add a positional argument
      *
      * \pre \a name must not be empty
      */
-    void addPositionalArgument(const QString & name, const QString & description, const QString & sytax = QString())
+    void addPositionalArgument(const QString & name, const QString & description, const QString & syntax = QString())
     {
       assert( !name.trimmed().isEmpty() );
+
+      mPositionalArguments.emplace_back(name, description, syntax);
     }
 
+    /*! \brief Check if this command has positional arguments
+     */
+    bool hasPositionalArguments() const noexcept
+    {
+      return !mPositionalArguments.empty();
+    }
+
+    /*! \brief Get the positional arguments of this command
+     */
+    const std::vector<ParserDefinitionPositionalArgument> & positionalArguments() const noexcept
+    {
+      return mPositionalArguments;
+    }
+
+   private:
+
+    QString mName;
+    QString mDescription;
+    std::vector<ParserDefinitionOption> mOptions;
+    std::vector<ParserDefinitionPositionalArgument> mPositionalArguments;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

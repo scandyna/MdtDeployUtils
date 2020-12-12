@@ -21,6 +21,8 @@
 #include "ParserDefinition.h"
 #include "ParserDefinition_Impl.h"
 #include <QStringBuilder>
+#include <QLatin1Char>
+#include <QLatin1String>
 #include <cassert>
 
 #include <QDebug>
@@ -34,51 +36,89 @@ void ParserDefinition::setApplicationDescription(const QString &description)
 
 void ParserDefinition::addOption(const ParserDefinitionOption & option)
 {
+  mMainCommand.addOption(option);
 }
 
 void ParserDefinition::addOption(const QString & name, const QString & description)
 {
-  assert( !name.trimmed().isEmpty() );
+  assert( ParserDefinitionOption::isValidName(name) );
+
+  mMainCommand.addOption(name, description);
 }
 
 void ParserDefinition::addOption(char shortName, const QString & name, const QString & description)
 {
-  assert( !name.trimmed().isEmpty() );
+  assert( ParserDefinitionOption::isValidShortName(shortName) );
+  assert( ParserDefinitionOption::isValidName(name) );
+
+  mMainCommand.addOption(shortName, name, description);
 }
 
 void ParserDefinition::addHelpOption()
 {
+  mMainCommand.addHelpOption();
 }
 
-void ParserDefinition::addPositionalArgument(const QString & name, const QString & description, const QString & sytax)
+void ParserDefinition::addPositionalArgument(const QString & name, const QString & description, const QString & syntax)
 {
   assert( !name.trimmed().isEmpty() );
+
+  mMainCommand.addPositionalArgument(name, description, syntax);
 }
 
 void ParserDefinition::addSubCommand(const ParserDefinitionCommand & command)
 {
-  assert( !command.isEmpty() );
+//   assert( !command.isEmpty() );
   assert( command.hasName() );
+
+  mSubCommands.push_back(command);
 }
 
 QString ParserDefinition::getHelpText() const
 {
   QString helpText = getUsageText();
+  const QLatin1Char nl('\n');
+
+  if( hasApplicationDescription() ){
+    helpText += nl % applicationDescription() % nl;
+  }
+
+  if( hasOptions() ){
+    helpText += nl % getOptionsHelpText() % nl;
+  }
+
+  if( hasPositionalArguments() ){
+    helpText += nl % getPositionalArgumentsHelpText() % nl;
+  }
+
+  if( hasSubCommands() ){
+    helpText += nl % getAvailableSubCommandsHelpText() % nl;
+  }
 
   return helpText;
 }
 
 QString ParserDefinition::getUsageText() const
 {
-  qDebug() << "build help text ...";
-  
-  QString usageText = QCoreApplication::applicationName();
-  if( includeOptionsInHelpText() ){
-    usageText += tr(" [options]");
-  }
+  return ParserDefinition_Impl::getUsageText( QCoreApplication::applicationName(),
+                                              mMainCommand.options(),
+                                              mMainCommand.positionalArguments(),
+                                              mSubCommands );
+}
 
+QString ParserDefinition::getOptionsHelpText() const
+{
+  return ParserDefinition_Impl::getOptionsHelpText( mMainCommand.options() );
+}
 
-  return tr("Usage: %1").arg(usageText);
+QString ParserDefinition::getPositionalArgumentsHelpText() const
+{
+  return ParserDefinition_Impl::getPositionalArgumentsHelpText( mMainCommand.positionalArguments() );
+}
+
+QString ParserDefinition::getAvailableSubCommandsHelpText() const
+{
+  return ParserDefinition_Impl::getAvailableSubCommandsHelpText(mSubCommands);
 }
 
 }} // namespace Mdt{ namespace CommandLineParser{

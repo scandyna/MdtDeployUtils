@@ -80,6 +80,56 @@ namespace Mdt{ namespace CommandLineParser{
 
       return usageText;
     }
+
+    static
+    void breackText(QString & text, int leftPadLength, int maxLength)
+    {
+    }
+
+    static
+    QString wrapText(const QString & names, int longestName, const QString & description)
+    {
+      const QLatin1String indent("  ");
+
+      return indent % names.leftJustified(longestName) % indent % description;
+    }
+
+    static
+    QString wrapText(const ParserDefinitionOption & option, int longestName)
+    {
+    }
+
+    static
+    QString wrapText(const ParserDefinitionPositionalArgument & argument, int longestName)
+    {
+    }
+
+    static
+    QString getOptionsHelpText(const std::vector<ParserDefinitionOption> & options)
+    {
+      QString text = tr("Options:\n");
+      
+      
+      return text;
+    }
+
+    static
+    QString getPositionalArgumentsHelpText(const std::vector<ParserDefinitionPositionalArgument> & arguments)
+    {
+      QString text = tr("Arguments:\n");
+      
+      
+      return text;
+    }
+
+    static
+    QString getAvailableSubCommandsHelpText(const std::vector<ParserDefinitionCommand> & subCommands)
+    {
+      QString text = tr("Commands:\n");
+      
+      
+      return text;
+    }
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

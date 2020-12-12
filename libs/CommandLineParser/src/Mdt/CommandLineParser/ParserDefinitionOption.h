@@ -38,27 +38,29 @@ namespace Mdt{ namespace CommandLineParser{
 
     ParserDefinitionOption() = delete;
 
-    /*! \brief Construct a option with a name
+    /*! \brief Construct a option with a name and a description
      *
      * \pre \a name must be a valid option name
      * \sa isValidName()
      */
-    ParserDefinitionOption(const QString & name)
-     : mName(name)
+    ParserDefinitionOption(const QString & name, const QString & description)
+     : mName( name.trimmed() ),
+       mDescription(description)
     {
       assert( isValidName(name) );
     }
 
-    /*! \brief Construct a option with a short name and a name
+    /*! \brief Construct a option with a short name, a name and a description
      *
      * \pre \a shortName must be a valid option short name
      * \pre \a name must be a valid option name
      * \sa isValidShortName()
      * \sa isValidName()
      */
-    ParserDefinitionOption(char shortName, const QString & name)
+    ParserDefinitionOption(char shortName, const QString & name, const QString & description)
      : mShortName(shortName),
-       mName(name)
+       mName( name.trimmed() ),
+       mDescription(description)
     {
       assert( isValidShortName(shortName) );
       assert( isValidName(name) );
@@ -108,6 +110,13 @@ namespace Mdt{ namespace CommandLineParser{
       return QLatin1String("--") + mName;
     }
 
+    /*! \brief Get the description of this option
+     */
+    const QString & description() const noexcept
+    {
+      return mDescription;
+    }
+
     /*! \brief Check if \a name is a valid short name for a option
      *
      * A valid short name is a letter
@@ -150,6 +159,7 @@ namespace Mdt{ namespace CommandLineParser{
 
     char mShortName = '\0';
     QString mName;
+    QString mDescription;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{
