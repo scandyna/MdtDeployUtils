@@ -28,13 +28,123 @@
 #include "Algorithm.h"
 #include <QString>
 #include <QLatin1String>
+#include <QChar>
 #include <QLatin1Char>
 #include <QStringBuilder>
 #include <QCoreApplication>
 #include <cassert>
 #include <vector>
+#include <iterator>
+
+#include <QDebug>
 
 namespace Mdt{ namespace CommandLineParser{
+
+  /*! \brief Check if \a c is a breackable character
+   */
+  static
+  bool isBreackableChar(QChar c) noexcept
+  {
+    return c.isSpace();
+  }
+
+  /*! \brief Find the last point where to breack \a text so that its length will be <= \a maxLength
+   *
+   * \pre \a maxLength must be > 1
+   */
+  static
+  int findIndexOfBreakPoint(const QString & text, int maxLength)
+  {
+    assert( maxLength > 1 );
+
+    const int textLength = text.length();
+    int lastBreakable = -1;
+
+    for(int i = 0; i < textLength; ++i){
+      const QChar c = text.at(i);
+      if( isBreackableChar(c) ){
+        lastBreakable = i;
+      }
+    }
+
+  }
+
+  /*! \brief Find the point where to break a text so that its length wil be <= \a maxLength
+   *
+   * \pre \a maxLength must be > 1
+   */
+  static
+  QString::const_iterator findBreakPoint(QString::const_iterator first, QString::const_iterator last, int maxLength)
+  {
+    assert( maxLength > 1 );
+
+    auto lastBreakable = last;
+    int index = 0;
+
+    while(first != last){
+
+//       const bool currentPositionIsBreakable = isBreackableChar(*first);
+      const QChar c = *first;
+      if( isBreackableChar(c) ){
+        lastBreakable = first;
+      }
+
+      // Maybe we are at max length with a breakable char
+      if( (index == maxLength) && (lastBreakable != last) ){
+        return lastBreakable;
+      }
+
+      /*
+       * We are just before max length and found no breakable char
+       * cut here, the char will go to the next line,
+       * and a - will be here later
+       */
+      if( (index == maxLength-1) && (lastBreakable == last) ){
+//         ++first;
+        return first;
+      }
+
+      ++index;
+      ++first;
+    }
+
+    return first;
+  }
+
+  /*! \brief
+   *
+   * \pre \a leftPadLength must be >= 0
+   * \pre \a maxLength must be > 1
+   */
+  static
+  void breakText(QString & text, int leftPadLength, int maxLength)
+  {
+    assert( leftPadLength >= 0 );
+    assert( maxLength > 1 );
+
+    qDebug() << "breakText(): " << text;
+
+    const auto breakPoint = findBreakPoint(text.cbegin(), text.cend(), maxLength);
+    if( breakPoint == text.cend() ){
+      return;
+    }
+
+    const int index = std::distance( text.cbegin(), breakPoint );
+    
+    qDebug() << " - found break point " << *breakPoint << " at index " << index;
+    
+    const QString padding = QString( leftPadLength, QLatin1Char(' ') );
+    
+    /// \todo index checking etc..
+    if( isBreackableChar(*breakPoint) ){
+      text.replace( index, 1, QLatin1Char('\n') );
+      text.insert( index+1, padding );
+    }else{
+      text.insert( index, QLatin1String("-\n") + padding );
+//       text.insert( index+2, padding );
+    }
+    
+  }
 
   /*! \internal
    */
@@ -81,10 +191,6 @@ namespace Mdt{ namespace CommandLineParser{
       return usageText;
     }
 
-    static
-    void breackText(QString & text, int leftPadLength, int maxLength)
-    {
-    }
 
     static
     QString wrapText(const QString & names, int longestName, const QString & description)

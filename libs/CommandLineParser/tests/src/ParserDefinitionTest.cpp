@@ -46,11 +46,6 @@ QString getUsageText(const QString & applicationName, const std::vector<ParserDe
   return ParserDefinition_Impl::getUsageText(applicationName, options, arguments, subCommands);
 }
 
-void breackText(QString & text, int leftPadLength, int maxLength)
-{
-  ParserDefinition_Impl::breackText(text, leftPadLength, maxLength);
-}
-
 QString wrapText(const QString & names, int longestName, const QString & description)
 {
   return ParserDefinition_Impl::wrapText(names, longestName, description);
@@ -421,7 +416,82 @@ TEST_CASE("getUsageText")
   }
 }
 
-TEST_CASE("breackText")
+TEST_CASE("isBreackableChar")
+{
+  SECTION("space")
+  {
+    REQUIRE( isBreackableChar( QLatin1Char(' ') ) );
+  }
+
+  SECTION("newline")
+  {
+    REQUIRE( isBreackableChar( QLatin1Char('\n') ) );
+  }
+
+  SECTION("a")
+  {
+    REQUIRE( !isBreackableChar( QLatin1Char('a') ) );
+  }
+
+  SECTION("A")
+  {
+    REQUIRE( !isBreackableChar( QLatin1Char('A') ) );
+  }
+
+  SECTION("1")
+  {
+    REQUIRE( !isBreackableChar( QLatin1Char('1') ) );
+  }
+}
+
+TEST_CASE("findBreakPoint")
+{
+  QString text;
+
+  SECTION("empty,2")
+  {
+    REQUIRE( findBreakPoint(text.cbegin(), text.cend(), 2) == text.cend() );
+  }
+
+  SECTION("A,2")
+  {
+    text = QLatin1String("A");
+    REQUIRE( findBreakPoint(text.cbegin(), text.cend(), 2) == text.cend() );
+  }
+
+  SECTION("A,5")
+  {
+    text = QLatin1String("A");
+    REQUIRE( findBreakPoint(text.cbegin(), text.cend() , 5) == text.cend() );
+  }
+
+  SECTION("AB,2")
+  {
+    text = QLatin1String("AB");
+    REQUIRE( findBreakPoint(text.cbegin(), text.cend() , 2) == text.cend() );
+  }
+
+  SECTION("AB C,2")
+  {
+    text = QLatin1String("AB C");
+    REQUIRE( findBreakPoint(text.cbegin(), text.cend() , 2) == text.cbegin()+2 );
+  }
+
+  SECTION("ABC,2")
+  {
+    text = QLatin1String("ABC");
+    REQUIRE( findBreakPoint(text.cbegin(), text.cend() , 2) == text.cbegin()+1 );
+  }
+
+  SECTION("AB,5")
+  {
+    text = QLatin1String("AB");
+    REQUIRE( findBreakPoint(text.cbegin(), text.cend() , 5) == text.cend() );
+  }
+
+}
+
+TEST_CASE("breakText")
 {
   int leftPadLength = 5;
   int maxLength = 10;
@@ -430,7 +500,7 @@ TEST_CASE("breackText")
 
   SECTION("empty")
   {
-    breackText(text, leftPadLength, maxLength);
+    breakText(text, leftPadLength, maxLength);
     REQUIRE( text == expectedText );
   }
 
@@ -440,7 +510,7 @@ TEST_CASE("breackText")
     maxLength = 10;
     text = QLatin1String("A");
     expectedText = text;
-    breackText(text, leftPadLength, maxLength);
+    breakText(text, leftPadLength, maxLength);
     REQUIRE( text == expectedText );
   }
 
@@ -450,7 +520,7 @@ TEST_CASE("breackText")
     maxLength = 10;
     text = QLatin1String("A B C D E F G H");
     expectedText = QLatin1String("A B C D E\n     F G H");
-    breackText(text, leftPadLength, maxLength);
+    breakText(text, leftPadLength, maxLength);
     
     qDebug() << "Breacked text: " << text;
     
@@ -463,7 +533,33 @@ TEST_CASE("breackText")
     maxLength = 10;
     text = QLatin1String("ABCD EFG HIJK");
     expectedText = QLatin1String("ABCD EFG\n     HIJK");
-    breackText(text, leftPadLength, maxLength);
+    breakText(text, leftPadLength, maxLength);
+    
+    qDebug() << "Breacked text: " << text;
+    
+    REQUIRE( text == expectedText );
+  }
+
+  SECTION("ABCD EFG HIJK,5,7")
+  {
+    leftPadLength = 5;
+    maxLength = 7;
+    text = QLatin1String("ABCD EFG HIJK");
+    expectedText = QLatin1String("ABCD\n     EFG HIJK");
+    breakText(text, leftPadLength, maxLength);
+    
+    qDebug() << "Breacked text: " << text;
+    
+    REQUIRE( text == expectedText );
+  }
+
+  SECTION("ABCDEFGHIJK,5,10")
+  {
+    leftPadLength = 5;
+    maxLength = 10;
+    text = QLatin1String("ABCDEFGHIJK");
+    expectedText = QLatin1String("ABCDEFGHI-\n     JK");
+    breakText(text, leftPadLength, maxLength);
     
     qDebug() << "Breacked text: " << text;
     
