@@ -205,6 +205,7 @@ namespace Mdt{ namespace CommandLineParser{
     QString mApplicationDescription;
     ParserDefinitionCommand mMainCommand;
     std::vector<ParserDefinitionCommand> mSubCommands;
+    int mHelpTextLineMaxLength = 80;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

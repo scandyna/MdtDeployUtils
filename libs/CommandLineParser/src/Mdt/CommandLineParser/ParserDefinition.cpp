@@ -108,17 +108,17 @@ QString ParserDefinition::getUsageText() const
 
 QString ParserDefinition::getOptionsHelpText() const
 {
-  return ParserDefinition_Impl::getOptionsHelpText( mMainCommand.options() );
+  return ParserDefinition_Impl::getOptionsHelpText( mMainCommand.options(), mHelpTextLineMaxLength );
 }
 
 QString ParserDefinition::getPositionalArgumentsHelpText() const
 {
-  return ParserDefinition_Impl::getPositionalArgumentsHelpText( mMainCommand.positionalArguments() );
+  return ParserDefinition_Impl::getPositionalArgumentsHelpText( mMainCommand.positionalArguments(), mHelpTextLineMaxLength );
 }
 
 QString ParserDefinition::getAvailableSubCommandsHelpText() const
 {
-  return ParserDefinition_Impl::getAvailableSubCommandsHelpText(mSubCommands);
+  return ParserDefinition_Impl::getAvailableSubCommandsHelpText(mSubCommands, mHelpTextLineMaxLength);
 }
 
 }} // namespace Mdt{ namespace CommandLineParser{

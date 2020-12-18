@@ -103,6 +103,13 @@ namespace Mdt{ namespace CommandLineParser{
       return QString::fromLatin1(buffer, 2);
     }
 
+    /*! \brief Get the length of the name
+     */
+    int nameLength() const noexcept
+    {
+      return mName.length();
+    }
+
     /*! \brief Get the name with dashes
      */
     QString nameWithDashes() const

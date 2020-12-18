@@ -46,6 +46,21 @@ QString getUsageText(const QString & applicationName, const std::vector<ParserDe
   return ParserDefinition_Impl::getUsageText(applicationName, options, arguments, subCommands);
 }
 
+QString getOptionsHelpText(const std::vector<ParserDefinitionOption> & options, int maxLength)
+{
+  return ParserDefinition_Impl::getOptionsHelpText(options, maxLength);
+}
+
+QString getPositionalArgumentsHelpText(const std::vector<ParserDefinitionPositionalArgument> & arguments, int maxLength)
+{
+  return ParserDefinition_Impl::getPositionalArgumentsHelpText(arguments, maxLength);
+}
+
+QString getAvailableSubCommandsHelpText(const std::vector<ParserDefinitionCommand> & subCommands, int maxLength)
+{
+  return ParserDefinition_Impl::getAvailableSubCommandsHelpText(subCommands, maxLength);
+}
+
 
 TEST_CASE("ParserDefinitionOption_isValidShortName")
 {
@@ -740,17 +755,192 @@ TEST_CASE("wrapText_argument")
   }
 }
 
+TEST_CASE("wrapText_command")
+{
+  using Impl::wrapText;
+
+  QString expectedText;
+  int longestNamesStringLengt;
+  int maxLength;
+  QString result;
+
+  SECTION("copy:10,ml:50")
+  {
+    ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+    copyCommand.setDescription( QLatin1String("Copy a file") );
+    longestNamesStringLengt = 10;
+    maxLength = 50;
+
+    expectedText = QLatin1String("  copy        Copy a file");
+    result = wrapText(copyCommand, longestNamesStringLengt, maxLength);
+    REQUIRE( expectedText == result );
+  }
+}
+
+TEST_CASE("findLongestOptionNamesStringLength")
+{
+  using Impl::findLongestOptionNamesStringLength;
+
+  std::vector<ParserDefinitionOption> options;
+
+  SECTION("--help")
+  {
+    options.emplace_back( QLatin1String("help"), QLatin1String("Display this help") );
+    REQUIRE( findLongestOptionNamesStringLength(options) == 6 );
+  }
+
+  SECTION("-h, --help")
+  {
+    options.emplace_back( 'h', QLatin1String("help"), QLatin1String("Display this help") );
+    REQUIRE( findLongestOptionNamesStringLength(options) == 10 );
+  }
+
+  SECTION("--help,--verbose")
+  {
+    options.emplace_back( QLatin1String("help"), QLatin1String("Display this help") );
+    options.emplace_back( QLatin1String("verbose"), QLatin1String("Verbose") );
+    REQUIRE( findLongestOptionNamesStringLength(options) == 9 );
+  }
+}
+
+TEST_CASE("findLongestArgumentNamesStringLength")
+{
+  using Impl::findLongestArgumentNamesStringLength;
+
+  std::vector<ParserDefinitionPositionalArgument> arguments;
+
+  SECTION("source")
+  {
+    arguments.emplace_back( QLatin1String("source"), QLatin1String("Source description") );
+    REQUIRE( findLongestArgumentNamesStringLength(arguments) == 6 );
+  }
+
+  SECTION("source,destination")
+  {
+    arguments.emplace_back( QLatin1String("source"), QLatin1String("Source description") );
+    arguments.emplace_back( QLatin1String("destination"), QLatin1String("Destination description") );
+    REQUIRE( findLongestArgumentNamesStringLength(arguments) == 11 );
+  }
+}
+
+TEST_CASE("findLongestCommandNameStringLength")
+{
+  using Impl::findLongestCommandNameStringLength;
+
+  std::vector<ParserDefinitionCommand> commands;
+
+  SECTION("copy")
+  {
+    ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+    copyCommand.setDescription( QLatin1String("Copy a file") );
+    commands.push_back(copyCommand);
+
+    REQUIRE( findLongestCommandNameStringLength(commands) == 4 );
+  }
+
+  SECTION("add,checkout")
+  {
+    ParserDefinitionCommand addCommand( QLatin1String("add") );
+    addCommand.setDescription( QLatin1String("Add contents to the index") );
+    commands.push_back(addCommand);
+
+    ParserDefinitionCommand checkoutCommand( QLatin1String("checkout") );
+    checkoutCommand.setDescription( QLatin1String("Switch to a branch") );
+    commands.push_back(checkoutCommand);
+
+    REQUIRE( findLongestCommandNameStringLength(commands) == 8 );
+  }
+}
+
 TEST_CASE("getOptionsHelpText")
 {
-  REQUIRE( false );
+  std::vector<ParserDefinitionOption> options;
+  QString expectedText;
+  int maxLength = 80;
+  QString result;
+
+  SECTION("help")
+  {
+    options.emplace_back( 'h', QLatin1String("help"), QLatin1String("Display this help") );
+    expectedText = QLatin1String("Options:\n"
+                                 "  -h, --help  Display this help");
+    result = getOptionsHelpText(options, maxLength);
+    REQUIRE( result == expectedText );
+  }
+
+  SECTION("help,long-option")
+  {
+    options.emplace_back( 'h', QLatin1String("help"), QLatin1String("Display this help") );
+    options.emplace_back( 'l', QLatin1String("long-option"), QLatin1String("The long option") );
+    expectedText = QLatin1String("Options:\n"
+                                 "  -h, --help         Display this help\n"
+                                 "  -l, --long-option  The long option");
+    result = getOptionsHelpText(options, maxLength);
+    REQUIRE( result == expectedText );
+  }
 }
 
 TEST_CASE("getPositionalArgumentsHelpText")
 {
-  REQUIRE( false );
+  std::vector<ParserDefinitionPositionalArgument> arguments;
+  QString expectedText;
+  int maxLength = 80;
+  QString result;
+
+  SECTION("source")
+  {
+    arguments.emplace_back( QLatin1String("source"), QLatin1String("Source file") );
+    expectedText = QLatin1String("Arguments:\n"
+                                 "  source  Source file");
+    result = getPositionalArgumentsHelpText(arguments, maxLength);
+    REQUIRE( result == expectedText );
+  }
+
+  SECTION("source,destination")
+  {
+    arguments.emplace_back( QLatin1String("source"), QLatin1String("Source file") );
+    arguments.emplace_back( QLatin1String("destination"), QLatin1String("Destination file") );
+    expectedText = QLatin1String("Arguments:\n"
+                                 "  source       Source file\n"
+                                 "  destination  Destination file");
+    result = getPositionalArgumentsHelpText(arguments, maxLength);
+    REQUIRE( result == expectedText );
+  }
 }
 
 TEST_CASE("getAvailableSubCommandsHelpText")
 {
-  REQUIRE( false );
+  std::vector<ParserDefinitionCommand> subCommands;
+  QString expectedText;
+  int maxLength = 80;
+  QString result;
+
+  SECTION("copy")
+  {
+    ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+    copyCommand.setDescription( QLatin1String("Copy a file") );
+    subCommands.push_back(copyCommand);
+
+    expectedText = QLatin1String("Commands:\n"
+                                 "  copy  Copy a file");
+    result = getAvailableSubCommandsHelpText(subCommands, maxLength);
+    REQUIRE( result == expectedText );
+  }
+
+  SECTION("add,checkout")
+  {
+    ParserDefinitionCommand addCommand( QLatin1String("add") );
+    addCommand.setDescription( QLatin1String("Add contents to the index") );
+    subCommands.push_back(addCommand);
+
+    ParserDefinitionCommand checkoutCommand( QLatin1String("checkout") );
+    checkoutCommand.setDescription( QLatin1String("Switch to a branch") );
+    subCommands.push_back(checkoutCommand);
+
+    expectedText = QLatin1String("Commands:\n"
+                                 "  add       Add contents to the index\n"
+                                 "  checkout  Switch to a branch");
+    result = getAvailableSubCommandsHelpText(subCommands, maxLength);
+    REQUIRE( result == expectedText );
+  }
 }

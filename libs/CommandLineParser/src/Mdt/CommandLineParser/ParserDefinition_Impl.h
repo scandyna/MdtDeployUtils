@@ -35,6 +35,7 @@
 #include <cassert>
 #include <vector>
 #include <iterator>
+#include <algorithm>
 
 // #include <QDebug>
 
@@ -215,6 +216,84 @@ namespace Mdt{ namespace CommandLineParser{
       return wrapText( argument.name(), longestNamesStringLength, argument.description(), maxLength );
     }
 
+    /*! \internal
+     */
+    static
+    QString wrapText(const ParserDefinitionCommand & command, int longestNamesStringLength, int maxLength)
+    {
+      return wrapText( command.name(), longestNamesStringLength, command.description(), maxLength );
+    }
+
+    /*! \internal Get the length of the names in \a option
+     */
+    static
+    int optionNamesStringLength(const ParserDefinitionOption & option) noexcept
+    {
+      if( option.hasShortName() ){
+        // -h (2) + , + space
+        return 4 + option.nameWithDashes().length();
+      }
+      // -- + name length
+      return 2 + option.nameLength();
+    }
+
+    /*! \internal Find the longest names in \a options
+     *
+     * \pre \a options must not be empty
+     */
+    static
+    int findLongestOptionNamesStringLength(const std::vector<ParserDefinitionOption> & options) noexcept
+    {
+      assert( !options.empty() );
+
+      const auto lessThan = [](const ParserDefinitionOption & a, const ParserDefinitionOption & b)
+      {
+        return optionNamesStringLength(a) < optionNamesStringLength(b);
+      };
+      const auto it = std::max_element(options.cbegin(), options.cend(), lessThan);
+      assert( it != options.cend() );
+
+      return optionNamesStringLength(*it);
+    }
+
+    /*! \internal Find the longest names in \a arguments
+     *
+     * \pre \a arguments must not be empty
+     */
+    static
+    int findLongestArgumentNamesStringLength(const std::vector<ParserDefinitionPositionalArgument> & arguments) noexcept
+    {
+      assert( !arguments.empty() );
+
+      const auto lessThan = [](const ParserDefinitionPositionalArgument & a, const ParserDefinitionPositionalArgument & b)
+      {
+        return a.nameLength() < b.nameLength();
+      };
+      const auto it = std::max_element(arguments.cbegin(), arguments.cend(), lessThan);
+      assert( it != arguments.cend() );
+
+      return it->nameLength();
+    }
+
+    /*! \internal Find the longest name in \a commands
+     *
+     * \pre \a commands must not be empty
+     */
+    static
+    int findLongestCommandNameStringLength(const std::vector<ParserDefinitionCommand> & commands) noexcept
+    {
+      assert( !commands.empty() );
+
+      const auto lessThan = [](const ParserDefinitionCommand & a, const ParserDefinitionCommand & b)
+      {
+        return a.nameLength() < b.nameLength();
+      };
+      const auto it = std::max_element(commands.cbegin(), commands.cend(), lessThan);
+      assert( it != commands.cend() );
+
+      return it->nameLength();
+    }
+
   } // namespace Impl{
 
   /*! \internal For functions that require tr()
@@ -262,30 +341,51 @@ namespace Mdt{ namespace CommandLineParser{
       return usageText;
     }
 
+    /*! \brief Get options help text
+     *
+     * \pre \a options must not be empty
+     */
     static
-    QString getOptionsHelpText(const std::vector<ParserDefinitionOption> & options)
+    QString getOptionsHelpText(const std::vector<ParserDefinitionOption> & options, int maxLength)
     {
-      QString text = tr("Options:\n");
-      
-      
+      assert( !options.empty() );
+
+      const int longestNamesStringLength = Impl::findLongestOptionNamesStringLength(options);
+      QString text = tr("Options:");
+      for(const auto & option : options){
+        text += QLatin1Char('\n') + Impl::wrapText(option, longestNamesStringLength, maxLength);
+      }
+
+      return text;
+    }
+
+    /*! \brief Get positional arguments help text
+     *
+     * \pre \a arguments must not be empty
+     */
+    static
+    QString getPositionalArgumentsHelpText(const std::vector<ParserDefinitionPositionalArgument> & arguments, int maxLength)
+    {
+      assert( !arguments.empty() );
+
+      const int longestNamesStringLength = Impl::findLongestArgumentNamesStringLength(arguments);
+      QString text = tr("Arguments:");
+      for(const auto & argument : arguments){
+        text += QLatin1Char('\n') + Impl::wrapText(argument, longestNamesStringLength, maxLength);
+      }
+
       return text;
     }
 
     static
-    QString getPositionalArgumentsHelpText(const std::vector<ParserDefinitionPositionalArgument> & arguments)
+    QString getAvailableSubCommandsHelpText(const std::vector<ParserDefinitionCommand> & subCommands, int maxLength)
     {
-      QString text = tr("Arguments:\n");
-      
-      
-      return text;
-    }
+      const int longestNameStringLength = Impl::findLongestCommandNameStringLength(subCommands);
+      QString text = tr("Commands:");
+      for(const auto & command : subCommands){
+        text += QLatin1Char('\n') + Impl::wrapText(command, longestNameStringLength, maxLength);
+      }
 
-    static
-    QString getAvailableSubCommandsHelpText(const std::vector<ParserDefinitionCommand> & subCommands)
-    {
-      QString text = tr("Commands:\n");
-      
-      
       return text;
     }
   };

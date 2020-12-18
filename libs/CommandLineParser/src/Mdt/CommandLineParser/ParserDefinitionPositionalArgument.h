@@ -70,6 +70,13 @@ namespace Mdt{ namespace CommandLineParser{
       return mName;
     }
 
+    /*! \brief Get the length of the name
+     */
+    int nameLength() const noexcept
+    {
+      return mName.length();
+    }
+
     /*! \brief Get the description of this argument
      */
     const QString & description() const noexcept

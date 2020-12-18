@@ -68,6 +68,13 @@ namespace Mdt{ namespace CommandLineParser{
       return mName;
     }
 
+    /*! \brief Get the length of the name
+     */
+    int nameLength() const noexcept
+    {
+      return mName.length();
+    }
+
     /*! \brief Check if this command is empty
      *
      * Return true if this command has no arguments and no options
