@@ -66,6 +66,10 @@ namespace Mdt{ namespace CommandLineParser{
       while(first != last){
         const QChar c = *first;
         if( isBreackableChar(c) ){
+          if( c == QLatin1Char('\n') ){
+            // Forced break
+            return first;
+          }
           lastBreakable = first;
         }
 

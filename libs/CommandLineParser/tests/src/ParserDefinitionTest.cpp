@@ -662,7 +662,7 @@ TEST_CASE("wrapText")
 
     expectedText = QLatin1String("  -h, --help  Display this help");
     result = wrapText(names, longestNamesStringLengt, description, maxLength);
-    REQUIRE( expectedText == result );
+    REQUIRE( result == expectedText );
   }
 
   SECTION("-h, --help,longest:15,ml:50")
@@ -674,7 +674,7 @@ TEST_CASE("wrapText")
 
     expectedText = QLatin1String("  -h, --help       Display this help");
     result = wrapText(names, longestNamesStringLengt, description, maxLength);
-    REQUIRE( expectedText == result );
+    REQUIRE( result == expectedText );
   }
 
   SECTION("-h, --help,longest:10,ml:25")
@@ -687,7 +687,7 @@ TEST_CASE("wrapText")
     expectedText = QLatin1String("  -h, --help  Display\n"
                                  "              this help");
     result = wrapText(names, longestNamesStringLengt, description, maxLength);
-    REQUIRE( expectedText == result );
+    REQUIRE( result == expectedText );
   }
 
   SECTION("-h, --help,no description,longest:10,ml:50")
@@ -698,7 +698,20 @@ TEST_CASE("wrapText")
 
     expectedText = QLatin1String("  -h, --help");
     result = wrapText(names, longestNamesStringLengt, description, maxLength);
-    REQUIRE( expectedText == result );
+    REQUIRE( result == expectedText );
+  }
+
+  SECTION("copy,description with new-line")
+  {
+    names = QLatin1String("copy");
+    description = QLatin1String("Copy a file:\narguments are source and destination");
+    longestNamesStringLengt = names.length();
+    maxLength = 100;
+
+    expectedText = QLatin1String("  copy  Copy a file:\n"
+                                 "        arguments are source and destination");
+    result = wrapText(names, longestNamesStringLengt, description, maxLength);
+    REQUIRE( result == expectedText );
   }
 }
 
@@ -719,7 +732,7 @@ TEST_CASE("wrapText_option")
 
     expectedText = QLatin1String("  --help      Display this help");
     result = wrapText(helpOption, longestNamesStringLengt, maxLength);
-    REQUIRE( expectedText == result );
+    REQUIRE( result == expectedText );
   }
 
   SECTION("-h, --help,longest:10,ml:50")
@@ -730,7 +743,7 @@ TEST_CASE("wrapText_option")
 
     expectedText = QLatin1String("  -h, --help  Display this help");
     result = wrapText(helpOption, longestNamesStringLengt, maxLength);
-    REQUIRE( expectedText == result );
+    REQUIRE( result == expectedText );
   }
 }
 
@@ -751,7 +764,7 @@ TEST_CASE("wrapText_argument")
 
     expectedText = QLatin1String("  source      Source file");
     result = wrapText(sourceArgument, longestNamesStringLengt, maxLength);
-    REQUIRE( expectedText == result );
+    REQUIRE( result == expectedText );
   }
 }
 
@@ -773,7 +786,7 @@ TEST_CASE("wrapText_command")
 
     expectedText = QLatin1String("  copy        Copy a file");
     result = wrapText(copyCommand, longestNamesStringLengt, maxLength);
-    REQUIRE( expectedText == result );
+    REQUIRE( result == expectedText );
   }
 }
 
