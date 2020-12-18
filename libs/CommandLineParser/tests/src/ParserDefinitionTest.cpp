@@ -418,6 +418,8 @@ TEST_CASE("getUsageText")
 
 TEST_CASE("isBreackableChar")
 {
+  using Impl::isBreackableChar;
+
   SECTION("space")
   {
     REQUIRE( isBreackableChar( QLatin1Char(' ') ) );
@@ -446,6 +448,8 @@ TEST_CASE("isBreackableChar")
 
 TEST_CASE("findBreakPoint")
 {
+  using Impl::findBreakPoint;
+
   QString text;
 
   SECTION("empty,2")
@@ -493,6 +497,8 @@ TEST_CASE("findBreakPoint")
 
 TEST_CASE("breakText")
 {
+  using Impl::breakText;
+
   int leftPadLength = 5;
   int maxLength = 10;
   QString text;
