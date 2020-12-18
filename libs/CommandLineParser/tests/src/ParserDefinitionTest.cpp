@@ -497,11 +497,12 @@ TEST_CASE("breakText")
   int maxLength = 10;
   QString text;
   QString expectedText;
+  QString result;
 
   SECTION("empty")
   {
-    breakText(text, leftPadLength, maxLength);
-    REQUIRE( text == expectedText );
+    result = breakText(text, leftPadLength, maxLength);
+    REQUIRE( result == expectedText );
   }
 
   SECTION("A,5,10")
@@ -510,8 +511,8 @@ TEST_CASE("breakText")
     maxLength = 10;
     text = QLatin1String("A");
     expectedText = text;
-    breakText(text, leftPadLength, maxLength);
-    REQUIRE( text == expectedText );
+    result = breakText(text, leftPadLength, maxLength);
+    REQUIRE( result == expectedText );
   }
 
   SECTION("AB,5,2")
@@ -520,11 +521,8 @@ TEST_CASE("breakText")
     maxLength = 2;
     text = QLatin1String("AB");
     expectedText = text;
-    breakText(text, leftPadLength, maxLength);
-    
-    qDebug() << "Breaked text: " << text;
-    
-    REQUIRE( text == expectedText );
+    result = breakText(text, leftPadLength, maxLength);
+    REQUIRE( result == expectedText );
   }
 
   SECTION("AB C,5,2")
@@ -533,11 +531,8 @@ TEST_CASE("breakText")
     maxLength = 2;
     text = QLatin1String("AB C");
     expectedText = QLatin1String("AB\n     C");
-    breakText(text, leftPadLength, maxLength);
-    
-    qDebug() << "Breaked text: " << text;
-    
-    REQUIRE( text == expectedText );
+    result = breakText(text, leftPadLength, maxLength);
+    REQUIRE( result == expectedText );
   }
 
   SECTION("ABC,5,2")
@@ -546,8 +541,8 @@ TEST_CASE("breakText")
     maxLength = 2;
     text = QLatin1String("ABC");
     expectedText = QLatin1String("A-\n     BC");
-    breakText(text, leftPadLength, maxLength);
-    REQUIRE( text == expectedText );
+    result = breakText(text, leftPadLength, maxLength);
+    REQUIRE( result == expectedText );
   }
 
   SECTION("A B C D E F G H,5,10")
@@ -556,11 +551,8 @@ TEST_CASE("breakText")
     maxLength = 10;
     text = QLatin1String("A B C D E F G H");
     expectedText = QLatin1String("A B C D E\n     F G H");
-    breakText(text, leftPadLength, maxLength);
-    
-    qDebug() << "Breaked text: " << text;
-    
-    REQUIRE( text == expectedText );
+    result = breakText(text, leftPadLength, maxLength);
+    REQUIRE( result == expectedText );
   }
 
   SECTION("ABC\nDE,lp5,ml3")
@@ -569,11 +561,8 @@ TEST_CASE("breakText")
     maxLength = 3;
     text = QLatin1String("ABC\nDE");
     expectedText = QLatin1String("ABC\n     DE");
-    breakText(text, leftPadLength, maxLength);
-    
-    qDebug() << "Breaked text: " << text;
-    
-    REQUIRE( text == expectedText );
+    result = breakText(text, leftPadLength, maxLength);
+    REQUIRE( result == expectedText );
   }
 
   SECTION("ABCD EFG HIJK,5,10")
@@ -582,11 +571,8 @@ TEST_CASE("breakText")
     maxLength = 10;
     text = QLatin1String("ABCD EFG HIJK");
     expectedText = QLatin1String("ABCD EFG\n     HIJK");
-    breakText(text, leftPadLength, maxLength);
-    
-    qDebug() << "Breacked text: " << text;
-    
-    REQUIRE( text == expectedText );
+    result = breakText(text, leftPadLength, maxLength);
+    REQUIRE( result == expectedText );
   }
 
   SECTION("ABCD EFG HIJK,5,7")
@@ -595,11 +581,8 @@ TEST_CASE("breakText")
     maxLength = 7;
     text = QLatin1String("ABCD EFG HIJK");
     expectedText = QLatin1String("ABCD\n     EFG\n     HIJK");
-    breakText(text, leftPadLength, maxLength);
-    
-    qDebug() << "Breacked text: " << text;
-    
-    REQUIRE( text == expectedText );
+    result = breakText(text, leftPadLength, maxLength);
+    REQUIRE( result == expectedText );
   }
 
   SECTION("ABCDEFGHIJK,5,10")
@@ -608,11 +591,8 @@ TEST_CASE("breakText")
     maxLength = 10;
     text = QLatin1String("ABCDEFGHIJK");
     expectedText = QLatin1String("ABCDEFGHI-\n     JK");
-    breakText(text, leftPadLength, maxLength);
-    
-    qDebug() << "Breaked text: " << text;
-    
-    REQUIRE( text == expectedText );
+    result = breakText(text, leftPadLength, maxLength);
+    REQUIRE( result == expectedText );
   }
 
   SECTION("ABC DEFG HIJ KLMN")
@@ -621,11 +601,8 @@ TEST_CASE("breakText")
     maxLength = 3;
     text = QLatin1String("ABC DEFG HIJ KLMN");
     expectedText = QLatin1String("ABC\n     DE-\n     FG\n     HIJ\n     KL-\n     MN");
-    breakText(text, leftPadLength, maxLength);
-    
-    qDebug() << "Breaked text: " << text;
-    
-    REQUIRE( text == expectedText );
+    result = breakText(text, leftPadLength, maxLength);
+    REQUIRE( result == expectedText );
   }
 
   SECTION("ABCDEFG HIJ KLMNO,lp5,ml3")
@@ -634,11 +611,8 @@ TEST_CASE("breakText")
     maxLength = 3;
     text = QLatin1String("ABCDEFG HIJ KLMNO");
     expectedText = QLatin1String("AB-\n     CD-\n     EFG\n     HIJ\n     KL-\n     MNO");
-    breakText(text, leftPadLength, maxLength);
-    
-    qDebug() << "Breaked text: " << text;
-    
-    REQUIRE( text == expectedText );
+    result = breakText(text, leftPadLength, maxLength);
+    REQUIRE( result == expectedText );
   }
 
   SECTION("ABC DEFGHIJ KLM,lp5,ml3")
@@ -647,72 +621,9 @@ TEST_CASE("breakText")
     maxLength = 3;
     text = QLatin1String("ABC DEFGHIJ KLM");
     expectedText = QLatin1String("ABC\n     DE-\n     FG-\n     HIJ\n     KLM");
-    breakText(text, leftPadLength, maxLength);
-    
-    qDebug() << "Breaked text: " << text;
-    
-    REQUIRE( text == expectedText );
+    result = breakText(text, leftPadLength, maxLength);
+    REQUIRE( result == expectedText );
   }
-}
-
-/*
- * Try to catch bugs is we use iterators in the implementation
- * See: https://doc.qt.io/qt-5/containers.html#implicit-sharing-iterator-problem
- */
-TEST_CASE("breakText_COW")
-{
-  int leftPadLength = 5;
-  int maxLength = 10;
-//   QString text;
-  QString expectedText;
-
-  SECTION("ABCD EFG HIJK,lp3,ml4")
-  {
-    leftPadLength = 0;
-    maxLength = 4;
-    QString text = QLatin1String("ABCD EFG HIJK");
-    expectedText = QLatin1String("ABCD\nEFG\nHIJK");
-    
-    qDebug() << "1) text shared: " << !text.isDetached();
-    
-    {
-      /*
-       * text2 and text should now refer to the same shared data
-       * modifing one should produce a deep copy
-       */
-      QString text2 = text;
-      
-      qDebug() << "2) text shared: " << !text.isDetached() << ", text2 shared: " << !text2.isDetached();
-      
-      breakText(text, leftPadLength, maxLength);
-      REQUIRE( text == expectedText );
-      
-      qDebug() << "3) text shared: " << !text.isDetached() << ", text2 shared: " << !text2.isDetached();
-      
-      /*
-       * text was modified, so each text and text 2 should refer to different data
-       */
-      breakText(text, leftPadLength, maxLength);
-      REQUIRE( text == expectedText );
-      breakText(text2, leftPadLength, maxLength);
-      REQUIRE( text2 == expectedText );
-      /*
-       * Here we should really have 2 separate data
-       */
-      text2 = QLatin1String("ABCD EFG");
-      breakText(text2, leftPadLength, maxLength);
-      breakText(text, leftPadLength, maxLength);
-      REQUIRE( text == expectedText );
-    }
-    /*
-     * Here the ref count is probably decremented,
-     * but probably not 1, but try anyway
-     */
-    qDebug() << "4) text shared: " << !text.isDetached();
-    breakText(text, leftPadLength, maxLength);
-    REQUIRE( text == expectedText );
-  }
-
 }
 
 TEST_CASE("wrapText")
