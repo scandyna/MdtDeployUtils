@@ -42,7 +42,7 @@ namespace Mdt{ namespace CommandLineParser{
 
   namespace Impl{
 
-    /*! \brief Check if \a c is a breackable character
+    /*! \internal Check if \a c is a breackable character
      */
     static
     bool isBreackableChar(QChar c) noexcept
@@ -50,7 +50,7 @@ namespace Mdt{ namespace CommandLineParser{
       return c.isSpace();
     }
 
-    /*! \brief Find the point where to break a text so that its length wil be <= \a maxLength
+    /*! \internal Find the point where to break a text so that its length wil be <= \a maxLength
      *
      * \pre \a maxLength must be > 1
      */
@@ -103,7 +103,7 @@ namespace Mdt{ namespace CommandLineParser{
       return first;
     }
 
-    /*! \brief Returns a string from \a text breaked so that the length of each line is no longer than \a maxLength
+    /*! \internal Returns a string from \a text breaked so that the length of each line is no longer than \a maxLength
      *
      * \pre \a leftPadLength must be >= 0
      * \pre \a maxLength must be > 1
@@ -155,9 +155,69 @@ namespace Mdt{ namespace CommandLineParser{
       return result;
     }
 
+    /*! \internal Wraps \a names and \a description
+     *
+     * \code
+     *   -h, --help   Displays the help
+     *   -s, --short  Description of short
+     * \endcode
+     *
+     * If the resulting text becomes longer than \a maxLength,
+     * it will be breaked to new lines:
+     * \code
+     *   -l, --long    A long description
+     *                 of the long option
+     * \endcode
+     *
+     * \pre \a longestNamesStringLength must be >= \a names length
+     * \pre \a maxLength must be >= \a longestNamesStringLength + 10
+     */
+    static
+    QString wrapText(const QString & names, int longestNamesStringLength, const QString & description, int maxLength)
+    {
+      assert( longestNamesStringLength >= names.length() );
+      assert( maxLength >= (longestNamesStringLength+10) );
+
+      QString text;
+      const QLatin1String indent("  ");
+      const int leftPadLength = indent.size() + longestNamesStringLength + indent.size();
+
+      if( description.isEmpty() ){
+        text = indent % names.leftJustified(longestNamesStringLength);
+      }else{
+        text = indent % names.leftJustified(longestNamesStringLength) % indent % description;
+      }
+
+      return breakText(text, leftPadLength, maxLength);
+    }
+
+    /*! \internal
+     */
+    static
+    QString wrapText(const ParserDefinitionOption & option, int longestNamesStringLength, int maxLength)
+    {
+      QString names;
+
+      if( option.hasShortName() ){
+        names = option.shortNameWithDash() % QLatin1String(", ") % option.nameWithDashes();
+      }else{
+        names = option.nameWithDashes();
+      }
+
+      return wrapText( names, longestNamesStringLength, option.description(), maxLength );
+    }
+
+    /*! \internal
+     */
+    static
+    QString wrapText(const ParserDefinitionPositionalArgument & argument, int longestNamesStringLength, int maxLength)
+    {
+      return wrapText( argument.name(), longestNamesStringLength, argument.description(), maxLength );
+    }
+
   } // namespace Impl{
 
-  /*! \internal
+  /*! \internal For functions that require tr()
    */
   class ParserDefinition_Impl
   {
@@ -200,25 +260,6 @@ namespace Mdt{ namespace CommandLineParser{
       }
 
       return usageText;
-    }
-
-
-    static
-    QString wrapText(const QString & names, int longestName, const QString & description)
-    {
-      const QLatin1String indent("  ");
-
-      return indent % names.leftJustified(longestName) % indent % description;
-    }
-
-    static
-    QString wrapText(const ParserDefinitionOption & option, int longestName)
-    {
-    }
-
-    static
-    QString wrapText(const ParserDefinitionPositionalArgument & argument, int longestName)
-    {
     }
 
     static

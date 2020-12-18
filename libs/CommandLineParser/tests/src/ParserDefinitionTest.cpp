@@ -46,11 +46,6 @@ QString getUsageText(const QString & applicationName, const std::vector<ParserDe
   return ParserDefinition_Impl::getUsageText(applicationName, options, arguments, subCommands);
 }
 
-QString wrapText(const QString & names, int longestName, const QString & description)
-{
-  return ParserDefinition_Impl::wrapText(names, longestName, description);
-}
-
 
 TEST_CASE("ParserDefinitionOption_isValidShortName")
 {
@@ -634,29 +629,115 @@ TEST_CASE("breakText")
 
 TEST_CASE("wrapText")
 {
+  using Impl::wrapText;
+
   QString names;
   QString description;
   QString expectedText;
+  int longestNamesStringLengt;
+  int maxLength;
+  QString result;
 
-  names = QLatin1String("-h, --help");
-  description = QLatin1String("Display this help");
-  expectedText = QLatin1String("  -h, --help  Display this help");
-  REQUIRE( wrapText(names, names.length(), description) == expectedText );
+  SECTION("-h, --help,longest:10,ml:50")
+  {
+    names = QLatin1String("-h, --help");
+    description = QLatin1String("Display this help");
+    longestNamesStringLengt = 10;
+    maxLength = 50;
 
-  expectedText = QLatin1String("  -h, --help     Display this help");
-  REQUIRE( wrapText(names, names.length()+3, description) == expectedText );
+    expectedText = QLatin1String("  -h, --help  Display this help");
+    result = wrapText(names, longestNamesStringLengt, description, maxLength);
+    REQUIRE( expectedText == result );
+  }
 
-  REQUIRE( false );
+  SECTION("-h, --help,longest:15,ml:50")
+  {
+    names = QLatin1String("-h, --help");
+    description = QLatin1String("Display this help");
+    longestNamesStringLengt = 15;
+    maxLength = 50;
+
+    expectedText = QLatin1String("  -h, --help       Display this help");
+    result = wrapText(names, longestNamesStringLengt, description, maxLength);
+    REQUIRE( expectedText == result );
+  }
+
+  SECTION("-h, --help,longest:10,ml:25")
+  {
+    names = QLatin1String("-h, --help");
+    description = QLatin1String("Display this help");
+    longestNamesStringLengt = 10;
+    maxLength = 25;
+
+    expectedText = QLatin1String("  -h, --help  Display\n"
+                                 "              this help");
+    result = wrapText(names, longestNamesStringLengt, description, maxLength);
+    REQUIRE( expectedText == result );
+  }
+
+  SECTION("-h, --help,no description,longest:10,ml:50")
+  {
+    names = QLatin1String("-h, --help");
+    longestNamesStringLengt = 10;
+    maxLength = 50;
+
+    expectedText = QLatin1String("  -h, --help");
+    result = wrapText(names, longestNamesStringLengt, description, maxLength);
+    REQUIRE( expectedText == result );
+  }
 }
 
 TEST_CASE("wrapText_option")
 {
-  REQUIRE( false );
+  using Impl::wrapText;
+
+  QString expectedText;
+  int longestNamesStringLengt;
+  int maxLength;
+  QString result;
+
+  SECTION("--help,longest:10,ml:50")
+  {
+    ParserDefinitionOption helpOption( QLatin1String("help"), QLatin1String("Display this help") );
+    longestNamesStringLengt = 10;
+    maxLength = 50;
+
+    expectedText = QLatin1String("  --help      Display this help");
+    result = wrapText(helpOption, longestNamesStringLengt, maxLength);
+    REQUIRE( expectedText == result );
+  }
+
+  SECTION("-h, --help,longest:10,ml:50")
+  {
+    ParserDefinitionOption helpOption( 'h', QLatin1String("help"), QLatin1String("Display this help") );
+    longestNamesStringLengt = 10;
+    maxLength = 50;
+
+    expectedText = QLatin1String("  -h, --help  Display this help");
+    result = wrapText(helpOption, longestNamesStringLengt, maxLength);
+    REQUIRE( expectedText == result );
+  }
 }
 
 TEST_CASE("wrapText_argument")
 {
-  REQUIRE( false );
+  using Impl::wrapText;
+
+  QString expectedText;
+  int longestNamesStringLengt;
+  int maxLength;
+  QString result;
+
+  SECTION("source,longest:10,ml:50")
+  {
+    ParserDefinitionPositionalArgument sourceArgument( QLatin1String("source"), QLatin1String("Source file") );
+    longestNamesStringLengt = 10;
+    maxLength = 50;
+
+    expectedText = QLatin1String("  source      Source file");
+    result = wrapText(sourceArgument, longestNamesStringLengt, maxLength);
+    REQUIRE( expectedText == result );
+  }
 }
 
 TEST_CASE("getOptionsHelpText")
