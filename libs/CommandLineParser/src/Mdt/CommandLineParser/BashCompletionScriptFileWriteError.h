@@ -18,4 +18,30 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "CommandLineParser.h"
+#ifndef MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_SCRIPT_FILE_WRITE_ERROR_H
+#define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_SCRIPT_FILE_WRITE_ERROR_H
+
+#include "mdt_commandlineparser_export.h"
+#include <stdexcept>
+#include <string>
+
+namespace Mdt{ namespace CommandLineParser{
+
+  /*! \brief Error thrown by BashCompletionGenerator
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT BashCompletionScriptFileWriteError : public std::runtime_error
+  {
+   public:
+
+    /*! \brief Constructor
+     */
+    explicit BashCompletionScriptFileWriteError(const std::string & what)
+      : runtime_error(what)
+    {
+    }
+
+  };
+
+}} // namespace Mdt{ namespace CommandLineParser{
+
+#endif // #ifndef MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_SCRIPT_FILE_WRITE_ERROR_H

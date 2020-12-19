@@ -40,6 +40,10 @@ CommandLineParser::CommandLineParser(QObject *parent)
   mParser.addHelpOption();
 
   addCommandArgument();
+  
+  mParserDefinition.addHelpOption();
+  addGetSharedLibrariesTargetDependsOnCommand();
+  addCopySharedLibrariesTargetDependsOnCommand();
 }
 
 CommandLineParserResult CommandLineParser::process()
@@ -100,7 +104,7 @@ CommandLineParserResult CommandLineParser::processCopySharedLibrariesTargetDepen
 void CommandLineParser::setApplicationDescription()
 {
   const QString description = tr(
-    "Helper tool to deploy binary targets and its dependencies, like shared libraries and plugins.\n"
+    "\nHelper tool to deploy binary targets and its dependencies, like shared libraries and plugins.\n"
     "This tool is divided in commands (subcommands). Each command has its own positional arguments and options.\n"
     "To get help, pass command --help (or command -h).\n"
     "Example:\n"
@@ -113,7 +117,7 @@ void CommandLineParser::setApplicationDescription()
 
 void CommandLineParser::addCommandArgument()
 {
-  const QString description = tr("Command to execute. Available commands are:\n%1\n%2")
+  const QString description = tr("Command to execute. Available commands are:\n%1\n%2  Longlong long long Longlong long longLonglong long longLonglong long longLonglong long longLonglong long longLonglong long longLonglong long longLonglong long longLonglong long longLonglong long longLonglong long longLonglong long longLonglong long long")
                               .arg( commandName( CommandLineCommand::GetSharedLibrariesTargetDependsOn),
                                     commandName( CommandLineCommand::CopySharedLibrariesTargetDependsOn) );
 

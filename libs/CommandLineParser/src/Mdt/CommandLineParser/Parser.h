@@ -18,12 +18,12 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_COMMAND_LINE_PARSER_H
-#define MDT_COMMAND_LINE_PARSER_H
+#ifndef MDT_COMMAND_LINE_PARSER_PARSER_H
+#define MDT_COMMAND_LINE_PARSER_PARSER_H
 
 #include "mdt_commandlineparser_export.h"
 
-namespace Mdt{
+namespace Mdt{ namespace CommandLineParser{
 
   /*! \brief Helper class to create command line parsers
    *
@@ -54,10 +54,10 @@ namespace Mdt{
    * for exaple to list available sub-commands in the help,
    * or to generate a Bash-completion script.
    */
-  class MDT_COMMANDLINEPARSER_EXPORT CommandLineParser
+  class MDT_COMMANDLINEPARSER_EXPORT Parser
   {
   };
 
-} // namespace Mdt{
+}} // namespace Mdt{ namespace CommandLineParser{
 
-#endif // #ifndef MDT_COMMAND_LINE_PARSER_H
+#endif // #ifndef MDT_COMMAND_LINE_PARSER_PARSER_H

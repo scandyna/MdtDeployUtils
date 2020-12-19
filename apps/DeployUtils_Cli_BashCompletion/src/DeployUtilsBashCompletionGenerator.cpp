@@ -20,8 +20,8 @@
  ****************************************************************************/
 #include "DeployUtilsBashCompletionGenerator.h"
 #include "CommandLineParser.h"
-#include "BashCompletionGenerator.h"
-#include "BashCompletionGeneratorCommand.h"
+#include "Mdt/CommandLineParser/BashCompletionGenerator.h"
+#include "Mdt/CommandLineParser/BashCompletionGeneratorCommand.h"
 #include <cassert>
 
 #include <iostream>
@@ -31,12 +31,12 @@ void generateBashCompletionScript(const std::string& filePath)
   assert( !filePath.empty() );
 
   CommandLineParser parser;
-  BashCompletionGenerator generator;
+  Mdt::CommandLineParser::BashCompletionGenerator generator;
 
   generator.setApplicationName("mdtdeployutils");
 
-  const auto mainCommand = BashCompletionGeneratorCommand::fromParser( parser.parser(), "main" );
-  generator.setMainCommand(mainCommand);
+//   const auto mainCommand = BashCompletionGeneratorCommand::mainCommandFromParser( parser.parser() );
+//   generator.setMainCommand(mainCommand);
 
   std::cout << generator.generateScript() << std::endl;
 

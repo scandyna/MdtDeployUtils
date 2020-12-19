@@ -1,28 +1,30 @@
 /****************************************************************************
  **
- ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
+ ** Copyright (C) 2011-2020 Philippe Steinmann.
  **
- ** Copyright (C) 2020-2020 Philippe Steinmann.
+ ** This file is part of MdtApplication library.
  **
- ** This program is free software: you can redistribute it and/or modify
- ** it under the terms of the GNU General Public License as published by
+ ** MdtApplication is free software: you can redistribute it and/or modify
+ ** it under the terms of the GNU Lesser General Public License as published by
  ** the Free Software Foundation, either version 3 of the License, or
  ** (at your option) any later version.
  **
- ** This program is distributed in the hope that it will be useful,
+ ** MdtApplication is distributed in the hope that it will be useful,
  ** but WITHOUT ANY WARRANTY; without even the implied warranty of
  ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- ** GNU General Public License for more details.
+ ** GNU Lesser General Public License for more details.
  **
- ** You should have received a copy of the GNU General Public License
- ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ ** You should have received a copy of the GNU Lesser General Public License
+ ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
 #include "BashCompletionGenerator.h"
 #include "BashCompletionGenerator_Impl.h"
-#include "Mdt/DeployUtils/Algorithm.h"
+#include "Algorithm.h"
 #include <cassert>
 #include <fstream>
+
+namespace Mdt{ namespace CommandLineParser{
 
 void BashCompletionGenerator::setApplicationName(const std::string& name)
 {
@@ -52,7 +54,7 @@ std::string BashCompletionGenerator::generateScript() const
   assert( !mMainCommand.isEmpty() );
 
   using namespace std::string_literals;
-  using namespace BashCompletionGenerator_Impl;
+  using namespace Impl;
 
   const std::string scriptInclude = "#/usr/bin/env bash";
   const std::string completeFunctionName = "_"s + mApplicationName + "_completions()";
@@ -91,3 +93,5 @@ void BashCompletionGenerator::generateScriptToFile(const std::string & directory
     throw BashCompletionScriptFileWriteError(what);
   }
 }
+
+}} // namespace Mdt{ namespace CommandLineParser{

@@ -29,17 +29,25 @@ mdt_add_test(
 )
 
 mdt_add_test(
-  NAME CommandLineParserTest
-  TARGET commandLineParserTest
-  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main
-  SOURCE_FILES
-    src/CommandLineParserTest.cpp
-)
-
-mdt_add_test(
   NAME ParserDefinitionTest
   TARGET parserDefinitionTest
   DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main
   SOURCE_FILES
     src/ParserDefinitionTest.cpp
+)
+
+mdt_add_test(
+  NAME ParserTest
+  TARGET parserTest
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main
+  SOURCE_FILES
+    src/ParserTest.cpp
+)
+
+mdt_add_test(
+  NAME BashCompletionGeneratorTest
+  TARGET bashCompletionGeneratorTest
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main
+  SOURCE_FILES
+    src/BashCompletionGeneratorTest.cpp
 )

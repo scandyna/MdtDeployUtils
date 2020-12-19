@@ -19,8 +19,9 @@
  **
  ****************************************************************************/
 #include "catch2/catch.hpp"
-#include "BashCompletionGenerator.h"
-#include "BashCompletionGenerator_Impl.h"
+#include "Mdt/CommandLineParser/BashCompletionGenerator.h"
+#include "Mdt/CommandLineParser/BashCompletionGenerator_Impl.h"
+#include <QCommandLineParser>
 #include <QTemporaryDir>
 #include <QDir>
 #include <QString>
@@ -29,6 +30,8 @@
 #include <QFileInfo>
 
 #include <iostream>
+
+using namespace Mdt::CommandLineParser;
 
 bool fileExists(const QTemporaryDir & dir, const std::string & fileName)
 {
@@ -88,6 +91,41 @@ TEST_CASE("ApplicationName")
   generator.setApplicationName("mytool");
   REQUIRE( generator.applicationName() == std::string("mytool") );
 }
+
+// TEST_CASE("commandFromQCommandLineParser")
+// {
+//   QCommandLineParser parser;
+//   parser.addHelpOption();
+//   parser.addPositionalArgument( QLatin1String("source"), QLatin1String("source description") );
+//   parser.addPositionalArgument( QLatin1String("destination"), QLatin1String("destination description") );
+//   REQUIRE(  );
+// 
+//   SECTION("main command")
+//   {
+//     const auto command = BashCompletionGeneratorCommand::mainCommandFromParser(parser);
+//     REQUIRE( command.arguments().size() == 2 );
+//     REQUIRE( command.arguments()[0] == "source" );
+//     REQUIRE( command.arguments()[1] == "destination" );
+//     REQUIRE( command.options().size() == 1 );
+//     REQUIRE( command.options()[0].hasShortName() );
+//     REQUIRE( command.options()[0].shortNameWithDash() == "-h" );
+//     REQUIRE( command.options()[0].nameWithDashes() == "--help" );
+//   }
+// 
+//   SECTION("subCommand")
+//   {
+//     const auto command = BashCompletionGeneratorCommand::subCommandFromParser(parser, "copy");
+//     REQUIRE( command.name() == "copy" );
+//     REQUIRE( command.arguments().size() == 2 );
+//     REQUIRE( command.arguments()[0] == "source" );
+//     REQUIRE( command.arguments()[1] == "destination" );
+//     REQUIRE( command.options().size() == 1 );
+//     REQUIRE( command.options()[0].hasShortName() );
+//     REQUIRE( command.options()[0].shortNameWithDash() == "-h" );
+//     REQUIRE( command.options()[0].nameWithDashes() == "--help" );
+//   }
+// 
+// }
 
 TEST_CASE("generateScriptToFile")
 {

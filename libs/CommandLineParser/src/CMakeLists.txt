@@ -22,12 +22,16 @@ include(GenerateExportHeader)
 include(MdtInstallLibrary)
 
 add_library(Mdt_CommandLineParser
-  Mdt/CommandLineParser.cpp
   Mdt/CommandLineParser/Algorithm.cpp
   Mdt/CommandLineParser/ParserDefinitionOption.cpp
   Mdt/CommandLineParser/ParserDefinitionPositionalArgument.cpp
   Mdt/CommandLineParser/ParserDefinitionCommand.cpp
   Mdt/CommandLineParser/ParserDefinition.cpp
+  Mdt/CommandLineParser/Parser.cpp
+  Mdt/CommandLineParser/BashCompletionGeneratorArgument.cpp
+  Mdt/CommandLineParser/BashCompletionGeneratorOption.cpp
+  Mdt/CommandLineParser/BashCompletionGeneratorCommand.cpp
+  Mdt/CommandLineParser/BashCompletionGenerator.cpp
 )
 add_library(Mdt::CommandLineParser ALIAS Mdt_CommandLineParser)
 

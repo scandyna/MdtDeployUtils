@@ -9,6 +9,8 @@ add_library(Mdt_DeployUtils_Cli STATIC
 )
 add_library(Mdt::DeployUtils_Cli ALIAS Mdt_DeployUtils_Cli)
 
+target_compile_features(Mdt_DeployUtils_Cli PUBLIC cxx_std_14)
+
 if(BUILD_USE_IPO_LTO)
   set_target_properties(Mdt_DeployUtils_Cli
     PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE
