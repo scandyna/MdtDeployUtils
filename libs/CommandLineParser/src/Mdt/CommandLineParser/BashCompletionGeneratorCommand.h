@@ -23,11 +23,10 @@
 
 #include "BashCompletionGeneratorOption.h"
 #include "mdt_commandlineparser_export.h"
-// #include <QCommandLineParser>
 #include <QString>
-#include <string>
-#include <vector>
+#include <QStringList>
 #include <cassert>
+#include <vector>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -49,10 +48,10 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \pre \a name must not be empty
      */
-    BashCompletionGeneratorCommand(const std::string & name)
-    : mName(name)
+    BashCompletionGeneratorCommand(const QString & name)
+     : mName(name)
     {
-      assert( !name.empty() );
+      assert( !name.trimmed().isEmpty() );
     }
 
     /*! \brief Copy construct a command from \a other
@@ -75,12 +74,12 @@ namespace Mdt{ namespace CommandLineParser{
      */
     bool hasName() const noexcept
     {
-      return !mName.empty();
+      return !mName.isEmpty();
     }
 
     /*! \brief Get the name of this command
      */
-    const std::string & name() const noexcept
+    const QString & name() const noexcept
     {
       return mName;
     }
@@ -89,16 +88,16 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \pre \a arg must not be empty
      */
-    void addArgument(const std::string & arg)
+    void addArgument(const QString & arg)
     {
-      assert( !arg.empty() );
+      assert( !arg.trimmed().isEmpty() );
 
       mArguments.push_back(arg);
     }
 
     /*! \brief Get the list of arguments of this command
      */
-    const std::vector<std::string> & arguments() const noexcept
+    const QStringList & arguments() const noexcept
     {
       return mArguments;
     }
@@ -109,7 +108,7 @@ namespace Mdt{ namespace CommandLineParser{
      */
     bool isEmpty() const noexcept
     {
-      return mArguments.empty() && mOptions.empty();
+      return mArguments.isEmpty() && mOptions.empty();
     }
 
     /*! \brief Add a command line option
@@ -128,9 +127,9 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \todo enforce those precontidions
      */
-    void addOption(char shortName, const std::string & name)
+    void addOption(char shortName, const QString & name)
     {
-      assert( !name.empty() );
+      assert( !name.trimmed().isEmpty() );
 
       addOption( BashCompletionGeneratorOption(shortName, name) );
     }
@@ -143,9 +142,9 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \todo enforce those precontidions
      */
-    void addOption(const std::string & name)
+    void addOption(const QString & name)
     {
-      assert( !name.empty() );
+      assert( !name.trimmed().isEmpty() );
 
       addOption( BashCompletionGeneratorOption(name) );
     }
@@ -192,8 +191,8 @@ namespace Mdt{ namespace CommandLineParser{
   //   void addArgumentsAndOptionsFromParserToCommand(const QCommandLineParser & parser, BashCompletionGeneratorCommand & command);
 
     bool mDirectoryCompletionEnabled = false;
-    std::string mName;
-    std::vector<std::string> mArguments;
+    QString mName;
+    QStringList mArguments;
     std::vector<BashCompletionGeneratorOption> mOptions;
   };
 

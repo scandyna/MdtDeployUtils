@@ -22,6 +22,7 @@
 #include "CommandLineParser.h"
 #include "Mdt/CommandLineParser/BashCompletionGenerator.h"
 #include "Mdt/CommandLineParser/BashCompletionGeneratorCommand.h"
+#include <QLatin1String>
 #include <cassert>
 
 #include <iostream>
@@ -33,12 +34,12 @@ void generateBashCompletionScript(const std::string& filePath)
   CommandLineParser parser;
   Mdt::CommandLineParser::BashCompletionGenerator generator;
 
-  generator.setApplicationName("mdtdeployutils");
+  generator.setApplicationName( QLatin1String("mdtdeployutils") );
 
 //   const auto mainCommand = BashCompletionGeneratorCommand::mainCommandFromParser( parser.parser() );
 //   generator.setMainCommand(mainCommand);
 
-  std::cout << generator.generateScript() << std::endl;
+  std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
 
   std::cout << "generating to " << filePath << std::endl;
 }

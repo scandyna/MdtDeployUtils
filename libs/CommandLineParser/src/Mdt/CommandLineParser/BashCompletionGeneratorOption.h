@@ -21,9 +21,13 @@
 #ifndef MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_OPTION_H
 #define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_OPTION_H
 
+#include "Algorithm.h"
 #include "mdt_commandlineparser_export.h"
-#include <string>
+#include <QString>
+#include <QLatin1Char>
+#include <QLatin1String>
 #include <cassert>
+
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -42,11 +46,11 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \todo enforce those precontidions
      */
-    explicit BashCompletionGeneratorOption(char shortName, const std::string & name)
+    explicit BashCompletionGeneratorOption(char shortName, const QString & name)
     : mShortName(shortName),
       mName(name)
     {
-      assert( !name.empty() );
+      assert( !name.trimmed().isEmpty() );
     }
 
     /*! \brief Construct a command line option
@@ -57,11 +61,11 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \todo enforce those precontidions
      */
-    explicit BashCompletionGeneratorOption(const std::string & name)
+    explicit BashCompletionGeneratorOption(const QString & name)
     : mShortName('\0'),
       mName(name)
     {
-      assert( !name.empty() );
+      assert( !name.trimmed().isEmpty() );
     }
 
     /*! \brief Check if this command line option has a short name
@@ -76,24 +80,24 @@ namespace Mdt{ namespace CommandLineParser{
      * \pre must only be called if this command line option has a short name
      * \sa hasShortName()
      */
-    std::string shortNameWithDash() const
+    QString shortNameWithDash() const
     {
       assert( hasShortName() );
 
-      return std::string("-") + mShortName;
+      return qStringFromChars('-', mShortName);
     }
 
     /*! \brief Get the name with dashes
      */
-    std::string nameWithDashes() const
+    QString nameWithDashes() const
     {
-      return std::string("--") + mName;
+      return QLatin1String("--") + mName;
     }
 
    private:
 
     char mShortName;
-    std::string mName;
+    QString mName;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

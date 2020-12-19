@@ -31,6 +31,16 @@
 
 namespace Mdt{ namespace CommandLineParser{
 
+  /*! \brief Get a QString out from chars \a a and \a b
+   */
+  inline
+  QString qStringFromChars(char a, char b)
+  {
+    char buffer[2] = {a,b};
+
+    return QString::fromLatin1(buffer, 2);
+  }
+
   /*! \brief Joint each element in \a list to a single string with each element seperated by given \a separator
    *
    * Extract is a functor to extract the string from a element in \a list ,

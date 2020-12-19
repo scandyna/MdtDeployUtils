@@ -25,15 +25,19 @@
 #include "BashCompletionGeneratorCommand.h"
 #include "BashCompletionGeneratorOption.h"
 #include "Algorithm.h"
-#include <string>
-#include <vector>
+#include <QString>
+#include <QStringList>
+#include <QLatin1String>
+#include <QChar>
+#include <QLatin1Char>
+#include <QStringBuilder>
 
 namespace Mdt{ namespace CommandLineParser{
 
   namespace Impl{
 
     inline
-    void addCommandOptionToWordList(const BashCompletionGeneratorOption & option, std::vector<std::string> & wordList)
+    void addCommandOptionToWordList(const BashCompletionGeneratorOption & option, QStringList & wordList)
     {
       if( option.hasShortName() ){
         wordList.push_back( option.shortNameWithDash() );
@@ -42,7 +46,7 @@ namespace Mdt{ namespace CommandLineParser{
     }
 
     inline
-    void addCommandOptionsToWordList(const BashCompletionGeneratorCommand& command, std::vector<std::string> & wordList)
+    void addCommandOptionsToWordList(const BashCompletionGeneratorCommand& command, QStringList & wordList)
     {
       for( const auto & option : command.options() ){
         addCommandOptionToWordList(option, wordList);
@@ -50,43 +54,39 @@ namespace Mdt{ namespace CommandLineParser{
     }
 
     inline
-    void addCommandArgumentsAndOptionsToWordList(const BashCompletionGeneratorCommand& command, std::vector<std::string> & wordList)
+    void addCommandArgumentsAndOptionsToWordList(const BashCompletionGeneratorCommand& command, QStringList & wordList)
     {
-      appendToStdVector(command.arguments(), wordList);
+      wordList.append( command.arguments() );
       addCommandOptionsToWordList(command, wordList);
     }
 
     /// \todo should restrict level range
     inline
-    std::string generateCompreplyUsingCompgenWithWordList(int level, const BashCompletionGeneratorCommand& command)
+    QString generateCompreplyUsingCompgenWithWordList(int level, const BashCompletionGeneratorCommand & command)
     {
-      using namespace std::string_literals;
-
-      std::vector<std::string> wordList;
+      QStringList wordList;
       addCommandArgumentsAndOptionsToWordList(command, wordList);
-      const std::string wordListStr = joinToStdString(wordList, ' ');
-      const std::string levelStr = std::to_string(level);
+      const QString wordListStr = wordList.join( QLatin1Char(' ') );
+      const QString levelStr = QString::number(level);
 
-      return "    COMPREPLY=($(compgen -W \""s + wordListStr + "\" -- \"${COMP_WORDS[" + levelStr + "]}\"))";
+      return QLatin1String("    COMPREPLY=($(compgen -W \"") % wordListStr % QLatin1String("\" -- \"${COMP_WORDS[") % levelStr % QLatin1String("]}\"))");
     }
 
     inline
-    std::string generateAddCompreplyUsingCompgenForDirectoryCompletionIfEnabled(const BashCompletionGeneratorCommand & command)
+    QString generateAddCompreplyUsingCompgenForDirectoryCompletionIfEnabled(const BashCompletionGeneratorCommand & command)
     {
       if( command.directoryCompletionEnabled() ){
-        return "    COMPREPLY+=($(compgen -A directory))\n";
+        return QLatin1String("    COMPREPLY+=($(compgen -A directory))\n");
       }
-      return "";
+      return QString();
     }
 
     inline
-    std::string generateCommandBlockIfStatement(int level, const BashCompletionGeneratorCommand& command)
+    QString generateCommandBlockIfStatement(int level, const BashCompletionGeneratorCommand & command)
     {
-      using namespace std::string_literals;
-
-      std::string statement = "if [ \"${#COMP_WORDS[@]}\" == \""s + std::to_string(level+1) + "\" ]";
+      QString statement = QLatin1String("if [ \"${#COMP_WORDS[@]}\" == \"") % QString::number(level+1) % QLatin1String("\" ]");
       if( (level > 1)&&(command.hasName()) ){
-        statement += " && [ \"${COMP_WORDS[" + std::to_string(level-1) + "]}\" == \"" + command.name() + "\" ]";
+        statement += QLatin1String(" && [ \"${COMP_WORDS[") % QString::number(level-1) % QLatin1String("]}\" == \"") % command.name() % QLatin1String("\" ]");
       }
 
       return statement;
@@ -94,42 +94,41 @@ namespace Mdt{ namespace CommandLineParser{
 
     /// \todo should restrict level range
     inline
-    std::string generateCommandBlock(int level, const BashCompletionGeneratorCommand& command, const std::string & comment)
+    QString generateCommandBlock(int level, const BashCompletionGeneratorCommand & command, const QString & comment)
     {
-      using namespace std::string_literals;
+      const QString blockComment = QLatin1String("  # ") % comment;
+      const QChar nl = QLatin1Char('\n');
 
-      const std::string blockComment = "  # "s + comment;
-
-      return blockComment + "\n"
-          + "  " + generateCommandBlockIfStatement(level, command) + "\n"
-          + "  then\n"
-          +      generateCompreplyUsingCompgenWithWordList(level, command) + "\n"
-          +      generateAddCompreplyUsingCompgenForDirectoryCompletionIfEnabled(command)
-          + "  fi";
+      return blockComment % nl
+          % QLatin1String("  ") % generateCommandBlockIfStatement(level, command) % nl
+          % QLatin1String("  then\n")
+          %      generateCompreplyUsingCompgenWithWordList(level, command) % nl
+          %      generateAddCompreplyUsingCompgenForDirectoryCompletionIfEnabled(command)
+          % QLatin1String("  fi");
     }
 
     inline
-    std::string generateMainCommandBlock(const BashCompletionGeneratorCommand& command)
+    QString generateMainCommandBlock(const BashCompletionGeneratorCommand& command)
     {
-      return generateCommandBlock(1, command, std::string("Arguments available for the main command"));
+      return generateCommandBlock( 1, command, QLatin1String("Arguments available for the main command") );
     }
 
     inline
-    std::string generateSubCommandBlock(const BashCompletionGeneratorCommand& command)
+    QString generateSubCommandBlock(const BashCompletionGeneratorCommand& command)
     {
-      return generateCommandBlock(2, command, std::string("Arguments available for the ") + command.name() + " command");
+      return generateCommandBlock( 2, command, QLatin1String("Arguments available for the ") % command.name() % QLatin1String(" command") );
     }
 
     inline
-    std::string generateSubCommandBlocksIfAny(const std::vector<BashCompletionGeneratorCommand>& commands)
+    QString generateSubCommandBlocksIfAny(const std::vector<BashCompletionGeneratorCommand>& commands)
     {
       if( commands.empty() ){
-        return "";
+        return QString();
       }
 
-      std::string blocks;
+      QString blocks;
       for(const BashCompletionGeneratorCommand & command : commands){
-        blocks += "\n\n" + generateSubCommandBlock(command);
+        blocks += QLatin1String("\n\n") % generateSubCommandBlock(command);
       }
 
       return blocks;

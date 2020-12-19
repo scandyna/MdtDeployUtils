@@ -21,14 +21,19 @@
 #include "BashCompletionGenerator.h"
 #include "BashCompletionGenerator_Impl.h"
 #include "Algorithm.h"
+#include <QLatin1Char>
+#include <QLatin1String>
+#include <QStringBuilder>
 #include <cassert>
 #include <fstream>
 
+#include <QByteArray>
+
 namespace Mdt{ namespace CommandLineParser{
 
-void BashCompletionGenerator::setApplicationName(const std::string& name)
+void BashCompletionGenerator::setApplicationName(const QString & name)
 {
-  assert( !name.empty() );
+  assert( !name.trimmed().isEmpty() );
 
   mApplicationName = name;
 }
@@ -48,48 +53,48 @@ void BashCompletionGenerator::addSubCommand(const BashCompletionGeneratorCommand
   mSubCommands.push_back(command);
 }
 
-std::string BashCompletionGenerator::generateScript() const
+QString BashCompletionGenerator::generateScript() const
 {
-  assert( !mApplicationName.empty() );
+  assert( !mApplicationName.isEmpty() );
   assert( !mMainCommand.isEmpty() );
 
-  using namespace std::string_literals;
+//   using namespace std::string_literals;
   using namespace Impl;
 
-  const std::string scriptInclude = "#/usr/bin/env bash";
-  const std::string completeFunctionName = "_"s + mApplicationName + "_completions()";
-  const std::string completeCommand = "complete -F _"s + mApplicationName + "_completions " + mApplicationName;
+  const QString scriptInclude = QLatin1String("#/usr/bin/env bash");
+  const QString completeFunctionName = QLatin1Char('_') % mApplicationName % QLatin1String("_completions()");
+  const QString completeCommand = QLatin1String("complete -F _") % mApplicationName % QLatin1String("_completions ") % mApplicationName;
 
-  const std::string completeFunction
+  const QString completeFunction
     = completeFunctionName
-    + "\n{\n"
-    + generateMainCommandBlock(mMainCommand)
-    + generateSubCommandBlocksIfAny(mSubCommands)
-    + "\n}";
+    % QLatin1String("\n{\n")
+    % generateMainCommandBlock(mMainCommand)
+    % generateSubCommandBlocksIfAny(mSubCommands)
+    % QLatin1String("\n}");
 
-  return scriptInclude + "\n\n" + completeFunction + "\n\n" + completeCommand + "\n";
+  return scriptInclude % QLatin1String("\n\n") % completeFunction % QLatin1String("\n\n") % completeCommand % QLatin1String("\n");
 }
 
-void BashCompletionGenerator::generateScriptToFile(const std::string & directoryPath) const
+void BashCompletionGenerator::generateScriptToFile(const QString & directoryPath) const
 {
-  assert( !directoryPath.empty() );
-  assert( !mApplicationName.empty() );
+  assert( !directoryPath.trimmed().isEmpty() );
+  assert( !mApplicationName.isEmpty() );
   assert( !mMainCommand.isEmpty() );
 
-  const std::string filePath = directoryPath + "/" + mApplicationName + "-completion.bash";
-  std::ofstream stream(filePath, std::ios_base::out | std::ios_base::trunc);
+  const QString filePath = directoryPath % QLatin1Char('/') % mApplicationName % QLatin1String("-completion.bash");
+  std::ofstream stream(filePath.toLocal8Bit().toStdString(), std::ios_base::out | std::ios_base::trunc);
   if( stream.bad() || stream.fail() ){
     stream.close();
-    const std::string what = "open file '" + filePath + "' failed";
+    const QString what = tr("open file '%1' failed").arg(filePath);
     throw BashCompletionScriptFileWriteError(what);
   }
 
   try{
-    stream << generateScript();
+    stream << generateScript().toLocal8Bit().toStdString();
     stream.close();
   }catch(...){
     stream.close();
-    const std::string what = "write file '" + filePath + "' failed";
+    const QString what = tr("write file '%1' failed").arg(filePath);
     throw BashCompletionScriptFileWriteError(what);
   }
 }

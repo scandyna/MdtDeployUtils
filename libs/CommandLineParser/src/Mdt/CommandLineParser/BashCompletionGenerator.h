@@ -24,7 +24,8 @@
 #include "BashCompletionGeneratorCommand.h"
 #include "BashCompletionScriptFileWriteError.h"
 #include "mdt_commandlineparser_export.h"
-#include <string>
+#include <QCoreApplication>
+#include <QString>
 #include <vector>
 
 namespace Mdt{ namespace CommandLineParser{
@@ -47,17 +48,19 @@ namespace Mdt{ namespace CommandLineParser{
    */
   class MDT_COMMANDLINEPARSER_EXPORT BashCompletionGenerator
   {
-  public:
+    Q_DECLARE_TR_FUNCTIONS(BashCompletionGenerator)
+
+   public:
 
     /*! \brief Set application name
      *
      * \pre \a name must not be empty
      */
-    void setApplicationName(const std::string & name);
+    void setApplicationName(const QString & name);
 
     /*! \brief Get application name
      */
-    const std::string & applicationName() const noexcept
+    const QString & applicationName() const noexcept
     {
       return mApplicationName;
     }
@@ -83,7 +86,7 @@ namespace Mdt{ namespace CommandLineParser{
      * \sa setApplicationName()
      * \sa setMainCommand()
      */
-    std::string generateScript() const;
+    QString generateScript() const;
 
     /*! \brief Generate the script to a file in a directory
      *
@@ -94,12 +97,14 @@ namespace Mdt{ namespace CommandLineParser{
      * \pre \a directoryPath must not be empty
      * \warning if a file of the form applicationName-completion.bash exists in the given directory, it will be overwritten
      * \exception BashCompletionScriptFileWriteError
+     *
+     * \todo Rewrite with QFile or QFileSaver
      */
-    void generateScriptToFile(const std::string & directoryPath) const;
+    void generateScriptToFile(const QString & directoryPath) const;
 
   private:
 
-    std::string mApplicationName;
+    QString mApplicationName;
     BashCompletionGeneratorCommand mMainCommand;
     std::vector<BashCompletionGeneratorCommand> mSubCommands;
   };

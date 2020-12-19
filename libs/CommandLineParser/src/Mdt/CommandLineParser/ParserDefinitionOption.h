@@ -21,6 +21,7 @@
 #ifndef MDT_COMMAND_LINE_PARSER_PARSER_DEFINITION_OPTION_H
 #define MDT_COMMAND_LINE_PARSER_PARSER_DEFINITION_OPTION_H
 
+#include "Algorithm.h"
 #include "mdt_commandlineparser_export.h"
 #include <QChar>
 #include <QString>
@@ -98,9 +99,7 @@ namespace Mdt{ namespace CommandLineParser{
     {
       assert( hasShortName() );
 
-      char buffer[2] = {'-',mShortName};
-
-      return QString::fromLatin1(buffer, 2);
+      return qStringFromChars('-', mShortName);
     }
 
     /*! \brief Get the length of the name

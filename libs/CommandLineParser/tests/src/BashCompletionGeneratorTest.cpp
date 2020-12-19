@@ -33,9 +33,9 @@
 
 using namespace Mdt::CommandLineParser;
 
-bool fileExists(const QTemporaryDir & dir, const std::string & fileName)
+bool fileExists(const QTemporaryDir & dir, const QString & fileName)
 {
-  const QString filePath = QDir::cleanPath(dir.path() + QLatin1String("/") + QString::fromLocal8Bit( QByteArray::fromStdString(fileName) ) );
+  const QString filePath = QDir::cleanPath(dir.path() + QLatin1String("/") + fileName);
 
   return QFileInfo::exists(filePath);
 }
@@ -44,41 +44,41 @@ TEST_CASE("option")
 {
   SECTION("short name and name")
   {
-    BashCompletionGeneratorOption option('h', "help");
+    BashCompletionGeneratorOption option( 'h', QLatin1String("help") );
     REQUIRE( option.hasShortName() );
-    REQUIRE( option.shortNameWithDash() == "-h" );
-    REQUIRE( option.nameWithDashes() == "--help" );
+    REQUIRE( option.shortNameWithDash() == QLatin1String("-h") );
+    REQUIRE( option.nameWithDashes() == QLatin1String("--help") );
   }
 
   SECTION("name only")
   {
-    BashCompletionGeneratorOption option("help");
+    BashCompletionGeneratorOption option( QLatin1String("help") );
     REQUIRE( !option.hasShortName() );
-    REQUIRE( option.nameWithDashes() == "--help" );
+    REQUIRE( option.nameWithDashes() == QLatin1String("--help") );
   }
 }
 
 TEST_CASE("Command_isEmpty")
 {
-  BashCompletionGeneratorCommand command("command");
+  BashCompletionGeneratorCommand command( QLatin1String("command") );
   REQUIRE( command.isEmpty() );
 
   SECTION("arguments")
   {
-    command.addArgument("arg-a");
+    command.addArgument( QLatin1String("arg-a") );
     REQUIRE( !command.isEmpty() );
   }
 
   SECTION("options")
   {
-    command.addOption('h', "help");
+    command.addOption( 'h', QLatin1String("help") );
     REQUIRE( !command.isEmpty() );
   }
 
   SECTION("arguments and options")
   {
-    command.addArgument("arg-a");
-    command.addOption('h', "help");
+    command.addArgument( QLatin1String("arg-a") );
+    command.addOption( 'h', QLatin1String("help") );
     REQUIRE( !command.isEmpty() );
   }
 }
@@ -86,10 +86,10 @@ TEST_CASE("Command_isEmpty")
 TEST_CASE("ApplicationName")
 {
   BashCompletionGenerator generator;
-  REQUIRE( generator.applicationName().empty() );
+  REQUIRE( generator.applicationName().isEmpty() );
 
-  generator.setApplicationName("mytool");
-  REQUIRE( generator.applicationName() == std::string("mytool") );
+  generator.setApplicationName( QLatin1String("mytool") );
+  REQUIRE( generator.applicationName() == QLatin1String("mytool") );
 }
 
 // TEST_CASE("commandFromQCommandLineParser")
@@ -133,25 +133,25 @@ TEST_CASE("generateScriptToFile")
   REQUIRE( dir.isValid() );
 
   BashCompletionGenerator generator;
-  generator.setApplicationName("mytool");
+  generator.setApplicationName( QLatin1String("mytool") );
 
   BashCompletionGeneratorCommand mainCommand;
-  mainCommand.addArgument("copy");
-  mainCommand.addOption('h', "help");
+  mainCommand.addArgument( QLatin1String("copy") );
+  mainCommand.addOption( 'h', QLatin1String("help") );
   generator.setMainCommand(mainCommand);
 
-  BashCompletionGeneratorCommand copyCommand("copy");
-  copyCommand.addArgument("source");
-  copyCommand.addArgument("destination");
+  BashCompletionGeneratorCommand copyCommand( QLatin1String("copy") );
+  copyCommand.addArgument( QLatin1String("source") );
+  copyCommand.addArgument( QLatin1String("destination") );
   copyCommand.setDirectoryCompletionEnabled(true);
-  copyCommand.addOption('h', "help");
-  copyCommand.addOption('i', "interactive");
+  copyCommand.addOption( 'h', QLatin1String("help") );
+  copyCommand.addOption( 'i', QLatin1String("interactive") );
   generator.addSubCommand(copyCommand);
 
-  std::cout << generator.generateScript() << std::endl;
+  std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
 
-  const std::string fileName = "mytool-completion.bash";
+  const QString fileName = QLatin1String("mytool-completion.bash");
   REQUIRE( !fileExists(dir, fileName) );
-  generator.generateScriptToFile( dir.path().toLocal8Bit().toStdString() );
+  generator.generateScriptToFile( dir.path() );
   REQUIRE( fileExists(dir, fileName) );
 }

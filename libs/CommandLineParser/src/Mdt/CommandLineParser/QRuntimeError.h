@@ -18,30 +18,30 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_SCRIPT_FILE_WRITE_ERROR_H
-#define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_SCRIPT_FILE_WRITE_ERROR_H
+#ifndef MDT_COMMAND_LINE_PARSER_QRUNTIME_ERROR_H
+#define MDT_COMMAND_LINE_PARSER_QRUNTIME_ERROR_H
 
-#include "QRuntimeError.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
+#include <QByteArray>
+#include <stdexcept>
 
 namespace Mdt{ namespace CommandLineParser{
 
-  /*! \brief Error thrown by BashCompletionGenerator
+  /*! \brief Base class for runtime exceptions using QString messages
    */
-  class MDT_COMMANDLINEPARSER_EXPORT BashCompletionScriptFileWriteError : public QRuntimeError
+  class MDT_COMMANDLINEPARSER_EXPORT QRuntimeError : public std::runtime_error
   {
    public:
 
     /*! \brief Constructor
      */
-    explicit BashCompletionScriptFileWriteError(const QString & what)
-      : QRuntimeError(what)
+    explicit QRuntimeError(const QString & what)
+     : runtime_error( what.toLocal8Bit().toStdString() )
     {
     }
-
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{
 
-#endif // #ifndef MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_SCRIPT_FILE_WRITE_ERROR_H
+#endif // #ifndef MDT_COMMAND_LINE_PARSER_QRUNTIME_ERROR_H
