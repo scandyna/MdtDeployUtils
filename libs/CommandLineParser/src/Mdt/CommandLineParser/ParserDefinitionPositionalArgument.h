@@ -21,6 +21,7 @@
 #ifndef MDT_COMMAND_LINE_PARSER_PARSER_DEFINITION_POSITIONAL_ARGUMENT_H
 #define MDT_COMMAND_LINE_PARSER_PARSER_DEFINITION_POSITIONAL_ARGUMENT_H
 
+#include "ArgumentType.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
 #include <cassert>
@@ -39,8 +40,9 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \pre \a name must not be empty
      */
-    ParserDefinitionPositionalArgument(const QString & name, const QString & description, const QString & syntax = QString())
-     : mName( name.trimmed() ),
+    ParserDefinitionPositionalArgument(ArgumentType type, const QString & name, const QString & description, const QString & syntax = QString())
+     : mType(type),
+       mName( name.trimmed() ),
        mDescription( description.trimmed() ),
        mSyntax( syntax.trimmed() )
     {
@@ -62,6 +64,13 @@ namespace Mdt{ namespace CommandLineParser{
     /*! \brief Move assign \a other to this argument
      */
     ParserDefinitionPositionalArgument & operator=(ParserDefinitionPositionalArgument && other) = default;
+
+    /*! \brief Get the type of this argument
+     */
+    ArgumentType type() const noexcept
+    {
+      return mType;
+    }
 
     /*! \brief Get the name of this argument
      */
@@ -100,6 +109,7 @@ namespace Mdt{ namespace CommandLineParser{
 
    private:
 
+    ArgumentType mType;
     QString mName;
     QString mDescription;
     QString mSyntax;

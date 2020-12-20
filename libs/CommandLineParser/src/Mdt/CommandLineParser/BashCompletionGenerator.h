@@ -23,6 +23,7 @@
 
 #include "BashCompletionGeneratorCommand.h"
 #include "BashCompletionScriptFileWriteError.h"
+#include "ParserDefinition.h"
 #include "mdt_commandlineparser_export.h"
 #include <QCoreApplication>
 #include <QString>
@@ -32,8 +33,22 @@ namespace Mdt{ namespace CommandLineParser{
 
   /*! \brief Helper class to generate Bash completion script
    *
-   * Example:
+   * If you have a parser definition based on ParserDefinition,
+   * it can be used to create a bash completion generator:
    * \code
+   * using namespace Mdt::CommandLineParser;
+   *
+   * ParserDefinition parserDefinition;
+   * // Setup the parser definition, see Mdt::CommandLineParser::ParserDefinition
+   *
+   * auto generator = BashCompletionGenerator::fromParserDefinition(parserDefinition);
+   * generator.generateScriptToFile("path/to/out/directory/");
+   * \endcode
+   *
+   * It is also possible to define the generator:
+   * \code
+   * using namespace Mdt::CommandLineParser;
+   *
    * BashCompletionGenerator generator;
    * generator.setApplicationName("mytool");
    *
@@ -68,9 +83,17 @@ namespace Mdt{ namespace CommandLineParser{
     /*! \brief Set the main command
      *
      * \pre \a command must not be empty
+     *
      * \todo Maybe the main command could be empty ?
      */
     void setMainCommand(const BashCompletionGeneratorCommand & command);
+
+    /*! \brief Get the main command
+     */
+    const BashCompletionGeneratorCommand & mainCommand() const noexcept
+    {
+      return mMainCommand;
+    }
 
     /*! \brief Add a subcommand
      *
@@ -78,6 +101,13 @@ namespace Mdt{ namespace CommandLineParser{
      * \pre \a command must have a name
      */
     void addSubCommand(const BashCompletionGeneratorCommand & command);
+
+    /*! \brief Get subcommands
+     */
+    const std::vector<BashCompletionGeneratorCommand> & subCommands() const noexcept
+    {
+      return mSubCommands;
+    }
 
     /*! \brief Generate the script
      *
@@ -101,6 +131,11 @@ namespace Mdt{ namespace CommandLineParser{
      * \todo Rewrite with QFile or QFileSaver
      */
     void generateScriptToFile(const QString & directoryPath) const;
+
+    /*! \brief Get a Bash completion generator from \a parserDefinition
+     */
+    static
+    BashCompletionGenerator fromParserDefinition(const ParserDefinition & parserDefinition);
 
   private:
 

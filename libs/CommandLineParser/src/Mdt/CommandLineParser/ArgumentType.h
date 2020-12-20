@@ -18,13 +18,31 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "BashCompletionGeneratorOption.h"
+#ifndef MDT_COMMAND_LINE_PARSER_ARGUMENT_TYPE_H
+#define MDT_COMMAND_LINE_PARSER_ARGUMENT_TYPE_H
 
 namespace Mdt{ namespace CommandLineParser{
 
-BashCompletionGeneratorOption BashCompletionGeneratorOption::fromParserDefinitionOption(const ParserDefinitionOption & option)
-{
-  return BashCompletionGeneratorOption( option.shortName(), option.name() );
-}
+  /*! \brief Argument type
+   *
+   * As example, a copy (programm or command of a programm)
+   * could accept 2 positional arguments:
+   * - source: path to a file
+   * - destination: path to a directory
+   *
+   * Specify the argument type could help
+   * a parser to enforce what should be passed.
+   *
+   * The argument type is also used by BashCompletionGenerator .
+   */
+  enum class ArgumentType
+  {
+    Unspecified,      /*!< The argument type is not specified */
+    Directory,        /*!< Expect a directory */
+    File,             /*!< Expect a file */
+    DirectoryOrFile   /*!< Expect a directory or a file */
+  };
 
 }} // namespace Mdt{ namespace CommandLineParser{
+
+#endif // #ifndef MDT_COMMAND_LINE_PARSER_ARGUMENT_TYPE_H

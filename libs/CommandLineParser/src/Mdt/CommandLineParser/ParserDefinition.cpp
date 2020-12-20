@@ -29,6 +29,11 @@
 
 namespace Mdt{ namespace CommandLineParser{
 
+void ParserDefinition::setApplicationName(const QString & name)
+{
+  mApplicationName = name;
+}
+
 void ParserDefinition::setApplicationDescription(const QString &description)
 {
   mApplicationDescription = description;
@@ -66,6 +71,13 @@ void ParserDefinition::addPositionalArgument(const QString & name, const QString
   mMainCommand.addPositionalArgument(name, description, syntax);
 }
 
+void ParserDefinition::addPositionalArgument(ArgumentType type, const QString & name, const QString & description, const QString & syntax)
+{
+  assert( !name.trimmed().isEmpty() );
+
+  mMainCommand.addPositionalArgument(type, name, description, syntax);
+}
+
 void ParserDefinition::addSubCommand(const ParserDefinitionCommand & command)
 {
 //   assert( !command.isEmpty() );
@@ -100,7 +112,7 @@ QString ParserDefinition::getHelpText() const
 
 QString ParserDefinition::getUsageText() const
 {
-  return ParserDefinition_Impl::getUsageText( QCoreApplication::applicationName(),
+  return ParserDefinition_Impl::getUsageText( applicationName(),
                                               mMainCommand.options(),
                                               mMainCommand.positionalArguments(),
                                               mSubCommands );

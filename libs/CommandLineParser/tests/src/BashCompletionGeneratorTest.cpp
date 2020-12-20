@@ -155,3 +155,60 @@ TEST_CASE("generateScriptToFile")
   generator.generateScriptToFile( dir.path() );
   REQUIRE( fileExists(dir, fileName) );
 }
+
+TEST_CASE("fromParserDefinitionOption")
+{
+  ParserDefinitionOption verboseOptionDef( 'v', QLatin1String("verbose"), QLatin1String("Verbose option") );
+  const auto verboseOption = BashCompletionGeneratorOption::fromParserDefinitionOption(verboseOptionDef);
+  REQUIRE( verboseOption.shortNameWithDash() == QLatin1String("-v") );
+  REQUIRE( verboseOption.nameWithDashes() == QLatin1String("--verbose") );
+}
+
+TEST_CASE("fromParserDefinitionCommand")
+{
+  ParserDefinitionCommand copyCommandDef( QLatin1String("copy") );
+  copyCommandDef.setDescription( QLatin1String("Copy a file") );
+  copyCommandDef.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file to copy") );
+  copyCommandDef.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
+  copyCommandDef.addHelpOption();
+
+  const auto copyCommand = BashCompletionGeneratorCommand::fromParserDefinitionCommand(copyCommandDef);
+  REQUIRE( copyCommand.name() == QLatin1String("copy") );
+  REQUIRE( copyCommand.arguments().size() == 2 );
+  REQUIRE( copyCommand.arguments()[0] == QLatin1String("source") );
+  REQUIRE( copyCommand.arguments()[1] == QLatin1String("destination") );
+  REQUIRE( copyCommand.options().size() == 1 );
+  REQUIRE( copyCommand.options()[0].shortNameWithDash() == QLatin1String("-h") );
+  REQUIRE( copyCommand.options()[0].nameWithDashes() == QLatin1String("--help") );
+  
+  REQUIRE(false);
+}
+
+TEST_CASE("fromParserDefinition")
+{
+  ParserDefinition parserDefinition;
+  parserDefinition.setApplicationName( QLatin1String("my-app") );
+  parserDefinition.setApplicationDescription( QLatin1String("My cool app") );
+  parserDefinition.addHelpOption();
+
+  ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+  copyCommand.setDescription( QLatin1String("Copy a file") );
+  copyCommand.addPositionalArgument( QLatin1String("source"), QLatin1String("Source file to copy") );
+  copyCommand.addPositionalArgument( QLatin1String("destination"), QLatin1String("Destination directory") );
+  copyCommand.addHelpOption();
+  parserDefinition.addSubCommand(copyCommand);
+
+  auto generator = BashCompletionGenerator::fromParserDefinition(parserDefinition);
+
+  REQUIRE( generator.applicationName() == QLatin1String("my-app") );
+  REQUIRE( generator.mainCommand().options().size() == 1 );
+  REQUIRE( generator.mainCommand().options()[0].shortNameWithDash() == QLatin1String("-h") );
+  REQUIRE( generator.mainCommand().options()[0].nameWithDashes() == QLatin1String("--help") );
+
+  REQUIRE( generator.subCommands().size() == 1 );
+  REQUIRE( generator.subCommands()[0].name() == QLatin1String("copy") );
+  
+  std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
+  
+  REQUIRE(false);
+}

@@ -18,7 +18,7 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_ARGUMENT_H
-#define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_ARGUMENT_H
+#include "BashCompletionGeneratorPositionalArgument.h"
 
-#endif // #ifndef MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_ARGUMENT_H
+namespace Mdt{ namespace CommandLineParser{
+}} // namespace Mdt{ namespace CommandLineParser{

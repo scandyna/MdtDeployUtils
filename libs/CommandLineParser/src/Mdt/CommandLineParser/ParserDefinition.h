@@ -32,15 +32,15 @@ namespace Mdt{ namespace CommandLineParser{
 
   /*! \brief Helper class to define command line parsers
    *
-   * \todo Should the usage without QCoreApplication be supported ?
-   *
    * Example of a parser definition:
    * \code
-   * Mdt::CommandLineParser::ParserDefinition parserDefinition;
+   * using namespace Mdt::CommandLineParser;
+   *
+   * ParserDefinition parserDefinition;
    * parserDefinition.setApplicationDescription("Copy utility");
    * parserDefinition.addHelpOption();
-   * parserDefinition.addPositionalArgument("source", "Source file to copy");
-   * parserDefinition.addPositionalArgument("destination", "Destination directory");
+   * parserDefinition.addPositionalArgument(ArgumentType::File, "source", "Source file to copy");
+   * parserDefinition.addPositionalArgument(ArgumentType::Directory, "destination", "Destination directory");
    * parserDefinition.addOption('f', "force", "Overwrite existing files.");
    * \endcode
    *
@@ -97,6 +97,29 @@ namespace Mdt{ namespace CommandLineParser{
 
    public:
 
+    /*! \brief Set the application name
+     *
+     * Setting the application name is not mandatory,
+     * but can be useful if the default is not what is expected
+     *
+     * \sa applicationName()
+     */
+    void setApplicationName(const QString & name);
+
+    /*! \brief Get the application name
+     *
+     * If the application name has been set with setApplicationName(),
+     * this name will be returned,
+     * otherwise QCoreApplication::applicationName()
+     */
+    QString applicationName() const
+    {
+      if( !mApplicationName.isEmpty() ){
+        return mApplicationName;
+      }
+      return QCoreApplication::applicationName();
+    }
+
     /*! \brief Set the application description
      */
     void setApplicationDescription(const QString &description);
@@ -152,6 +175,12 @@ namespace Mdt{ namespace CommandLineParser{
      */
     void addPositionalArgument(const QString & name, const QString & description, const QString & syntax = QString());
 
+    /*! \brief Add a positional argument
+     *
+     * \pre \a name must not be empty
+     */
+    void addPositionalArgument(ArgumentType type, const QString & name, const QString & description, const QString & syntax = QString());
+
     /*! \brief Check if this parser has positional arguments
      */
     bool hasPositionalArguments() const noexcept
@@ -202,6 +231,7 @@ namespace Mdt{ namespace CommandLineParser{
     QString getPositionalArgumentsHelpText() const;
     QString getAvailableSubCommandsHelpText() const;
 
+    QString mApplicationName;
     QString mApplicationDescription;
     ParserDefinitionCommand mMainCommand;
     std::vector<ParserDefinitionCommand> mSubCommands;

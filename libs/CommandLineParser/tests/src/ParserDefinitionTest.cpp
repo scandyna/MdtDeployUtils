@@ -21,6 +21,7 @@
 #include "catch2/catch.hpp"
 #include "Mdt/CommandLineParser/ParserDefinition.h"
 #include "Mdt/CommandLineParser/ParserDefinition_Impl.h"
+#include "Mdt/CommandLineArguments.h"
 #include <QString>
 #include <QLatin1String>
 #include <vector>
@@ -187,7 +188,8 @@ TEST_CASE("ParserDefinitionPositionalArgument")
 {
   SECTION("With syntax")
   {
-    ParserDefinitionPositionalArgument argument( QLatin1String("source"), QLatin1String("Source file"), QLatin1String("[path]") );
+    ParserDefinitionPositionalArgument argument( ArgumentType::Unspecified, QLatin1String("source"), QLatin1String("Source file"), QLatin1String("[path]") );
+    REQUIRE( argument.type() == ArgumentType::Unspecified );
     REQUIRE( argument.name() == QLatin1String("source") );
     REQUIRE( argument.description() == QLatin1String("Source file") );
     REQUIRE( argument.hasSyntax() );
@@ -196,7 +198,8 @@ TEST_CASE("ParserDefinitionPositionalArgument")
 
   SECTION("With spaces")
   {
-    ParserDefinitionPositionalArgument argument( QLatin1String(" source"), QLatin1String(" Source file"), QLatin1String(" [path]") );
+    ParserDefinitionPositionalArgument argument( ArgumentType::Unspecified, QLatin1String(" source"), QLatin1String(" Source file"), QLatin1String(" [path]") );
+    REQUIRE( argument.type() == ArgumentType::Unspecified );
     REQUIRE( argument.name() == QLatin1String("source") );
     REQUIRE( argument.description() == QLatin1String("Source file") );
     REQUIRE( argument.hasSyntax() );
@@ -205,10 +208,19 @@ TEST_CASE("ParserDefinitionPositionalArgument")
 
   SECTION("No syntax")
   {
-    ParserDefinitionPositionalArgument argument( QLatin1String("source"), QLatin1String("Source file") );
+    ParserDefinitionPositionalArgument argument( ArgumentType::Unspecified, QLatin1String("source"), QLatin1String("Source file") );
+    REQUIRE( argument.type() == ArgumentType::Unspecified );
     REQUIRE( argument.name() == QLatin1String("source") );
     REQUIRE( argument.description() == QLatin1String("Source file") );
     REQUIRE( !argument.hasSyntax() );
+  }
+
+  SECTION("Directory type")
+  {
+    ParserDefinitionPositionalArgument argument( ArgumentType::Directory, QLatin1String("source"), QLatin1String("Source file") );
+    REQUIRE( argument.type() == ArgumentType::Directory );
+    REQUIRE( argument.name() == QLatin1String("source") );
+    REQUIRE( argument.description() == QLatin1String("Source file") );
   }
 }
 
@@ -290,6 +302,25 @@ TEST_CASE("ParserDefinition_description")
   }
 }
 
+TEST_CASE("ParserDefinition_applicationName")
+{
+  Mdt::CommandLineArguments arguments({"default-app-name"});
+  QCoreApplication app( arguments.argumentCountRef(), arguments.argumentVector() );
+
+  ParserDefinition parser;
+
+  SECTION("default")
+  {
+    REQUIRE( parser.applicationName() == QLatin1String("default-app-name") );
+  }
+
+  SECTION("User defined")
+  {
+    parser.setApplicationName( QLatin1String("my-app") );
+    REQUIRE( parser.applicationName() == QLatin1String("my-app") );
+  }
+}
+
 TEST_CASE("ParserDefinition_options")
 {
   ParserDefinition parser;
@@ -325,10 +356,21 @@ TEST_CASE("ParserDefinition_positionalArguments")
     REQUIRE( !parser.hasPositionalArguments() );
   }
 
+  SECTION("name")
+  {
+    parser.addPositionalArgument( QLatin1String("name"), QLatin1String("Name of the branch"), QLatin1String("[name]") );
+    REQUIRE( parser.hasPositionalArguments() );
+    REQUIRE( parser.mainCommand().positionalArguments()[0].type() == ArgumentType::Unspecified );
+    REQUIRE( parser.mainCommand().positionalArguments()[0].name() == QLatin1String("name") );
+    REQUIRE( parser.mainCommand().positionalArguments()[0].description() == QLatin1String("Name of the branch") );
+    REQUIRE( parser.mainCommand().positionalArguments()[0].syntax() == QLatin1String("[name]") );
+  }
+
   SECTION("source")
   {
-    parser.addPositionalArgument( QLatin1String("source"), QLatin1String("Source file"), QLatin1String("[file]") );
+    parser.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file"), QLatin1String("[file]") );
     REQUIRE( parser.hasPositionalArguments() );
+    REQUIRE( parser.mainCommand().positionalArguments()[0].type() == ArgumentType::File );
     REQUIRE( parser.mainCommand().positionalArguments()[0].name() == QLatin1String("source") );
     REQUIRE( parser.mainCommand().positionalArguments()[0].description() == QLatin1String("Source file") );
     REQUIRE( parser.mainCommand().positionalArguments()[0].syntax() == QLatin1String("[file]") );
@@ -369,7 +411,7 @@ TEST_CASE("getUsageText")
 
   SECTION("Arguments")
   {
-    ParserDefinitionPositionalArgument argument( QLatin1String("source"), QLatin1String("Path to the source file") );
+    ParserDefinitionPositionalArgument argument( ArgumentType::File, QLatin1String("source"), QLatin1String("Path to the source file") );
     arguments.push_back(argument);
 
     const QString expectedText = QLatin1String("Usage: parser-def-test source");
@@ -378,7 +420,7 @@ TEST_CASE("getUsageText")
 
   SECTION("Arguments with syntax")
   {
-    ParserDefinitionPositionalArgument argument( QLatin1String("source"), QLatin1String("Path to the source file"), QLatin1String("[file]") );
+    ParserDefinitionPositionalArgument argument( ArgumentType::File, QLatin1String("source"), QLatin1String("Path to the source file"), QLatin1String("[file]") );
     arguments.push_back(argument);
 
     const QString expectedText = QLatin1String("Usage: parser-def-test [file]");
@@ -398,7 +440,7 @@ TEST_CASE("getUsageText")
   {
     ParserDefinitionOption option( QLatin1String("option-1"), QLatin1String("Option 1 description") );
     options.push_back(option);
-    ParserDefinitionPositionalArgument argument( QLatin1String("argument-1"), QLatin1String("Argument 1 description") );
+    ParserDefinitionPositionalArgument argument( ArgumentType::Unspecified, QLatin1String("argument-1"), QLatin1String("Argument 1 description") );
     arguments.push_back(argument);
 
     const QString expectedText = QLatin1String("Usage: parser-def-test [options] argument-1");
@@ -758,7 +800,7 @@ TEST_CASE("wrapText_argument")
 
   SECTION("source,longest:10,ml:50")
   {
-    ParserDefinitionPositionalArgument sourceArgument( QLatin1String("source"), QLatin1String("Source file") );
+    ParserDefinitionPositionalArgument sourceArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
     longestNamesStringLengt = 10;
     maxLength = 50;
 
@@ -824,14 +866,14 @@ TEST_CASE("findLongestArgumentNamesStringLength")
 
   SECTION("source")
   {
-    arguments.emplace_back( QLatin1String("source"), QLatin1String("Source description") );
+    arguments.emplace_back( ArgumentType::File, QLatin1String("source"), QLatin1String("Source description") );
     REQUIRE( findLongestArgumentNamesStringLength(arguments) == 6 );
   }
 
   SECTION("source,destination")
   {
-    arguments.emplace_back( QLatin1String("source"), QLatin1String("Source description") );
-    arguments.emplace_back( QLatin1String("destination"), QLatin1String("Destination description") );
+    arguments.emplace_back( ArgumentType::File, QLatin1String("source"), QLatin1String("Source description") );
+    arguments.emplace_back( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination description") );
     REQUIRE( findLongestArgumentNamesStringLength(arguments) == 11 );
   }
 }
@@ -902,7 +944,7 @@ TEST_CASE("getPositionalArgumentsHelpText")
 
   SECTION("source")
   {
-    arguments.emplace_back( QLatin1String("source"), QLatin1String("Source file") );
+    arguments.emplace_back( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
     expectedText = QLatin1String("Arguments:\n"
                                  "  source  Source file");
     result = getPositionalArgumentsHelpText(arguments, maxLength);
@@ -911,8 +953,8 @@ TEST_CASE("getPositionalArgumentsHelpText")
 
   SECTION("source,destination")
   {
-    arguments.emplace_back( QLatin1String("source"), QLatin1String("Source file") );
-    arguments.emplace_back( QLatin1String("destination"), QLatin1String("Destination file") );
+    arguments.emplace_back( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
+    arguments.emplace_back( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination file") );
     expectedText = QLatin1String("Arguments:\n"
                                  "  source       Source file\n"
                                  "  destination  Destination file");

@@ -23,12 +23,13 @@ include(MdtInstallLibrary)
 
 add_library(Mdt_CommandLineParser
   Mdt/CommandLineParser/Algorithm.cpp
+  Mdt/CommandLineParser/ArgumentType.cpp
   Mdt/CommandLineParser/ParserDefinitionOption.cpp
   Mdt/CommandLineParser/ParserDefinitionPositionalArgument.cpp
   Mdt/CommandLineParser/ParserDefinitionCommand.cpp
   Mdt/CommandLineParser/ParserDefinition.cpp
   Mdt/CommandLineParser/Parser.cpp
-  Mdt/CommandLineParser/BashCompletionGeneratorArgument.cpp
+  Mdt/CommandLineParser/BashCompletionGeneratorPositionalArgument.cpp
   Mdt/CommandLineParser/BashCompletionGeneratorOption.cpp
   Mdt/CommandLineParser/BashCompletionGeneratorCommand.cpp
   Mdt/CommandLineParser/BashCompletionGenerator.cpp

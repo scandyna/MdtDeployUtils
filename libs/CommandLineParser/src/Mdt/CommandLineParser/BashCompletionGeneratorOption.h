@@ -22,6 +22,7 @@
 #define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_OPTION_H
 
 #include "Algorithm.h"
+#include "ParserDefinitionOption.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
 #include <QLatin1Char>
@@ -93,6 +94,11 @@ namespace Mdt{ namespace CommandLineParser{
     {
       return QLatin1String("--") + mName;
     }
+
+    /*! \brief Get a generator option from \a option
+     */
+    static
+    BashCompletionGeneratorOption fromParserDefinitionOption(const ParserDefinitionOption & option);
 
    private:
 

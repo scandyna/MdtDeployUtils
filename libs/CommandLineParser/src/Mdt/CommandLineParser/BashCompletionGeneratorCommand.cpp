@@ -19,6 +19,18 @@
  **
  ****************************************************************************/
 #include "BashCompletionGeneratorCommand.h"
+
+namespace Mdt{ namespace CommandLineParser{
+
+BashCompletionGeneratorCommand BashCompletionGeneratorCommand::fromParserDefinitionCommand(const ParserDefinitionCommand & command)
+{
+  BashCompletionGeneratorCommand generatorCommand( command.name() );
+
+  return generatorCommand;
+}
+
+}} // namespace Mdt{ namespace CommandLineParser{
+
 // #include <QStringList>
 // #include <QByteArray>
 // 

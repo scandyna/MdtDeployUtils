@@ -22,6 +22,7 @@
 #define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_COMMAND_H
 
 #include "BashCompletionGeneratorOption.h"
+#include "ParserDefinitionCommand.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
 #include <QStringList>
@@ -36,7 +37,7 @@ namespace Mdt{ namespace CommandLineParser{
    */
   class MDT_COMMANDLINEPARSER_EXPORT BashCompletionGeneratorCommand
   {
-  public:
+   public:
 
     /*! \brief Construct a command with no name
      *
@@ -87,6 +88,10 @@ namespace Mdt{ namespace CommandLineParser{
     /*! \brief Add a argument to this command
      *
      * \pre \a arg must not be empty
+     * 
+     * \todo rename to addPositionalArgument()
+     * \todo add ArgumentType at first (must match ParserDefinition API)
+     *       ArgumentType should not be optional
      */
     void addArgument(const QString & arg)
     {
@@ -169,6 +174,11 @@ namespace Mdt{ namespace CommandLineParser{
     {
       return mDirectoryCompletionEnabled;
     }
+
+    /*! \brief Get a generator command from \a command
+     */
+    static
+    BashCompletionGeneratorCommand fromParserDefinitionCommand(const ParserDefinitionCommand & command);
 
   //   /*! \brief Get a command from \a parser
   //    */

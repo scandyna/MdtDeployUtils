@@ -18,4 +18,4 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "BashCompletionGeneratorArgument.h"
+#include "ArgumentType.h"

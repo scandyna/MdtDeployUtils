@@ -18,13 +18,21 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "BashCompletionGeneratorOption.h"
+#ifndef MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_POSITIONAL_ARGUMENT_H
+#define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_POSITIONAL_ARGUMENT_H
+
+#include "ArgumentType.h"
+#include "mdt_commandlineparser_export.h"
+#include <QString>
 
 namespace Mdt{ namespace CommandLineParser{
 
-BashCompletionGeneratorOption BashCompletionGeneratorOption::fromParserDefinitionOption(const ParserDefinitionOption & option)
-{
-  return BashCompletionGeneratorOption( option.shortName(), option.name() );
-}
+  /*! \brief
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT BashCompletionGeneratorPositionalArgument
+  {
+  };
 
 }} // namespace Mdt{ namespace CommandLineParser{
+
+#endif // #ifndef MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_POSITIONAL_ARGUMENT_H

@@ -162,7 +162,18 @@ namespace Mdt{ namespace CommandLineParser{
     {
       assert( !name.trimmed().isEmpty() );
 
-      mPositionalArguments.emplace_back(name, description, syntax);
+      addPositionalArgument(ArgumentType::Unspecified, name, description, syntax);
+    }
+
+    /*! \brief Add a positional argument
+     *
+     * \pre \a name must not be empty
+     */
+    void addPositionalArgument(ArgumentType type, const QString & name, const QString & description, const QString & syntax = QString())
+    {
+      assert( !name.trimmed().isEmpty() );
+
+      mPositionalArguments.emplace_back(type, name, description, syntax);
     }
 
     /*! \brief Check if this command has positional arguments

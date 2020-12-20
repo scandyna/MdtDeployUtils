@@ -90,6 +90,24 @@ namespace Mdt{ namespace CommandLineParser{
       return mShortName != '\0';
     }
 
+    /*! \brief Get the short name
+     *
+     * \sa shortNameWithDash()
+     */
+    char shortName() const noexcept
+    {
+      return mShortName;
+    }
+
+    /*! \brief Get the name
+     *
+     * \sa nameWithDashes()
+     */
+    const QString & name() const noexcept
+    {
+      return mName;
+    }
+
     /*! \brief Get the short name with a dash
      *
      * \pre must only be called if this command line option has a short name

@@ -99,4 +99,11 @@ void BashCompletionGenerator::generateScriptToFile(const QString & directoryPath
   }
 }
 
+BashCompletionGenerator BashCompletionGenerator::fromParserDefinition(const ParserDefinition & parserDefinition)
+{
+  BashCompletionGenerator generator;
+
+  return generator;
+}
+
 }} // namespace Mdt{ namespace CommandLineParser{
