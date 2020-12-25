@@ -30,6 +30,8 @@
 
 #include <QDebug>
 
+#include <iostream>
+
 using Mdt::CommandLineParser::ParserDefinitionCommand;
 
 CommandLineParser::CommandLineParser(QObject *parent)
@@ -53,6 +55,14 @@ CommandLineParserResult CommandLineParser::process()
   const QStringList positionalArguments = mParser.positionalArguments();
   qDebug() << "Positional arguments: " << positionalArguments;
 
+  // Try parse completion arguments
+  if( positionalArguments.count() >= 1 ){
+    if( positionalArguments.at(0) == QLatin1String("completion-find-current-positional-argument-name") ){
+      std::cout << "return-name-of-argument" << std::flush;
+      return CommandLineParserResult{};
+    }
+  }
+
   if( positionalArguments.count() < 1 ){
     showErrorMessage( tr("No command provided") );
     
@@ -65,7 +75,7 @@ CommandLineParserResult CommandLineParser::process()
     
     mParser.showHelp(1);
   }
-
+  
   const CommandLineCommand command = commandFromString( positionalArguments.at(0) );
   switch(command){
     case CommandLineCommand::GetSharedLibrariesTargetDependsOn:

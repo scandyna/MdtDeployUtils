@@ -24,6 +24,7 @@
 #include "BashCompletionGenerator.h"
 #include "BashCompletionGeneratorCommand.h"
 #include "BashCompletionGeneratorOption.h"
+#include "BashCompletionGeneratorPositionalArgument.h"
 #include "Algorithm.h"
 #include <QString>
 #include <QStringList>
@@ -31,6 +32,8 @@
 #include <QChar>
 #include <QLatin1Char>
 #include <QStringBuilder>
+#include <cassert>
+#include <algorithm>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -53,10 +56,24 @@ namespace Mdt{ namespace CommandLineParser{
       }
     }
 
+    static
+    void addCommandArgumentToWordList(const BashCompletionGeneratorPositionalArgument & argument, QStringList & wordList)
+    {
+      wordList.push_back( argument.name() );
+    }
+
+    static
+    void addCommandArgumentsToWordList(const BashCompletionGeneratorCommand & command, QStringList & wordList)
+    {
+      for( const auto & argument : command.arguments() ){
+        addCommandArgumentToWordList(argument, wordList);
+      }
+    }
+
     inline
     void addCommandArgumentsAndOptionsToWordList(const BashCompletionGeneratorCommand& command, QStringList & wordList)
     {
-      wordList.append( command.arguments() );
+      addCommandArgumentsToWordList(command, wordList);
       addCommandOptionsToWordList(command, wordList);
     }
 
@@ -72,6 +89,60 @@ namespace Mdt{ namespace CommandLineParser{
       return QLatin1String("    COMPREPLY=($(compgen -W \"") % wordListStr % QLatin1String("\" -- \"${COMP_WORDS[") % levelStr % QLatin1String("]}\"))");
     }
 
+    /*! \internal
+     *
+     * As example, myapp can copy a file to a destination directory.
+     * It will accept 2 positional arguments:
+     * - source, of type Mdt::CommandLineParser::ArgumentType::File
+     * - destination, of type Mdt::CommandLineParser::ArgumentType::Directory
+     *
+     * \code
+     * myapp [source] [destination]
+     * \endcode
+     *
+     * The resulting script will contain something like:
+     * \code
+     * # Completion for the source argument
+     * if [ "${#COMP_WORDS[@]}" == "2" ]
+     * then
+     *   COMPREPLY=($(compgen -A file))
+     * fi
+     *
+     * # Completion for the destination argument
+     * if [ "${#COMP_WORDS[@]}" == "3" ]
+     * then
+     *   COMPREPLY=($(compgen -A directory))
+     * fi
+     * \endcode
+     *
+     * A other example, myapp has a subcommand, copy,
+     * that also accept a source and a destination:
+     * \code
+     * myapp copy [source] [destination]
+     * \endcode
+     *
+     * The resulting script will contain something like:
+     * \code
+     * # Completion for the source argument of the copy command
+     * if [ "${#COMP_WORDS[@]}" == "3" ] && [ "${COMP_WORDS[1]}" == "copy" ]
+     * then
+     *   COMPREPLY=($(compgen -A file))
+     * fi
+     *
+     * # Completion for the destination argument of the copy command
+     * if [ "${#COMP_WORDS[@]}" == "4" ] && [ "${COMP_WORDS[1]}" == "copy" ]
+     * then
+     *   COMPREPLY=($(compgen -A directory))
+     * fi
+     * \endcode
+     */
+    
+
+    /*! \internal Get a compgen action command regarding \a arguments
+     *
+     * If \a arguments
+     */
+    
     inline
     QString generateAddCompreplyUsingCompgenForDirectoryCompletionIfEnabled(const BashCompletionGeneratorCommand & command)
     {
@@ -132,6 +203,52 @@ namespace Mdt{ namespace CommandLineParser{
       }
 
       return blocks;
+    }
+
+    static
+    QString completionFindCurrentPositionalArgumentNameString()
+    {
+      return QLatin1String("completion-find-current-positional-argument-name");
+    }
+
+    static
+    const BashCompletionGeneratorCommand & findCommandByName(const std::vector<BashCompletionGeneratorCommand> & commands, const QString & name)
+    {
+      static BashCompletionGeneratorCommand emptyCommand;
+
+      const auto cmp = [name](const BashCompletionGeneratorCommand & command){
+        return command.name() == name;
+      };
+      const auto it = std::find_if(commands.cbegin(), commands.cend(), cmp);
+      if( it == commands.cend() ){
+        return emptyCommand;
+      }
+
+      return *it;
+    }
+
+    /*! \internal Find the name of the current positional argument in \a positionalArguments
+     *
+     * \pre \a positionalArguments must at least contain the completionFindCurrentPositionalArgumentNameString()
+     *  and a second string that is the application name (which is neither checked or used)
+     */
+    static
+    QString findCurrentPositionalArgumentName(const QStringList & positionalArguments, const BashCompletionGenerator & generator)
+    {
+      assert( positionalArguments.count() >= 2 );
+
+      if(positionalArguments.count() == 2){
+        return QLatin1String("command");
+      }
+      if( positionalArguments.count() == 3 ){
+        const int index = positionalArguments.count() - 1;
+        const auto & command = findCommandByName( generator.subCommands(), positionalArguments.at(index) );
+        if( !command.arguments().empty() ){
+          return command.name() % QLatin1Char('-') % command.arguments()[0].name();
+        }
+      }
+
+      return QString();
     }
 
   } // namespace Impl{

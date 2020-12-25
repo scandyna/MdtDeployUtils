@@ -22,6 +22,7 @@
 #define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_COMMAND_H
 
 #include "BashCompletionGeneratorOption.h"
+#include "BashCompletionGeneratorPositionalArgument.h"
 #include "ParserDefinitionCommand.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
@@ -85,24 +86,20 @@ namespace Mdt{ namespace CommandLineParser{
       return mName;
     }
 
-    /*! \brief Add a argument to this command
+    /*! \brief Add a positional argument
      *
-     * \pre \a arg must not be empty
-     * 
-     * \todo rename to addPositionalArgument()
-     * \todo add ArgumentType at first (must match ParserDefinition API)
-     *       ArgumentType should not be optional
+     * \pre \a name must not be empty
      */
-    void addArgument(const QString & arg)
+    void addPositionalArgument(ArgumentType type, const QString & name)
     {
-      assert( !arg.trimmed().isEmpty() );
+      assert( !name.trimmed().isEmpty() );
 
-      mArguments.push_back(arg);
+      mArguments.emplace_back(type, name);
     }
 
     /*! \brief Get the list of arguments of this command
      */
-    const QStringList & arguments() const noexcept
+    const std::vector<BashCompletionGeneratorPositionalArgument> & arguments() const noexcept
     {
       return mArguments;
     }
@@ -113,7 +110,7 @@ namespace Mdt{ namespace CommandLineParser{
      */
     bool isEmpty() const noexcept
     {
-      return mArguments.isEmpty() && mOptions.empty();
+      return mArguments.empty() && mOptions.empty();
     }
 
     /*! \brief Add a command line option
@@ -202,7 +199,7 @@ namespace Mdt{ namespace CommandLineParser{
 
     bool mDirectoryCompletionEnabled = false;
     QString mName;
-    QStringList mArguments;
+    std::vector<BashCompletionGeneratorPositionalArgument> mArguments;
     std::vector<BashCompletionGeneratorOption> mOptions;
   };
 

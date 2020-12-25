@@ -36,7 +36,7 @@ namespace Mdt{ namespace CommandLineParser{
 
     ParserDefinitionPositionalArgument() = delete;
 
-    /*! \brief Construct a argument with a name, a optional description and a optional syntax
+    /*! \brief Construct a argument with a type, a name, a description and a optional syntax
      *
      * \pre \a name must not be empty
      */

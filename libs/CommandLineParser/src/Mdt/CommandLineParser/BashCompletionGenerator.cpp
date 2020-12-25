@@ -99,6 +99,17 @@ void BashCompletionGenerator::generateScriptToFile(const QString & directoryPath
   }
 }
 
+bool BashCompletionGenerator::handleCompletion(const QStringList & positionalArguments) const
+{
+  /*
+   * The generated Bash completion script will call the executable with the form:
+   * executable completion-find-current-positional-argument-name $COMP_LINE
+   *
+   * The executable will then receive back arguments of the form:
+   * completion-find-current-positional-argument-name executable arg1 arg2
+   */
+}
+
 BashCompletionGenerator BashCompletionGenerator::fromParserDefinition(const ParserDefinition & parserDefinition)
 {
   BashCompletionGenerator generator;

@@ -27,6 +27,7 @@
 #include "mdt_commandlineparser_export.h"
 #include <QCoreApplication>
 #include <QString>
+#include <QStringList>
 #include <vector>
 
 namespace Mdt{ namespace CommandLineParser{
@@ -131,6 +132,24 @@ namespace Mdt{ namespace CommandLineParser{
      * \todo Rewrite with QFile or QFileSaver
      */
     void generateScriptToFile(const QString & directoryPath) const;
+
+    /*! \brief Handle bash completion arguments
+     *
+     * Example of usage:
+     * \code
+     * const QStringList positionalArguments = parser.positionalArguments();
+     * BashCompletionParser completionParser;
+     *
+     * if( completionParser.handleCompletion(positionalArguments) ){
+     *   exit(0);
+     * }
+     * \endcode
+     *
+     * \a positionalArguments can be a empty list
+     * or have 1 or more elements.
+     * \pre \a positionalArguments must not contain any option, only positional arguments
+     */
+    bool handleCompletion(const QStringList & positionalArguments) const;
 
     /*! \brief Get a Bash completion generator from \a parserDefinition
      */
