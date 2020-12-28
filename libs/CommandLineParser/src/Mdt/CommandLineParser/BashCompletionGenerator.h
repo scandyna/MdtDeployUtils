@@ -103,6 +103,13 @@ namespace Mdt{ namespace CommandLineParser{
      */
     void addSubCommand(const BashCompletionGeneratorCommand & command);
 
+    /*! \brief Check if this generator has at least 1 subcommand
+     */
+    bool hasSubCommands() const noexcept
+    {
+      return !mSubCommands.empty();
+    }
+
     /*! \brief Get subcommands
      */
     const std::vector<BashCompletionGeneratorCommand> & subCommands() const noexcept

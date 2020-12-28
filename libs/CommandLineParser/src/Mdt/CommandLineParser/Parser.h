@@ -21,41 +21,46 @@
 #ifndef MDT_COMMAND_LINE_PARSER_PARSER_H
 #define MDT_COMMAND_LINE_PARSER_PARSER_H
 
+#include "ParserDefinition.h"
+#include "ParserResult.h"
 #include "mdt_commandlineparser_export.h"
+#include <QStringList>
 
 namespace Mdt{ namespace CommandLineParser{
 
-  /*! \brief Helper class to create command line parsers
+  /*! \brief Parse the command line from a definition and returns a result
    *
-   * To parse command line arguments, QCommandLineParser is a helpful tool.
-   *
-   * This library uses QCommandLineParser, but adds some things missing in it.
-   *
-   * QCommandLineParser has no natural notion of sub-commands.
-   * It is possible to create such sub-commands using a QCommandLineParser for each one.
-   * A drawback is that the QCommandLineParser::helpText() will return the application name,
-   * but the sub-command name is expected.
-   *
-   * Once QCommandLineParser has been set-up, the defined arguments and options cannot be get:
+   * 
    * \code
-   * QCommandLineParser parser;
-   * parser.addPositionalArgument("source", QCoreApplication::translate("main", "Source file to copy."));
-   * parser.addPositionalArgument("destination", QCoreApplication::translate("main", "Destination directory."));
+   * using namespace Mdt::CommandLineParser;
    *
-   * qDebug() << parser.positionalArguments();
+   * int main(int argc, char **argv)
+   * {
+   *   QCoreApplication app(argc, argv);
+   *
+   *   ParserDefinition parserDefinition;
+   *   // Setup parser definition
+   *   ...
+   *
+   *   Parser parser;
+   *   ParserResult parserResult = parser.parse( parserDefinition, app.arguments() );
+   *   if( parserResult.hasError() ){
+   *     // Error handling
+   *     return 1;
+   *   }
+   * }
    * \endcode
    *
-   * Above code will not work, because we did not call %parse() or %process().
-   * The returned arguments are those that are passed to the command line
-   * and that are not recognized as options,
-   * which is expected for parsing.
-   *
-   * For some cases, getting the arguments and options given can be useful,
-   * for exaple to list available sub-commands in the help,
-   * or to generate a Bash-completion script.
+   * \sa ParserDefinition
+   * \sa ParserResult
    */
   class MDT_COMMANDLINEPARSER_EXPORT Parser
   {
+   public:
+
+    /*! \brief Parse \a arguments regarding \a parserDefinition
+     */
+    ParserResult parse(const ParserDefinition & parserDefinition, const QStringList & arguments);
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

@@ -1,4 +1,40 @@
 
+# Impl header files
+
+Should be in a Impl sub-directory
+(should not be suffixed _Impl)
+Should not be installed
+
+# Script
+
+See: https://argbash.io/
+And also: https://argbash.readthedocs.io/en/stable/usage.html#bash-completion
+
+Question:
+Which positional argument I am currently processing ?
+The first, the second, ... ?
+positional_argument_index_of_current_word()
+
+# Args: list of words, --help file -o true directory
+extract_positional_arguments()
+
+Note: with --file some-file (option value) this is not so easy..
+
+Should explore re-using the parser..
+see apt-get <-- This calls a function..
+Maybe git ?
+
+# NOTE: path to mayapp is $1 whan called from completion ($0 is bash)
+local myapp-executable="$1"
+COMPREPLY=$(compgen -W $(myapp-executable --complete-command-line-bash CURRENT_WORD_CURSOR THE_WORD_ARRAY) )
+
+
+-->> What about to capture TAB ??
+seems that std is <enter>
+See: https://stackoverflow.com/questions/13971298/how-do-i-accept-tab-as-input-from-stdin-to-autofill-text/13978270
+
+Other idea: https://github.com/rsalinas/xqtcmdline/blob/master/xqtparser.cpp
+
 # tools executable
 
 See how to link to Qt statically
@@ -60,6 +96,8 @@ Note: only those 2 formats, do not generalise sepearator option
 
 Maybe, option to provide a file:
 --output-file "file"
+
+## Auto-completion
 
 # CMake API
 

@@ -18,34 +18,4 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "Parser.h"
-#include "Parser_Impl.h"
-#include <QCommandLineParser>
-
-namespace Mdt{ namespace CommandLineParser{
-
-ParserResult Parser::parse(const ParserDefinition & parserDefinition, const QStringList & arguments)
-{
-  ParserResult result;
-
-  if( parserDefinition.hasSubCommands() ){
-    // split arguments
-    // setup main QCommandLineParser
-    // parse main arguments
-    // if has sub-command arguments:
-    //  setup QCommandLineParser for the found sub-command
-    //  parse sub-command arguments
-  }else{
-    QCommandLineParser qtParser;
-    Impl::setupQtParser( qtParser, parserDefinition.mainCommand() );
-    if( !qtParser.parse(arguments) ){
-      result.setErrorText( qtParser.errorText() );
-      return result;
-    }
-  }
-  // At some time, construct the result
-
-  return result;
-}
-
-}} // namespace Mdt{ namespace CommandLineParser{
+#include "ParserResultPositionalArgument.h"

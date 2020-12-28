@@ -44,7 +44,7 @@ namespace Mdt{ namespace CommandLineParser{
      * \pre \a name must be a valid option name
      * \sa isValidName()
      */
-    ParserDefinitionOption(const QString & name, const QString & description)
+    explicit ParserDefinitionOption(const QString & name, const QString & description)
      : mName( name.trimmed() ),
        mDescription(description)
     {
@@ -58,7 +58,7 @@ namespace Mdt{ namespace CommandLineParser{
      * \sa isValidShortName()
      * \sa isValidName()
      */
-    ParserDefinitionOption(char shortName, const QString & name, const QString & description)
+    explicit ParserDefinitionOption(char shortName, const QString & name, const QString & description)
      : mShortName(shortName),
        mName( name.trimmed() ),
        mDescription(description)

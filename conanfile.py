@@ -11,8 +11,10 @@ class MdtDeployUtilsConan(ConanFile):
   # TODO: see TODO.md
   settings = "os", "compiler", "build_type", "arch"
   options = {"shared": [True, False],
+             "use_conan_boost": [True, False],
              "use_conan_qt": [True, False]}
   default_options = {"shared": True,
+                     "use_conan_boost": False,
                      "use_conan_qt": False}
   requires = "MdtApplication/[>=0.2.2]@scandyna/testing"
   build_requires = "MdtCMakeModules/[>=0.14.12]@scandyna/testing", "Catch2/[>=2.11.1]@catchorg/stable"
@@ -34,6 +36,9 @@ class MdtDeployUtilsConan(ConanFile):
 
 
   def requirements(self):
+
+    if self.options.use_conan_boost:
+      self.requires("boost/[>=1.65.1]@conan/stable")
 
     # Building 5.14.x causes currently problems (8.04.2020)
     # As workaround, try fix a known version that we can build

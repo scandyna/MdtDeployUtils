@@ -48,7 +48,7 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \pre \a name must not be empty
      */
-    ParserDefinitionCommand(const QString & name)
+    explicit ParserDefinitionCommand(const QString & name)
      : mName( name.trimmed() )
     {
       assert( !name.trimmed().isEmpty() );

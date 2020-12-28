@@ -211,6 +211,7 @@ namespace Mdt{ namespace CommandLineParser{
       return QLatin1String("completion-find-current-positional-argument-name");
     }
 
+    /// \todo Remove this static variable and use optional !
     static
     const BashCompletionGeneratorCommand & findCommandByName(const std::vector<BashCompletionGeneratorCommand> & commands, const QString & name)
     {
@@ -229,6 +230,39 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \internal Find the name of the current positional argument in \a positionalArguments
      *
+     * Possible commands.
+     *
+     * For a simnple application like:
+     * \code
+     * myapp <source> <destination>
+     * \endcode
+     *
+     * we could have:
+     * \code
+     * completion-find-current-positional-argument-name myapp
+     * // return source
+     *
+     * completion-find-current-positional-argument-name myapp some-file
+     * // return destination
+     * \endcode
+     *
+     * For a application with subCommands like:
+     * \code
+     * myapp <command>
+     * \endcode
+     *
+     * we could have:
+     * \code
+     * completion-find-current-positional-argument-name myapp
+     * // return command
+     *
+     * completion-find-current-positional-argument-name myapp copy
+     * // return copy-source
+     *
+     * completion-find-current-positional-argument-name myapp copy some-file
+     * // return copy-destination
+     * \endcode
+     *
      * \pre \a positionalArguments must at least contain the completionFindCurrentPositionalArgumentNameString()
      *  and a second string that is the application name (which is neither checked or used)
      */
@@ -237,10 +271,56 @@ namespace Mdt{ namespace CommandLineParser{
     {
       assert( positionalArguments.count() >= 2 );
 
-      if(positionalArguments.count() == 2){
+      /*
+       * With 2 arguments it can be:
+       * - command if we have subcommand
+       * - else the first positional argument if exists
+       *
+       * With 3 arguments it can be:
+       * - the first argument of given sub-command if exists
+       * - else the second positional argument if exists
+       *
+       * With n arguments it can be:
+       * - the n-2 argument of given sub-command if exists
+       * - else the n-1 positional argument if exists
+       */
+      const bool hasSubCommands = generator.hasSubCommands();
+      const int positionalArgumentsCount = positionalArguments.count();
+
+      if( hasSubCommands && (positionalArgumentsCount == 2) ){
         return QLatin1String("command");
       }
-      if( positionalArguments.count() == 3 ){
+      assert( positionalArgumentsCount >= 3 );
+
+      if(hasSubCommands){
+        const int argumentIndex = positionalArgumentsCount - 3;
+      }else{
+        const int argumentIndex = positionalArgumentsCount - 2;
+      }
+
+//       if(  ){
+//         if(positionalArguments.count() == 2){
+//           return QLatin1String("command");
+//         }
+//         
+//       }else{
+//       }
+      
+      if(positionalArguments.count() == 2){
+        if( generator.hasSubCommands() ){
+          return QLatin1String("command");
+        }
+        const auto & command = generator.mainCommand();
+        if( command.hasPositionalArguments() ){
+          const int commandArgumentIndex = positionalArguments.count() - 2;
+          assert(commandArgumentIndex >= 0);
+          if( commandArgumentIndex >= command.positionalArgumentCount() ){
+            return QString();
+          }
+          return command.positionalArgumentAt(commandArgumentIndex).name();
+        }
+      }
+      if( positionalArguments.count() >= 3 ){
         const int index = positionalArguments.count() - 1;
         const auto & command = findCommandByName( generator.subCommands(), positionalArguments.at(index) );
         if( !command.arguments().empty() ){

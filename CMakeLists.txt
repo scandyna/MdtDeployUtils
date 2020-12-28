@@ -114,6 +114,12 @@ find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS Core REQUIRED)
 find_package(Mdt0 COMPONENTS ConsoleApplication REQUIRED)
 
+# CommandLineParser uses Boost optional
+# For header only library,no component is defined.
+# https://cmake.org/pipermail/cmake/2013-September/055941.html
+find_package(Boost REQUIRED)
+
+
 if(BUILD_TESTS OR BUILD_BENCHMARKS)
   find_package(Catch2 REQUIRED)
 endif()

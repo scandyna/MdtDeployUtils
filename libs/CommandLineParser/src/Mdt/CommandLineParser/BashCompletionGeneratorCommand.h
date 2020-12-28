@@ -97,6 +97,32 @@ namespace Mdt{ namespace CommandLineParser{
       mArguments.emplace_back(type, name);
     }
 
+    /*! \brief Check if this command has positional arguments
+     */
+    bool hasPositionalArguments() const noexcept
+    {
+      return !mArguments.empty();
+    }
+
+    /*! \brief Get the count of arguments of this command
+     */
+    int positionalArgumentCount() const noexcept
+    {
+      return mArguments.size();
+    }
+
+    /*! \brief Get the positional argument at \a index
+     *
+     * \pre \a index must be in valid range ( 0 <= \a index < argumentCount() )
+     */
+    const BashCompletionGeneratorPositionalArgument & positionalArgumentAt(int index) const noexcept
+    {
+      assert( index >= 0 );
+      assert( index < positionalArgumentCount() );
+
+      return mArguments[index];
+    }
+
     /*! \brief Get the list of arguments of this command
      */
     const std::vector<BashCompletionGeneratorPositionalArgument> & arguments() const noexcept

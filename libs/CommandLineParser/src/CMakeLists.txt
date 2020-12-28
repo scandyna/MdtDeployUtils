@@ -29,6 +29,10 @@ add_library(Mdt_CommandLineParser
   Mdt/CommandLineParser/ParserDefinitionCommand.cpp
   Mdt/CommandLineParser/ParserDefinition.cpp
   Mdt/CommandLineParser/Parser.cpp
+  Mdt/CommandLineParser/ParserResultOption.cpp
+  Mdt/CommandLineParser/ParserResultPositionalArgument.cpp
+  Mdt/CommandLineParser/ParserResultCommand.cpp
+  Mdt/CommandLineParser/ParserResult.cpp
   Mdt/CommandLineParser/BashCompletionGeneratorPositionalArgument.cpp
   Mdt/CommandLineParser/BashCompletionGeneratorOption.cpp
   Mdt/CommandLineParser/BashCompletionGeneratorCommand.cpp
@@ -46,6 +50,7 @@ endif()
 target_link_libraries(Mdt_CommandLineParser
   PUBLIC
     Qt5::Core
+    Boost::boost
 )
 
 target_include_directories(Mdt_CommandLineParser

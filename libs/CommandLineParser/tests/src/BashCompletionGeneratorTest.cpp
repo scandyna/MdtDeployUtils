@@ -299,40 +299,69 @@ TEST_CASE("findCurrentPositionalArgumentName")
   using Impl::completionFindCurrentPositionalArgumentNameString;
   using Impl::findCurrentPositionalArgumentName;
 
-  QStringList positionalArguments;
+  QStringList positionalArguments{completionFindCurrentPositionalArgumentNameString(),QLatin1String("myapp")};
   QString expectedResult;
   BashCompletionGenerator generator;
 
-  BashCompletionGeneratorCommand copyCommand( QLatin1String("copy") );
-  copyCommand.addPositionalArgument( ArgumentType::File, QLatin1String("source") );
-  copyCommand.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination") );
-  generator.addSubCommand(copyCommand);
-
-  SECTION("completion-find-current-positional-argument-name myapp")
+  SECTION("Simple app")
   {
-    positionalArguments = QStringList{completionFindCurrentPositionalArgumentNameString(),QLatin1String("myapp")};
-    expectedResult = QLatin1String("command");
-    REQUIRE( findCurrentPositionalArgumentName(positionalArguments, generator) == expectedResult );
+    BashCompletionGeneratorCommand mainCommand;
+    mainCommand.addPositionalArgument( ArgumentType::File, QLatin1String("source") );
+    mainCommand.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination") );
+    generator.setMainCommand(mainCommand);
+
+    SECTION("completion-find-current-positional-argument-name myapp")
+    {
+      expectedResult = QLatin1String("source");
+      REQUIRE( findCurrentPositionalArgumentName(positionalArguments, generator) == expectedResult );
+    }
+
+    SECTION("completion-find-current-positional-argument-name myapp some-file")
+    {
+      positionalArguments << QLatin1String("some-file");
+      expectedResult = QLatin1String("destination");
+      REQUIRE( findCurrentPositionalArgumentName(positionalArguments, generator) == expectedResult );
+    }
+
+    SECTION("completion-find-current-positional-argument-name myapp some-file some-directory")
+    {
+      positionalArguments << QLatin1String("some-file") << QLatin1String("some-directory");
+      expectedResult = QLatin1String("destination");
+      REQUIRE( findCurrentPositionalArgumentName(positionalArguments, generator).isEmpty() );
+    }
   }
 
-  SECTION("completion-find-current-positional-argument-name myapp copy")
+  SECTION("App with subCommand")
   {
-    positionalArguments = QStringList{completionFindCurrentPositionalArgumentNameString(),QLatin1String("myapp"),QLatin1String("copy")};
-    expectedResult = QLatin1String("copy-source");
-    REQUIRE( findCurrentPositionalArgumentName(positionalArguments, generator) == expectedResult );
-  }
+    BashCompletionGeneratorCommand copyCommand( QLatin1String("copy") );
+    copyCommand.addPositionalArgument( ArgumentType::File, QLatin1String("source") );
+    copyCommand.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination") );
+    generator.addSubCommand(copyCommand);
 
-  SECTION("completion-find-current-positional-argument-name myapp unknown")
-  {
-    positionalArguments = QStringList{completionFindCurrentPositionalArgumentNameString(),QLatin1String("myapp"),QLatin1String("unknown")};
-    REQUIRE( findCurrentPositionalArgumentName(positionalArguments, generator).isEmpty() );
-  }
+    SECTION("completion-find-current-positional-argument-name myapp")
+    {
+      expectedResult = QLatin1String("command");
+      REQUIRE( findCurrentPositionalArgumentName(positionalArguments, generator) == expectedResult );
+    }
 
-  SECTION("completion-find-current-positional-argument-name myapp copy some-file")
-  {
-    positionalArguments = QStringList{completionFindCurrentPositionalArgumentNameString(),QLatin1String("myapp"),
-                                      QLatin1String("copy"),QLatin1String("some-file")};
-    expectedResult = QLatin1String("copy-destination");
-    REQUIRE( findCurrentPositionalArgumentName(positionalArguments, generator) == expectedResult );
+    SECTION("completion-find-current-positional-argument-name myapp copy")
+    {
+      positionalArguments << QLatin1String("copy");
+      expectedResult = QLatin1String("copy-source");
+      REQUIRE( findCurrentPositionalArgumentName(positionalArguments, generator) == expectedResult );
+    }
+
+    SECTION("completion-find-current-positional-argument-name myapp unknown")
+    {
+      positionalArguments << QLatin1String("unknown");
+      REQUIRE( findCurrentPositionalArgumentName(positionalArguments, generator).isEmpty() );
+    }
+
+    SECTION("completion-find-current-positional-argument-name myapp copy some-file")
+    {
+      positionalArguments << QLatin1String("copy") << QLatin1String("some-file");
+      expectedResult = QLatin1String("copy-destination");
+      REQUIRE( findCurrentPositionalArgumentName(positionalArguments, generator) == expectedResult );
+    }
   }
 }
