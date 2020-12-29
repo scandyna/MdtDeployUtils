@@ -20,7 +20,11 @@
  ****************************************************************************/
 #include "Parser.h"
 #include "Parser_Impl.h"
+#include "ParserResultCommand.h"
 #include <QCommandLineParser>
+#include <QString>
+#include <QStringList>
+#include <cassert>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -29,21 +33,29 @@ ParserResult Parser::parse(const ParserDefinition & parserDefinition, const QStr
   ParserResult result;
 
   if( parserDefinition.hasSubCommands() ){
-    // split arguments
-    // setup main QCommandLineParser
-    // parse main arguments
-    // if has sub-command arguments:
-    //  setup QCommandLineParser for the found sub-command
-    //  parse sub-command arguments
-  }else{
-    QCommandLineParser qtParser;
-    Impl::setupQtParser( qtParser, parserDefinition.mainCommand() );
-    if( !qtParser.parse(arguments) ){
-      result.setErrorText( qtParser.errorText() );
+    QStringList mainCommandArguments;
+    QStringList subCommandArguments;
+
+    Impl::splitToMainAndSubCommandArguments(arguments, parserDefinition.subCommands(), mainCommandArguments, subCommandArguments);
+
+    if( !Impl::parseMainCommandToResult(parserDefinition.mainCommand(), mainCommandArguments, result) ){
       return result;
     }
+
+    if( subCommandArguments.isEmpty() ){
+      return result;
+    }
+    assert( subCommandArguments.size() >= 2 );
+
+    const auto subCommand = Impl::findSubCommandByName( parserDefinition.subCommands(), subCommandArguments.at(1) );
+    // If sub-command is not found, its a bug in Impl::splitToMainAndSubCommandArguments()
+    assert(subCommand);
+
+    subCommandArguments.removeAt(1);
+    Impl::parseSubCommandToResult(*subCommand, subCommandArguments, result);
+  }else{
+    Impl::parseMainCommandToResult(parserDefinition.mainCommand(), arguments, result);
   }
-  // At some time, construct the result
 
   return result;
 }

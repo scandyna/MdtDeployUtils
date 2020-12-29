@@ -41,11 +41,62 @@ namespace Mdt{ namespace CommandLineParser{
   {
    public:
 
+    /*! \brief Construct a command
+     */
+    ParserResultCommand() noexcept = default;
+
+    /*! \brief Construct a command with a name
+     *
+     * \pre \a name must not be empty
+     */
+    explicit ParserResultCommand(const QString & name)
+     : mName( name.trimmed() )
+    {
+      assert( !name.trimmed().isEmpty() );
+    }
+
+    /*! \brief Copy construct a command from \a other
+     */
+    ParserResultCommand(const ParserResultCommand & other) = default;
+
+    /*! \brief Copy assign \a other to this command
+     */
+    ParserResultCommand & operator=(const ParserResultCommand & other) = default;
+
+    /*! \brief Move construct a command from \a other
+     */
+    ParserResultCommand(ParserResultCommand && other) = default;
+
+    /*! \brief Move assign \a other to this command
+     */
+    ParserResultCommand & operator=(ParserResultCommand && other) = default;
+
+    /*! \brief Check if this command has a name
+     */
+    bool hasName() const noexcept
+    {
+      return !mName.isEmpty();
+    }
+
+    /*! \brief Get the name of this command
+     */
+    const QString & name() const noexcept
+    {
+      return mName;
+    }
+
     /*! \brief Add \a option to this result
      */
     void addOption(const ParserResultOption & option)
     {
       mOptions.push_back(option);
+    }
+
+    /*! \brief Check if this result result has any option
+     */
+    bool hasOptions() const noexcept
+    {
+      return !mOptions.empty();
     }
 
     /*! \brief Check if \a option is set in this result command
@@ -78,6 +129,13 @@ namespace Mdt{ namespace CommandLineParser{
     bool isHelpOptionSet() const
     {
       return isSet( QLatin1String("help") );
+    }
+
+    /*! \brief Check if this result command has any positional argument
+     */
+    bool hasPositionalArguments() const noexcept
+    {
+      return !mPositionalArguments.empty();
     }
 
     /*! \brief Get the count of arguments of this result command
@@ -119,6 +177,7 @@ namespace Mdt{ namespace CommandLineParser{
 
    private:
 
+    QString mName;
     std::vector<ParserResultOption> mOptions;
     QStringList mPositionalArguments;
   };

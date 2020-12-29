@@ -54,6 +54,22 @@ namespace Mdt{ namespace CommandLineParser{
       assert( !name.trimmed().isEmpty() );
     }
 
+    /*! \brief Copy construct a command from \a other
+     */
+    ParserDefinitionCommand(const ParserDefinitionCommand & other) = default;
+
+    /*! \brief Copy assign \a other to this command
+     */
+    ParserDefinitionCommand & operator=(const ParserDefinitionCommand & other) = default;
+
+    /*! \brief Move construct a command from \a other
+     */
+    ParserDefinitionCommand(ParserDefinitionCommand && other) = default;
+
+    /*! \brief Move assign \a other to this command
+     */
+    ParserDefinitionCommand & operator=(ParserDefinitionCommand && other) = default;
+
     /*! \brief Check if this command has a name
      */
     bool hasName() const noexcept

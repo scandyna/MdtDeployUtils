@@ -27,7 +27,7 @@
 #include "ParserDefinitionCommand.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
-#include <boost/optional.hpp>
+// #include <boost/optional.hpp>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -58,6 +58,23 @@ namespace Mdt{ namespace CommandLineParser{
     const QString & errorText() const noexcept
     {
       return mErrorText;
+    }
+
+    /*! \brief Set the main command result
+     */
+    void setMainCommand(const ParserResultCommand & command)
+    {
+      mMainCommand = command;
+    }
+
+    /*! \brief Check if this result has any option
+     *
+     * \note If you use subcommands,
+     * also query if the expected subcommand has any option.
+     */
+    bool hasOptions() const noexcept
+    {
+      return mMainCommand.hasOptions();
     }
 
     /*! \brief Check if \a option is set in this result
@@ -100,6 +117,16 @@ namespace Mdt{ namespace CommandLineParser{
       return mMainCommand.isHelpOptionSet();
     }
 
+    /*! \brief Check if this result has any positional argument
+     *
+     * \note If you use subcommands,
+     * also query if the expected subcommand has any positional arguments.
+     */
+    bool hasPositionalArguments() const noexcept
+    {
+      return mMainCommand.hasPositionalArguments();
+    }
+
     /*! \brief Get the count of arguments of this result
      *
      * \note If you use subcommands,
@@ -137,22 +164,47 @@ namespace Mdt{ namespace CommandLineParser{
       return mMainCommand.positionalArgumentAt(index);
     }
 
-    /*! \brief Find the subcommand related to \a commandDefinition
+    /*! \brief Set the subcommand to this result
      */
-    boost::optional<const ParserResultCommand &> findSubCommand(const ParserDefinitionCommand & commandDefinition) const
+    void setSubCommand(const ParserResultCommand & command)
     {
+      mSubCommand = command;
     }
 
-    /*! \brief Find a subcommand by its name
+    /*! \brief Check if this result has a subcommand
      */
-    const ParserResultCommand & findSubCommand(const QString & commandName) const
+    bool hasSubCommand() const noexcept
     {
+      return mSubCommand.hasName();
     }
+
+    /*! \brief Get the subcommand of this result
+     */
+    const ParserResultCommand & subCommand() const noexcept
+    {
+      return mSubCommand;
+    }
+
+//     /*! \brief Find the subcommand related to \a commandDefinition
+//      *
+//      * \todo Current implementation only supports 1 level of sub-command,
+//      *  si the result will only contain 1
+//      */
+//     boost::optional<const ParserResultCommand &> findSubCommand(const ParserDefinitionCommand & commandDefinition) const
+//     {
+//     }
+
+//     /*! \brief Find a subcommand by its name
+//      */
+//     const ParserResultCommand & findSubCommand(const QString & commandName) const
+//     {
+//     }
 
 
    private:
 
     ParserResultCommand mMainCommand;
+    ParserResultCommand mSubCommand;
     QString mErrorText;
   };
 

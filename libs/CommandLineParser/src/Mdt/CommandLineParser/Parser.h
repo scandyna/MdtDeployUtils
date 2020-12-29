@@ -25,6 +25,7 @@
 #include "ParserResult.h"
 #include "mdt_commandlineparser_export.h"
 #include <QStringList>
+#include <QCoreApplication>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -56,6 +57,8 @@ namespace Mdt{ namespace CommandLineParser{
    */
   class MDT_COMMANDLINEPARSER_EXPORT Parser
   {
+    Q_DECLARE_TR_FUNCTIONS(Parser)
+
    public:
 
     /*! \brief Parse \a arguments regarding \a parserDefinition

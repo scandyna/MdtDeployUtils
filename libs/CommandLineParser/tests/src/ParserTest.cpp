@@ -31,6 +31,24 @@
 
 using namespace Mdt::CommandLineParser;
 
+/** \todo Maybe return a custom struct with the app specific data
+ *
+ * This could be re-used for a example
+ */
+/*
+class SimpleCopyAppCommandLineParserResult
+{
+ public:
+
+  bool isValid() const
+  {
+  }
+
+ private:
+
+};
+*/
+
 class SimpleCopyAppCommandLineParser
 {
  public:
@@ -47,7 +65,15 @@ class SimpleCopyAppCommandLineParser
     Parser parser;
     mResult = parser.parse(mDefinition, arguments);
 
-    return !mResult.hasError();
+    if( mResult.hasError() ){
+      return false;
+    }
+    if( !mResult.hasOptions() && !mResult.hasPositionalArguments() ){
+      mResult.setErrorText( QLatin1String("Expected at least arguments or a option") );
+      return false;
+    }
+
+    return true;
   }
 
   bool helpRequested() const
@@ -67,16 +93,6 @@ class SimpleCopyAppCommandLineParser
     assert( mResult.hasPositionalArgumentAt(1) );
 
     return mResult.positionalArgumentAt(1);
-  }
-
-  const Mdt::CommandLineParser::ParserDefinition & definition() const noexcept
-  {
-    return mDefinition;
-  }
-
-  const Mdt::CommandLineParser::ParserResult & result() const noexcept
-  {
-    return mResult;
   }
 
  private:
@@ -106,7 +122,22 @@ class AppWithSubCommandCommandLineParser
     Parser parser;
     mResult = parser.parse(mDefinition, arguments);
 
-    return !mResult.hasError();
+    if( mResult.hasError() ){
+      return false;
+    }
+    if( mResult.hasSubCommand() ){
+      if( !mResult.subCommand().hasOptions() && !mResult.subCommand().hasPositionalArguments() ){
+        mResult.setErrorText( QLatin1String("Expected at least arguments or a option") );
+        return false;
+      }
+    }else{
+      if( !mResult.hasOptions() && !mResult.hasPositionalArguments() ){
+        mResult.setErrorText( QLatin1String("Expected at least arguments or a option") );
+        return false;
+      }
+    }
+
+    return true;
   }
 
   bool helpRequested() const
@@ -116,41 +147,34 @@ class AppWithSubCommandCommandLineParser
 
   bool copyHelpRequested() const
   {
-    const auto copyCommand = mResult.findSubCommand(mCopyCommandDefinition);
-    assert(copyCommand);
-
-    return copyCommand->isHelpOptionSet();
+    if( !isCopyCommand() ){
+      return false;
+    }
+    return mResult.subCommand().isHelpOptionSet();
   }
 
   QString copySourceFile() const
   {
-    const auto copyCommand = mResult.findSubCommand(mCopyCommandDefinition);
-    assert( copyCommand );
-    assert( copyCommand->hasPositionalArgumentAt(0) );
+    assert( isCopyCommand() );
+    assert( mResult.subCommand().hasPositionalArgumentAt(0) );
 
-    return copyCommand->positionalArgumentAt(0);
+    return mResult.subCommand().positionalArgumentAt(0);
   }
 
   QString copyDestinationDirectory() const
   {
-    const auto copyCommand = mResult.findSubCommand(mCopyCommandDefinition);
-    assert( copyCommand );
-    assert( copyCommand->hasPositionalArgumentAt(1) );
+    assert( isCopyCommand() );
+    assert( mResult.subCommand().hasPositionalArgumentAt(1) );
 
-    return copyCommand->positionalArgumentAt(1);
-  }
-
-  const Mdt::CommandLineParser::ParserDefinition & definition() const noexcept
-  {
-    return mDefinition;
-  }
-
-  const Mdt::CommandLineParser::ParserResult & result() const noexcept
-  {
-    return mResult;
+    return mResult.subCommand().positionalArgumentAt(1);
   }
 
  private:
+
+  bool isCopyCommand() const
+  {
+    return mResult.subCommand().name() == QLatin1String("copy");
+  }
 
   Mdt::CommandLineParser::ParserDefinitionCommand mCopyCommandDefinition;
   Mdt::CommandLineParser::ParserDefinition mDefinition;
@@ -220,6 +244,45 @@ TEST_CASE("AppWithSubCommand")
     REQUIRE( parser.parse(arguments) );
     REQUIRE( parser.copySourceFile() == QLatin1String("file.txt") );
     REQUIRE( parser.copyDestinationDirectory() == QLatin1String("/tmp") );
+  }
+}
+
+TEST_CASE("findSubCommandByName")
+{
+  using Impl::findSubCommandByName;
+
+  std::vector<ParserDefinitionCommand> subCommands;
+
+  SECTION("No sub-command")
+  {
+    const auto command = findSubCommandByName( subCommands, QLatin1String("copy") );
+    REQUIRE( !command );
+  }
+
+  SECTION("copy,list")
+  {
+    subCommands.emplace_back( QLatin1String("copy") );
+    subCommands.emplace_back( QLatin1String("list") );
+
+    SECTION("rem")
+    {
+      const auto command = findSubCommandByName( subCommands, QLatin1String("rem") );
+      REQUIRE( !command );
+    }
+
+    SECTION("copy")
+    {
+      const auto command = findSubCommandByName( subCommands, QLatin1String("copy") );
+      REQUIRE( (bool)command );
+      REQUIRE( command->name() == QLatin1String("copy") );
+    }
+
+    SECTION("list")
+    {
+      const auto command = findSubCommandByName( subCommands, QLatin1String("list") );
+      REQUIRE( (bool)command );
+      REQUIRE( command->name() == QLatin1String("list") );
+    }
   }
 }
 
@@ -431,5 +494,78 @@ TEST_CASE("setupQtParser")
       REQUIRE( qtParser.isSet( QLatin1String("force") ) );
       REQUIRE( qtParser.positionalArguments() == expectedPositionalArguments );
     }
+  }
+}
+
+TEST_CASE("resultOptionFromName")
+{
+  using Impl::resultOptionFromName;
+
+  std::vector<ParserDefinitionOption> knownOptions;
+  knownOptions.emplace_back( 'h', QLatin1String("help"), QLatin1String("Help option") );
+  knownOptions.emplace_back( 'f', QLatin1String("force"), QLatin1String("Force option") );
+
+  SECTION("help")
+  {
+    REQUIRE( resultOptionFromName( QLatin1String("help"), knownOptions ).name() == QLatin1String("help") );
+  }
+
+  SECTION("h")
+  {
+    REQUIRE( resultOptionFromName( QLatin1String("h"), knownOptions ).name() == QLatin1String("help") );
+  }
+
+  SECTION("force")
+  {
+    REQUIRE( resultOptionFromName( QLatin1String("force"), knownOptions ).name() == QLatin1String("force") );
+  }
+
+  SECTION("f")
+  {
+    REQUIRE( resultOptionFromName( QLatin1String("f"), knownOptions ).name() == QLatin1String("force") );
+  }
+}
+
+TEST_CASE("fillResultCommandFromQtParser")
+{
+  using Impl::fillResultCommandFromQtParser;
+  using Impl::setupQtParser;
+
+  ParserDefinitionCommand defCommand;
+  ParserResultCommand resultCommand;
+  QCommandLineParser qtParser;
+  QStringList arguments{QLatin1String("myapp")};
+
+  SECTION("myapp --help")
+  {
+    defCommand.addHelpOption();
+    setupQtParser(qtParser, defCommand);
+    arguments << QLatin1String("--help");
+    REQUIRE( qtParser.parse(arguments) );
+    fillResultCommandFromQtParser(resultCommand, qtParser, defCommand);
+    REQUIRE( resultCommand.isHelpOptionSet() );
+  }
+
+  SECTION("myapp -h")
+  {
+    defCommand.addHelpOption();
+    setupQtParser(qtParser, defCommand);
+    arguments << QLatin1String("-h");
+    REQUIRE( qtParser.parse(arguments) );
+    fillResultCommandFromQtParser(resultCommand, qtParser, defCommand);
+    REQUIRE( resultCommand.isHelpOptionSet() );
+  }
+
+  SECTION("myapp --force file.txt /tmp")
+  {
+    defCommand.addOption( 'f', QLatin1String("force"), QLatin1String("Force option") );
+    setupQtParser(qtParser, defCommand);
+    arguments << QLatin1String("--force") << QLatin1String("file.txt") << QLatin1String("/tmp");
+    REQUIRE( qtParser.parse(arguments) );
+    fillResultCommandFromQtParser(resultCommand, qtParser, defCommand);
+    REQUIRE( resultCommand.isSet( QLatin1String("force") ) );
+    REQUIRE( resultCommand.positionalArgumentCount() == 2 );
+    REQUIRE( resultCommand.positionalArgumentAt(0) == QLatin1String("file.txt") );
+    REQUIRE( resultCommand.positionalArgumentAt(1) == QLatin1String("/tmp") );
   }
 }
