@@ -199,6 +199,36 @@ namespace Mdt{ namespace CommandLineParser{
       return !mPositionalArguments.empty();
     }
 
+    /*! \brief Get the count of arguments of this result command
+     */
+    int positionalArgumentCount() const noexcept
+    {
+      return mPositionalArguments.size();
+    }
+
+    /*! \brief Check if this command has a positional argument at \a index
+     *
+     * \pre \a index must be >= 0
+     */
+    bool hasPositionalArgumentAt(int index) const noexcept
+    {
+      assert( index >= 0 );
+
+      return index < positionalArgumentCount();
+    }
+
+    /*! \brief Get the positional argument at \a index
+     *
+     * \pre \a index must be in valid range ( 0 <= \a index < argumentCount() )
+     */
+    const ParserDefinitionPositionalArgument & positionalArgumentAt(int index) const noexcept
+    {
+      assert( index >= 0 );
+      assert( index < positionalArgumentCount() );
+
+      return mPositionalArguments[index];
+    }
+
     /*! \brief Get the positional arguments of this command
      */
     const std::vector<ParserDefinitionPositionalArgument> & positionalArguments() const noexcept

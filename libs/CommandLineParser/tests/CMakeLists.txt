@@ -59,3 +59,11 @@ mdt_add_test(
   SOURCE_FILES
     src/BashCompletionGeneratorTest.cpp
 )
+
+mdt_add_test(
+  NAME BashCompletionParserTest
+  TARGET bashCompletionParserTest
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main
+  SOURCE_FILES
+    src/BashCompletionParserTest.cpp
+)

@@ -37,6 +37,7 @@ add_library(Mdt_CommandLineParser
   Mdt/CommandLineParser/BashCompletionGeneratorOption.cpp
   Mdt/CommandLineParser/BashCompletionGeneratorCommand.cpp
   Mdt/CommandLineParser/BashCompletionGenerator.cpp
+  Mdt/CommandLineParser/BashCompletionParser.cpp
 )
 add_library(Mdt::CommandLineParser ALIAS Mdt_CommandLineParser)
 
