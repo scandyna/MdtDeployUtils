@@ -26,7 +26,9 @@
 #include "mdt_commandlineparser_export.h"
 #include <QCoreApplication>
 #include <QString>
+#include <boost/optional.hpp>
 #include <vector>
+#include <algorithm>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -206,6 +208,34 @@ namespace Mdt{ namespace CommandLineParser{
     bool hasSubCommands() const noexcept
     {
       return !mSubCommands.empty();
+    }
+
+    /*! \brief Find a sub-command by \a name
+     */
+    boost::optional<const ParserDefinitionCommand &> findSubCommandByName(const QString & name) const noexcept
+    {
+      const auto pred = [&name](const ParserDefinitionCommand & command){
+        return command.name() == name;
+      };
+
+      const auto it = std::find_if(mSubCommands.cbegin(), mSubCommands.cend(), pred);
+      if( it == mSubCommands.cend() ){
+        return boost::none;
+      }
+
+      return *it;
+    }
+
+    /*! \brief Check if this definition contains a sub-command named \a subCommandName
+     */
+    bool containsSubCommand(const QString & subCommandName) const noexcept
+    {
+      const auto command = findSubCommandByName(subCommandName);
+      if(command){
+        return true;
+      }
+
+      return false;
     }
 
     /*! \brief Get subcommands

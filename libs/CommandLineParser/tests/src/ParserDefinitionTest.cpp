@@ -395,6 +395,77 @@ TEST_CASE("ParserDefinition_subCommands")
   }
 }
 
+TEST_CASE("ParserDefinition_findSubCommandByName")
+{
+  ParserDefinition parser;
+
+  SECTION("No sub-command")
+  {
+    const auto command = parser.findSubCommandByName( QLatin1String("copy") );
+    REQUIRE( !command );
+  }
+
+  SECTION("copy,list")
+  {
+    ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+    ParserDefinitionCommand listCommand( QLatin1String("list") );
+    parser.addSubCommand(copyCommand);
+    parser.addSubCommand(listCommand);
+
+    SECTION("rem")
+    {
+      const auto command = parser.findSubCommandByName( QLatin1String("rem") );
+      REQUIRE( !command );
+    }
+
+    SECTION("copy")
+    {
+      const auto command = parser.findSubCommandByName( QLatin1String("copy") );
+      REQUIRE( (bool)command );
+      REQUIRE( command->name() == QLatin1String("copy") );
+    }
+
+    SECTION("list")
+    {
+      const auto command = parser.findSubCommandByName( QLatin1String("list") );
+      REQUIRE( (bool)command );
+      REQUIRE( command->name() == QLatin1String("list") );
+    }
+  }
+}
+
+TEST_CASE("ParserDefinition_containsSubCommand")
+{
+  ParserDefinition parserDefinition;
+
+  SECTION("No sub-command")
+  {
+    REQUIRE( !parserDefinition.containsSubCommand( QLatin1String("copy") ) );
+  }
+
+  SECTION("copy,list")
+  {
+    ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+    ParserDefinitionCommand listCommand( QLatin1String("list") );
+    parserDefinition.addSubCommand(copyCommand);
+    parserDefinition.addSubCommand(listCommand);
+
+    SECTION("rem")
+    {
+      REQUIRE( !parserDefinition.containsSubCommand( QLatin1String("rem") ) );
+    }
+
+    SECTION("copy")
+    {
+      REQUIRE( parserDefinition.containsSubCommand( QLatin1String("copy") ) );
+    }
+
+    SECTION("list")
+    {
+      REQUIRE( parserDefinition.containsSubCommand( QLatin1String("list") ) );
+    }
+  }
+}
 
 TEST_CASE("getUsageText")
 {

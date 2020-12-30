@@ -247,83 +247,11 @@ TEST_CASE("AppWithSubCommand")
   }
 }
 
-TEST_CASE("findSubCommandByName")
-{
-  using Impl::findSubCommandByName;
-
-  std::vector<ParserDefinitionCommand> subCommands;
-
-  SECTION("No sub-command")
-  {
-    const auto command = findSubCommandByName( subCommands, QLatin1String("copy") );
-    REQUIRE( !command );
-  }
-
-  SECTION("copy,list")
-  {
-    subCommands.emplace_back( QLatin1String("copy") );
-    subCommands.emplace_back( QLatin1String("list") );
-
-    SECTION("rem")
-    {
-      const auto command = findSubCommandByName( subCommands, QLatin1String("rem") );
-      REQUIRE( !command );
-    }
-
-    SECTION("copy")
-    {
-      const auto command = findSubCommandByName( subCommands, QLatin1String("copy") );
-      REQUIRE( (bool)command );
-      REQUIRE( command->name() == QLatin1String("copy") );
-    }
-
-    SECTION("list")
-    {
-      const auto command = findSubCommandByName( subCommands, QLatin1String("list") );
-      REQUIRE( (bool)command );
-      REQUIRE( command->name() == QLatin1String("list") );
-    }
-  }
-}
-
-TEST_CASE("containsSubCommand")
-{
-  using Impl::containsSubCommand;
-
-  std::vector<ParserDefinitionCommand> subCommands;
-
-  SECTION("No sub-command")
-  {
-    REQUIRE( !containsSubCommand(subCommands, QLatin1String("copy")) );
-  }
-
-  SECTION("copy,list")
-  {
-    subCommands.emplace_back( QLatin1String("copy") );
-    subCommands.emplace_back( QLatin1String("list") );
-
-    SECTION("rem")
-    {
-      REQUIRE( !containsSubCommand(subCommands, QLatin1String("rem")) );
-    }
-
-    SECTION("copy")
-    {
-      REQUIRE( containsSubCommand(subCommands, QLatin1String("copy")) );
-    }
-
-    SECTION("list")
-    {
-      REQUIRE( containsSubCommand(subCommands, QLatin1String("list")) );
-    }
-  }
-}
-
 TEST_CASE("splitToMainAndSubCommandArguments")
 {
   using Impl::splitToMainAndSubCommandArguments;
 
-  std::vector<ParserDefinitionCommand> subCommands;
+  ParserDefinition parserDefinition;
   QStringList arguments{QLatin1String("myapp")};
   QStringList mainArguments;
   QStringList subCommandArguments;
@@ -335,7 +263,7 @@ TEST_CASE("splitToMainAndSubCommandArguments")
     SECTION("myapp")
     {
       expectedMainArguments << QLatin1String("myapp");
-      splitToMainAndSubCommandArguments(arguments, subCommands, mainArguments, subCommandArguments);
+      splitToMainAndSubCommandArguments(arguments, parserDefinition, mainArguments, subCommandArguments);
       REQUIRE( mainArguments == expectedMainArguments );
       REQUIRE( subCommandArguments == expectedSubCommandArguments );
     }
@@ -344,7 +272,7 @@ TEST_CASE("splitToMainAndSubCommandArguments")
     {
       arguments << QLatin1String("-h");
       expectedMainArguments << QLatin1String("myapp") << QLatin1String("-h");
-      splitToMainAndSubCommandArguments(arguments, subCommands, mainArguments, subCommandArguments);
+      splitToMainAndSubCommandArguments(arguments, parserDefinition, mainArguments, subCommandArguments);
       REQUIRE( mainArguments == expectedMainArguments );
       REQUIRE( subCommandArguments == expectedSubCommandArguments );
     }
@@ -353,7 +281,7 @@ TEST_CASE("splitToMainAndSubCommandArguments")
     {
       arguments << QLatin1String("-f") << QLatin1String("copy") << QLatin1String("file.txt") << QLatin1String("/tmp");
       expectedMainArguments << QLatin1String("myapp") << QLatin1String("-f") << QLatin1String("copy") << QLatin1String("file.txt") << QLatin1String("/tmp");
-      splitToMainAndSubCommandArguments(arguments, subCommands, mainArguments, subCommandArguments);
+      splitToMainAndSubCommandArguments(arguments, parserDefinition, mainArguments, subCommandArguments);
       REQUIRE( mainArguments == expectedMainArguments );
       REQUIRE( subCommandArguments == expectedSubCommandArguments );
     }
@@ -361,13 +289,15 @@ TEST_CASE("splitToMainAndSubCommandArguments")
 
   SECTION("copy and list sub-commands")
   {
-    subCommands.emplace_back( QLatin1String("copy") );
-    subCommands.emplace_back( QLatin1String("list") );
+    ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+    ParserDefinitionCommand listCommand( QLatin1String("list") );
+    parserDefinition.addSubCommand(copyCommand);
+    parserDefinition.addSubCommand(listCommand);
 
     SECTION("myapp")
     {
       expectedMainArguments << QLatin1String("myapp");
-      splitToMainAndSubCommandArguments(arguments, subCommands, mainArguments, subCommandArguments);
+      splitToMainAndSubCommandArguments(arguments, parserDefinition, mainArguments, subCommandArguments);
       REQUIRE( mainArguments == expectedMainArguments );
       REQUIRE( subCommandArguments == expectedSubCommandArguments );
     }
@@ -376,7 +306,7 @@ TEST_CASE("splitToMainAndSubCommandArguments")
     {
       arguments << QLatin1String("-h");
       expectedMainArguments << QLatin1String("myapp") << QLatin1String("-h");
-      splitToMainAndSubCommandArguments(arguments, subCommands, mainArguments, subCommandArguments);
+      splitToMainAndSubCommandArguments(arguments, parserDefinition, mainArguments, subCommandArguments);
       REQUIRE( mainArguments == expectedMainArguments );
       REQUIRE( subCommandArguments == expectedSubCommandArguments );
     }
@@ -386,7 +316,7 @@ TEST_CASE("splitToMainAndSubCommandArguments")
       arguments << QLatin1String("-f") << QLatin1String("copy") << QLatin1String("file.txt") << QLatin1String("/tmp");
       expectedMainArguments << QLatin1String("myapp") << QLatin1String("-f");
       expectedSubCommandArguments << QLatin1String("myapp") << QLatin1String("copy") << QLatin1String("file.txt") << QLatin1String("/tmp");
-      splitToMainAndSubCommandArguments(arguments, subCommands, mainArguments, subCommandArguments);
+      splitToMainAndSubCommandArguments(arguments, parserDefinition, mainArguments, subCommandArguments);
       REQUIRE( mainArguments == expectedMainArguments );
       REQUIRE( subCommandArguments == expectedSubCommandArguments );
     }
@@ -396,7 +326,7 @@ TEST_CASE("splitToMainAndSubCommandArguments")
       arguments << QLatin1String("-f") << QLatin1String("copy") << QLatin1String("file.txt") << QLatin1String("/tmp") << QLatin1String("copy");
       expectedMainArguments << QLatin1String("myapp") << QLatin1String("-f");
       expectedSubCommandArguments << QLatin1String("myapp") << QLatin1String("copy") << QLatin1String("file.txt") << QLatin1String("/tmp") << QLatin1String("copy");
-      splitToMainAndSubCommandArguments(arguments, subCommands, mainArguments, subCommandArguments);
+      splitToMainAndSubCommandArguments(arguments, parserDefinition, mainArguments, subCommandArguments);
       REQUIRE( mainArguments == expectedMainArguments );
       REQUIRE( subCommandArguments == expectedSubCommandArguments );
     }

@@ -36,7 +36,7 @@ ParserResult Parser::parse(const ParserDefinition & parserDefinition, const QStr
     QStringList mainCommandArguments;
     QStringList subCommandArguments;
 
-    Impl::splitToMainAndSubCommandArguments(arguments, parserDefinition.subCommands(), mainCommandArguments, subCommandArguments);
+    Impl::splitToMainAndSubCommandArguments(arguments, parserDefinition, mainCommandArguments, subCommandArguments);
 
     if( !Impl::parseMainCommandToResult(parserDefinition.mainCommand(), mainCommandArguments, result) ){
       return result;
@@ -47,7 +47,7 @@ ParserResult Parser::parse(const ParserDefinition & parserDefinition, const QStr
     }
     assert( subCommandArguments.size() >= 2 );
 
-    const auto subCommand = Impl::findSubCommandByName( parserDefinition.subCommands(), subCommandArguments.at(1) );
+    const auto subCommand = parserDefinition.findSubCommandByName( subCommandArguments.at(1) );
     // If sub-command is not found, its a bug in Impl::splitToMainAndSubCommandArguments()
     assert(subCommand);
 

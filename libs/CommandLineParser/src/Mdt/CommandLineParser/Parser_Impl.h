@@ -24,6 +24,7 @@
 #include "ParserResult.h"
 #include "ParserResultCommand.h"
 #include "ParserResultOption.h"
+#include "ParserDefinition.h"
 #include "ParserDefinitionCommand.h"
 #include "ParserDefinitionOption.h"
 #include <QString>
@@ -31,7 +32,9 @@
 #include <QStringList>
 #include <QCommandLineOption>
 #include <QCommandLineParser>
+
 #include <boost/optional.hpp>
+
 #include <algorithm>
 #include <vector>
 #include <iterator>
@@ -41,54 +44,24 @@ namespace Mdt{ namespace CommandLineParser{
 
   namespace Impl{
 
-    /*! \internal Find a sub-command by \a name
-     */
-    static
-    boost::optional<const ParserDefinitionCommand &> findSubCommandByName(const std::vector<ParserDefinitionCommand> & subCommands, const QString & name)
-    {
-      const auto pred = [&name](const ParserDefinitionCommand & command){
-        return command.name() == name;
-      };
-
-      const auto it = std::find_if(subCommands.cbegin(), subCommands.cend(), pred);
-      if( it == subCommands.cend() ){
-        return boost::none;
-      }
-
-      return *it;
-    }
-
-    /*! \internal Check if \a subCommands contains a command named \a subCommandName
-     */
-    static
-    bool containsSubCommand(const std::vector<ParserDefinitionCommand> & subCommands, const QString & subCommandName)
-    {
-      const auto command = findSubCommandByName(subCommands, subCommandName);
-      if(command){
-        return true;
-      }
-
-      return false;
-    }
-
     /*! \internal Split \a arguments to part that is before a sub-command and the other after
      *
      * \code
      * QStringList mainArguments;
      * QStringList subCommandArguments;
      *
-     * const auto subCommands = parserDefinition.subCommands();
-     * // subCommands contains the copy sub-command
+     * const auto parserDefinition = ...
+     * // parserDefinition contains the copy sub-command
      *
-     * splitToMainAndSubCommandArguments({"myapp"}, subCommands, mainArguments, subCommandArguments);
+     * splitToMainAndSubCommandArguments({"myapp"}, parserDefinition, mainArguments, subCommandArguments);
      * // mainArguments == {"myapp"}
      * // subCommandArguments will be empty
      *
-     * splitToMainAndSubCommandArguments({"myapp","-f","file.txt","/tmp"}, subCommands, mainArguments, subCommandArguments);
+     * splitToMainAndSubCommandArguments({"myapp","-f","file.txt","/tmp"}, parserDefinition, mainArguments, subCommandArguments);
      * // mainArguments == {"myapp","-f","file.txt","/tmp"}
      * // subCommandArguments will be empty
      *
-     * splitToMainAndSubCommandArguments({"myapp","-f","copy","file.txt","/tmp"}, subCommands, mainArguments, subCommandArguments);
+     * splitToMainAndSubCommandArguments({"myapp","-f","copy","file.txt","/tmp"}, parserDefinition, mainArguments, subCommandArguments);
      * // mainArguments == {"myapp","-f"}
      * // subCommandArguments == {"myapp","copy","file.txt","/tmp"}
      * \endcode
@@ -102,13 +75,13 @@ namespace Mdt{ namespace CommandLineParser{
      * \pre \a arguments must have at least 1 argument, which is the executable name
      */
     static
-    void splitToMainAndSubCommandArguments(const QStringList & arguments, std::vector<ParserDefinitionCommand> subCommands,
+    void splitToMainAndSubCommandArguments(const QStringList & arguments, const ParserDefinition & parserDefinition,
                                            QStringList & mainArguments, QStringList & subCommandArguments)
     {
       assert( !arguments.isEmpty() );
 
-      const auto isSubCommand = [&subCommands](const QString & argument){
-        return containsSubCommand(subCommands, argument);
+      const auto isSubCommand = [&parserDefinition](const QString & argument){
+        return parserDefinition.containsSubCommand(argument);
       };
       const auto it = std::find_if(arguments.cbegin(), arguments.cend(), isSubCommand);
 
