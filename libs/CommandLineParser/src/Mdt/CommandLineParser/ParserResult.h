@@ -22,18 +22,14 @@
 #define MDT_COMMAND_LINE_PARSER_PARSER_RESULT_H
 
 #include "ParserResultCommand.h"
-#include "ParserResultPositionalArgument.h"
 #include "ParserDefinitionOption.h"
 #include "ParserDefinitionCommand.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
-// #include <boost/optional.hpp>
 
 namespace Mdt{ namespace CommandLineParser{
 
   /*! \brief Result from a Parser
-   *
-   * 
    */
   class MDT_COMMANDLINEPARSER_EXPORT ParserResult
   {
@@ -184,22 +180,6 @@ namespace Mdt{ namespace CommandLineParser{
     {
       return mSubCommand;
     }
-
-//     /*! \brief Find the subcommand related to \a commandDefinition
-//      *
-//      * \todo Current implementation only supports 1 level of sub-command,
-//      *  si the result will only contain 1
-//      */
-//     boost::optional<const ParserResultCommand &> findSubCommand(const ParserDefinitionCommand & commandDefinition) const
-//     {
-//     }
-
-//     /*! \brief Find a subcommand by its name
-//      */
-//     const ParserResultCommand & findSubCommand(const QString & commandName) const
-//     {
-//     }
-
 
    private:
 

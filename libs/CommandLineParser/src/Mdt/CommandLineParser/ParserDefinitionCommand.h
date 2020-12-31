@@ -91,16 +91,6 @@ namespace Mdt{ namespace CommandLineParser{
       return mName.length();
     }
 
-    /*! \brief Check if this command is empty
-     *
-     * Return true if this command has no arguments and no options
-     */
-    [[deprecated]]
-    bool isEmpty() const noexcept
-    {
-//       return mArguments.empty() && mOptions.empty();
-    }
-
     /*! \brief Set the description of this command
      */
     void setDescription(const QString & description)

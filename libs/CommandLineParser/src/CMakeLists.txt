@@ -30,7 +30,6 @@ add_library(Mdt_CommandLineParser
   Mdt/CommandLineParser/ParserDefinition.cpp
   Mdt/CommandLineParser/Parser.cpp
   Mdt/CommandLineParser/ParserResultOption.cpp
-  Mdt/CommandLineParser/ParserResultPositionalArgument.cpp
   Mdt/CommandLineParser/ParserResultCommand.cpp
   Mdt/CommandLineParser/ParserResult.cpp
   Mdt/CommandLineParser/BashCompletionGeneratorPositionalArgument.cpp

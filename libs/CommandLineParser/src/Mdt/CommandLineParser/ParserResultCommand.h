@@ -23,7 +23,6 @@
 
 #include "ParserResultOption.h"
 #include "ParserDefinitionOption.h"
-#include "ParserResultPositionalArgument.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
 #include <QLatin1String>
@@ -117,12 +116,6 @@ namespace Mdt{ namespace CommandLineParser{
 
       return it != mOptions.cend();
     }
-
-//     /*! \brief Check if \a optionShortName is set in this result command
-//      */
-//     bool isSet(char optionShortName) const
-//     {
-//     }
 
     /*! \brief Check if the help option is set in this result command
      */
