@@ -28,6 +28,7 @@
 #include "ParserDefinitionCommand.h"
 #include "ParserDefinitionOption.h"
 #include <QString>
+#include <QLatin1String>
 #include <QChar>
 #include <QStringList>
 #include <QCommandLineOption>
@@ -73,6 +74,10 @@ namespace Mdt{ namespace CommandLineParser{
      * and the sub-command name can be used in the parser result.
      *
      * \pre \a arguments must have at least 1 argument, which is the executable name
+     *
+     * \todo This will probably not work when a option value or option name, or a positional argument,
+     * that has a command name is passed before the command (after is ok)
+     * Should parse before with QCommandLineParser and take positional arguments.
      */
     static
     void splitToMainAndSubCommandArguments(const QStringList & arguments, const ParserDefinition & parserDefinition,
@@ -158,7 +163,11 @@ namespace Mdt{ namespace CommandLineParser{
 
       const QStringList positionalArguments = qtParser.positionalArguments();
       for(const QString & argument : positionalArguments){
-        command.addPositionalArgument(argument);
+        if( argument == QLatin1String("-") ){
+          command.addOption( ParserResultOption() );
+        }else{
+          command.addPositionalArgument(argument);
+        }
       }
     }
 
