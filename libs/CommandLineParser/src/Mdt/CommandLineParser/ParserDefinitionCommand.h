@@ -70,6 +70,17 @@ namespace Mdt{ namespace CommandLineParser{
      */
     ParserDefinitionCommand & operator=(ParserDefinitionCommand && other) = default;
 
+    /*! \brief Set the name of this command
+     *
+     * \pre \a name must not be empty
+     */
+    void setName(const QString & name)
+    {
+      assert( !name.trimmed().isEmpty() );
+
+      mName = name.trimmed();
+    }
+
     /*! \brief Check if this command has a name
      */
     bool hasName() const noexcept
