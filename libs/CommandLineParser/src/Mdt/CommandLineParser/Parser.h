@@ -31,7 +31,6 @@ namespace Mdt{ namespace CommandLineParser{
 
   /*! \brief Parse the command line from a definition and returns a result
    *
-   * 
    * \code
    * using namespace Mdt::CommandLineParser;
    *
@@ -52,6 +51,7 @@ namespace Mdt{ namespace CommandLineParser{
    * }
    * \endcode
    *
+   *
    * \sa ParserDefinition
    * \sa ParserResult
    */
@@ -62,6 +62,47 @@ namespace Mdt{ namespace CommandLineParser{
    public:
 
     /*! \brief Parse \a arguments regarding \a parserDefinition
+     *
+     * This function uses QCommandLineParser internally.
+     *
+     * As QCommandLineParser, it is checked if a unknown option exists in \a arguments,
+     * but no check is made to enforce the count of positional arguments.
+     *
+     * For example, if the application expects 2 positional arguments:
+     * \code
+     * myapp [options] source destination
+     * \endcode
+     * this function will not fail, either the count of positional arguments does not match:
+     * \code
+     * // Ok
+     * myapp
+     *
+     * // Ok
+     * myapp file1.txt
+     *
+     * // Ok
+     * myapp file1.txt /tmp other-positional-argument
+     * \endcode
+     *
+     * If \a parserDefinition contains sub-commands,
+     * \a arguments is split into 2 set of arguments,
+     * then parsed separately with QCommandLineParser.
+     *
+     * For example:
+     * \code
+     * myapp [options] command [command-options] command-argument-1 command-argument-2
+     * \endcode
+     * possible calls:
+     * \code
+     * // Ok
+     * myapp
+     *
+     * // Ok
+     * myapp copy file1.txt /tmp
+     *
+     * // Ok
+     * myapp arg1 copy file1.txt /tmp arg2
+     * \endcode
      */
     ParserResult parse(const ParserDefinition & parserDefinition, const QStringList & arguments);
   };
