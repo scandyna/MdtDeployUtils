@@ -38,7 +38,7 @@ int DeployUtilsMain::runMain()
   commandLineParser.process();
 
 
-  qDebug() << "Main END";
+//   qDebug() << "Main END";
 
   return 0;
 }
