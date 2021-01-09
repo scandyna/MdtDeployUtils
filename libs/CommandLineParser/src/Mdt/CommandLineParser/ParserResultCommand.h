@@ -98,6 +98,20 @@ namespace Mdt{ namespace CommandLineParser{
       return !mOptions.empty();
     }
 
+    /*! \brief Get the count of options in this result command
+     */
+    int optionCount() const noexcept
+    {
+      return mOptions.size();
+    }
+
+    /*! \brief Get the options of this result
+     */
+    const std::vector<ParserResultOption> & options() const noexcept
+    {
+      return mOptions;
+    }
+
     /*! \brief Check if \a option is set in this result command
      */
     bool isSet(const ParserDefinitionOption & option) const
@@ -143,6 +157,13 @@ namespace Mdt{ namespace CommandLineParser{
     void addPositionalArgument(const QString & argument)
     {
       mPositionalArguments.append(argument);
+    }
+
+    /*! \brief Get positional arguments of this result command
+     */
+    const QStringList & positionalArguments() const noexcept
+    {
+      return mPositionalArguments;
     }
 
     /*! \brief Check if this command has a positional argument at \a index

@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -61,6 +61,13 @@ namespace Mdt{ namespace CommandLineParser{
     void setMainCommand(const ParserResultCommand & command)
     {
       mMainCommand = command;
+    }
+
+    /*! \brief Get the main command result
+     */
+    const ParserResultCommand & mainCommand() const noexcept
+    {
+      return mMainCommand;
     }
 
     /*! \brief Check if this result has any option

@@ -33,7 +33,9 @@ namespace Mdt{ namespace CommandLineParser{
   {
    public:
 
-    ParserResultOption() = delete;
+    /*! \brief Construct a null option
+     */
+    explicit ParserResultOption() noexcept = default;
 
     /*! \brief Construct a option with a name
      *
@@ -56,11 +58,11 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Move construct a option from \a other
      */
-    ParserResultOption(ParserResultOption && other) = default;
+    ParserResultOption(ParserResultOption && other) noexcept = default;
 
     /*! \brief Move assign \a other to this option
      */
-    ParserResultOption & operator=(ParserResultOption && other) = default;
+    ParserResultOption & operator=(ParserResultOption && other) noexcept = default;
 
     /*! \brief Get the name
      */
