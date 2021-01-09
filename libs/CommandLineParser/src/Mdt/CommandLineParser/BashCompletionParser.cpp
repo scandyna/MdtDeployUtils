@@ -19,24 +19,45 @@
  **
  ****************************************************************************/
 #include "BashCompletionParser.h"
+#include "BashCompletionParserQuery.h"
 #include "Impl/BashCompletionParser.h"
 #include <QString>
 #include <iostream>
+
+// #include "ParserResultDebug.h"
+
+// #include <QDebug>
 
 namespace Mdt{ namespace CommandLineParser{
 
 bool handleBashCompletion(const ParserResult & result, const ParserDefinition & parserDefinition)
 {
-  if( !result.hasPositionalArgumentAt(0) ){
+//   std::cerr << toDebugString(result).toStdString() << std::endl;
+  
+  if( !BashCompletionParserQuery::isValidBashCompletionQuery(result) ){
     return false;
   }
-
-  if( result.positionalArgumentAt(0) != Impl::completionFindCurrentPositionalArgumentNameString() ){
-    return false;
-  }
+//   if( !result.hasPositionalArgumentAt(0) ){
+//     qDebug() << "result has no args";
+//     return false;
+//   }
+// 
+//   if( result.positionalArgumentAt(0) != Impl::completionFindCurrentPositionalArgumentNameString() ){
+//     qDebug() << "result has not expected arg";
+//     return false;
+//   }
+  
+//   std::cerr << toDebugString(result).toStdString() << std::endl;
+//   qDebug() << "args: " << result.positionalArgumentCount();
+//   qDebug() << "arg_0: " << result.positionalArgumentAt(0);
+//   if(result.hasPositionalArgumentAt(1)){
+//     qDebug() << "arg_1: " << result.positionalArgumentAt(1);
+//   }
 
   const QString argumentName = Impl::findCurrentPositionalArgumentName(result, parserDefinition);
   std::cout << argumentName.toStdString() << std::flush;
+  
+//   qDebug() << "found: " << argumentName;
 
   return true;
 }

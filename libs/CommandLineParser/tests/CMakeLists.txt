@@ -61,6 +61,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME ParserResultInCommandLineIndexMapTest
+  TARGET parserResultInCommandLineIndexMapTest
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main
+  SOURCE_FILES
+    src/ParserResultInCommandLineIndexMapTest.cpp
+)
+
+mdt_add_test(
   NAME BashCompletionParserTest
   TARGET bashCompletionParserTest
   DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main

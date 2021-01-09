@@ -26,6 +26,8 @@
 #include <QStringList>
 #include <cassert>
 
+// #include <QDebug>
+
 namespace Mdt{ namespace CommandLineParser{
 
 ParserResult Parser::parse(const ParserDefinition & parserDefinition, const QStringList & arguments)
@@ -37,6 +39,10 @@ ParserResult Parser::parse(const ParserDefinition & parserDefinition, const QStr
     QStringList subCommandArguments;
 
     Impl::splitToMainAndSubCommandArguments(arguments, parserDefinition, mainCommandArguments, subCommandArguments);
+    
+//     qDebug() << "arguments: " << arguments;
+//     qDebug() << "mainCommandArguments: " << mainCommandArguments;
+//     qDebug() << "subCommandArguments: " << subCommandArguments;
 
     if( !Impl::parseMainCommandToResult(parserDefinition.mainCommand(), mainCommandArguments, result) ){
       return result;

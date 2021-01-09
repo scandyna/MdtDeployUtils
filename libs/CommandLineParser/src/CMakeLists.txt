@@ -32,10 +32,13 @@ add_library(Mdt_CommandLineParser
   Mdt/CommandLineParser/ParserResultOption.cpp
   Mdt/CommandLineParser/ParserResultCommand.cpp
   Mdt/CommandLineParser/ParserResult.cpp
+  Mdt/CommandLineParser/ParserResultDebug.cpp
+  Mdt/CommandLineParser/ParserResultInCommandLineIndexMap.cpp
   Mdt/CommandLineParser/BashCompletionGeneratorPositionalArgument.cpp
   Mdt/CommandLineParser/BashCompletionGeneratorOption.cpp
   Mdt/CommandLineParser/BashCompletionGeneratorCommand.cpp
   Mdt/CommandLineParser/BashCompletionGenerator.cpp
+  Mdt/CommandLineParser/BashCompletionParserQuery.cpp
   Mdt/CommandLineParser/BashCompletionParser.cpp
 )
 add_library(Mdt::CommandLineParser ALIAS Mdt_CommandLineParser)
