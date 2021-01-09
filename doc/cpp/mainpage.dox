@@ -23,7 +23,16 @@
  *
  * \section Command_line_parser Command-line parser
  *
+ * \sa Mdt::CommandLineParser::ParserDefinition
+ * \sa Mdt::CommandLineParser::Parser
+ *
  * \subsection tab_completion TAB completion
+ *
+ * \sa Mdt::CommandLineParser::handleBashCompletion()
+ *
+ * \subsection command_line_parser_debug Debug
+ *
+ * \sa Mdt/CommandLineParser/ParserResultDebug.h
  *
  * \section rationale Rationale
  *
