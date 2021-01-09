@@ -30,9 +30,9 @@
 #include <QStringBuilder>
 #include <cassert>
 
-#include "../ParserResultDebug.h"
-#include <QDebug>
-#include <iostream>
+// #include "../ParserResultDebug.h"
+// #include <QDebug>
+// #include <iostream>
 
 namespace Mdt{ namespace CommandLineParser{ namespace Impl{
 
@@ -87,24 +87,15 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
   QString findCurrentPositionalArgumentName(const ParserResult & result, const ParserDefinition & parserDefinition)
   {
     assert( BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-//     assert( result.hasPositionalArgumentAt(0) );
-//     assert( result.positionalArgumentAt(0) == completionFindCurrentPositionalArgumentNameString() );
 
-    std::cerr << toDebugString(result).toStdString() << std::endl;
-    
     BashCompletionParserQuery query(result, parserDefinition);
 
-    if( query.isCursorAtSubCommandNameIndexInDefinition() ){
-      
-      qDebug() << " cursor is command";
-      
-      return QLatin1String("command");
+    if( query.isCursorAtMainCommandOption() ){
+      return QLatin1String("options");
     }
 
     if( query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() ){
 
-      qDebug() << " cursor in MAIN command";
-      
       // If the (main) command is complete
       if( query.mainCommandPositionalArgumentsCount() == parserDefinition.mainCommand().positionalArgumentCount() ){
         return QString();
@@ -118,14 +109,26 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
 
     }
 
-    if( query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() ){
-      
-      qDebug() << " cursor in SUB-command";
+    if( query.isCursorAtSubCommandNameIndexInDefinition() ){
+      return QLatin1String("command");
+    }
 
-      const auto subCommandDefinition = parserDefinition.findSubCommandByName( result.subCommand().name() );
-      if( !subCommandDefinition ){
-        return QString();
-      }
+//     if( !result.hasSubCommand() ){
+//       return QString();
+//     }
+
+    const auto subCommandDefinition = parserDefinition.findSubCommandByName( result.subCommand().name() );
+    if( !subCommandDefinition ){
+      return QString();
+    }
+
+//     qDebug() << " cursor in SUB-command";
+
+    if( query.isCursorAtSubCommandOption() ){
+      return subCommandDefinition->name() % QLatin1String("-options");
+    }
+
+    if( query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() ){
 
       // If the command is complete
       if( query.subCommandPositionalArgumentsCount() == subCommandDefinition->positionalArgumentCount() ){
@@ -139,87 +142,6 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
       }
 
     }
-//     qDebug() << "cursor: " << query.cursorInCompLinePositionIndex();
-    
-//     if( result.hasSubCommand() ){
-//       const auto subCommandDefinition = parserDefinition.findSubCommandByName( result.subCommand().name() );
-//       if( !subCommandDefinition ){
-//         return QString();
-//       }
-// 
-//       // If the command is complete
-//       if( query.subCommandPositionalArgumentsCount() == subCommandDefinition->positionalArgumentCount() ){
-//         return QString();
-//       }
-// 
-//       const int index = query.cursorSubCommandPositionalArgumentsIndexInDefinition();
-// //       qDebug() << " index: " << index;
-// //       if(index < 0){
-// //         return QString();
-// //       }
-//       
-//       assert( index >= 0 );
-//       if( subCommandDefinition->hasPositionalArgumentAt(index) ){
-//         return subCommandDefinition->name() % QLatin1Char('-') % subCommandDefinition->positionalArgumentAt(index).name();
-//       }
-// 
-// //       const int positionalArgumentCount = result.subCommand().positionalArgumentCount();
-// 
-//       // If the command is complete, return nothing
-// //       if( positionalArgumentCount == subCommandDefinition->positionalArgumentCount() ){
-// //         return QString();
-// //       }
-// 
-//       // We search the next argument name
-// //       const int lastPositionalArgumentIndex = positionalArgumentCount;
-// // 
-// //       if(lastPositionalArgumentIndex < 0){
-// //         return QString();
-// //       }
-// //       if( subCommandDefinition->hasPositionalArgumentAt(lastPositionalArgumentIndex) ){
-// //         return subCommandDefinition->name() % QLatin1Char('-') % subCommandDefinition->positionalArgumentAt(lastPositionalArgumentIndex).name();
-// //       }
-// 
-//     }else{
-//       // If the (main) command is complete
-//       if( query.mainCommandPositionalArgumentsCount() == parserDefinition.mainCommand().positionalArgumentCount() ){
-//         if( parserDefinition.hasSubCommands() ){
-//           return QLatin1String("command");
-//         }
-//         return QString();
-//       }
-// 
-//       const int index = query.cursorMainCommandPositionalArgumentsIndexInDefinition();
-//       
-//       qDebug() << "index: " << index;
-//       
-//       assert( index >= 0 );
-//       if( parserDefinition.mainCommand().hasPositionalArgumentAt(index) ){
-//         qDebug() << " -> " << parserDefinition.mainCommand().positionalArgumentAt(index).name();
-//         return parserDefinition.mainCommand().positionalArgumentAt(index).name();
-//       }
-
-//       // We have the query string as first argument, so substract it
-//       const int positionalArgumentCount = result.positionalArgumentCount()-1;
-//       assert(positionalArgumentCount >= 0);
-// 
-//       // If the (main) command is complete
-//       if( positionalArgumentCount == parserDefinition.mainCommand().positionalArgumentCount() ){
-//         if( parserDefinition.hasSubCommands() ){
-//           return QLatin1String("command");
-//         }
-//         return QString();
-//       }
-// 
-//       // We search the next argument name
-//       const int lastPositionalArgumentIndex = positionalArgumentCount;
-//       if(lastPositionalArgumentIndex < 0){
-//         return QString();
-//       }
-//       if( parserDefinition.mainCommand().hasPositionalArgumentAt(lastPositionalArgumentIndex) ){
-//         return parserDefinition.mainCommand().positionalArgumentAt(lastPositionalArgumentIndex).name();
-//       }
-//     }
 
     return QString();
   }

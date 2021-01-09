@@ -25,8 +25,6 @@
 #include "mdt_commandlineparser_export.h"
 #include <cassert>
 
-#include <QDebug>
-
 namespace Mdt{ namespace CommandLineParser{
 
   /*! \brief Helper class to map command-line index to a index in a result
@@ -137,8 +135,6 @@ namespace Mdt{ namespace CommandLineParser{
      */
     int mainCommandPositionalArgumentIndexFromCommandLineIndex(int commandLineIndex) const noexcept
     {
-      qDebug() << "mainCommandPositionalArgumentIndexFromCommandLineIndex(), commandLineIndex: " << commandLineIndex << ", commandLineArgumentCount: " << commandLineArgumentCount();
-      
       assert( commandLineIndex >= 0 );
       assert( commandLineIndex < commandLineArgumentCount() );
 
@@ -148,46 +144,6 @@ namespace Mdt{ namespace CommandLineParser{
       }
       return index;
     }
-
-//     /*! \brief Get the index of the sub-command name in the command line
-//      *
-//      * If the parser result has no sub-command,
-//      * this method will allways return invalid index (value < 0).
-//      *
-//      * Examples for a application that can take 1 argument for the main command,
-//      * and has a copy sub-command that can take \a source and \a destination as positional arguments:
-//      * \code
-//      * myapp
-//      * // return: 1
-//      * // Why: after myapp, we could have a positional argument or a sub-command
-//      * //      choice: 1 will be the index of the sub-command name
-//      *
-//      * myapp copy
-//      * // return: 1
-//      * // Why: 1 is the index of a known sub-command name
-//      *
-//      * myapp -h copy
-//      * // return: 2
-//      * // Why: 2 is the index of a known sub-command name
-//      *
-//      * myapp arg1 copy
-//      * // return: 2
-//      * // Why: 2 is the index of a known sub-command name
-//      *
-//      * myapp arg1 copy file.txt
-//      * // return: 2
-//      * // Why: 2 is the index of a known sub-command name
-//      * \endcode
-//      */
-//     int subCommandNameCommandLineIndex() const noexcept
-//     {
-//     }
-
-//     /*! \brief Check if \a commandLineIndex 
-//      */
-//     bool isCommandLineIndexInSubCommand(int commandLineIndex) const noexcept
-//     {
-//     }
 
     /*! \brief Check if \a commandLineIndex refers to a option in the sub-command
      *

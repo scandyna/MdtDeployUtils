@@ -28,6 +28,14 @@
 
 namespace Mdt{ namespace CommandLineParser{
 
+QString toDebugString(const ParserResultOption & option)
+{
+  if( option.name().isEmpty() ){
+    return QLatin1String("-null-");
+  }
+  return option.name();
+}
+
 QString toDebugString(const ParserResult & result)
 {
   QString str = QLatin1String("ParserResult:\n");
@@ -35,7 +43,7 @@ QString toDebugString(const ParserResult & result)
   if( result.hasOptions() ){
     str += QLatin1String(" options: ");
     for( const ParserResultOption & option : result.mainCommand().options() ){
-      str += option.name() % QLatin1Char(' ');
+      str += toDebugString(option) % QLatin1Char(' ');
     }
     str += QLatin1Char('\n');
   }
@@ -54,7 +62,7 @@ QString toDebugString(const ParserResult & result)
     if( result.subCommand().hasOptions() ){
       str += QLatin1String("  options: ");
       for( const ParserResultOption & option : result.subCommand().options() ){
-        str += option.name() % QLatin1Char(' ');
+        str += toDebugString(option) % QLatin1Char(' ');
       }
       str += QLatin1Char('\n');
     }
