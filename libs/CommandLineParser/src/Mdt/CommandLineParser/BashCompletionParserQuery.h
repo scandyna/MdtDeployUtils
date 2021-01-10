@@ -617,7 +617,11 @@ namespace Mdt{ namespace CommandLineParser{
       if( parserResult.positionalArgumentAt(0) != findCurrentPositionalArgumentNameString() ){
         return false;
       }
-      if( extractCursorInComplinePositionIndex(parserResult) < 0 ){
+      const int cursor = extractCursorInComplinePositionIndex(parserResult);
+      if( cursor < 0 ){
+        return false;
+      }
+      if( cursor > ParserResultInCommandLineIndexMap::commandLineArgumentCount( parserResultWithoutQueryArguments(parserResult) ) ){
         return false;
       }
 

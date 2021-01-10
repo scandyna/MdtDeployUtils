@@ -80,10 +80,7 @@ namespace Mdt{ namespace CommandLineParser{
      */
     explicit ParserResultInCommandLineIndexMap(const ParserResult & parserResult)
     {
-      mCommandLineArgumentCount = 1 + parserResult.mainCommand().optionCount() + parserResult.mainCommand().positionalArgumentCount();
-      if( parserResult.hasSubCommand() ){
-        mCommandLineArgumentCount += 1 + parserResult.subCommand().optionCount() + parserResult.subCommand().positionalArgumentCount();
-      }
+      mCommandLineArgumentCount = commandLineArgumentCount(parserResult);
 
       mMainCommandOptionCount = parserResult.mainCommand().optionCount();
       mMainCommandPositionalArgumentCount = parserResult.mainCommand().positionalArgumentCount();
@@ -192,6 +189,18 @@ namespace Mdt{ namespace CommandLineParser{
       assert( commandLineIndex < commandLineArgumentCount() );
 
       return commandLineIndex - 1 - mMainCommandOptionCount - mMainCommandPositionalArgumentCount - 1 - mSubCommandOptionCount;
+    }
+
+    /*! \brief Get the count of arguments of the command-line represented by \a parserResult
+     */
+    static
+    int commandLineArgumentCount(const ParserResult & parserResult) noexcept
+    {
+      int count = 1 + parserResult.mainCommand().optionCount() + parserResult.mainCommand().positionalArgumentCount();
+      if( parserResult.hasSubCommand() ){
+        count += 1 + parserResult.subCommand().optionCount() + parserResult.subCommand().positionalArgumentCount();
+      }
+      return count;
     }
 
    private:

@@ -60,6 +60,7 @@ namespace Mdt{ namespace CommandLineParser{
    * generator.setMainCommand(mainCommand);
    * \endcode
    *
+   * \sa handleBashCompletion()
    * \sa https://iridakos.com/programming/2018/03/01/bash-programmable-completion-tutorial
    */
   class MDT_COMMANDLINEPARSER_EXPORT BashCompletionGenerator

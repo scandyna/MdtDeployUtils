@@ -47,6 +47,105 @@ QString completionFindCurrentPositionalArgumentNameString()
   return BashCompletionParserQuery::findCurrentPositionalArgumentNameString();
 }
 
+TEST_CASE("BashCompletionParserQuery_isValidBashCompletionQuery")
+{
+  ParserDefinition parserDefinition;
+  QStringList arguments;
+  ParserResult result;
+
+  SECTION("argument count validity")
+  {
+    SECTION("empty")
+    {
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
+    }
+
+    SECTION("myapp")
+    {
+      arguments << QLatin1String("myapp");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
+    }
+
+    SECTION("myapp completion-find-current-positional-argument-name")
+    {
+      arguments << QLatin1String("myapp") << completionFindCurrentPositionalArgumentNameString();
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
+    }
+
+    SECTION("myapp completion-find-current-positional-argument-name 1")
+    {
+      arguments << QLatin1String("myapp") << completionFindCurrentPositionalArgumentNameString() << QLatin1String("1");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
+    }
+
+    SECTION("myapp completion-find-current-positional-argument-name 1 myapp")
+    {
+      arguments << QLatin1String("myapp") << completionFindCurrentPositionalArgumentNameString() << QLatin1String("1") << QLatin1String("myapp");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( BashCompletionParserQuery::isValidBashCompletionQuery(result) );
+    }
+  }
+
+  SECTION("cursor validity")
+  {
+    arguments << QLatin1String("myapp") << completionFindCurrentPositionalArgumentNameString();
+
+    // The parser not accept this, because it threat -1 as a unknown option
+//     SECTION("-1")
+//     {
+//       arguments << QLatin1String("-1") << QLatin1String("myapp");
+//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+//       REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
+//     }
+
+    SECTION("myapp completion-find-current-positional-argument-name 0 myapp")
+    {
+      arguments << QLatin1String("0") << QLatin1String("myapp");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( BashCompletionParserQuery::isValidBashCompletionQuery(result) );
+    }
+
+    SECTION("myapp completion-find-current-positional-argument-name 1 myapp")
+    {
+      arguments << QLatin1String("1") << QLatin1String("myapp");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( BashCompletionParserQuery::isValidBashCompletionQuery(result) );
+    }
+
+    SECTION("myapp completion-find-current-positional-argument-name 2 myapp")
+    {
+      arguments << QLatin1String("2") << QLatin1String("myapp");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
+    }
+
+    SECTION("myapp completion-find-current-positional-argument-name 100 myapp")
+    {
+      arguments << QLatin1String("100") << QLatin1String("myapp");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
+    }
+
+    SECTION("A")
+    {
+      arguments << QLatin1String("A") << QLatin1String("myapp");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
+    }
+
+    SECTION("1")
+    {
+      arguments << QLatin1String("1") << QLatin1String("myapp");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( BashCompletionParserQuery::isValidBashCompletionQuery(result) );
+    }
+  }
+}
+
 TEST_CASE("BashCompletionParserQuery_parserResultWithoutQueryArguments")
 {
   ParserResult queryResult;
@@ -703,6 +802,28 @@ TEST_CASE("handleBashCompletion")
       arguments << completionFindCurrentPositionalArgumentNameString() << QLatin1String("1") << QLatin1String("myapp");
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       REQUIRE( handleBashCompletion(result, parserDefinition) );
+    }
+
+    // The parser not accept this, because it threat -1 as a unknown option
+//     SECTION("myapp completion-find-current-positional-argument-name -1 myapp (invalid cursor)")
+//     {
+//       arguments << completionFindCurrentPositionalArgumentNameString() << QLatin1String("-1") << QLatin1String("myapp");
+//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+//       REQUIRE( !handleBashCompletion(result, parserDefinition) );
+//     }
+
+    SECTION("myapp completion-find-current-positional-argument-name 100 myapp (invalid cursor)")
+    {
+      arguments << completionFindCurrentPositionalArgumentNameString() << QLatin1String("100") << QLatin1String("myapp");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( !handleBashCompletion(result, parserDefinition) );
+    }
+
+    SECTION("myapp completion-find-current-positional-argument-name A myapp (invalid cursor)")
+    {
+      arguments << completionFindCurrentPositionalArgumentNameString() << QLatin1String("A") << QLatin1String("myapp");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( !handleBashCompletion(result, parserDefinition) );
     }
   }
 }
