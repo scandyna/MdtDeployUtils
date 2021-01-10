@@ -114,6 +114,13 @@ namespace Mdt{ namespace CommandLineParser{
       return mCommandLineArgumentCount;
     }
 
+    /*! \brief Get the count of options in the main command
+     */
+    int mainCommandOptionCount() const noexcept
+    {
+      return mMainCommandOptionCount;
+    }
+
     /*! \brief Check if \a commandLineIndex refers to a option in the main command
      *
      * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
@@ -124,6 +131,13 @@ namespace Mdt{ namespace CommandLineParser{
       assert( commandLineIndex < commandLineArgumentCount() );
 
       return (commandLineIndex >= 1) && (commandLineIndex <= mMainCommandOptionCount);
+    }
+
+    /*! \brief Get the count of positional arguments in the main command
+     */
+    int mainCommandPositionalArgumentCount() const noexcept
+    {
+      return mMainCommandPositionalArgumentCount;
     }
 
     /*! \brief Get the index of a positional argument in the result from \a commandLineIndex

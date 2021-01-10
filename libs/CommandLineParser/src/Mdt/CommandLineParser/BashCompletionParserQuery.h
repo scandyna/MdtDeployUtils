@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -89,23 +89,12 @@ namespace Mdt{ namespace CommandLineParser{
       mCursorInCompLinePositionIndex = extractCursorInComplinePositionIndex(parserResult);
       assert( mCursorInCompLinePositionIndex >= 0 );
 
-      mMainCommandPositionalArgumentsCount = parserResult.positionalArgumentCount()-3;
-      assert( mMainCommandPositionalArgumentsCount >= 0 );
-
-      mMainCommandOptionsCount = parserResult.mainCommand().options().size();
-
-//       mIsCursorAtMainCommandOption = isCursorAtMainCommandOption(parserResult);
-
       mParserDefinitionHasSubCommand = parserDefinition.hasSubCommands();
       mParserDefinitionMainCommandPositionalArgumentsCount = parserDefinition.mainCommand().positionalArgumentCount();
 
       mResultHasSubCommand = parserResult.hasSubCommand();
 
       mSubCommandPositionalArgumentsCount = parserResult.subCommand().positionalArgumentCount();
-
-      mSubCommandOptionsCount = parserResult.subCommand().options().size();
-
-//       mIsCursorAtSubCommandOption = isCursorAtSubCommandOption(parserResult);
     }
 
     /*! \brief Copy construct a query from \a other
@@ -230,14 +219,14 @@ namespace Mdt{ namespace CommandLineParser{
     int compLineSubCommandNamePositionIndex() const noexcept
     {
       assert( !compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      
+
       if( !mParserDefinitionHasSubCommand ){
         return -1;
       }
       if( mResultHasSubCommand ){
-        return 1 + mMainCommandPositionalArgumentsCount + mMainCommandOptionsCount;
+        return 1 + mainCommandPositionalArgumentsCount() + mParserResultInCommandLineIndexMap.mainCommandOptionCount();
       }
-      return 1 + mMainCommandOptionsCount;
+      return 1 + mParserResultInCommandLineIndexMap.mainCommandOptionCount();
     }
 
     /*! \brief Check if the cursor is in the sub-command in the command line
@@ -249,7 +238,7 @@ namespace Mdt{ namespace CommandLineParser{
     bool isCursorInSubCommand() const noexcept
     {
       assert( !compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      
+
       const int subCommandIndex = compLineSubCommandNamePositionIndex();
       if(subCommandIndex < 0){
         return false;
@@ -261,7 +250,7 @@ namespace Mdt{ namespace CommandLineParser{
      */
     int mainCommandPositionalArgumentsCount() const noexcept
     {
-      return mMainCommandPositionalArgumentsCount;
+      return mParserResultInCommandLineIndexMap.mainCommandPositionalArgumentCount();
     }
 
     /*! \brief Get the cursor index mapped to the positional argument of the main command
@@ -473,12 +462,7 @@ namespace Mdt{ namespace CommandLineParser{
     bool isCursorAtSubCommandNameIndexInDefinition() const noexcept
     {
       if( compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() ){
-//         if( mParserResultInCommandLineIndexMap.commandLineArgumentCount() == 1 ){
-//           return false;
-//         }
         return !isCursorAtMainCommandPositionalArgumentsIndexInDefinition();
-        /// \todo wrong
-//         return cursorInCompLinePositionIndex() >= mParserDefinitionMainCommandPositionalArgumentsCount;
       }
       return cursorInCompLinePositionIndex() == compLineSubCommandNamePositionIndex();
     }
@@ -699,15 +683,10 @@ namespace Mdt{ namespace CommandLineParser{
 
     ParserResultInCommandLineIndexMap mParserResultInCommandLineIndexMap;
     int mCursorInCompLinePositionIndex;
-    int mMainCommandPositionalArgumentsCount;
-    int mMainCommandOptionsCount;
-//     bool mIsCursorAtMainCommandOption;
     int mParserDefinitionMainCommandPositionalArgumentsCount;
     bool mParserDefinitionHasSubCommand;
     bool mResultHasSubCommand;
-    bool mIsCursorAtSubCommandOption;
     int mSubCommandPositionalArgumentsCount;
-    int mSubCommandOptionsCount;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

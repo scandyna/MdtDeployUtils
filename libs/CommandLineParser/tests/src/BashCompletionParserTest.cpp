@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
  **
- ** Copyright (C) 2020-2020 Philippe Steinmann.
+ ** Copyright (C) 2020-2021 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU General Public License as published by
@@ -116,14 +116,15 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
       REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
       REQUIRE( !query.isCursorInSubCommand() );
-      ///REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      ///REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      ///REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
+      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
+      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
+      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
       REQUIRE( query.isCursorAtMainCommandOption() );
       REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
       REQUIRE( !query.isCursorAtSubCommandOption() );
     }
 
+    /// Currently not supported because QCommandLineParser or Bash filters -- out
 //     SECTION("myapp completion-find-current-positional-argument-name 1 myapp --")
 //     {
 //       arguments << QLatin1String("1") << QLatin1String("myapp")  << QLatin1String("--");
@@ -342,6 +343,7 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( query.isCursorAtSubCommandOption() );
     }
 
+    /// Currently not supported because QCommandLineParser or Bash filters -- out
 //     SECTION("myapp completion-find-current-positional-argument-name 2 myapp unknown")
 //     {
 //       arguments << QLatin1String("2") << QLatin1String("myapp") << QLatin1String("unknown");
@@ -458,8 +460,6 @@ TEST_CASE("BashCompletionParserQuery")
   }
 }
 
-/** \todo Also check when command is complete and not
- */
 TEST_CASE("findCurrentPositionalArgumentName")
 {
   using Impl::findCurrentPositionalArgumentName;

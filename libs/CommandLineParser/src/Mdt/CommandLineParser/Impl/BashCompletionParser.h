@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -122,16 +122,10 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
       return QLatin1String("command");
     }
 
-//     if( !result.hasSubCommand() ){
-//       return QString();
-//     }
-
     const auto subCommandDefinition = parserDefinition.findSubCommandByName( result.subCommand().name() );
     if( !subCommandDefinition ){
       return QString();
     }
-
-//     qDebug() << " cursor in SUB-command";
 
     if( query.isCursorAtSubCommandOption() ){
       return subCommandDefinition->name() % QLatin1String("-options");
