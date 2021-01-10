@@ -90,6 +90,15 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
 
     BashCompletionParserQuery query(result, parserDefinition);
 
+    if( query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() ){
+      const int index = query.cursorMainCommandPositionalArgumentsIndexInDefinition();
+      if(index >= 0){
+        if( parserDefinition.mainCommand().hasPositionalArgumentAt(index) ){
+          return parserDefinition.mainCommand().positionalArgumentAt(index).name() % QLatin1String("-or-command");
+        }
+      }
+    }
+
     if( query.isCursorAtMainCommandOption() ){
       return QLatin1String("options");
     }
@@ -97,7 +106,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
     if( query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() ){
 
       // If the (main) command is complete
-      if( query.mainCommandPositionalArgumentsCount() == parserDefinition.mainCommand().positionalArgumentCount() ){
+      if( query.mainCommandPositionalArgumentsCount() > parserDefinition.mainCommand().positionalArgumentCount() ){
         return QString();
       }
 
@@ -131,7 +140,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
     if( query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() ){
 
       // If the command is complete
-      if( query.subCommandPositionalArgumentsCount() == subCommandDefinition->positionalArgumentCount() ){
+      if( query.subCommandPositionalArgumentsCount() > subCommandDefinition->positionalArgumentCount() ){
         return QString();
       }
 

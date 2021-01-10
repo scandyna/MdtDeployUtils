@@ -96,6 +96,7 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
+      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
       REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
       REQUIRE( !query.isCursorInSubCommand() );
       REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
@@ -112,6 +113,7 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
+      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
       REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
       REQUIRE( !query.isCursorInSubCommand() );
       ///REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
@@ -144,6 +146,7 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
+      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
       REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
       REQUIRE( !query.isCursorInSubCommand() );
       REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
@@ -160,6 +163,7 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
+      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
       REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
       REQUIRE( !query.isCursorInSubCommand() );
       REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
@@ -176,6 +180,7 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
+      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
       REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
       REQUIRE( !query.isCursorInSubCommand() );
       REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 1 );
@@ -203,6 +208,7 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
+      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
       REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
@@ -222,6 +228,7 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
+      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
       REQUIRE( query.compLineSubCommandNamePositionIndex() == 2 );
       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
@@ -241,6 +248,7 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
+      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
       REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
@@ -260,6 +268,7 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
+      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
       REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.mainCommandPositionalArgumentsCount() == 1 );
@@ -279,6 +288,7 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 3 );
+      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
       REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
@@ -298,6 +308,7 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 3 );
+      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
       REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
@@ -317,6 +328,7 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
+      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
       REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
@@ -336,6 +348,7 @@ TEST_CASE("BashCompletionParserQuery")
 //       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
 //       BashCompletionParserQuery query(result, parserDefinition);
 //       REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
+//       REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
 //       REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
 //       REQUIRE( !query.isCursorInSubCommand() );
 //       REQUIRE( query.mainCommandPositionalArgumentsCount() == 1 );
@@ -351,11 +364,6 @@ TEST_CASE("BashCompletionParserQuery")
 
   }
 
-  /** \todo Desambiguitate
-   *
-   * For cases which is no clear if the cursor is at main positional argument or a partial sub-command,
-   * we should return something like 'main-arg-or-command'
-   */
   SECTION("App with main arg and subCommand")
   {
     parserDefinition.addHelpOption();
@@ -373,16 +381,17 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
-      REQUIRE( query.isCursorInSubCommand() );
+      REQUIRE( query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
+//       REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
+//       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
+      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 0 );
+      REQUIRE( query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
       REQUIRE( !query.isCursorAtMainCommandOption() );
       REQUIRE( query.subCommandPositionalArgumentsCount() == 0 );
       REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() < 0 );
       REQUIRE( !query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( query.isCursorAtSubCommandNameIndexInDefinition() );
+      REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
       REQUIRE( !query.isCursorAtSubCommandOption() );
     }
 
@@ -392,8 +401,9 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() == 2 );
-      REQUIRE( query.isCursorInSubCommand() );
+      REQUIRE( query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
+//       REQUIRE( query.compLineSubCommandNamePositionIndex() == 2 );
+//       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.mainCommandPositionalArgumentsCount() == 1 );
       REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
       REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
@@ -411,8 +421,9 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       BashCompletionParserQuery query(result, parserDefinition);
       REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() == 2 );
-      REQUIRE( !query.isCursorInSubCommand() );
+      REQUIRE( query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
+//       REQUIRE( query.compLineSubCommandNamePositionIndex() == 2 );
+//       REQUIRE( !query.isCursorInSubCommand() );
       REQUIRE( query.mainCommandPositionalArgumentsCount() == 1 );
       REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 0 );
       REQUIRE( query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
@@ -423,9 +434,32 @@ TEST_CASE("BashCompletionParserQuery")
       REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
       REQUIRE( !query.isCursorAtSubCommandOption() );
     }
+
+    SECTION("myapp completion-find-current-positional-argument-name 1 myapp copy")
+    {
+      arguments << QLatin1String("1") << QLatin1String("myapp") << QLatin1String("copy");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      BashCompletionParserQuery query(result, parserDefinition);
+      REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
+      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
+      REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
+      REQUIRE( query.isCursorInSubCommand() );
+      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
+      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
+      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
+      REQUIRE( !query.isCursorAtMainCommandOption() );
+      REQUIRE( query.subCommandPositionalArgumentsCount() == 0 );
+      REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() < 0 );
+      REQUIRE( !query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
+      REQUIRE( query.isCursorAtSubCommandNameIndexInDefinition() );
+      REQUIRE( !query.isCursorAtSubCommandOption() );
+    }
+
   }
 }
 
+/** \todo Also check when command is complete and not
+ */
 TEST_CASE("findCurrentPositionalArgumentName")
 {
   using Impl::findCurrentPositionalArgumentName;
@@ -480,6 +514,14 @@ TEST_CASE("findCurrentPositionalArgumentName")
     SECTION("myapp completion-find-current-positional-argument-name 2 myapp file.txt")
     {
       arguments << QLatin1String("2") << QLatin1String("myapp") << QLatin1String("file.txt");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( findCurrentPositionalArgumentName(result, parserDefinition) == QLatin1String("destination") );
+    }
+
+    // We still want completion here
+    SECTION("myapp completion-find-current-positional-argument-name 2 myapp file.txt /tmp")
+    {
+      arguments << QLatin1String("2") << QLatin1String("myapp") << QLatin1String("file.txt") << QLatin1String("/tmp");
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
       REQUIRE( findCurrentPositionalArgumentName(result, parserDefinition) == QLatin1String("destination") );
     }
@@ -581,6 +623,13 @@ TEST_CASE("findCurrentPositionalArgumentName")
       REQUIRE( findCurrentPositionalArgumentName(result, parserDefinition) == QLatin1String("copy-destination") );
     }
 
+    SECTION("myapp completion-find-current-positional-argument-name 3 myapp copy file.txt /tmp")
+    {
+      arguments << QLatin1String("3") << QLatin1String("myapp") << QLatin1String("copy") << QLatin1String("file.txt") << QLatin1String("/tmp");
+      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( findCurrentPositionalArgumentName(result, parserDefinition) == QLatin1String("copy-destination") );
+    }
+
     SECTION("myapp completion-find-current-positional-argument-name 4 myapp copy file.txt /tmp")
     {
       arguments << QLatin1String("4") << QLatin1String("myapp") << QLatin1String("copy") << QLatin1String("file.txt") << QLatin1String("/tmp");
@@ -603,7 +652,7 @@ TEST_CASE("findCurrentPositionalArgumentName")
     {
       arguments << QLatin1String("1") << QLatin1String("myapp");
       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( findCurrentPositionalArgumentName(result, parserDefinition) == QLatin1String("command") );
+      REQUIRE( findCurrentPositionalArgumentName(result, parserDefinition) == QLatin1String("file-or-command") );
     }
 
     SECTION("myapp completion-find-current-positional-argument-name 2 myapp file.txt")
