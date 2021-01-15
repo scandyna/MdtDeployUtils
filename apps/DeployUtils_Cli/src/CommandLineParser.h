@@ -50,6 +50,13 @@ class CommandLineParser : public QObject
    */
   CommandLineParserResult process();
 
+  /*! \brief Get the parser definition
+   */
+  const Mdt::CommandLineParser::ParserDefinition & parserDefinition() const noexcept
+  {
+    return mParserDefinition;
+  }
+
 //   /*! \brief Access the internal parser
 //    */
 //   const QCommandLineParser & parser() const noexcept

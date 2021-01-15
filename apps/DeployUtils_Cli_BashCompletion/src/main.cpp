@@ -27,15 +27,15 @@ int main(int argc, char **argv)
 {
   if(argc != 2){
     assert( argc >= 1 );
-    std::cerr << argv[0] << ": missing file path" << std::endl;
+    std::cerr << argv[0] << ": missing destination directory path" << std::endl;
     return 1;
   }
   assert( argc >= 1 );
 
-  const std::string filePath = argv[1];
+  const std::string directoryPath = argv[1];
 
   /// \todo Exceptions
-  generateBashCompletionScript(filePath);
+  generateBashCompletionScript(directoryPath);
 
   return 0;
 }

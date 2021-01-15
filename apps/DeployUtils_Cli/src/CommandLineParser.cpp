@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
  **
- ** Copyright (C) 2020-2020 Philippe Steinmann.
+ ** Copyright (C) 2020-2021 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@ using namespace Mdt::CommandLineParser;
 CommandLineParser::CommandLineParser(QObject *parent)
  : QObject(parent)
 {
+  mParserDefinition.setApplicationName( QLatin1String("mdtdeployutils") );
   setApplicationDescription();
 //   mParser.setOptionsAfterPositionalArgumentsMode(QCommandLineParser::ParseAsPositionalArguments);
 //   mParser.addHelpOption();

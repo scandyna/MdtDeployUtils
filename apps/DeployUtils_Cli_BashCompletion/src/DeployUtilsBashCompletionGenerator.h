@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
  **
- ** Copyright (C) 2020-2020 Philippe Steinmann.
+ ** Copyright (C) 2020-2021 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU General Public License as published by
@@ -25,15 +25,9 @@
 
 /*! \brief Generate the bash completion script for the mdtdeployutils command line tool
  *
- * \pre \a filePath must not be empty
+ * \pre \a directoryPath must not be empty
  * \todo exceptions
  */
-void generateBashCompletionScript(const std::string & filePath);
-
-// /*! \brief Bash completion generator for the mdtdeployutils command line tool
-//  */
-// class DeployUtilsBashCompletionGenerator
-// {
-// };
+void generateBashCompletionScript(const std::string & directoryPath);
 
 #endif // #ifndef DEPLOY_UTILS_BASH_COMPLETION_GENERATOR_H

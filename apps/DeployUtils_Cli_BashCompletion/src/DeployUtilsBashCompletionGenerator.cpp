@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
  **
- ** Copyright (C) 2020-2020 Philippe Steinmann.
+ ** Copyright (C) 2020-2021 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU General Public License as published by
@@ -27,19 +27,16 @@
 
 #include <iostream>
 
-void generateBashCompletionScript(const std::string& filePath)
+void generateBashCompletionScript(const std::string & directoryPath)
 {
-  assert( !filePath.empty() );
+  assert( !directoryPath.empty() );
 
   CommandLineParser parser;
-  Mdt::CommandLineParser::BashCompletionGenerator generator;
 
-  generator.setApplicationName( QLatin1String("mdtdeployutils") );
-
-//   const auto mainCommand = BashCompletionGeneratorCommand::mainCommandFromParser( parser.parser() );
-//   generator.setMainCommand(mainCommand);
+  const auto generator = Mdt::CommandLineParser::BashCompletionGenerator::fromParserDefinition( parser.parserDefinition() );
 
   std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
+  std::cout << "generating to " << directoryPath << std::endl;
 
-  std::cout << "generating to " << filePath << std::endl;
+  generator.generateScriptToFile(directoryPath);
 }

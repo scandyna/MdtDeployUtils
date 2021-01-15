@@ -50,11 +50,11 @@ target_link_libraries(mdtdeployutilsBashCompletionScriptGenerator
     Mdt::DeployUtils_Cli
 )
 
-# add_custom_target(generateMdtdeployutilsBashCompletionScript ALL
-#   COMMAND mdtdeployutilsBashCompletionScriptGenerator "${CMAKE_CURRENT_BINARY_DIR}/mdtdeployutils-completion.bash"
-#   COMMENT "Generating mdtdeployutils-completion.bash"
-#   VERBATIM
-# )
+add_custom_target(generateMdtdeployutilsBashCompletionScript ALL
+  COMMAND mdtdeployutilsBashCompletionScriptGenerator "${CMAKE_CURRENT_BINARY_DIR}"
+  COMMENT "Generating mdtdeployutils-completion.bash"
+  VERBATIM
+)
 
 # add_custom_command(OUTPUT mdtdeployutils-completion.bash
 #   COMMAND generateMdtdeployutilsBashCompletionScript "$<TARGET_FILE:mdtdeployutils-completion.bash>"
