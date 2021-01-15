@@ -24,6 +24,7 @@
 #include <QLatin1Char>
 #include <QLatin1String>
 #include <QStringBuilder>
+#include <QByteArray>
 #include <QTextStream>
 #include <QFile>
 #include <cassert>
@@ -55,7 +56,6 @@ void BashCompletionGenerator::addSubCommand(const BashCompletionGeneratorCommand
 QString BashCompletionGenerator::generateScript() const
 {
   assert( !mApplicationName.isEmpty() );
-  assert( !mMainCommand.isEmpty() );
 
   using namespace Impl;
 
@@ -71,7 +71,6 @@ void BashCompletionGenerator::generateScriptToFile(const QString & directoryPath
 {
   assert( !directoryPath.trimmed().isEmpty() );
   assert( !mApplicationName.isEmpty() );
-  assert( !mMainCommand.isEmpty() );
 
   const QString filePath = directoryPath % QLatin1Char('/') % mApplicationName % QLatin1String("-completion.bash");
   QFile file(filePath);
@@ -91,6 +90,11 @@ void BashCompletionGenerator::generateScriptToFile(const QString & directoryPath
   }
 
   file.close();
+}
+
+void BashCompletionGenerator::generateScriptToFile(const std::string & directoryPath) const
+{
+  return generateScriptToFile( QString::fromLocal8Bit( QByteArray::fromStdString(directoryPath) ) );
 }
 
 BashCompletionGenerator BashCompletionGenerator::fromParserDefinition(const ParserDefinition & parserDefinition)

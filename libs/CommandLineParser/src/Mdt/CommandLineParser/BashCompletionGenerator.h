@@ -28,6 +28,7 @@
 #include <QCoreApplication>
 #include <QString>
 #include <QStringList>
+#include <string>
 #include <vector>
 
 namespace Mdt{ namespace CommandLineParser{
@@ -120,7 +121,6 @@ namespace Mdt{ namespace CommandLineParser{
     /*! \brief Generate the script
      *
      * \pre The application name must have been set
-     * \pre At least the main command must have been set
      * \sa setApplicationName()
      * \sa setMainCommand()
      */
@@ -129,7 +129,6 @@ namespace Mdt{ namespace CommandLineParser{
     /*! \brief Generate the script to a file in a directory
      *
      * \pre The application name must have been set
-     * \pre At least the main command must have been set
      * \sa setApplicationName()
      * \sa setMainCommand()
      * \pre \a directoryPath must not be empty
@@ -139,6 +138,10 @@ namespace Mdt{ namespace CommandLineParser{
      * \todo Rewrite with QFile or QFileSaver
      */
     void generateScriptToFile(const QString & directoryPath) const;
+
+    /*! \overload
+     */
+    void generateScriptToFile(const std::string & directoryPath) const;
 
     /*! \brief Get a Bash completion generator from \a parserDefinition
      */
