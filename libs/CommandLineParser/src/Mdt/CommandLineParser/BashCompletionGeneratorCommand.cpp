@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -24,48 +24,17 @@ namespace Mdt{ namespace CommandLineParser{
 
 BashCompletionGeneratorCommand BashCompletionGeneratorCommand::fromParserDefinitionCommand(const ParserDefinitionCommand & command)
 {
-  BashCompletionGeneratorCommand generatorCommand( command.name() );
+  BashCompletionGeneratorCommand generatorCommand;
+
+  generatorCommand.mName = command.name();
+  for( const auto & argument : command.positionalArguments() ){
+    generatorCommand.mArguments.emplace_back( BashCompletionGeneratorPositionalArgument::fromParserDefinitionPositionalArgument(argument) );
+  }
+  for( const auto & option : command.options() ){
+    generatorCommand.mOptions.emplace_back( BashCompletionGeneratorOption::fromParserDefinitionOption(option) );
+  }
 
   return generatorCommand;
 }
 
 }} // namespace Mdt{ namespace CommandLineParser{
-
-// #include <QStringList>
-// #include <QByteArray>
-// 
-// #include <QDebug>
-
-// BashCompletionGeneratorCommand BashCompletionGeneratorCommand::mainCommandFromParser(const QCommandLineParser& parser)
-// {
-//   BashCompletionGeneratorCommand command;
-// 
-//   addArgumentsAndOptionsFromParserToCommand(parser, command);
-// 
-//   return command;
-// }
-// 
-// BashCompletionGeneratorCommand BashCompletionGeneratorCommand::subCommandFromParser(const QCommandLineParser& parser, const std::string& commandName)
-// {
-//   assert( !commandName.empty() );
-// 
-//   BashCompletionGeneratorCommand command(commandName);
-// 
-//   return command;
-// }
-// 
-// void BashCompletionGeneratorCommand::addArgumentToCommand(const QString& argument, BashCompletionGeneratorCommand& command)
-// {
-//   command.addArgument( argument.toStdString() );
-// }
-// 
-// void BashCompletionGeneratorCommand::addArgumentsAndOptionsFromParserToCommand(const QCommandLineParser& parser, BashCompletionGeneratorCommand& command)
-// {
-//   const QStringList arguments = parser.positionalArguments();
-//   
-//   qDebug() << "args: " << arguments;
-//   
-//   for(const QString & argument : arguments){
-//     addArgumentToCommand(argument, command);
-//   }
-// }

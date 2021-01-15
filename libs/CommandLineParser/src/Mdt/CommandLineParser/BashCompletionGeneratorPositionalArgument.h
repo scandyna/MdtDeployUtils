@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -22,6 +22,7 @@
 #define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_POSITIONAL_ARGUMENT_H
 
 #include "ArgumentType.h"
+#include "ParserDefinitionPositionalArgument.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
 #include <cassert>
@@ -76,6 +77,11 @@ namespace Mdt{ namespace CommandLineParser{
     {
       return mName;
     }
+
+    /*! \brief Get a Bash completion argument from \a argument
+     */
+    static
+    BashCompletionGeneratorPositionalArgument fromParserDefinitionPositionalArgument(const ParserDefinitionPositionalArgument & argument);
 
    private:
 

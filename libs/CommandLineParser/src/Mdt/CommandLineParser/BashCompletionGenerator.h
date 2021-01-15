@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -54,8 +54,7 @@ namespace Mdt{ namespace CommandLineParser{
    * generator.setApplicationName("mytool");
    *
    * BashCompletionGeneratorCommand mainCommand;
-   * mainCommand.addArgument("source");
-   * mainCommand.setDirectoryCompletionEnabled(true);
+   * mainCommand.addPositionalArgument(ArgumentType::File, "source");
    * mainCommand.addOption('h', "help");
    * generator.setMainCommand(mainCommand);
    * \endcode
@@ -140,24 +139,6 @@ namespace Mdt{ namespace CommandLineParser{
      * \todo Rewrite with QFile or QFileSaver
      */
     void generateScriptToFile(const QString & directoryPath) const;
-
-    /*! \brief Handle bash completion arguments
-     *
-     * Example of usage:
-     * \code
-     * const QStringList positionalArguments = parser.positionalArguments();
-     * BashCompletionParser completionParser;
-     *
-     * if( completionParser.handleCompletion(positionalArguments) ){
-     *   exit(0);
-     * }
-     * \endcode
-     *
-     * \a positionalArguments can be a empty list
-     * or have 1 or more elements.
-     * \pre \a positionalArguments must not contain any option, only positional arguments
-     */
-    bool handleCompletion(const QStringList & positionalArguments) const;
 
     /*! \brief Get a Bash completion generator from \a parserDefinition
      */

@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -21,4 +21,10 @@
 #include "BashCompletionGeneratorPositionalArgument.h"
 
 namespace Mdt{ namespace CommandLineParser{
+
+BashCompletionGeneratorPositionalArgument BashCompletionGeneratorPositionalArgument::fromParserDefinitionPositionalArgument(const ParserDefinitionPositionalArgument & argument)
+{
+  return BashCompletionGeneratorPositionalArgument( argument.type(), argument.name() );
+}
+
 }} // namespace Mdt{ namespace CommandLineParser{

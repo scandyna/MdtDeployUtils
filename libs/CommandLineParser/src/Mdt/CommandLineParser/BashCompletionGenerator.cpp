@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -24,10 +24,9 @@
 #include <QLatin1Char>
 #include <QLatin1String>
 #include <QStringBuilder>
+#include <QTextStream>
+#include <QFile>
 #include <cassert>
-#include <fstream>
-
-#include <QByteArray>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -58,21 +57,14 @@ QString BashCompletionGenerator::generateScript() const
   assert( !mApplicationName.isEmpty() );
   assert( !mMainCommand.isEmpty() );
 
-//   using namespace std::string_literals;
   using namespace Impl;
 
   const QString scriptInclude = QLatin1String("#/usr/bin/env bash");
-  const QString completeFunctionName = QLatin1Char('_') % mApplicationName % QLatin1String("_completions()");
   const QString completeCommand = QLatin1String("complete -F _") % mApplicationName % QLatin1String("_completions ") % mApplicationName;
 
-  const QString completeFunction
-    = completeFunctionName
-    % QLatin1String("\n{\n")
-    % generateMainCommandBlock(mMainCommand)
-    % generateSubCommandBlocksIfAny(mSubCommands)
-    % QLatin1String("\n}");
-
-  return scriptInclude % QLatin1String("\n\n") % completeFunction % QLatin1String("\n\n") % completeCommand % QLatin1String("\n");
+  return scriptInclude % QLatin1String("\n\n")
+          % generateCompletionFunction(*this) % QLatin1String("\n\n")
+          % completeCommand % QLatin1String("\n");
 }
 
 void BashCompletionGenerator::generateScriptToFile(const QString & directoryPath) const
@@ -82,37 +74,34 @@ void BashCompletionGenerator::generateScriptToFile(const QString & directoryPath
   assert( !mMainCommand.isEmpty() );
 
   const QString filePath = directoryPath % QLatin1Char('/') % mApplicationName % QLatin1String("-completion.bash");
-  std::ofstream stream(filePath.toLocal8Bit().toStdString(), std::ios_base::out | std::ios_base::trunc);
-  if( stream.bad() || stream.fail() ){
-    stream.close();
-    const QString what = tr("open file '%1' failed").arg(filePath);
+  QFile file(filePath);
+
+  if( !file.open(QIODevice::WriteOnly | QIODevice::Text) ){
+    const QString what = tr("open file '%1' failed: %2").arg( filePath, file.errorString() );
     throw BashCompletionScriptFileWriteError(what);
   }
 
-  try{
-    stream << generateScript().toLocal8Bit().toStdString();
-    stream.close();
-  }catch(...){
-    stream.close();
-    const QString what = tr("write file '%1' failed").arg(filePath);
+  QTextStream stream(&file);
+  stream << generateScript();
+  stream.flush();
+
+  if( !file.flush() ){
+    const QString what = tr("write file '%1' failed: %2").arg( filePath, file.errorString() );
     throw BashCompletionScriptFileWriteError(what);
   }
-}
 
-bool BashCompletionGenerator::handleCompletion(const QStringList & positionalArguments) const
-{
-  /*
-   * The generated Bash completion script will call the executable with the form:
-   * executable completion-find-current-positional-argument-name $COMP_LINE
-   *
-   * The executable will then receive back arguments of the form:
-   * completion-find-current-positional-argument-name executable arg1 arg2
-   */
+  file.close();
 }
 
 BashCompletionGenerator BashCompletionGenerator::fromParserDefinition(const ParserDefinition & parserDefinition)
 {
   BashCompletionGenerator generator;
+
+  generator.setApplicationName( parserDefinition.applicationName() );
+  generator.mMainCommand = BashCompletionGeneratorCommand::fromParserDefinitionCommand( parserDefinition.mainCommand() );
+  for( const auto & command : parserDefinition.subCommands() ){
+    generator.mSubCommands.emplace_back( BashCompletionGeneratorCommand::fromParserDefinitionCommand(command) );
+  }
 
   return generator;
 }

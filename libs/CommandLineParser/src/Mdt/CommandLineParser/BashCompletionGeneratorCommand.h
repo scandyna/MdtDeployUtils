@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -97,6 +97,13 @@ namespace Mdt{ namespace CommandLineParser{
       mArguments.emplace_back(type, name);
     }
 
+    /*! \brief Add a positional argument
+     */
+    void addPositionalArgument(const BashCompletionGeneratorPositionalArgument & argument)
+    {
+      mArguments.push_back(argument);
+    }
+
     /*! \brief Check if this command has positional arguments
      */
     bool hasPositionalArguments() const noexcept
@@ -125,7 +132,7 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Get the list of arguments of this command
      */
-    const std::vector<BashCompletionGeneratorPositionalArgument> & arguments() const noexcept
+    const std::vector<BashCompletionGeneratorPositionalArgument> & positionalArguments() const noexcept
     {
       return mArguments;
     }
@@ -177,6 +184,13 @@ namespace Mdt{ namespace CommandLineParser{
       addOption( BashCompletionGeneratorOption(name) );
     }
 
+    /*! \brief Check if this command has options
+     */
+    bool hasOptions() const noexcept
+    {
+      return !mOptions.empty();
+    }
+
     /*! \brief Get the list of options of this command
      */
     const std::vector<BashCompletionGeneratorOption> & options() const noexcept
@@ -184,46 +198,13 @@ namespace Mdt{ namespace CommandLineParser{
       return mOptions;
     }
 
-    /*! \brief Set the directory completion to \a enable for this command
-     */
-    void setDirectoryCompletionEnabled(bool enable) noexcept
-    {
-      mDirectoryCompletionEnabled = enable;
-    }
-
-    /*! \brief Check if directory completion is enabled for this command
-     */
-    bool directoryCompletionEnabled() const noexcept
-    {
-      return mDirectoryCompletionEnabled;
-    }
-
     /*! \brief Get a generator command from \a command
      */
     static
     BashCompletionGeneratorCommand fromParserDefinitionCommand(const ParserDefinitionCommand & command);
 
-  //   /*! \brief Get a command from \a parser
-  //    */
-  //   static
-  //   BashCompletionGeneratorCommand mainCommandFromParser(const QCommandLineParser & parser);
-  // 
-  //   /*! \brief Get a command from \a parser
-  //    *
-  //    * \pre \a commandName must not be empty
-  //    */
-  //   static
-  //   BashCompletionGeneratorCommand subCommandFromParser(const QCommandLineParser & parser, const std::string & commandName);
-
   private:
 
-  //   static
-  //   void addArgumentToCommand(const QString & argument, BashCompletionGeneratorCommand & command);
-  // 
-  //   static
-  //   void addArgumentsAndOptionsFromParserToCommand(const QCommandLineParser & parser, BashCompletionGeneratorCommand & command);
-
-    bool mDirectoryCompletionEnabled = false;
     QString mName;
     std::vector<BashCompletionGeneratorPositionalArgument> mArguments;
     std::vector<BashCompletionGeneratorOption> mOptions;
