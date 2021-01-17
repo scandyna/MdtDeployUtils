@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2020-2020 Philippe Steinmann.
+ ** Copyright (C) 2020-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -20,7 +20,7 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Mdt/CommandLineParser/Parser.h"
-#include "Mdt/CommandLineParser/Parser_Impl.h"
+#include "Mdt/CommandLineParser/Impl/Parser.h"
 #include "Mdt/CommandLineParser/ParserDefinition.h"
 #include "Mdt/CommandLineParser/ParserResult.h"
 #include <QLatin1String>
@@ -572,6 +572,28 @@ TEST_CASE("fillResultCommandFromQtParser")
     REQUIRE( resultCommand.optionCount() == 1 );
     REQUIRE( resultCommand.positionalArgumentCount() == 0 );
   }
+}
+
+TEST_CASE("parseMainCommandToResult")
+{
+  using Impl::parseMainCommandToResult;
+
+  ParserDefinition parserDefinition;
+  ParserResult result;
+  QStringList arguments{QLatin1String("myapp")};
+
+  REQUIRE( parseMainCommandToResult( parserDefinition.mainCommand(), arguments, result ) );
+}
+
+TEST_CASE("parseSubCommandToResult")
+{
+  using Impl::parseSubCommandToResult;
+
+  ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+  ParserResult result;
+  QStringList arguments{QLatin1String("myapp")};
+
+  REQUIRE( parseSubCommandToResult(copyCommand, arguments, result) );
 }
 
 TEST_CASE("Parser_parse")

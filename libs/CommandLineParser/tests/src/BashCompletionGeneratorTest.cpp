@@ -21,7 +21,7 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "Mdt/CommandLineParser/BashCompletionGenerator.h"
-#include "Mdt/CommandLineParser/BashCompletionGenerator_Impl.h"
+#include "Mdt/CommandLineParser/Impl/BashCompletionGenerator.h"
 #include <QCommandLineParser>
 #include <QTemporaryDir>
 #include <QDir>
@@ -449,6 +449,16 @@ TEST_CASE("compreplyStatementForCommandCaseBlock")
     expectedResult = QLatin1String("COMPREPLY=($(compgen -W \"-h --help copy\" -- \"$cur\"))");
     REQUIRE( compreplyStatementForCommandCaseBlock(generator, curVariableName) == expectedResult );
   }
+}
+
+TEST_CASE("generateCompletionFunction")
+{
+  using Impl::generateCompletionFunction;
+
+  BashCompletionGenerator generator;
+  generator.setApplicationName( QLatin1String("mytool") );
+
+  REQUIRE( !generateCompletionFunction(generator).isEmpty() );
 }
 
 TEST_CASE("generateScriptToFile")

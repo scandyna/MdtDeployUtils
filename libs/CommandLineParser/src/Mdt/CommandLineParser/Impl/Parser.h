@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -18,15 +18,15 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_COMMAND_LINE_PARSER_PARSER_IMPL_H
-#define MDT_COMMAND_LINE_PARSER_PARSER_IMPL_H
+#ifndef MDT_COMMAND_LINE_IMPL_PARSER_PARSER_H
+#define MDT_COMMAND_LINE_IMPL_PARSER_PARSER_H
 
-#include "ParserResult.h"
-#include "ParserResultCommand.h"
-#include "ParserResultOption.h"
-#include "ParserDefinition.h"
-#include "ParserDefinitionCommand.h"
-#include "ParserDefinitionOption.h"
+#include "../ParserResult.h"
+#include "../ParserResultCommand.h"
+#include "../ParserResultOption.h"
+#include "../ParserDefinition.h"
+#include "../ParserDefinitionCommand.h"
+#include "../ParserDefinitionOption.h"
 #include <QString>
 #include <QLatin1String>
 #include <QChar>
@@ -225,4 +225,4 @@ namespace Mdt{ namespace CommandLineParser{
 
 }} // namespace Mdt{ namespace CommandLineParser{
 
-#endif // #ifndef MDT_COMMAND_LINE_PARSER_PARSER_IMPL_H
+#endif // #ifndef MDT_COMMAND_LINE_IMPL_PARSER_PARSER_H

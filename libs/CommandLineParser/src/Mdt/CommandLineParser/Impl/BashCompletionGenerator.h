@@ -18,15 +18,15 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_IMPL_H
-#define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_IMPL_H
+#ifndef MDT_COMMAND_LINE_PARSER_IMPL_BASH_COMPLETION_GENERATOR_H
+#define MDT_COMMAND_LINE_PARSER_IMPL_BASH_COMPLETION_GENERATOR_H
 
-#include "BashCompletionGenerator.h"
-#include "BashCompletionGeneratorCommand.h"
-#include "BashCompletionGeneratorOption.h"
-#include "BashCompletionGeneratorPositionalArgument.h"
-#include "BashCompletionParserQuery.h"
-#include "Algorithm.h"
+#include "../BashCompletionGenerator.h"
+#include "../BashCompletionGeneratorCommand.h"
+#include "../BashCompletionGeneratorOption.h"
+#include "../BashCompletionGeneratorPositionalArgument.h"
+#include "../BashCompletionParserQuery.h"
+#include "../Algorithm.h"
 #include <QString>
 #include <QStringList>
 #include <QLatin1String>
@@ -320,4 +320,4 @@ namespace Mdt{ namespace CommandLineParser{
 
 }} // namespace Mdt{ namespace CommandLineParser{
 
-#endif // #ifndef MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_IMPL_H
+#endif // #ifndef MDT_COMMAND_LINE_PARSER_IMPL_BASH_COMPLETION_GENERATOR_H

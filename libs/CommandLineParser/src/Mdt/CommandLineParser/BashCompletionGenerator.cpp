@@ -19,7 +19,7 @@
  **
  ****************************************************************************/
 #include "BashCompletionGenerator.h"
-#include "BashCompletionGenerator_Impl.h"
+#include "Impl/BashCompletionGenerator.h"
 #include "Algorithm.h"
 #include <QLatin1Char>
 #include <QLatin1String>

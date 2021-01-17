@@ -19,7 +19,7 @@
  **
  ****************************************************************************/
 #include "Parser.h"
-#include "Parser_Impl.h"
+#include "Impl/Parser.h"
 #include "ParserResultCommand.h"
 #include <QCommandLineParser>
 #include <QString>
@@ -39,7 +39,7 @@ ParserResult Parser::parse(const ParserDefinition & parserDefinition, const QStr
     QStringList subCommandArguments;
 
     Impl::splitToMainAndSubCommandArguments(arguments, parserDefinition, mainCommandArguments, subCommandArguments);
-    
+
 //     qDebug() << "arguments: " << arguments;
 //     qDebug() << "mainCommandArguments: " << mainCommandArguments;
 //     qDebug() << "subCommandArguments: " << subCommandArguments;
