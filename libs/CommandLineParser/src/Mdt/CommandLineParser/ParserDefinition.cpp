@@ -19,7 +19,9 @@
  **
  ****************************************************************************/
 #include "ParserDefinition.h"
-#include "ParserDefinition_Impl.h"
+
+#include "Impl/ParserDefinition.h"
+
 #include <QStringBuilder>
 #include <QLatin1Char>
 #include <QLatin1String>

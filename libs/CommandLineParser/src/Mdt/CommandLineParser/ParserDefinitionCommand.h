@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -109,6 +109,13 @@ namespace Mdt{ namespace CommandLineParser{
       mDescription = description;
     }
 
+    /*! \brief Check if this command has a description
+     */
+    bool hasDescription() const noexcept
+    {
+      return !mDescription.isEmpty();
+    }
+
     /*! \brief Get the description of this command
      */
     const QString & description() const noexcept
@@ -193,6 +200,13 @@ namespace Mdt{ namespace CommandLineParser{
       mPositionalArguments.emplace_back(type, name, description, syntax);
     }
 
+    /*! \brief Add a positional argument
+     */
+    void addPositionalArgument(const ParserDefinitionPositionalArgument & argument)
+    {
+      mPositionalArguments.push_back(argument);
+    }
+
     /*! \brief Check if this command has positional arguments
      */
     bool hasPositionalArguments() const noexcept
@@ -204,7 +218,7 @@ namespace Mdt{ namespace CommandLineParser{
      */
     int positionalArgumentCount() const noexcept
     {
-      return mPositionalArguments.size();
+      return static_cast<int>( mPositionalArguments.size() );
     }
 
     /*! \brief Check if this command has a positional argument at \a index
@@ -237,12 +251,23 @@ namespace Mdt{ namespace CommandLineParser{
       return mPositionalArguments;
     }
 
+    /*! \brief Get the help text for this command
+     *
+     * \sa ParserDefinition::getSubCommandHelpText()
+     */
+    QString getHelpText(const QString & applicationName) const;
+
    private:
+
+    QString getUsageText(const QString & applicationName) const;
+    QString getOptionsHelpText() const;
+    QString getPositionalArgumentsHelpText() const;
 
     QString mName;
     QString mDescription;
     std::vector<ParserDefinitionOption> mOptions;
     std::vector<ParserDefinitionPositionalArgument> mPositionalArguments;
+    int mHelpTextLineMaxLength = 80;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

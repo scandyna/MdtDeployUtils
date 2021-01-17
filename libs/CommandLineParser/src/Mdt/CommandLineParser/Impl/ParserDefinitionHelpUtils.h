@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -18,30 +18,22 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_COMMAND_LINE_PARSER_PARSER_DEFINITION_IMPL_H
-#define MDT_COMMAND_LINE_PARSER_PARSER_DEFINITION_IMPL_H
+#ifndef MDT_COMMAND_LINE_PARSER_IMPL_PARSER_DEFINITION_HELP_UTILS_H
+#define MDT_COMMAND_LINE_PARSER_IMPL_PARSER_DEFINITION_HELP_UTILS_H
 
-#include "ParserDefinition.h"
-#include "ParserDefinitionOption.h"
-#include "ParserDefinitionPositionalArgument.h"
-#include "ParserDefinitionCommand.h"
-#include "Algorithm.h"
-#include <QString>
+#include "../ParserDefinitionOption.h"
+#include "../ParserDefinitionPositionalArgument.h"
+#include "../Algorithm.h"
 #include <QLatin1String>
-#include <QChar>
-#include <QLatin1Char>
+#include <QString>
 #include <QStringBuilder>
-#include <QCoreApplication>
-#include <cassert>
-#include <vector>
+#include <QLatin1Char>
+#include <QChar>
 #include <iterator>
-#include <algorithm>
+#include <vector>
+#include <cassert>
 
-// #include <QDebug>
-
-namespace Mdt{ namespace CommandLineParser{
-
-  namespace Impl{
+namespace Mdt{ namespace CommandLineParser{ namespace Impl{
 
     /*! \internal Check if \a c is a breackable character
      */
@@ -136,8 +128,8 @@ namespace Mdt{ namespace CommandLineParser{
 
       while(first != last){
         const auto breakPoint = findBreakPoint(first, last, maxLength);
-        const int posInText = std::distance(text.cbegin(), first);
-        const int charsToCopy = std::distance(first, breakPoint);
+        const int posInText = static_cast<int>( std::distance(text.cbegin(), first) );
+        const int charsToCopy = static_cast<int>( std::distance(first, breakPoint) );
 
         first += charsToCopy;
 
@@ -220,14 +212,6 @@ namespace Mdt{ namespace CommandLineParser{
       return wrapText( argument.name(), longestNamesStringLength, argument.description(), maxLength );
     }
 
-    /*! \internal
-     */
-    static
-    QString wrapText(const ParserDefinitionCommand & command, int longestNamesStringLength, int maxLength)
-    {
-      return wrapText( command.name(), longestNamesStringLength, command.description(), maxLength );
-    }
-
     /*! \internal Get the length of the names in \a option
      */
     static
@@ -279,35 +263,6 @@ namespace Mdt{ namespace CommandLineParser{
       return it->nameLength();
     }
 
-    /*! \internal Find the longest name in \a commands
-     *
-     * \pre \a commands must not be empty
-     */
-    static
-    int findLongestCommandNameStringLength(const std::vector<ParserDefinitionCommand> & commands) noexcept
-    {
-      assert( !commands.empty() );
-
-      const auto lessThan = [](const ParserDefinitionCommand & a, const ParserDefinitionCommand & b)
-      {
-        return a.nameLength() < b.nameLength();
-      };
-      const auto it = std::max_element(commands.cbegin(), commands.cend(), lessThan);
-      assert( it != commands.cend() );
-
-      return it->nameLength();
-    }
-
-  } // namespace Impl{
-
-  /*! \internal For functions that require tr()
-   */
-  class ParserDefinition_Impl
-  {
-    Q_DECLARE_TR_FUNCTIONS(ParserDefinition_Impl)
-
-   public:
-
     static
     QString argumentToUsageString(const ParserDefinitionPositionalArgument & argument)
     {
@@ -323,77 +278,6 @@ namespace Mdt{ namespace CommandLineParser{
       return joinToQString(arguments, ' ', argumentToUsageString);
     }
 
-    static
-    QString getUsageText(const QString & applicationName, const std::vector<ParserDefinitionOption> & options,
-                         const std::vector<ParserDefinitionPositionalArgument> & arguments,
-                         const std::vector<ParserDefinitionCommand> & subCommands)
-    {
-      QString usageText = tr("Usage: %1").arg(applicationName);
+}}} // namespace Mdt{ namespace CommandLineParser{ namespace Impl{
 
-      if( !options.empty() ){
-        usageText += QLatin1String(" [") % tr("options") % QLatin1Char(']');
-      }
-
-      if( !arguments.empty() ){
-        usageText += QLatin1Char(' ') % argumentListToUsageString(arguments);
-      }
-
-      if( !subCommands.empty() ){
-        usageText += QLatin1Char(' ') % tr("command");
-      }
-
-      return usageText;
-    }
-
-    /*! \brief Get options help text
-     *
-     * \pre \a options must not be empty
-     */
-    static
-    QString getOptionsHelpText(const std::vector<ParserDefinitionOption> & options, int maxLength)
-    {
-      assert( !options.empty() );
-
-      const int longestNamesStringLength = Impl::findLongestOptionNamesStringLength(options);
-      QString text = tr("Options:");
-      for(const auto & option : options){
-        text += QLatin1Char('\n') + Impl::wrapText(option, longestNamesStringLength, maxLength);
-      }
-
-      return text;
-    }
-
-    /*! \brief Get positional arguments help text
-     *
-     * \pre \a arguments must not be empty
-     */
-    static
-    QString getPositionalArgumentsHelpText(const std::vector<ParserDefinitionPositionalArgument> & arguments, int maxLength)
-    {
-      assert( !arguments.empty() );
-
-      const int longestNamesStringLength = Impl::findLongestArgumentNamesStringLength(arguments);
-      QString text = tr("Arguments:");
-      for(const auto & argument : arguments){
-        text += QLatin1Char('\n') + Impl::wrapText(argument, longestNamesStringLength, maxLength);
-      }
-
-      return text;
-    }
-
-    static
-    QString getAvailableSubCommandsHelpText(const std::vector<ParserDefinitionCommand> & subCommands, int maxLength)
-    {
-      const int longestNameStringLength = Impl::findLongestCommandNameStringLength(subCommands);
-      QString text = tr("Commands:");
-      for(const auto & command : subCommands){
-        text += QLatin1Char('\n') + Impl::wrapText(command, longestNameStringLength, maxLength);
-      }
-
-      return text;
-    }
-  };
-
-}} // namespace Mdt{ namespace CommandLineParser{
-
-#endif // #ifndef MDT_COMMAND_LINE_PARSER_PARSER_DEFINITION_IMPL_H
+#endif // #ifndef MDT_COMMAND_LINE_PARSER_IMPL_PARSER_DEFINITION_HELP_UTILS_H

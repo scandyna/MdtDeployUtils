@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -19,3 +19,46 @@
  **
  ****************************************************************************/
 #include "ParserDefinitionCommand.h"
+#include "Impl/ParserDefinitionCommand.h"
+#include <QStringBuilder>
+#include <QLatin1Char>
+#include <QLatin1String>
+
+namespace Mdt{ namespace CommandLineParser{
+
+QString ParserDefinitionCommand::getHelpText(const QString & applicationName) const
+{
+  QString helpText = getUsageText(applicationName);
+  const QLatin1Char nl('\n');
+
+  if( hasDescription() ){
+    helpText += nl % description() % nl;
+  }
+
+  if( hasOptions() ){
+    helpText += nl % getOptionsHelpText() % nl;
+  }
+
+  if( hasPositionalArguments() ){
+    helpText += nl % getPositionalArgumentsHelpText() % nl;
+  }
+
+  return helpText;
+}
+
+QString ParserDefinitionCommand::getUsageText(const QString & applicationName) const
+{
+  return Impl::ParserDefinitionCommandHelp::getUsageText(applicationName, *this);
+}
+
+QString ParserDefinitionCommand::getOptionsHelpText() const
+{
+  return Impl::ParserDefinitionCommandHelp::getOptionsHelpText( mOptions, mHelpTextLineMaxLength );
+}
+
+QString ParserDefinitionCommand::getPositionalArgumentsHelpText() const
+{
+  return Impl::ParserDefinitionCommandHelp::getPositionalArgumentsHelpText( mPositionalArguments, mHelpTextLineMaxLength );
+}
+
+}} // namespace Mdt{ namespace CommandLineParser{

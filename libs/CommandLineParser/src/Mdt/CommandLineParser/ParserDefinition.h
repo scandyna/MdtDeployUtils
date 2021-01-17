@@ -249,6 +249,18 @@ namespace Mdt{ namespace CommandLineParser{
      */
     QString getHelpText() const;
 
+    /*! \brief Get the help text for the subcommand named \a subCommandName
+     */
+    QString getSubCommandHelpText(const QString & subCommandName) const
+    {
+      const auto command = findSubCommandByName(subCommandName);
+      if(command){
+        return command->getHelpText(mApplicationName);
+      }
+
+      return QString();
+    }
+
    private:
 
     bool includeOptionsInHelpText() const noexcept
