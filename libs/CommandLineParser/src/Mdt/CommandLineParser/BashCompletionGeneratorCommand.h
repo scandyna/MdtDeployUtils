@@ -115,7 +115,7 @@ namespace Mdt{ namespace CommandLineParser{
      */
     int positionalArgumentCount() const noexcept
     {
-      return mArguments.size();
+      return static_cast<int>( mArguments.size() );
     }
 
     /*! \brief Get the positional argument at \a index

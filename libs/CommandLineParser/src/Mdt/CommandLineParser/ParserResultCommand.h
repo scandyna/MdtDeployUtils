@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -102,7 +102,7 @@ namespace Mdt{ namespace CommandLineParser{
      */
     int optionCount() const noexcept
     {
-      return mOptions.size();
+      return static_cast<int>( mOptions.size() );
     }
 
     /*! \brief Get the options of this result
