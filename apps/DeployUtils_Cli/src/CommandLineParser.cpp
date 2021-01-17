@@ -122,8 +122,7 @@ CommandLineParserResult CommandLineParser::process()
 CommandLineParserResult CommandLineParser::processGetSharedLibrariesTargetDependsOn(const ParserResultCommand & resultCommand)
 {
   if( resultCommand.isHelpOptionSet() ){
-    qDebug() << mGetSharedLibrariesTargetDependsOnCommand.name() << ": help requested";
-    /// \todo get help text on command
+    showMessage( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
     return CommandLineParserResult{};
   }
 //   GetSharedLibrariesTargetDependsOnCommandLineParser parser;
@@ -136,8 +135,7 @@ CommandLineParserResult CommandLineParser::processGetSharedLibrariesTargetDepend
 CommandLineParserResult CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserResultCommand & resultCommand)
 {
   if( resultCommand.isHelpOptionSet() ){
-    qDebug() << mCopySharedLibrariesTargetDependsOnCommand.name() << ": help requested";
-    /// \todo get help text on command
+    showMessage( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
     return CommandLineParserResult{};
   }
 
