@@ -111,6 +111,11 @@ CommandLineParserResult CommandLineParser::process()
       break;
   }
 
+  if( !parserResult.hasPositionalArguments() ){
+    const QString message = tr("Expected at least a command.");
+    showErrorMessage(message);
+    return CommandLineParserResult{};
+  }
 //   const QString message = tr("Given command '%1' is not supported").arg( parserResult.subCommand().name() );
   const QString message = tr("Given command '%1' is not supported").arg( parserResult.positionalArgumentAt(0) );
   showErrorMessage(message);
