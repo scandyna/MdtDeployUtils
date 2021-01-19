@@ -10,6 +10,8 @@ Should not be installed
 See: https://argbash.io/
 And also: https://argbash.readthedocs.io/en/stable/usage.html#bash-completion
 
+Also: https://github.com/python-cmd2/cmd2
+
 Question:
 Which positional argument I am currently processing ?
 The first, the second, ... ?
