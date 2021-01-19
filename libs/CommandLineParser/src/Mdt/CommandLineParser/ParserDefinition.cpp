@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -19,15 +19,11 @@
  **
  ****************************************************************************/
 #include "ParserDefinition.h"
-
 #include "Impl/ParserDefinition.h"
-
 #include <QStringBuilder>
 #include <QLatin1Char>
 #include <QLatin1String>
 #include <cassert>
-
-#include <QDebug>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -82,7 +78,6 @@ void ParserDefinition::addPositionalArgument(ArgumentType type, const QString & 
 
 void ParserDefinition::addSubCommand(const ParserDefinitionCommand & command)
 {
-//   assert( !command.isEmpty() );
   assert( command.hasName() );
 
   mSubCommands.push_back(command);

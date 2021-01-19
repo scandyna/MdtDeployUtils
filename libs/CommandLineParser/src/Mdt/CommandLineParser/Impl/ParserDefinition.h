@@ -26,6 +26,7 @@
 #include "../ParserDefinitionPositionalArgument.h"
 #include "../ParserDefinitionCommand.h"
 #include "../Algorithm.h"
+#include "ParserDefinitionHelpUtils.h"
 #include <QString>
 #include <QLatin1String>
 #include <QChar>
@@ -36,10 +37,6 @@
 #include <vector>
 #include <iterator>
 #include <algorithm>
-
-#include "ParserDefinitionHelpUtils.h"
-
-// #include <QDebug>
 
 namespace Mdt{ namespace CommandLineParser{
 

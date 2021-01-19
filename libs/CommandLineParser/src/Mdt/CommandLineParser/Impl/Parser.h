@@ -33,9 +33,6 @@
 #include <QStringList>
 #include <QCommandLineOption>
 #include <QCommandLineParser>
-
-#include <boost/optional.hpp>
-
 #include <algorithm>
 #include <vector>
 #include <iterator>
