@@ -16,7 +16,7 @@ class MdtDeployUtilsConan(ConanFile):
   default_options = {"shared": True,
                      "use_conan_boost": False,
                      "use_conan_qt": False}
-  requires = "MdtApplication/[>=0.2.2]@scandyna/testing"
+  requires = "MdtApplication/[>=0.3.0]@scandyna/testing"
   build_requires = "MdtCMakeModules/[>=0.14.12]@scandyna/testing", "Catch2/[>=2.11.1]@catchorg/stable"
   generators = "cmake", "cmake_paths", "virtualenv"
   exports_sources = "libs/*", "cmake/*", "CMakeLists.txt", "conanfile.py", "LICENSE.txt", "COPYING", "COPYING.LESSER"

@@ -112,7 +112,7 @@ endif()
 
 find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS Core REQUIRED)
-find_package(Mdt0 COMPONENTS ConsoleApplication REQUIRED)
+find_package(Mdt0 COMPONENTS CommandLineArguments ConsoleApplication REQUIRED)
 
 # CommandLineParser uses Boost optional
 # For header only library,no component is defined.
@@ -224,7 +224,6 @@ endif()
 
 add_subdirectory(libs/DeployUtils_Core)
 
-add_subdirectory(libs/CommandLineArguments)
 add_subdirectory(libs/CommandLineParser)
 
 add_subdirectory(apps/DeployUtils_Cli)

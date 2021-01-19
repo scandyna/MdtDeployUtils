@@ -1,6 +1,6 @@
 ########################################################################################
 #
-# Copyright (C) 2019-2020 Philippe Steinmann.
+# Copyright (C) 2019-2021 Philippe Steinmann.
 #
 # This file is part of MdtApplication library.
 #
@@ -31,7 +31,7 @@ mdt_add_test(
 mdt_add_test(
   NAME ParserDefinitionHelpUtilsTest
   TARGET parserDefinitionHelpUtilsTest
-  DEPENDENCIES Mdt::CommandLineParser Mdt::CommandLineArguments Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ParserDefinitionHelpUtilsTest.cpp
 )
@@ -39,7 +39,7 @@ mdt_add_test(
 mdt_add_test(
   NAME ParserDefinitionCommandTest
   TARGET parserDefinitionCommandTest
-  DEPENDENCIES Mdt::CommandLineParser Mdt::CommandLineArguments Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ParserDefinitionCommandTest.cpp
 )
@@ -47,7 +47,7 @@ mdt_add_test(
 mdt_add_test(
   NAME ParserDefinitionTest
   TARGET parserDefinitionTest
-  DEPENDENCIES Mdt::CommandLineParser Mdt::CommandLineArguments Mdt::Catch2Main
+  DEPENDENCIES Mdt::CommandLineParser Mdt0::CommandLineArguments Mdt::Catch2Main
   SOURCE_FILES
     src/ParserDefinitionTest.cpp
 )
