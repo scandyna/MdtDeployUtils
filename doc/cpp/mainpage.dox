@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2019-2020 Philippe Steinmann.
+ ** Copyright (C) 2019-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -21,116 +21,7 @@
 
 /*! \mainpage Overview
  *
- * \section Command_line_parser Command-line parser
+ * \ref libs_DeployUtils
  *
- * \sa Mdt::CommandLineParser::ParserDefinition
- * \sa Mdt::CommandLineParser::Parser
- *
- * \subsection tab_completion TAB completion
- *
- * \sa Mdt::CommandLineParser::handleBashCompletion()
- *
- * \subsection command_line_parser_debug Debug
- *
- * \sa Mdt/CommandLineParser/ParserResultDebug.h
- *
- * \section rationale Rationale
- *
- * \subsection command_line_parser_rationale About command line parser
- *
- * To parse command line arguments, QCommandLineParser is a helpful tool.
- *
- * This library uses QCommandLineParser, but adds some things missing in it.
- *
- * QCommandLineParser has no natural notion of sub-commands.
- * It is possible to create such sub-commands using a QCommandLineParser for each one.
- * A drawback is that the QCommandLineParser::helpText() will return the application name,
- * but the sub-command name is expected.
- *
- * Once QCommandLineParser has been set-up, the defined arguments and options cannot be get:
- * \code
- * QCommandLineParser parser;
- * parser.addPositionalArgument("source", QCoreApplication::translate("main", "Source file to copy."));
- * parser.addPositionalArgument("destination", QCoreApplication::translate("main", "Destination directory."));
- *
- * qDebug() << parser.positionalArguments();
- * \endcode
- *
- * Above code will not work, because we did not call %parse() or %process().
- * The returned arguments are those that are passed to the command line
- * and that are not recognized as options,
- * which is expected for parsing.
- *
- * For some cases, getting the arguments and options given can be useful,
- * for exaple to list available sub-commands in the help,
- * or to generate a Bash-completion script.
- *
- * \subsubsection tab_completion_rationale About TAB completion
- *
- * A idea was to capture TAB on the command line,
- * then do alls the stuff in the application part.
- * This could be multiplatform, yes ?
- * No, see:
- * - https://stackoverflow.com/questions/5255372/how-to-implement-tab-completion
- * - https://stackoverflow.com/questions/13971298/how-do-i-accept-tab-as-input-from-stdin-to-autofill-text/13978270
- *
- * So, use the Bash built-in completion.
- * \sa https://iridakos.com/programming/2018/03/01/bash-programmable-completion-tutorial
- *
- * As sandboxing a solution, generating a script was more complex than I tought.
- *
- * Looking at scripts available in the Linux distribution I use (Ubuntu 18.04)
- * in /usr/share/bash-completion/completions/
- * I discovered that git and CMake do their scripts by hand.
- *
- * One tricky part:
- * I want to list files when we are about to complete a positional argument, like source.
- * This requires to know if we are about to complete this positional argument:
- * \code
- * myapp copy <TAB>
- * \endcode
- * or:
- * \code
- * myapp copy --force <TAB>
- * \endcode
- * or:
- * \code
- * myapp copy path/to/some-file --mode fail-if-destination-exists <TAB>
- * \endcode
- *
- * Above could be solved in Bash, but we are about to re-create a complex parser
- * just for completion.
- *
- * Looking at the gcc complete script, a interesting idea:
- * gcc calls itself to generate completion.
- *
- * So, do we call ourself and do all the work in the C++ side ?
- * Seems good, but how to list directories ?
- * This time we have to re-create what Bash allready supports.
- *
- * So, split and distribute the problem to who knows best.
- * To find the name of the positional argument,
- * ask the C++ part, we can re-use QCommandLineParser for that.
- * To list files and directores, let Bash do it with compgen -A .
- *
- * In the generated Bash completion script:
- * \code
- * local executable="$1"
- * local currentPositionalArgument=$("$executable" completion-find-current-positional-argument-name $COMP_LINE)
- * \endcode
- *
- * In the parser, a helper function should be provided:
- * \code
- * bool parseCompletionArguments()
- * {
- *   if( first-arg == "completion-find-current-positional-argument-name" ){
- *     if( second-arg is empty){
- *       error
- *     }
- *   }
- *   find the positional argument and return in the form subcommand-argument
- * }
- * \endcode
- *
- * \todo Possible commands / arguments /  options combinations here
+ * \ref libs_CommandLineParser
  */
