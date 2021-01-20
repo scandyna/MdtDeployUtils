@@ -54,6 +54,8 @@ option(BUILD_DOCS "Build the documentations" OFF)
 mdt_set_available_build_types(Release Debug RelWithDebInfo MinSizeRel Instrumented)
 option(WARNING_AS_ERROR "Threat warnings as errors" OFF)
 
+option(BUILD_USE_IPO_LTO_IF_AVAILABLE "Use link-time optimization if available on the platform" OFF)
+mark_as_advanced(BUILD_USE_IPO_LTO_IF_AVAILABLE)
 # Provide LPO/LTO option if supported
 # Note: CMake before 3.9 does only support Intel compiler on Linux.
 #       Check documentation of the CheckIPOSupported module,
@@ -61,7 +63,7 @@ option(WARNING_AS_ERROR "Threat warnings as errors" OFF)
 include(CheckIPOSupported)
 check_ipo_supported(RESULT HAVE_IPO_LTO)
 if(HAVE_IPO_LTO)
-  option(BUILD_USE_IPO_LTO "Use link-time optimization" OFF)
+  option(BUILD_USE_IPO_LTO "Use link-time optimization" ${BUILD_USE_IPO_LTO_IF_AVAILABLE})
 endif()
 
 mdt_get_available_optimization_levels(AVAILABLE_OPTIMIZATION_LEVELS)

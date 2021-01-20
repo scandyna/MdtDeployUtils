@@ -50,6 +50,7 @@ class MdtDeployUtilsConan(ConanFile):
     cmake = CMake(self)
     cmake.definitions["FROM_CONAN_PROJECT_VERSION"] = self.version
     cmake.definitions["WARNING_AS_ERROR"] = "ON"
+    cmake.definitions["BUILD_USE_IPO_LTO_IF_AVAILABLE"] = "ON"
 
     if self.settings.compiler == "gcc" or self.settings.compiler == "clang":
       if self.settings.compiler.sanitizer == "Thread":
