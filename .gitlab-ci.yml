@@ -116,14 +116,14 @@ build_linux_clang6.0_x86_64_libc++_release:
     CONAN_PROFILE: linux_clang6.0_x86_64_libc++_qt_gui_modules
     BUILD_TYPE: Release
     BUILD_USE_IPO_LTO: "ON"
-    CONAN_EXTRA_ARGUMENTS: -o use_conan_qt=True
+    CONAN_EXTRA_ARGUMENTS: -o MdtApplication:use_conan_qt=True -o use_conan_qt=True
   extends: .build_linux
 
 test_linux_clang6.0_x86_64_libc++_release:
   variables:
     CONAN_PROFILE: linux_clang6.0_x86_64_libc++_qt_gui_modules
     BUILD_TYPE: Release
-    CONAN_EXTRA_ARGUMENTS: -o use_conan_qt=True
+    CONAN_EXTRA_ARGUMENTS: -o MdtApplication:use_conan_qt=True -o use_conan_qt=True
   dependencies:
     - build_linux_clang6.0_x86_64_libc++_release
   extends: .test_linux
