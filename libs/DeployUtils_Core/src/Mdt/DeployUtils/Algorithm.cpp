@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiler binaries
  **
- ** Copyright (C) 2020-2020 Philippe Steinmann.
+ ** Copyright (C) 2020-2021 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -19,3 +19,11 @@
  **
  ****************************************************************************/
 #include "Algorithm.h"
+
+namespace Mdt{ namespace DeployUtils{
+
+void fakeFunctionToMakeMsvcGenerateADotLib()
+{
+}
+
+}} // namespace Mdt{ namespace DeployUtils{
