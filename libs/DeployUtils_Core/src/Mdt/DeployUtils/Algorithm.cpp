@@ -20,8 +20,15 @@
  ****************************************************************************/
 #include "Algorithm.h"
 
+#include "mdt_deployutils_export.h"
+
 namespace Mdt{ namespace DeployUtils{
 
+/*! \internal
+  *
+  * \todo Remove as soon as possible
+  */
+MDT_DEPLOYUTILS_EXPORT
 void fakeFunctionToMakeMsvcGenerateADotLib()
 {
 }

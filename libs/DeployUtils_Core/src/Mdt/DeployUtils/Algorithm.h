@@ -60,12 +60,6 @@ namespace Mdt{ namespace DeployUtils{
     std::copy( source.cbegin(), source.cend(), std::back_inserter(destinaton) );
   }
 
-  /*! \internal
-   *
-   * \todo Remove as soon as possible
-   */
-  void fakeFunctionToMakeMsvcGenerateADotLib();
-
 }} // namespace Mdt{ namespace DeployUtils{
 
 #endif // #ifndef MDT_DEPLOY_UTILS_ALGORITHM_H
