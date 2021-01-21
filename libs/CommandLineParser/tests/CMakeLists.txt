@@ -47,7 +47,7 @@ mdt_add_test(
 mdt_add_test(
   NAME ParserDefinitionTest
   TARGET parserDefinitionTest
-  DEPENDENCIES Mdt::CommandLineParser Mdt0::CommandLineArguments Mdt::Catch2Main
+  DEPENDENCIES Mdt::CommandLineParser Mdt0::CommandLineArguments Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ParserDefinitionTest.cpp
 )

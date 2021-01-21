@@ -19,6 +19,7 @@
  **
  ****************************************************************************/
 #include "catch2/catch.hpp"
+#include "Catch2QString.h"
 #include "Mdt/CommandLineParser/ParserDefinition.h"
 #include "Mdt/CommandLineParser/Impl/ParserDefinition.h"
 #include "Mdt/CommandLineArguments.h"
@@ -304,6 +305,12 @@ TEST_CASE("ParserDefinition_applicationName")
 {
   Mdt::CommandLineArguments arguments({"default-app-name"});
   QCoreApplication app( arguments.argumentCountRef(), arguments.argumentVector() );
+  /*
+   * Make sure we have exactly the app name we expect,
+   * and not a variant (like .\default-app-name)
+   */
+  app.setApplicationName( QLatin1String("default-app-name") );
+  REQUIRE( app.applicationName() == QLatin1String("default-app-name") );
 
   ParserDefinition parser;
 
