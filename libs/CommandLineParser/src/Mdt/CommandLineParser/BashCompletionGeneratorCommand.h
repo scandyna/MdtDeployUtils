@@ -29,6 +29,7 @@
 #include <QStringList>
 #include <cassert>
 #include <vector>
+#include <cstddef>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -127,7 +128,7 @@ namespace Mdt{ namespace CommandLineParser{
       assert( index >= 0 );
       assert( index < positionalArgumentCount() );
 
-      return mArguments[index];
+      return mArguments[static_cast<size_t>(index)];
     }
 
     /*! \brief Get the list of arguments of this command

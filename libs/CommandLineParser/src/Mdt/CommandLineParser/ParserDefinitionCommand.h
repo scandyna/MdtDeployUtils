@@ -28,6 +28,7 @@
 #include <QLatin1String>
 #include <QCoreApplication>
 #include <vector>
+#include <cstddef>
 #include <cassert>
 
 namespace Mdt{ namespace CommandLineParser{
@@ -241,7 +242,7 @@ namespace Mdt{ namespace CommandLineParser{
       assert( index >= 0 );
       assert( index < positionalArgumentCount() );
 
-      return mPositionalArguments[index];
+      return mPositionalArguments[static_cast<size_t>(index)];
     }
 
     /*! \brief Get the positional arguments of this command

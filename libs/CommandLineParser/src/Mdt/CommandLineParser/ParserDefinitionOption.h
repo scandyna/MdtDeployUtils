@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -24,6 +24,7 @@
 #include "Algorithm.h"
 #include "mdt_commandlineparser_export.h"
 #include <QChar>
+#include <QLatin1Char>
 #include <QString>
 #include <QLatin1String>
 #include <QLatin1Char>
@@ -148,7 +149,7 @@ namespace Mdt{ namespace CommandLineParser{
     static
     bool isValidShortName(char name)
     {
-      return QChar::isLetter(name);
+      return QChar( QLatin1Char(name) ).isLetter();
     }
 
     /*! \brief Check if \a name is a valid name for a option
