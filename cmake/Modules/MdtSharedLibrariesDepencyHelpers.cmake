@@ -8,14 +8,6 @@
 # .. contents:: Summary
 #    :local:
 #
-# Notes
-# ^^^^^
-#
-#
-# NOTE: install 2 (or more) apps with same dependencies
-#      review ! Probably not a good idea
-#      once reviewed, update mdt_install_shared_libraries_target_depends_on() doc !
-#
 # Copy shared libraries a target depends on
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
@@ -82,7 +74,6 @@
 #     RUNTIME_DESTINATION <dir>
 #     LIBRARY_DESTINATION <dir>
 #     [INSTALL_IS_UNIX_SYSTEM_WIDE [TRUE|FALSE]]
-#     [OVERWRITE [TRUE|FALSE]]
 #   )
 #
 # The shared libraries ``target`` depends on are installed to ``CMAKE_INSTALL_PREFIX``,
@@ -92,24 +83,17 @@
 # On Windows, the subdirectory is the one specified by ``RUNTIME_DESTINATION``.
 #
 # If the source and destination locations for a shared library are the same,
-# it will not be copied, and its rpath informations will not be changed at all,
-# and this regardless of OVERWRITE.
+# it will not be copied, and its rpath informations will not be changed at all.
 # This can happen on UNIX systems when ``target`` depends on shared libraries installed system wide,
 # and ``CMAKE_INSTALL_PREFIX`` refers to a system wide installation (i.e. ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ``TRUE``).
 #
 # If a shared library ``target`` depends on allready exists at the destination location,
 # but it is not the same (source and destination locations are different),
-# the behavior depends on ``INSTALL_IS_UNIX_SYSTEM_WIDE`` and ``OVERWRITE``.
-# If ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ``TRUE``, regardless of ``OVERWRITE``,
-# a fatal error is thrown.
+# and ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ``TRUE``, a fatal error is thrown.
 # The reason is to prevent erasing system wide installed libraries with a other version,
 # which could corrupt the whole system.
-# Otherwise (i.e. ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ``FALSE``),
-# the behavior depends on ``OVERWRITE``.
-# If ``OVERWRITE`` is ``TRUE``, the destination library will be replaced,
-# otherwise it will not be changed at all.
-# (Erasing libraries while creating a standalone application
-# will happen often, and is not a problem)
+# On the other hand, erasing libraries while creating a standalone application
+# will happen often, and is not a problem.
 #
 # On platform that supports rpath,
 # the rpath informations is set to ``$ORIGIN`` for each shared library that has been installed.
@@ -152,39 +136,4 @@
 # it will (of course) not be installed, and its rpath informations will not be changed at all.
 #
 # On Windows, the shared libraries the ``myApp`` executable depends on are installed to ``${CMAKE_INSTALL_PREFIX}/bin``.
-#
-# Example of more than 1 application that depends on almost the same libraries:
-#
-# .. code-block:: cmake
-#
-#   # This should be set at the top level CMakeLists.txt
-#   include(GNUInstallDirs)
-#   include(MdtInstallDirs)
-#
-#   add_executable(myApp1 myApp1.cpp)
-#   target_link_libraries(myApp1 PRIVATE Qt5::Core)
-#   target_link_libraries(myApp1 PRIVATE myLibA)
-#
-#   add_executable(myApp2 myApp2.cpp)
-#   target_link_libraries(myApp2 PRIVATE Qt5::Core)
-#   target_link_libraries(myApp2 PRIVATE Mdt0::PlainText)
-#   target_link_libraries(myApp2 PRIVATE myLibA)
-#   target_link_libraries(myApp2 PRIVATE myLibB)
-#
-#   mdt_install_shared_libraries_target_depends_on(
-#     TARGET myApp1
-#     RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
-#     LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
-#   )
-#
-#   mdt_install_shared_libraries_target_depends_on(
-#     TARGET myApp2
-#     RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
-#     LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
-#     OVERWRITE FALSE
-#   )
-#
-# NOTE: remember that install rules are dependency driven, not sequentially executed !
 #
