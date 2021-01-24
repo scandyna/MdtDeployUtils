@@ -7,3 +7,4 @@ All Modules
    :caption: Contents:
 
    MdtSharedLibrariesDepencyHelpers.rst
+   MdtInstallExecutable.rst
