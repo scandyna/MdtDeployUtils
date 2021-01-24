@@ -52,10 +52,6 @@
 #
 # NOTE: install 2 (or more) apps with same dependencies
 #
-# NOTE: do not overwrite destination shared lib if one with same name exists on UNIX system wide install
-#
-# NOTE: for UNIX system wide install, document to depend on installed shared libraries ! (should at least warn about that ?)
-#
 # Copy shared libraries a target depends on
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
@@ -66,20 +62,29 @@
 #   mdt_copy_shared_libraries_target_depends_on(
 #     TARGET <target>
 #     DESTINATION <dir>
+#     [OVERWRITE_BEHAVIOR [KEEP|OVERWRITE|FAIL]]
 #     [REMOVE_RPATH [TRUE|FALSE]]
 #   )
 #
-#  NOTE: overwrite option
-#
 # The shared libraries ``target`` depends on are copied to the location specified by ``DESTINATION``.
 #
-# By default, the rpath informations is set to ``$ORIGIN`` for each shared library on platform that supports it.
-# If ``REMOVE_RPATH`` is ``TRUE``, the rpath informations are removed for each shared library on platform that supports it.
-#
 # If the source and destination locations for a shared library are the same,
-# it will not be copied, and its rpath informations will not be changed at all.
+# it will not be copied, and its rpath informations will not be changed at all,
+# and this regardless of ``REMOVE_RPATH`` and ``OVERWRITE_BEHAVIOR``.
 # (The only descent case this happens is a UNIX system wide installation,
 # for a target that depends on shared libraries allready installed system wide).
+#
+# If a shared library allready exists at the destination location,
+# but its not the same as the source (source and destination locations are different),
+# the behavior is defined by ``OVERWRITE_BEHAVIOR``.
+# If ``OVERWRITE_BEHAVIOR`` is ``KEEP``, the destination library will not be changed at all.
+# If ``OVERWRITE_BEHAVIOR`` is ``OVERWRITE``, the destination library will replaced.
+# If ``OVERWRITE_BEHAVIOR`` is ``FAIL``, a fatal error is thrown.
+# By default, the ``OVERWRITE_BEHAVIOR`` is ``FAIL``.
+#
+# By default, on platform that supports rpath,
+# the rpath informations is set to ``$ORIGIN`` for each shared library that has been  copied.
+# If ``REMOVE_RPATH`` is ``TRUE``, the rpath informations are removed for each shared library that has been copied.
 #
 # Example:
 #
@@ -91,13 +96,14 @@
 #
 #   mdt_copy_shared_libraries_target_depends_on(
 #     TARGET myApp
-#     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/myApp"
+#     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/myApp/lib"
+#     OVERWRITE_BEHAVIOR OVERWRITE
 #   )
 #
-# The shared libraries the ``myApp`` executable depends on are copied to the specified directory specified by ``.
+# The shared libraries the ``myApp`` executable depends on are copied to ``"${CMAKE_CURRENT_BINARY_DIR}/myApp/lib"``.
 #
-# By default, the rpath informations is set to ``$ORIGIN`` for each shared library on platform that supports it.
-# If ``REMOVE_RPATH`` is ``TRUE``, the rpath informations are removed for each shared library on platform that supports it.
+# On platform that supports rpath,
+# the rpath informations is set to ``$ORIGIN`` for each shared library that has been copied.
 #
 #
 # Install shared libraries a target depends on
@@ -123,9 +129,18 @@
 # By default, the rpath informations is set to ``$ORIGIN`` for each shared library on platform that supports it.
 # If ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ``TRUE``, the rpath informations are removed for each shared library on platform that supports it.
 #
-# On UNIX, if ``CMAKE_INSTALL_PREFIX`` refers to a system wide installation (for example ``/usr``),
-# and a shared library ``target`` depends on, allready exists at the destination location,
-# nothing will be done for it.
+# If the source and destination locations for a shared library are the same,
+# it will not be copied, and its rpath informations will not be changed at all.
+# This can happen on UNIX systems when ``target`` depends on shared libraries installed system wide,
+# and ``CMAKE_INSTALL_PREFIX`` refers to a system wide installation (i.e. ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ``TRUE``).
+#
+# If ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ``TRUE``,
+# and a shared library ``target`` depends on allready exists at the destination location,
+# but it is not the same (source and destination locations are different), a fatal error is thrown.
+# The reason is to prevent erasing system wide installed libraries with a other version,
+# which could corrupt the whole system.
+# On the other hand, erasing libraries while creating a standalone application
+# will happen often, and is not a problem.
 #
 # Example:
 #
