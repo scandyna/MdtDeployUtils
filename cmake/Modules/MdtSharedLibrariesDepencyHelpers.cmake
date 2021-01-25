@@ -8,21 +8,6 @@
 # .. contents:: Summary
 #    :local:
 #
-# Notes
-# ^^^^^
-#
-# NOTE: work on search paths
-#    usefull for Windows.
-#
-#   On Linux, if libs are installed in their own locations
-#   with rpath set to $ORIGIN,
-#   search paths are also required.
-#   See https://scandyna.gitlab.io/mdt-cmake-modules/Modules/MdtRuntimeEnvironment.html
-#
-#  should NOT be a optional argument
-#
-#    See find_package() doc
-#
 # Copy shared libraries a target depends on
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
