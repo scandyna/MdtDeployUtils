@@ -8,6 +8,21 @@
 # .. contents:: Summary
 #    :local:
 #
+# Notes
+# ^^^^^
+#
+# NOTE: work on search paths
+#    usefull for Windows.
+#
+#   On Linux, if libs are installed in their own locations
+#   with rpath set to $ORIGIN,
+#   search paths are also required.
+#   See https://scandyna.gitlab.io/mdt-cmake-modules/Modules/MdtRuntimeEnvironment.html
+#
+#  should NOT be a optional argument
+#
+#    See find_package() doc
+#
 # Copy shared libraries a target depends on
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
@@ -41,6 +56,16 @@
 # By default, on platform that supports rpath,
 # the rpath informations is set to ``$ORIGIN`` for each shared library that has been  copied.
 # If ``REMOVE_RPATH`` is ``TRUE``, the rpath informations are removed for each shared library that has been copied.
+#
+# On Linux, ``ldd`` is internally used to find the shared libraries,
+# which should find dependencies using rpath informations and other mechanisms.
+# On some cases, some shared libraries cannot be found.
+# For more informations about why,
+# see https://scandyna.gitlab.io/mdt-cmake-modules/Modules/MdtRuntimeEnvironment.html .
+# To solve such case, ``CMAKE_PREFIX_PATH`` will be used to help ``ldd``.
+#
+# On Windows, there is no rpath informations,
+# so ``CMAKE_PREFIX_PATH`` will be used to find dependencies.
 #
 # Example:
 #
