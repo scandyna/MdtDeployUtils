@@ -84,6 +84,7 @@
 #     RUNTIME_DESTINATION <dir>
 #     LIBRARY_DESTINATION <dir>
 #     [INSTALL_IS_UNIX_SYSTEM_WIDE [TRUE|FALSE]]
+#     [COMPONENT <component-name>]
 #   )
 #
 # The shared libraries ``target`` depends on are installed to ``CMAKE_INSTALL_PREFIX``,
@@ -128,6 +129,7 @@
 #     RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
 #     LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
+#     COMPONENT ${PROJECT_NAME}_Tools
 #   )
 #
 # To create a standalone application on Linux, the ``CMAKE_INSTALL_PREFIX`` could be ``~/opt/myapp``.

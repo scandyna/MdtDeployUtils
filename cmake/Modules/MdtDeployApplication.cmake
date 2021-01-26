@@ -2,20 +2,20 @@
 # file Copyright.txt or https://cmake.org/licensing for details.
 
 #.rst:
-# MdtInstallExecutable
+# MdtDeployApplication
 # --------------------
 #
 # .. contents:: Summary
 #    :local:
 #
-# Functions
-# ^^^^^^^^^
+# Deploy a application
+# ^^^^^^^^^^^^^^^^^^^^
 #
-# .. command:: mdt_install_executable
+# .. command:: mdt_deploy_application
 #
-# Install a executable::
+# Deploy a application with `target` as executable::
 #
-#   mdt_install_executable(
+#   mdt_deploy_application(
 #     TARGET <target>
 #     RUNTIME_DESTINATION <dir>
 #     LIBRARY_DESTINATION <dir>
@@ -23,13 +23,9 @@
 #     [COMPONENT <component-name>]
 #   )
 #
-# Will install the executable `target` to ``CMAKE_INSTALL_PREFIX``
-# into a subdirectory defined by ``RUNTIME_DESTINATION``.
-#
-# On Linux,
-# the rpath informations is set to ``$ORIGIN/../${LIBRARY_DESTINATION}``.
-# If ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ``TRUE``,
-# the rpath informations are removed.
+# Will install `target` using :command:`mdt_install_executable()`.
+# The shared libraries the executable depends on
+# are also installed using :command:`mdt_install_shared_libraries_target_depends_on()`.
 #
 # Example:
 #
@@ -40,8 +36,11 @@
 #   include(MdtInstallDirs)
 #
 #   add_executable(myApp myApp.cpp)
+#   target_link_libraries(myApp PRIVATE Qt5::Core)
+#   target_link_libraries(myApp PRIVATE Mdt0::PlainText)
+#   target_link_libraries(myApp PRIVATE myLibA)
 #
-#   mdt_install_executable(
+#   mdt_deploy_application(
 #     TARGET myApp
 #     RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
 #     LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -49,7 +48,3 @@
 #     COMPONENT ${PROJECT_NAME}_Tools
 #   )
 #
-
-
-
-# TODO : if subdir not 1 level, document to set RPATH manually

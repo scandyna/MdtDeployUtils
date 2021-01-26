@@ -3,13 +3,74 @@ Tools to help deploy C/C++ application binaries and their dependencies.
 
 [[_TOC_]]
 
-# TODO
+# Introduction
 
-Explain difference between handling dependencies for dev,
-which Conan is great for,
-and deploy a application with shared libs, plugins, etc...
+While developing an application, or a library, dependencies can be managed by a package manager, like [Conan](https://docs.conan.io).
+
+To run tests that depends on shared libraries, some runtime environment can be necessary.
+For more about this, see [the MdtRuntimeEnvironment CMake module](https://scandyna.gitlab.io/mdt-cmake-modules/Modules/MdtRuntimeEnvironment.html),
+and also [the MdtAddTest CMake helper module](https://scandyna.gitlab.io/mdt-cmake-modules/Modules/MdtAddTest.html).
+
+At some point, an application has to be deployed.
+This requires to install at least an executable and its shared libraries.
+
+To deploy Qt applications, some tools are available:
+- [linuxdeployqt](https://github.com/probonopd/linuxdeployqt)
+- [windeployqt](https://doc.qt.io/qt-5/windows-deployment.html)
+- [macdeployqt](https://doc.qt.io/qt-5/macos-deployment.html)
 
 # Usage
+
+## CMake API
+
+This section explains how to use MdtDeployUtils
+to install a application and its dependencies.
+
+Example `CMakeLists.txt`:
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(MyApp)
+
+if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+  include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+  conan_basic_setup(NO_OUTPUT_DIRS)
+endif()
+
+find_package(MdtCMakeModules REQUIRED)
+find_package(Threads REQUIRED)
+find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+find_package(Mdt0 COMPONENTS PlainText REQUIRED)
+find_package(Mdt0 COMPONENTS DeployUtils REQUIRED)
+
+add_executable(myApp myApp.cpp)
+target_link_libraries(myApp PRIVATE Mdt0::PlainText Qt5::Widgets)
+
+include(GNUInstallDirs)
+include(MdtInstallDirs)
+include(MdtDeployApplication)
+
+mdt_deploy_application(
+  TARGET myApp
+  RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
+  COMPONENT ${PROJECT_NAME}_Tools
+)
+```
+
+If Conan is used, the `conanfile.txt` could look like:
+```txt
+[build_requires]
+MdtCMakeModules/[>=x.y.z]@scandyna/testing
+MdtDeployUtils/[>=x.y.z]@scandyna/testing
+
+[generators]
+cmake
+virtualenv
+```
+
+For the available CMake modules, and their usage,
+see [the CMake API documentation](https://scandyna.gitlab.io/mdtdeployutils/cmake-api)
 
 ## Command line tools
 
@@ -21,19 +82,15 @@ mdtdeployutils copy-shared-libraries-target-depends-on "path/to/some/executable"
 mdtdeployutils install-executable "someExe"
 ```
 
-## CMake API
-
-For the available CMake modules, and their usage,
-see [the CMake API documentation](https://scandyna.gitlab.io/mdtdeployutils/cmake-api)
-
 ## C++ API
+
+This section will explain how to build your project using the MdtDeployUtils C++ API
+with CMake and Conan.
+This means that your project is itself probably a deployment utility using MdtDeployUtils.
 
 For the available classes, functions, and their usage,
 see [the C++ API documentation](https://scandyna.gitlab.io/mdtdeployutils/cpp-api)
 
-
-This section will explain how to build your project using the MdtDeployUtils C++ API
-with CMake and Conan.
 
 ### Required tools and libraries
 
@@ -69,6 +126,9 @@ Create (or update) `conanfile.txt`:
 [requires]
 MdtDeployUtils/[>=x.y.z]@scandyna/testing
 
+[build_requires]
+MdtCMakeModules/[>=x.y.z]@scandyna/testing
+
 [generators]
 cmake
 virtualenv
@@ -88,10 +148,10 @@ endif()
 
 find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS Core Gui REQUIRED)
-find_package(Mdt0 COMPONENTS _Project_Lib_Name_ REQUIRED)
+find_package(Mdt0 COMPONENTS DeployUtils REQUIRED)
 
-add_executable(myApp myApp.cpp)
-target_link_libraries(myApp Mdt0::_Project_Lib_Name_)
+add_executable(myTool myTool.cpp)
+target_link_libraries(myTool PRIVATE Mdt0::DeployUtils)
 ```
 
 ### Build your project using MdtDeployUtils on Linux with the native compiler

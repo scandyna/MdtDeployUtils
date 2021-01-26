@@ -8,3 +8,4 @@ All Modules
 
    MdtSharedLibrariesDepencyHelpers.rst
    MdtInstallExecutable.rst
+   MdtDeployApplication.rst
