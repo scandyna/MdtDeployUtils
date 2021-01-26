@@ -1,7 +1,7 @@
 
-.. title:: Mdt CMake Modules documentation
+.. title:: Mdt Deploy Utils documentation
 
-Mdt CMake Modules documentation
+Mdt Deploy Utils documentation
 ===============================
 
 .. toctree::

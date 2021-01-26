@@ -11,7 +11,7 @@ sys.path.insert(0, r'@CMAKE_CURRENT_SOURCE_DIR@/sphinx')
 source_suffix = '.rst'
 master_doc = 'index'
 
-project = 'Mdt CMake Modules'
+project = 'Mdt Deploy Utils'
 copyright = 'BSD 3'
 primary_domain = 'cmake'
 
