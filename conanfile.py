@@ -19,7 +19,7 @@ class MdtDeployUtilsConan(ConanFile):
   requires = "MdtApplication/[>=0.3.0]@scandyna/testing"
   build_requires = "MdtCMakeModules/[>=0.14.12]@scandyna/testing", "Catch2/[>=2.11.1]@catchorg/stable"
   generators = "cmake", "cmake_paths", "virtualenv"
-  exports_sources = "libs/*", "cmake/*", "CMakeLists.txt", "conanfile.py", "LICENSE.txt", "COPYING", "COPYING.LESSER"
+  exports_sources = "apps/*", "libs/*", "cmake/*", "CMakeLists.txt", "conanfile.py", "LICENSE.txt", "COPYING", "COPYING.LESSER"
   # If no_copy_source is False, conan copies sources to build directory and does in-source build,
   # resulting having build files installed in the package
   # See also: https://github.com/conan-io/conan/issues/350
