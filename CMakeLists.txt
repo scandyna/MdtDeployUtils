@@ -109,6 +109,15 @@ else()
 endif()
 
 #######################
+# Paths to dependencies
+#######################
+
+include(AddQt5ToCMakePrefixPath)
+
+set(QT_PREFIX_PATH CACHE PATH "Path to the root of Qt distribution. (For example: /opt/qt/Qt5/5.13.0/gcc_64). If empty, system distribution is considered.")
+add_qt5_to_cmake_prefix_path("${QT_PREFIX_PATH}")
+
+#######################
 # Dependencies
 #######################
 
