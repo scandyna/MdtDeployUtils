@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -71,6 +71,27 @@ namespace Mdt{ namespace CommandLineParser{
       return mName;
     }
 
+    /*! \brief Set the value for this option
+     */
+    void setValue(const QString & value)
+    {
+      mValue = value;
+    }
+
+    /*! \brief Check if this option has a value
+     */
+    bool hasValue() const noexcept
+    {
+      return !mValue.isEmpty();
+    }
+
+    /*! \brief Get the value for this option
+     */
+    const QString & value() const noexcept
+    {
+      return mValue;
+    }
+
     /*! \brief Check if \a name is a valid name for a option
      *
      * \sa ParserDefinitionOption::isValidName(name)
@@ -84,6 +105,7 @@ namespace Mdt{ namespace CommandLineParser{
    private:
 
     QString mName;
+    QString mValue;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

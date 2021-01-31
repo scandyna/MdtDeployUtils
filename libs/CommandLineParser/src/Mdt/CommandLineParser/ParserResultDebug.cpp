@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -32,6 +32,9 @@ QString toDebugString(const ParserResultOption & option)
 {
   if( option.name().isEmpty() ){
     return QLatin1String("-null-");
+  }
+  if( option.hasValue() ){
+    return option.name() % QLatin1Char('=') % option.value();
   }
   return option.name();
 }

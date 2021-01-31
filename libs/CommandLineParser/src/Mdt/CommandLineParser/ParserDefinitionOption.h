@@ -28,6 +28,7 @@
 #include <QString>
 #include <QLatin1String>
 #include <QLatin1Char>
+#include <QStringList>
 #include <cassert>
 
 namespace Mdt{ namespace CommandLineParser{
@@ -142,6 +143,62 @@ namespace Mdt{ namespace CommandLineParser{
       return mDescription;
     }
 
+    /*! \brief Set the name of the expected value
+     *
+     * Options without a value assigned have a boolean-like behavior: either the user specifies --option or they don't.
+     *
+     * Options with a value name assigned, for example \a file,
+     * will appear as -o, --output <file> in the help text.
+     */
+    void setValueName(const QString & valueName)
+    {
+      mValueName = valueName;
+    }
+
+    /*! \brief Check if this option hase a value name
+     */
+    bool hasValueName() const noexcept
+    {
+      return !mValueName.isEmpty();
+    }
+
+    /*! \brief Returns the name of the expected value
+     *
+     * If empty, the option doesn't take a value.
+     */
+    const QString & valueName() const noexcept
+    {
+      return mValueName;
+    }
+
+    /*! \brief Sets the default value used for this option
+     *
+     * The default value is used if the user of the application does not specify the option on the command line.
+     *
+     * \sa setDefaultValues()
+     * \sa defaultValues()
+     */
+    void setDefaultValue(const QString & value)
+    {
+      mDefaultValues = QStringList{value};
+    }
+
+    /*! \brief Sets the list of default values used for this option
+     *
+     * The default values are used if the user of the application does not specify the option on the command line.
+     */
+    void setDefaultValues(const QStringList & values)
+    {
+      mDefaultValues = values;
+    }
+
+    /*! \brief Get the default values for this option
+     */
+    const QStringList & defaultValues() const noexcept
+    {
+      return mDefaultValues;
+    }
+
     /*! \brief Check if \a name is a valid short name for a option
      *
      * A valid short name is a letter
@@ -185,6 +242,8 @@ namespace Mdt{ namespace CommandLineParser{
     char mShortName = '\0';
     QString mName;
     QString mDescription;
+    QString mValueName;
+    QStringList mDefaultValues;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

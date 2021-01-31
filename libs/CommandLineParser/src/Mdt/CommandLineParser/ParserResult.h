@@ -26,6 +26,7 @@
 #include "ParserDefinitionCommand.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
+#include <QStringList>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -118,6 +119,20 @@ namespace Mdt{ namespace CommandLineParser{
     bool isHelpOptionSet() const
     {
       return mMainCommand.isHelpOptionSet();
+    }
+
+    /*! \brief Returns a list of option values found for the given \a option
+     *
+     * For options found by the parser, the list will contain an entry for each time the option was encountered by the parser.
+     *
+     * If the option wasn't specified on the command line, the default values are returned.
+     *
+     * \note If you use subcommands,
+     * also query about values for the expected subcommand.
+     */
+    QStringList getValues(const ParserDefinitionOption & option) const
+    {
+      return mMainCommand.getValues(option);
     }
 
     /*! \brief Check if this result has any positional argument

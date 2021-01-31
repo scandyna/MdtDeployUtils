@@ -33,8 +33,6 @@
 namespace Mdt{ namespace CommandLineParser{
 
   /*! \brief Command result from a Parser
-   *
-   * 
    */
   class MDT_COMMANDLINEPARSER_EXPORT ParserResultCommand
   {
@@ -91,6 +89,13 @@ namespace Mdt{ namespace CommandLineParser{
       mOptions.push_back(option);
     }
 
+    /*! \brief Set \a options to this command
+     */
+    void setOptions(const std::vector<ParserResultOption> & options)
+    {
+      mOptions = options;
+    }
+
     /*! \brief Check if this result result has any option
      */
     bool hasOptions() const noexcept
@@ -136,6 +141,30 @@ namespace Mdt{ namespace CommandLineParser{
     bool isHelpOptionSet() const
     {
       return isSet( QLatin1String("help") );
+    }
+
+    /*! \brief Returns a list of option values found for the given \a option
+     *
+     * For options found by the parser, the list will contain an entry for each time the option was encountered by the parser.
+     *
+     * If the option wasn't specified on the command line, the default values are returned.
+     */
+    QStringList getValues(const ParserDefinitionOption & option) const
+    {
+      QStringList values;
+
+      // We should have something like std::transform_if() to use STL algorithm
+      for(const ParserResultOption & resultOption : mOptions){
+        if( resultOption.name() == option.name() ){
+          values.push_back( resultOption.value() );
+        }
+      }
+
+      if( values.isEmpty() ){
+        values = option.defaultValues();
+      }
+
+      return values;
     }
 
     /*! \brief Check if this result command has any positional argument

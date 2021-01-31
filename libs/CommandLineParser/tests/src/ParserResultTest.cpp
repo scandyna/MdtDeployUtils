@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2020-2020 Philippe Steinmann.
+ ** Copyright (C) 2020-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -19,10 +19,30 @@
  **
  ****************************************************************************/
 #include "catch2/catch.hpp"
+#include "Catch2QString.h"
 #include "Mdt/CommandLineParser/ParserResult.h"
+#include "Mdt/CommandLineParser/ParserDefinitionOption.h"
 #include <QLatin1String>
 
 using namespace Mdt::CommandLineParser;
+
+TEST_CASE("ParserResultOption")
+{
+  SECTION("help")
+  {
+    ParserResultOption option( QLatin1String("help") );
+    REQUIRE( option.name() == QLatin1String("help") );
+  }
+
+  SECTION("destination /tmp")
+  {
+    ParserResultOption option( QLatin1String("destination") );
+    REQUIRE( !option.hasValue() );
+    option.setValue( QLatin1String("/tmp") );
+    REQUIRE( option.hasValue() );
+    REQUIRE( option.value() == QLatin1String("/tmp") );
+  }
+}
 
 TEST_CASE("ParserResult_error")
 {
@@ -61,6 +81,79 @@ TEST_CASE("ParserResultCommand_options")
   {
     command.addOption( ParserResultOption( QLatin1String("help") ) );
     REQUIRE( command.isHelpOptionSet() );
+  }
+
+  SECTION("getValues")
+  {
+    ParserDefinitionOption destinationDefinition( QLatin1String("destination"), QLatin1String("Destination directory") );
+    destinationDefinition.setValueName( QLatin1String("directory") );
+    destinationDefinition.setDefaultValue( QLatin1String("/usr/bin") );
+
+    QStringList expectedValues;
+
+    SECTION("destination /tmp")
+    {
+      ParserResultOption destination( QLatin1String("destination") );
+      destination.setValue( QLatin1String("/tmp") );
+      command.addOption(destination);
+
+      expectedValues << QLatin1String("/tmp");
+      REQUIRE( command.getValues(destinationDefinition) == expectedValues );
+    }
+
+    SECTION("destination /tmp ~/opt")
+    {
+      ParserResultOption destination1( QLatin1String("destination") );
+      destination1.setValue( QLatin1String("/tmp") );
+      ParserResultOption destination2( QLatin1String("destination") );
+      destination2.setValue( QLatin1String("~/opt") );
+      command.addOption(destination1);
+      command.addOption(destination2);
+
+      expectedValues << QLatin1String("/tmp") << QLatin1String("~/opt");
+      REQUIRE( command.getValues(destinationDefinition) == expectedValues );
+    }
+
+    SECTION("destination /tmp force")
+    {
+      ParserResultOption destination( QLatin1String("destination") );
+      destination.setValue( QLatin1String("/tmp") );
+      command.addOption(destination);
+      command.addOption( ParserResultOption( QLatin1String("force") ) );
+
+      expectedValues << QLatin1String("/tmp");
+      REQUIRE( command.getValues(destinationDefinition) == expectedValues );
+    }
+
+    SECTION("source /usr destination /tmp")
+    {
+      ParserResultOption source( QLatin1String("source") );
+      source.setValue( QLatin1String("/usr") );
+      command.addOption(source);
+
+      ParserResultOption destination( QLatin1String("destination") );
+      destination.setValue( QLatin1String("/tmp") );
+      command.addOption(destination);
+
+      expectedValues << QLatin1String("/tmp");
+      REQUIRE( command.getValues(destinationDefinition) == expectedValues );
+    }
+
+    SECTION("default values (only expected option exists)")
+    {
+      expectedValues << QLatin1String("/usr/bin");
+      REQUIRE( command.getValues(destinationDefinition) == expectedValues );
+    }
+
+    SECTION("default values (other option exists)")
+    {
+      ParserResultOption source( QLatin1String("source") );
+      source.setValue( QLatin1String("/usr") );
+      command.addOption(source);
+
+      expectedValues << QLatin1String("/usr/bin");
+      REQUIRE( command.getValues(destinationDefinition) == expectedValues );
+    }
   }
 }
 

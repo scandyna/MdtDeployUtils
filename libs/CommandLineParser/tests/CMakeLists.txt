@@ -55,7 +55,7 @@ mdt_add_test(
 mdt_add_test(
   NAME ParserResultTest
   TARGET parserResultTest
-  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ParserResultTest.cpp
 )
@@ -63,7 +63,7 @@ mdt_add_test(
 mdt_add_test(
   NAME ParserTest
   TARGET parserTest
-  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ParserTest.cpp
 )

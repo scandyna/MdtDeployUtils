@@ -19,6 +19,7 @@
  **
  ****************************************************************************/
 #include "catch2/catch.hpp"
+#include "Catch2QString.h"
 #include "Mdt/CommandLineParser/Parser.h"
 #include "Mdt/CommandLineParser/Impl/Parser.h"
 #include "Mdt/CommandLineParser/ParserDefinition.h"
@@ -26,8 +27,6 @@
 #include <QLatin1String>
 #include <QStringList>
 #include <cassert>
-
-#include <QDebug>
 
 using namespace Mdt::CommandLineParser;
 
@@ -419,6 +418,32 @@ TEST_CASE("qtParserOptionFromOptionDefinition")
     const auto qtOption = qtParserOptionFromOptionDefinition(forceOption);
     REQUIRE( qtOption.names() == expectedNames );
   }
+
+  SECTION("destination directory")
+  {
+    ParserDefinitionOption destinationOption( QLatin1String("destination"), QLatin1String("Destination directory") );
+    destinationOption.setValueName( QLatin1String("directory") );
+    destinationOption.setDefaultValue( QLatin1String("/usr/bin") );
+    expectedNames << QLatin1String("destination");
+
+    const auto qtOption = qtParserOptionFromOptionDefinition(destinationOption);
+    REQUIRE( qtOption.names() == expectedNames );
+    REQUIRE( qtOption.valueName() == QLatin1String("directory") );
+    REQUIRE( qtOption.defaultValues() == QStringList{QLatin1String("/usr/bin")} );
+  }
+
+  SECTION("-d, destination directory")
+  {
+    ParserDefinitionOption destinationOption( 'd', QLatin1String("destination"), QLatin1String("Destination directory") );
+    destinationOption.setValueName( QLatin1String("directory") );
+    destinationOption.setDefaultValue( QLatin1String("/usr/bin") );
+    expectedNames << QLatin1String("d") << QLatin1String("destination");
+
+    const auto qtOption = qtParserOptionFromOptionDefinition(destinationOption);
+    REQUIRE( qtOption.names() == expectedNames );
+    REQUIRE( qtOption.valueName() == QLatin1String("directory") );
+    REQUIRE( qtOption.defaultValues() == QStringList{QLatin1String("/usr/bin")} );
+  }
 }
 
 TEST_CASE("setupQtParser")
@@ -519,6 +544,83 @@ TEST_CASE("resultOptionFromName")
   }
 }
 
+TEST_CASE("distributeValuesToOptionsForName")
+{
+  using Impl::distributeValuesToOptionsForName;
+
+  std::vector<ParserResultOption> allOptions;
+  QStringList values;
+
+  SECTION("destination")
+  {
+    allOptions.emplace_back( ParserResultOption( QLatin1String("destination") ) );
+
+    SECTION("destination=/tmp")
+    {
+      values << QLatin1String("/tmp");
+      distributeValuesToOptionsForName( QLatin1String("destination"), values, allOptions );
+      REQUIRE( allOptions[0].value() == QLatin1String("/tmp") );
+    }
+
+//     SECTION("Wrong count of values")
+//     {
+//       distributeValuesToOptionsForName( QLatin1String("destination"), values, allOptions );
+//       REQUIRE( allOptions[0].value().isEmpty() );
+//     }
+  }
+
+  SECTION("help")
+  {
+    allOptions.emplace_back( ParserResultOption( QLatin1String("help") ) );
+    distributeValuesToOptionsForName( QLatin1String("destination"), values, allOptions );
+    REQUIRE( allOptions[0].value().isEmpty() );
+  }
+
+  SECTION("help,destination")
+  {
+    allOptions.emplace_back( ParserResultOption( QLatin1String("help") ) );
+    allOptions.emplace_back( ParserResultOption( QLatin1String("destination") ) );
+
+    SECTION("help")
+    {
+      distributeValuesToOptionsForName( QLatin1String("help"), values, allOptions );
+      REQUIRE( allOptions[0].value().isEmpty() );
+      REQUIRE( allOptions[1].value().isEmpty() );
+    }
+
+    SECTION("destination=/usr")
+    {
+      values << QLatin1String("/usr");
+      distributeValuesToOptionsForName( QLatin1String("destination"), values, allOptions );
+      REQUIRE( allOptions[0].value().isEmpty() );
+      REQUIRE( allOptions[1].value() == QLatin1String("/usr") );
+    }
+  }
+
+  SECTION("destination,log-level,destination")
+  {
+    allOptions.emplace_back( ParserResultOption( QLatin1String("destination") ) );
+    allOptions.emplace_back( ParserResultOption( QLatin1String("log-level") ) );
+    allOptions.emplace_back( ParserResultOption( QLatin1String("destination") ) );
+
+    SECTION("destination=/tmp,/usr | log-level=WARNING")
+    {
+      values << QLatin1String("/tmp") << QLatin1String("/usr");
+      distributeValuesToOptionsForName( QLatin1String("destination"), values, allOptions );
+      REQUIRE( allOptions[0].value() == QLatin1String("/tmp") );
+      REQUIRE( allOptions[1].value().isEmpty() );
+      REQUIRE( allOptions[2].value() == QLatin1String("/usr") );
+
+      values.clear();
+      values << QLatin1String("WARNING");
+      distributeValuesToOptionsForName( QLatin1String("log-level"), values, allOptions );
+      REQUIRE( allOptions[0].value() == QLatin1String("/tmp") );
+      REQUIRE( allOptions[1].value() == QLatin1String("WARNING") );
+      REQUIRE( allOptions[2].value() == QLatin1String("/usr") );
+    }
+  }
+}
+
 TEST_CASE("fillResultCommandFromQtParser")
 {
   using Impl::fillResultCommandFromQtParser;
@@ -572,6 +674,136 @@ TEST_CASE("fillResultCommandFromQtParser")
     REQUIRE( resultCommand.optionCount() == 1 );
     REQUIRE( resultCommand.positionalArgumentCount() == 0 );
   }
+
+  SECTION("destination (option with value)")
+  {
+    ParserDefinitionOption destinationOption( 'd', QLatin1String("destination"), QLatin1String("Destination directory") );
+    destinationOption.setValueName( QLatin1String("directory") );
+    defCommand.addOption(destinationOption);
+
+    ParserDefinitionOption overwriteBehavior( QLatin1String("overwrite-behavior"), QLatin1String("Overwrite behavior") );
+    overwriteBehavior.setValueName( QLatin1String("behavior") );
+    overwriteBehavior.setDefaultValue( QLatin1String("fail") );
+    defCommand.addOption(overwriteBehavior);
+
+    ParserDefinitionOption logLevel( QLatin1String("log-level"), QLatin1String("Log level") );
+    logLevel.setValueName( QLatin1String("level") );
+    defCommand.addOption(logLevel);
+
+    SECTION("myapp --destination /tmp")
+    {
+      setupQtParser(qtParser, defCommand);
+      arguments << QLatin1String("--destination") << QLatin1String("/tmp");
+      REQUIRE( qtParser.parse(arguments) );
+      fillResultCommandFromQtParser(resultCommand, qtParser, defCommand);
+      REQUIRE( resultCommand.optionCount() == 1 );
+      REQUIRE( resultCommand.getValues(destinationOption) == QStringList{QLatin1String("/tmp")} );
+      REQUIRE( resultCommand.getValues(overwriteBehavior) == QStringList{QLatin1String("fail")} );
+      REQUIRE( resultCommand.getValues(logLevel).isEmpty()   );
+      REQUIRE( resultCommand.positionalArgumentCount() == 0 );
+    }
+
+    SECTION("myapp -d /tmp")
+    {
+      setupQtParser(qtParser, defCommand);
+      arguments << QLatin1String("-d") << QLatin1String("/tmp");
+      REQUIRE( qtParser.parse(arguments) );
+      fillResultCommandFromQtParser(resultCommand, qtParser, defCommand);
+      REQUIRE( resultCommand.optionCount() == 1 );
+      REQUIRE( resultCommand.getValues(destinationOption) == QStringList{QLatin1String("/tmp")} );
+      REQUIRE( resultCommand.getValues(overwriteBehavior) == QStringList{QLatin1String("fail")} );
+      REQUIRE( resultCommand.getValues(logLevel).isEmpty()   );
+      REQUIRE( resultCommand.positionalArgumentCount() == 0 );
+    }
+
+    SECTION("myapp --destination /tmp --overwrite-behavior keep")
+    {
+      setupQtParser(qtParser, defCommand);
+      arguments << QLatin1String("--destination") << QLatin1String("/tmp")
+                << QLatin1String("--overwrite-behavior") << QLatin1String("keep");
+      REQUIRE( qtParser.parse(arguments) );
+      fillResultCommandFromQtParser(resultCommand, qtParser, defCommand);
+      REQUIRE( resultCommand.optionCount() == 2 );
+      REQUIRE( resultCommand.getValues(destinationOption) == QStringList{QLatin1String("/tmp")} );
+      REQUIRE( resultCommand.getValues(overwriteBehavior) == QStringList{QLatin1String("keep")} );
+      REQUIRE( resultCommand.getValues(logLevel).isEmpty()   );
+      REQUIRE( resultCommand.positionalArgumentCount() == 0 );
+    }
+
+    SECTION("myapp --destination /tmp --overwrite-behavior keep --log-level WARNING")
+    {
+      setupQtParser(qtParser, defCommand);
+      arguments << QLatin1String("--destination") << QLatin1String("/tmp")
+                << QLatin1String("--overwrite-behavior") << QLatin1String("keep")
+                << QLatin1String("--log-level") << QLatin1String("WARNING");
+      REQUIRE( qtParser.parse(arguments) );
+      fillResultCommandFromQtParser(resultCommand, qtParser, defCommand);
+      REQUIRE( resultCommand.optionCount() == 3 );
+      REQUIRE( resultCommand.getValues(destinationOption) == QStringList{QLatin1String("/tmp")} );
+      REQUIRE( resultCommand.getValues(overwriteBehavior) == QStringList{QLatin1String("keep")} );
+      REQUIRE( resultCommand.getValues(logLevel) == QStringList{QLatin1String("WARNING")} );
+      REQUIRE( resultCommand.positionalArgumentCount() == 0 );
+    }
+
+    SECTION("myapp --overwrite-behavior keep --log-level WARNING")
+    {
+      setupQtParser(qtParser, defCommand);
+      arguments << QLatin1String("--overwrite-behavior") << QLatin1String("keep")
+                << QLatin1String("--log-level") << QLatin1String("WARNING");
+      REQUIRE( qtParser.parse(arguments) );
+      fillResultCommandFromQtParser(resultCommand, qtParser, defCommand);
+      REQUIRE( resultCommand.optionCount() == 2 );
+      REQUIRE( resultCommand.getValues(destinationOption).isEmpty() );
+      REQUIRE( resultCommand.getValues(overwriteBehavior) == QStringList{QLatin1String("keep")} );
+      REQUIRE( resultCommand.getValues(logLevel) == QStringList{QLatin1String("WARNING")} );
+      REQUIRE( resultCommand.positionalArgumentCount() == 0 );
+    }
+
+    SECTION("myapp --log-level WARNING --overwrite-behavior keep --destination /tmp")
+    {
+      setupQtParser(qtParser, defCommand);
+      arguments << QLatin1String("--log-level") << QLatin1String("WARNING")
+                << QLatin1String("--overwrite-behavior") << QLatin1String("keep")
+                << QLatin1String("--destination") << QLatin1String("/tmp");
+      REQUIRE( qtParser.parse(arguments) );
+      fillResultCommandFromQtParser(resultCommand, qtParser, defCommand);
+      REQUIRE( resultCommand.optionCount() == 3 );
+      REQUIRE( resultCommand.getValues(destinationOption) == QStringList{QLatin1String("/tmp")} );
+      REQUIRE( resultCommand.getValues(overwriteBehavior) == QStringList{QLatin1String("keep")} );
+      REQUIRE( resultCommand.getValues(logLevel) == QStringList{QLatin1String("WARNING")} );
+      REQUIRE( resultCommand.positionalArgumentCount() == 0 );
+    }
+
+    SECTION("myapp --log-level WARNING --destination /tmp --destination /usr")
+    {
+      setupQtParser(qtParser, defCommand);
+      arguments << QLatin1String("--log-level") << QLatin1String("WARNING")
+                << QLatin1String("--destination") << QLatin1String("/tmp")
+                << QLatin1String("--destination") << QLatin1String("/usr");
+      REQUIRE( qtParser.parse(arguments) );
+      fillResultCommandFromQtParser(resultCommand, qtParser, defCommand);
+      REQUIRE( resultCommand.optionCount() == 3 );
+      REQUIRE( resultCommand.getValues(destinationOption) == QStringList{QLatin1String("/tmp"),QLatin1String("/usr")} );
+      REQUIRE( resultCommand.getValues(overwriteBehavior) == QStringList{QLatin1String("fail")} );
+      REQUIRE( resultCommand.getValues(logLevel) == QStringList{QLatin1String("WARNING")} );
+      REQUIRE( resultCommand.positionalArgumentCount() == 0 );
+    }
+
+    SECTION("myapp --destination /tmp --log-level WARNING --destination /usr")
+    {
+      setupQtParser(qtParser, defCommand);
+      arguments << QLatin1String("--destination") << QLatin1String("/tmp")
+                << QLatin1String("--log-level") << QLatin1String("WARNING")
+                << QLatin1String("--destination") << QLatin1String("/usr");
+      REQUIRE( qtParser.parse(arguments) );
+      fillResultCommandFromQtParser(resultCommand, qtParser, defCommand);
+      REQUIRE( resultCommand.optionCount() == 3 );
+      REQUIRE( resultCommand.getValues(destinationOption) == QStringList{QLatin1String("/tmp"),QLatin1String("/usr")} );
+      REQUIRE( resultCommand.getValues(overwriteBehavior) == QStringList{QLatin1String("fail")} );
+      REQUIRE( resultCommand.getValues(logLevel) == QStringList{QLatin1String("WARNING")} );
+      REQUIRE( resultCommand.positionalArgumentCount() == 0 );
+    }
+  }
 }
 
 TEST_CASE("parseMainCommandToResult")
@@ -598,8 +830,8 @@ TEST_CASE("parseSubCommandToResult")
 
 TEST_CASE("Parser_parse")
 {
-  Parser parser;
   ParserDefinition parserDefinition;
+  Parser parser;
   ParserResult result;
   QStringList arguments{QLatin1String("myapp")};
 
@@ -634,6 +866,34 @@ TEST_CASE("Parser_parse")
       REQUIRE( result.positionalArgumentAt(0) == QLatin1String("file1.txt") );
       REQUIRE( result.positionalArgumentAt(1) == QLatin1String("/tmp") );
       REQUIRE( result.positionalArgumentAt(2) == QLatin1String("other-positional-argument") );
+    }
+
+    SECTION("destination (option with value)")
+    {
+      ParserDefinitionOption destinationOption( QLatin1String("destination"), QLatin1String("Destination directory") );
+      destinationOption.setValueName( QLatin1String("directory") );
+      destinationOption.setDefaultValue( QLatin1String("/usr/bin") );
+      parserDefinition.addOption(destinationOption);
+
+      SECTION("myapp --destination /tmp file1.txt")
+      {
+        arguments << QLatin1String("--destination") << QLatin1String("/tmp") << QLatin1String("file1.txt");
+        result = parser.parse(parserDefinition, arguments);
+        REQUIRE( !result.hasError() );
+        REQUIRE( result.getValues(destinationOption) == QStringList{QLatin1String("/tmp")} );
+        REQUIRE( result.positionalArgumentCount() == 1 );
+        REQUIRE( result.positionalArgumentAt(0) == QLatin1String("file1.txt") );
+      }
+
+      SECTION("myapp file1.txt")
+      {
+        arguments << QLatin1String("file1.txt");
+        result = parser.parse(parserDefinition, arguments);
+        REQUIRE( !result.hasError() );
+        REQUIRE( result.getValues(destinationOption) == QStringList{QLatin1String("/usr/bin")} );
+        REQUIRE( result.positionalArgumentCount() == 1 );
+        REQUIRE( result.positionalArgumentAt(0) == QLatin1String("file1.txt") );
+      }
     }
   }
 

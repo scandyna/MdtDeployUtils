@@ -181,6 +181,32 @@ TEST_CASE("ParserDefinitionOption")
     REQUIRE( option.nameWithDashes() == QLatin1String("--help") );
     REQUIRE( option.description() == QLatin1String("Help description") );
   }
+
+  SECTION("value name")
+  {
+    ParserDefinitionOption option( QLatin1String("destination"), QLatin1String("Destination directory") );
+    REQUIRE( !option.hasValueName() );
+    REQUIRE( option.valueName().isEmpty() );
+    option.setValueName( QLatin1String("directory") );
+    REQUIRE( option.hasValueName() );
+    REQUIRE( option.valueName() == QLatin1String("directory") );
+  }
+
+  SECTION("default value")
+  {
+    ParserDefinitionOption option( QLatin1String("destination"), QLatin1String("Destination directory") );
+    option.setValueName( QLatin1String("directory") );
+    option.setDefaultValue( QLatin1String("/tmp") );
+    REQUIRE( option.defaultValues() == QStringList{QLatin1String("/tmp")} );
+  }
+
+  SECTION("default values")
+  {
+    ParserDefinitionOption option( QLatin1String("destination"), QLatin1String("Destination directory") );
+    option.setValueName( QLatin1String("directory") );
+    option.setDefaultValues( QStringList{QLatin1String("/tmp"),QLatin1String("/usr/lib")} );
+    REQUIRE( option.defaultValues() == QStringList{QLatin1String("/tmp"),QLatin1String("/usr/lib")} );
+  }
 }
 
 TEST_CASE("ParserDefinitionPositionalArgument")
@@ -618,6 +644,17 @@ TEST_CASE("getOptionsHelpText")
     expectedText = QLatin1String("Options:\n"
                                  "  -h, --help         Display this help\n"
                                  "  -l, --long-option  The long option");
+    result = getOptionsHelpText(options, maxLength);
+    REQUIRE( result == expectedText );
+  }
+
+  SECTION("destination with value")
+  {
+    ParserDefinitionOption destinationOption( 'd', QLatin1String("destination"), QLatin1String("Destination directory") );
+    destinationOption.setValueName( QLatin1String("directory") );
+    options.push_back(destinationOption);
+    expectedText = QLatin1String("Options:\n"
+                                 "  -d, --destination <directory>  Destination directory");
     result = getOptionsHelpText(options, maxLength);
     REQUIRE( result == expectedText );
   }

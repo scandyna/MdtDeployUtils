@@ -37,6 +37,7 @@
 #include <vector>
 #include <iterator>
 #include <cassert>
+#include <cstddef>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -106,7 +107,11 @@ namespace Mdt{ namespace CommandLineParser{
       }
       names.append( option.name() );
 
-      return QCommandLineOption(names);
+      QCommandLineOption qtOption(names);
+      qtOption.setValueName( option.valueName() );
+      qtOption.setDefaultValues( option.defaultValues() );
+
+      return qtOption;
     }
 
     /*! \internal Setup \a qtParser based on \a commandDefinition
@@ -148,15 +153,39 @@ namespace Mdt{ namespace CommandLineParser{
       return ParserResultOption( it->name() );
     }
 
+    /*! \internal Distributes values for each option named \a optionName
+     */
+    static
+    void distributeValuesToOptionsForName(const QString & optionsName, const QStringList & optionsValues, std::vector<ParserResultOption> & allOptions)
+    {
+      int valuesIndex = 0;
+
+      for(ParserResultOption & option : allOptions){
+        if( option.name() == optionsName ){
+          if( valuesIndex < optionsValues.size() ){
+            option.setValue( optionsValues.at(valuesIndex) );
+            ++valuesIndex;
+          }
+        }
+      }
+    }
+
     /*! \internal Fill a result command from \a qtParser
      */
     static
     void fillResultCommandFromQtParser(ParserResultCommand & command, const QCommandLineParser & qtParser, const ParserDefinitionCommand & defCommand)
     {
       const QStringList optionNames = qtParser.optionNames();
+      std::vector<ParserResultOption> options;
+      options.reserve( static_cast<size_t>( optionNames.size() ) );
       for(const QString & optionName : optionNames){
-        command.addOption( resultOptionFromName( optionName, defCommand.options() ) );
+        options.emplace_back( resultOptionFromName( optionName, defCommand.options() ) );
       }
+      for(int i=0; i<optionNames.size(); ++i){
+        const QStringList optionValues = qtParser.values( optionNames.at(i) );
+        distributeValuesToOptionsForName(options[static_cast<size_t>(i)].name(), optionValues, options);
+      }
+      command.setOptions(options);
 
       const QStringList positionalArguments = qtParser.positionalArguments();
       for(const QString & argument : positionalArguments){

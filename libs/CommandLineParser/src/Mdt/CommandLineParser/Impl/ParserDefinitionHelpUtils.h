@@ -200,6 +200,9 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
       }else{
         names = option.nameWithDashes();
       }
+      if( option.hasValueName() ){
+        names += QLatin1String(" <") % option.valueName() % QLatin1Char('>');
+      }
 
       return wrapText( names, longestNamesStringLength, option.description(), maxLength );
     }
@@ -217,12 +220,19 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
     static
     int optionNamesStringLength(const ParserDefinitionOption & option) noexcept
     {
+      // -- + name length
+      int length = 2 + option.nameLength();
+
       if( option.hasShortName() ){
         // -h (2) + , + space
-        return 4 + option.nameWithDashes().length();
+        length += 4;
       }
-      // -- + name length
-      return 2 + option.nameLength();
+      if( option.hasValueName() ){
+        // space + < + >
+        length += 3 + option.valueName().length();
+      }
+
+      return length;
     }
 
     /*! \internal Find the longest names in \a options

@@ -348,6 +348,18 @@ TEST_CASE("wrapText_option")
     result = wrapText(helpOption, longestNamesStringLengt, maxLength);
     REQUIRE( result == expectedText );
   }
+
+  SECTION("-d, --destination <diretory>,longest:29,ml:50")
+  {
+    ParserDefinitionOption destinationOption( 'd', QLatin1String("destination"), QLatin1String("Destination directory") );
+    destinationOption.setValueName( QLatin1String("directory") );
+    longestNamesStringLengt = 29;
+    maxLength = 80;
+
+    expectedText = QLatin1String("  -d, --destination <directory>  Destination directory");
+    result = wrapText(destinationOption, longestNamesStringLengt, maxLength);
+    REQUIRE( result == expectedText );
+  }
 }
 
 TEST_CASE("wrapText_argument")
@@ -368,6 +380,37 @@ TEST_CASE("wrapText_argument")
     expectedText = QLatin1String("  source      Source file");
     result = wrapText(sourceArgument, longestNamesStringLengt, maxLength);
     REQUIRE( result == expectedText );
+  }
+}
+
+TEST_CASE("optionNamesStringLength")
+{
+  using Impl::optionNamesStringLength;
+
+  SECTION("--help")
+  {
+    ParserDefinitionOption option( QLatin1String("help"), QLatin1String("Display this help") );
+    REQUIRE( optionNamesStringLength(option) == 6 );
+  }
+
+  SECTION("-h, --help")
+  {
+    ParserDefinitionOption option( 'h', QLatin1String("help"), QLatin1String("Display this help") );
+    REQUIRE( optionNamesStringLength(option) == 10 );
+  }
+
+  SECTION("--destination <directory>")
+  {
+    ParserDefinitionOption option( QLatin1String("destination"), QLatin1String("Destination directory") );
+    option.setValueName( QLatin1String("directory") );
+    REQUIRE( optionNamesStringLength(option) == 25 );
+  }
+
+  SECTION("-d, --destination <directory>")
+  {
+    ParserDefinitionOption option( 'd', QLatin1String("destination"), QLatin1String("Destination directory") );
+    option.setValueName( QLatin1String("directory") );
+    REQUIRE( optionNamesStringLength(option) == 29 );
   }
 }
 
