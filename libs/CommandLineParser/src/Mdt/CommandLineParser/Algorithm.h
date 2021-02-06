@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -30,6 +30,50 @@
 #include <cassert>
 
 namespace Mdt{ namespace CommandLineParser{
+
+  /*! \brief Apply a function until a predicate is true
+   *
+   * Applies the given function object \a f
+   * to the result of dereferencing every iterator,
+   * until the given function object \a p returns true,
+   * in the range [first, last), in order.
+   *
+   * \note  The function \a f is also applied for the element
+   *  for wich \a p returns true.
+   *  The predicate \a p is checked after \a f was applied.
+   *
+   * \param f function object to be applied.
+   * The signature of the function should be equivalent to the following:
+   * \code
+   * void fun(const Type &a);
+   * \endcode
+   *
+   * \param p unary predicate which returns ​true for the required element.
+   * The signature of the function should be equivalent to the following:
+   * \code
+   * bool pred(const Type &a);
+   * \endcode
+   *
+   * \tparam InputIt iterator that meets the requirements of LegacyInputIterator.
+   * \tparam UnaryFunction function that meets the requirements of MoveConstructible.
+   *  Does not have to be CopyConstructible
+   * \tparam UnaryPredicate function that meets the requirements of Predicate.
+   *
+   * \return Iterator to the first element for wich \a p returns true or \a last if no such element is found.
+   */
+  template<typename InputIt, typename UnaryFunction, typename UnaryPredicate>
+  InputIt forEachUntil(InputIt first, InputIt last, UnaryFunction f, UnaryPredicate p)
+  {
+    while(first != last){
+      f(*first);
+      if( p(*first) ){
+        return first;
+      }
+      ++first;
+    }
+
+    return first;
+  }
 
   /*! \brief Get a QString out from chars \a a and \a b
    */

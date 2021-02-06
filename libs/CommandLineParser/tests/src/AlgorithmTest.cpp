@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -42,6 +42,59 @@ std::vector<MyInt> createIntList(const std::vector<int> & list)
   std::transform(list.cbegin(), list.cend(), std::back_inserter(myIntList), op);
 
   return myIntList;
+}
+
+TEST_CASE("forEachUntil")
+{
+  using Mdt::CommandLineParser::forEachUntil;
+  using V = std::vector<int>;
+
+  V result;
+
+  const auto f = [&result](const int & i){
+    result.push_back(i);
+  };
+
+  const auto p = [](const int & i){
+    return i == 3;
+  };
+
+  SECTION("empty")
+  {
+    const V v;
+    REQUIRE( forEachUntil( v.cbegin(), v.cend(), f, p ) == v.cend() );
+    REQUIRE( result == V{} );
+  }
+
+  SECTION("1")
+  {
+    const V v{1};
+    auto it = forEachUntil( v.cbegin(), v.cend(), f, p );
+    REQUIRE( it == v.cend() );
+    REQUIRE( result == V{1} );
+  }
+
+  SECTION("1,2,3")
+  {
+    const V v{1,2,3};
+    auto it = forEachUntil( v.cbegin(), v.cend(), f, p );
+    REQUIRE( it == (v.cbegin() + 2) );
+    REQUIRE( result == V{1,2,3} );
+  }
+
+  SECTION("1,2,3,4")
+  {
+    const V v{1,2,3,4};
+    auto it = forEachUntil( v.cbegin(), v.cend(), f, p );
+    REQUIRE( it == (v.cbegin() + 2) );
+    REQUIRE( result == V{1,2,3} );
+
+    result.clear();
+    ++it;
+    it = forEachUntil( it, v.cend(), f, p );
+    REQUIRE( it == v.cend() );
+    REQUIRE( result == V{4} );
+  }
 }
 
 TEST_CASE("joinToQString")
