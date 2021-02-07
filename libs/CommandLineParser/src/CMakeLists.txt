@@ -1,6 +1,6 @@
 ########################################################################################
 #
-# Copyright (C) 2019-2020 Philippe Steinmann.
+# Copyright (C) 2019-2021 Philippe Steinmann.
 #
 # This file is part of MdtApplication library.
 #
@@ -23,6 +23,10 @@ include(MdtInstallLibrary)
 
 add_library(Mdt_CommandLineParser
   Mdt/CommandLineParser/Algorithm.cpp
+  Mdt/CommandLineParser/CommandLine/Argument.cpp
+  Mdt/CommandLineParser/CommandLine/CommandLine.cpp
+  Mdt/CommandLineParser/CommandLine/Algorithm.cpp
+  Mdt/CommandLineParser/CommandLine/CommandLineAlgorithm.cpp
   Mdt/CommandLineParser/ArgumentType.cpp
   Mdt/CommandLineParser/ParserDefinitionOption.cpp
   Mdt/CommandLineParser/ParserDefinitionPositionalArgument.cpp
