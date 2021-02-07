@@ -96,6 +96,18 @@ namespace Mdt{ namespace CommandLineParser{
       mOptions = options;
     }
 
+    /*! \brief Set a value to the last option in this command
+     *
+     * \pre this command must have at least 1 option
+     * \sa hasOptions()
+     */
+    void setLastOptionValue(const QString & value)
+    {
+      assert( hasOptions() );
+
+      mOptions.back().setValue(value);
+    }
+
     /*! \brief Check if this result result has any option
      */
     bool hasOptions() const noexcept
