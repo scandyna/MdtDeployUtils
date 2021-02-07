@@ -207,6 +207,14 @@ TEST_CASE("ParserDefinitionOption")
     option.setDefaultValues( QStringList{QLatin1String("/tmp"),QLatin1String("/usr/lib")} );
     REQUIRE( option.defaultValues() == QStringList{QLatin1String("/tmp"),QLatin1String("/usr/lib")} );
   }
+
+  SECTION("valueType")
+  {
+    ParserDefinitionOption option( QLatin1String("destination"), QLatin1String("Destination directory") );
+    REQUIRE( option.valueType() == ArgumentType::Unspecified );
+    option.setValueType(ArgumentType::Directory);
+    REQUIRE( option.valueType() == ArgumentType::Directory );
+  }
 }
 
 TEST_CASE("ParserDefinitionPositionalArgument")
