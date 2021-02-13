@@ -47,3 +47,23 @@ add_custom_command(
 )
 set_property(SOURCE cpp-api-doc PROPERTY SYMBOLIC 1)
 add_custom_target(CppApiDoc ALL DEPENDS cpp-api-doc)
+
+
+#######################
+# C++ API doc - dev
+#######################
+
+configure_file(
+  "${PROJECT_SOURCE_DIR}/doc/Doxyfile-dev.in"
+  "${PROJECT_BINARY_DIR}/doc-dev/Doxyfile"
+)
+
+add_custom_command(
+    OUTPUT cpp-api-doc-dev
+    COMMAND
+      Doxygen::doxygen "${PROJECT_BINARY_DIR}/doc-dev/Doxyfile"
+    COMMENT "Build C++ API doc - dev"
+    VERBATIM
+)
+set_property(SOURCE cpp-api-doc-dev PROPERTY SYMBOLIC 1)
+add_custom_target(CppApiDoc-dev ALL DEPENDS cpp-api-doc-dev)
