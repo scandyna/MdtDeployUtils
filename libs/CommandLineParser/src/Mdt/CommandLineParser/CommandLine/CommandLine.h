@@ -26,12 +26,21 @@
 #include "../ParserDefinitionOption.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
+#include <cstddef>
 #include <cassert>
 
 namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
 
   /*! \brief A representation of a command line
    *
+   * This is a intermediate representation of the command line,
+   * that can be used to query about a argument at a specific position.
+   * One example is a parser for Bash completion.
+   *
+   * To handle the command line in a application,
+   * ParserResult should be used
+   *
+   * \sa ParserResult
    * \sa https://www.gnu.org/software/guile/manual/html_node/Command-Line-Format.html
    * \sa https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html
    */
@@ -172,6 +181,35 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
 //       assert( pos >= 0 );
 //       assert( pos < argumentCount() );
 //     }
+
+    /*! \brief Get the argument at \a index
+     *
+     * \note Currently, Boost.Variant is used,
+     *  but std::variant will be used in the future.
+     *  This means that the caller will probably have to rewrite
+     *  some pieces, like the visitors.
+     *
+     * \pre \a index must be in valid range ( 0 <= \a index < argumentCount() ).
+     */
+    const Argument & argumentAt(int index) const noexcept
+    {
+      assert( index >= 0 );
+      assert( index < argumentCount() );
+
+      return mArgumentList[static_cast<size_t>(index)];
+    }
+
+    /*! \brief Check if the argument at \a index is a positional argument
+     *
+     * \pre \a index must be in valid range ( 0 <= \a index < argumentCount() ).
+     */
+    bool argumentAtIsPositionalArgument(int index) const noexcept
+    {
+      assert( index >= 0 );
+      assert( index < argumentCount() );
+
+      return isPositionalArgument( argumentAt(index) );
+    }
 
     /*! \brief Access the internal argument list
      *

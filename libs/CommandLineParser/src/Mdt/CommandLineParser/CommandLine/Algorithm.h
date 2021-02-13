@@ -57,12 +57,35 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
     return boost::apply_visitor(IsSubCommandNameArgument(), argument);
   }
 
-  /*! \brief Find the sub-command argument in \a arguments
+  /*! \brief Find the sub-command argument name in the argument list in range \a first \a last
    */
   static
+  ArgumentList::const_iterator findSubCommandNameArgument(ArgumentList::const_iterator first, ArgumentList::const_iterator last) noexcept
+  {
+    return std::find_if( first, last, isSubCommandNameArgument );
+  }
+
+  /*! \brief Find the sub-command argument in \a arguments
+   */
+  inline
   ArgumentList::const_iterator findSubCommandNameArgument(const ArgumentList & arguments) noexcept
   {
-    return std::find_if( arguments.cbegin(), arguments.cend(), isSubCommandNameArgument );
+    return findSubCommandNameArgument( arguments.cbegin(), arguments.cend() );
+  }
+
+  /*! \brief Find the sub-command argument name index in the argument list in range \a first \a last
+   *
+   * Returns the index where the sub-command is located,
+   * or a value < 0 if no sub-command name exists.
+   */
+  static
+  int findSubCommandNameArgumentIndex(ArgumentList::const_iterator first, ArgumentList::const_iterator last) noexcept
+  {
+    const auto it = findSubCommandNameArgument(first, last);
+    if( it == last ){
+      return -1;
+    }
+    return static_cast<int>( std::distance( first, it ) );
   }
 
   /*! \brief Find the sub-command argument index in \a arguments
@@ -73,11 +96,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
   inline
   int findSubCommandNameArgumentIndex(const ArgumentList & arguments) noexcept
   {
-    const auto it = findSubCommandNameArgument(arguments);
-    if( it == arguments.cend() ){
-      return -1;
-    }
-    return static_cast<int>( std::distance( arguments.cbegin(), it ) );
+    return findSubCommandNameArgumentIndex( arguments.cbegin(), arguments.cend() );
   }
 
   /*! \internal Visitor to get the sub-command name
@@ -111,7 +130,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
     return boost::apply_visitor(GetSubCommandName(), argument);
   }
 
-  /*! \internal Visitor to check if a argument is the sub-command name
+  /*! \internal Visitor to check if a argument is a option
    */
   class MDT_COMMANDLINEPARSER_EXPORT IsOptionArgument : public boost::static_visitor<bool>
   {
@@ -138,6 +157,63 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
   bool isOption(const Argument & argument) noexcept
   {
     return boost::apply_visitor(IsOptionArgument(), argument);
+  }
+
+  /*! \internal Visitor to check if a argument is a positional argument
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsPositionalArgumentArgument : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const PositionalArgument &) const noexcept
+    {
+      return true;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \brief Check if \a argument is a positional argument
+   */
+  inline
+  bool isPositionalArgument(const Argument & argument) noexcept
+  {
+    return boost::apply_visitor(IsPositionalArgumentArgument(), argument);
+  }
+
+  /*! \internal Visitor to get a positional argument value
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT GetPositionalArgumentValue : public boost::static_visitor<QString>
+  {
+   public:
+
+    QString operator()(const PositionalArgument & argument) const
+    {
+      return argument.value;
+    }
+
+    template<typename T>
+    QString operator()(const T &) const noexcept
+    {
+      return QString();
+    }
+  };
+
+  /*! \brief Get the positional argument value for given \a argument
+   *
+   * \pre \a argument must be a positional argument
+   * \sa isPositionalArgument()
+   */
+  inline
+  QString getPositionalArgumentValue(const Argument & argument)
+  {
+    assert( isPositionalArgument(argument) );
+
+    return boost::apply_visitor(GetPositionalArgumentValue(), argument);
   }
 
 }}} // namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{

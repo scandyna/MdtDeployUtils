@@ -61,6 +61,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME CommandLineArgumentListAttributesTest
+  TARGET commandLineArgumentListAttributesTest
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/CommandLineArgumentListAttributesTest.cpp
+)
+
+mdt_add_test(
   NAME ParserResultTest
   TARGET parserResultTest
   DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
@@ -103,7 +111,7 @@ mdt_add_test(
 mdt_add_test(
   NAME BashCompletionParserTest
   TARGET bashCompletionParserTest
-  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/BashCompletionParserTest.cpp
 )

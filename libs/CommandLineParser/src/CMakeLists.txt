@@ -27,6 +27,7 @@ add_library(Mdt_CommandLineParser
   Mdt/CommandLineParser/CommandLine/CommandLine.cpp
   Mdt/CommandLineParser/CommandLine/Algorithm.cpp
   Mdt/CommandLineParser/CommandLine/CommandLineAlgorithm.cpp
+  Mdt/CommandLineParser/CommandLine/ArgumentListAttributes.cpp
   Mdt/CommandLineParser/ArgumentType.cpp
   Mdt/CommandLineParser/ParserDefinitionOption.cpp
   Mdt/CommandLineParser/ParserDefinitionPositionalArgument.cpp

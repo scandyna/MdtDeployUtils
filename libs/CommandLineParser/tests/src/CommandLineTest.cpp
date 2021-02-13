@@ -93,6 +93,18 @@ TEST_CASE("CommandLine")
     commandLine.appendSingleDash();
     commandLine.appendDoubleDash();
     REQUIRE( commandLine.argumentCount() == 9 );
+
+    REQUIRE( !commandLine.argumentAtIsPositionalArgument(0) );
+    REQUIRE( !commandLine.argumentAtIsPositionalArgument(1) );
+    REQUIRE( !commandLine.argumentAtIsPositionalArgument(2) );
+    REQUIRE( !commandLine.argumentAtIsPositionalArgument(3) );
+    REQUIRE( !commandLine.argumentAtIsPositionalArgument(4) );
+    REQUIRE( !commandLine.argumentAtIsPositionalArgument(5) );
+    REQUIRE(  commandLine.argumentAtIsPositionalArgument(6) );
+    REQUIRE( !commandLine.argumentAtIsPositionalArgument(7) );
+    REQUIRE( !commandLine.argumentAtIsPositionalArgument(8) );
+
+    REQUIRE( getPositionalArgumentValue( commandLine.argumentAt(6) ) == QLatin1String("file.txt") );
   }
 }
 
