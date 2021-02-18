@@ -50,6 +50,88 @@ TEST_CASE("isOption")
   }
 }
 
+TEST_CASE("isOptionOrOptionWithValueOrAnyDash")
+{
+  Argument argument;
+
+  SECTION("Option")
+  {
+    argument = Option{QLatin1String("help")};
+    REQUIRE( isOptionOrOptionWithValueOrAnyDash(argument) );
+  }
+
+  SECTION("Option expecting value")
+  {
+    argument = Option{QLatin1String("copy-mode"),true};
+    REQUIRE( isOptionOrOptionWithValueOrAnyDash(argument) );
+  }
+
+  SECTION("OptionValue")
+  {
+    argument = OptionValue{QLatin1String("help")};
+    REQUIRE( !isOptionOrOptionWithValueOrAnyDash(argument) );
+  }
+
+  SECTION("OptionWithValue")
+  {
+    argument = OptionWithValue{QLatin1String("help"),QLatin1String("true")};
+    REQUIRE( isOptionOrOptionWithValueOrAnyDash(argument) );
+  }
+
+  SECTION("-")
+  {
+    argument = SingleDash{};
+    REQUIRE( isOptionOrOptionWithValueOrAnyDash(argument) );
+  }
+
+  SECTION("--")
+  {
+    argument = DoubleDash{};
+    REQUIRE( isOptionOrOptionWithValueOrAnyDash(argument) );
+  }
+}
+
+TEST_CASE("isOptionExpectingValue")
+{
+  Argument argument;
+
+  SECTION("Option")
+  {
+    argument = Option{QLatin1String("help")};
+    REQUIRE( !isOptionExpectingValue(argument) );
+  }
+
+  SECTION("Option expecting value")
+  {
+    argument = Option{QLatin1String("copy-mode"),true};
+    REQUIRE( isOptionExpectingValue(argument) );
+  }
+
+  SECTION("OptionValue")
+  {
+    argument = OptionValue{QLatin1String("help")};
+    REQUIRE( !isOptionExpectingValue(argument) );
+  }
+
+  SECTION("OptionWithValue")
+  {
+    argument = OptionWithValue{QLatin1String("help"),QLatin1String("true")};
+    REQUIRE( !isOptionExpectingValue(argument) );
+  }
+
+  SECTION("-")
+  {
+    argument = SingleDash{};
+    REQUIRE( !isOptionExpectingValue(argument) );
+  }
+
+  SECTION("--")
+  {
+    argument = DoubleDash{};
+    REQUIRE( !isOptionExpectingValue(argument) );
+  }
+}
+
 TEST_CASE("CommandLine")
 {
   CommandLine commandLine;
@@ -84,7 +166,7 @@ TEST_CASE("CommandLine")
   SECTION("myapp --copy-mode keep -f copy -r=true file.txt - --")
   {
     commandLine.setExecutableName( QLatin1String("myapp") );
-    commandLine.appendOption( QLatin1String("copy-mode") );
+    commandLine.appendOptionExpectingValue( QLatin1String("copy-mode") );
     commandLine.appendOptionValue( QLatin1String("keep") );
     commandLine.appendOption( QLatin1String("f") );
     commandLine.appendSubCommandName( QLatin1String("copy") );
@@ -105,6 +187,10 @@ TEST_CASE("CommandLine")
     REQUIRE( !commandLine.argumentAtIsPositionalArgument(8) );
 
     REQUIRE( getPositionalArgumentValue( commandLine.argumentAt(6) ) == QLatin1String("file.txt") );
+
+    REQUIRE( isOptionExpectingValue( commandLine.argumentAt(1) ) );
+    REQUIRE( !isOptionExpectingValue( commandLine.argumentAt(2) ) );
+    REQUIRE( !isOptionExpectingValue( commandLine.argumentAt(3) ) );
   }
 }
 

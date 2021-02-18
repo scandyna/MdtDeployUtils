@@ -138,11 +138,21 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
 
     /*! \brief Check if \a commandLineIndex refers to a option in the main command
      *
-     * \todo Must clarify what we consider a option (option name, option value, option with value ?)
+     * \a preditcate will be used to determine if the argument at \a commandLineIndex is a option.
+     * It should be of the form:
+     * \code
+     * bool predicate(const Argument & argument);
+     * \endcode
+     * and return true if \a argument is considered a option.
+     *
+     * There are some functions that can be used:
+     * - isOption(const Argument & argument)
+     * - isOptionOrOptionWithValueOrAnyDash(const Argument & argument)
      *
      * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
      */
-    bool isCommandLineIndexAtMainCommandOption(int commandLineIndex) const noexcept
+    template<typename UnaryPredicate>
+    bool isCommandLineIndexAtMainCommandOption(int commandLineIndex, UnaryPredicate predicate) const noexcept
     {
       assert( commandLineIndex >= 0 );
       assert( commandLineIndex < commandLineArgumentCount() );
@@ -151,7 +161,32 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
         return false;
       }
 
-      return isOption( argumentAtCommandLineIndex(commandLineIndex) );
+      return predicate( argumentAtCommandLineIndex(commandLineIndex) );
+    }
+
+    /*! \brief Check if \a commandLineIndex refers to a option that expects a value, in the main command
+     *
+     * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
+     */
+    bool isCommandLineIndexAtMainCommandOptionExpectingValue(int commandLineIndex) const noexcept
+    {
+      assert( commandLineIndex >= 0 );
+      assert( commandLineIndex < commandLineArgumentCount() );
+
+      if( !isCommandLineIndexInMainCommand(commandLineIndex) ){
+        return false;
+      }
+
+      return isOptionExpectingValue( argumentAtCommandLineIndex(commandLineIndex) );
+    }
+
+    /*! \brief Get the count of positional arguments in the main command
+     *
+     * \todo What about dash and double dash ?
+     */
+    int findMainCommandPositionalArgumentCount() const noexcept
+    {
+      return static_cast<int>( std::count_if( mBegin, mSubCommandNameIt, isPositionalArgument ) );
     }
 
     /*! \brief Get the index of a positional argument in the main command from \a commandLineIndex
@@ -160,6 +195,8 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
      * otherwise a value < 0
      *
      * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
+     *
+     * \todo What about dash and double dash ?
      */
     int findMainCommandPositionalArgumentIndexFromCommandLineIndex(int commandLineIndex) const noexcept
     {
@@ -230,11 +267,21 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
 
     /*! \brief Check if \a commandLineIndex refers to a option in the sub-command
      *
-     * \todo Must clarify what we consider a option (option name, option value, option with value ?)
+     * \a preditcate will be used to determine if the argument at \a commandLineIndex is a option.
+     * It should be of the form:
+     * \code
+     * bool predicate(const Argument & argument);
+     * \endcode
+     * and return true if \a argument is considered a option.
+     *
+     * There are some functions that can be used:
+     * - isOption(const Argument & argument)
+     * - isOptionOrOptionWithValueOrAnyDash(const Argument & argument)
      *
      * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
      */
-    bool isCommandLineIndexAtSubCommandOption(int commandLineIndex) const noexcept
+    template<typename UnaryPredicate>
+    bool isCommandLineIndexAtSubCommandOption(int commandLineIndex, UnaryPredicate preditcate) const noexcept
     {
       assert( commandLineIndex >= 0 );
       assert( commandLineIndex < commandLineArgumentCount() );
@@ -243,7 +290,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
         return false;
       }
 
-      return isOption( argumentAtCommandLineIndex(commandLineIndex) );
+      return preditcate( argumentAtCommandLineIndex(commandLineIndex) );
     }
 
     /*! \brief Get the index of a positional argument in the sub-command in the result from \a commandLineIndex

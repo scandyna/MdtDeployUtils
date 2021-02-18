@@ -47,6 +47,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
   struct MDT_COMMANDLINEPARSER_EXPORT Option
   {
     QString name;
+    bool expectsValue = false;
   };
 
   /*! \brief A option value in the command line

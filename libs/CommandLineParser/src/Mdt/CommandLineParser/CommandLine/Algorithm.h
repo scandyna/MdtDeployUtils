@@ -159,6 +159,79 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
     return boost::apply_visitor(IsOptionArgument(), argument);
   }
 
+  /*! \internal Visitor to check if a argument is a option
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsOptionOrOptionWithValueOrAnyDash : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const Option &) const noexcept
+    {
+      return true;
+    }
+
+    bool operator()(const OptionWithValue &) const noexcept
+    {
+      return true;
+    }
+
+    bool operator()(const SingleDash &) const noexcept
+    {
+      return true;
+    }
+
+    bool operator()(const DoubleDash &) const noexcept
+    {
+      return true;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \brief Check if \a argument is a option
+   *
+   * Returns true if \a argument is a option,
+   * a option with a value, a single dash or a double dash,
+   * otherwise false.
+   *
+   * \note will also return false if \a argument is a option value
+   */
+  inline
+  bool isOptionOrOptionWithValueOrAnyDash(const Argument & argument) noexcept
+  {
+    return boost::apply_visitor(IsOptionOrOptionWithValueOrAnyDash(), argument);
+  }
+
+  /*! \internal Visitor to check if a argument is a option
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsOptionExpectingValueArgument : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const Option & option) const noexcept
+    {
+      return option.expectsValue;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \brief Check if \a argument is a option that expects a value
+   */
+  inline
+  bool isOptionExpectingValue(const Argument & argument) noexcept
+  {
+    return boost::apply_visitor(IsOptionExpectingValueArgument(), argument);
+  }
+
   /*! \internal Visitor to check if a argument is a positional argument
    */
   class MDT_COMMANDLINEPARSER_EXPORT IsPositionalArgumentArgument : public boost::static_visitor<bool>
