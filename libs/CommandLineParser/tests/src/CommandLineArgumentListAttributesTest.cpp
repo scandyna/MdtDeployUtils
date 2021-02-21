@@ -198,6 +198,7 @@ TEST_CASE("SimpleApp")
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
+      REQUIRE( attributes.optionNameAtCommandLineIndex(commandLineIndex).isEmpty() );
     }
 
     SECTION("command-line index 1 (-f)")
@@ -208,6 +209,7 @@ TEST_CASE("SimpleApp")
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
+      REQUIRE( attributes.optionNameAtCommandLineIndex(commandLineIndex) == QLatin1String("f") );
     }
 
     SECTION("command-line index 2 (--overwrite-behavior)")
@@ -218,6 +220,7 @@ TEST_CASE("SimpleApp")
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
+      REQUIRE( attributes.optionNameAtCommandLineIndex(commandLineIndex) == QLatin1String("overwrite-behavior") );
     }
 
     SECTION("command-line index 3 (keep)")
@@ -228,6 +231,7 @@ TEST_CASE("SimpleApp")
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
+      REQUIRE( attributes.optionNameAtCommandLineIndex(commandLineIndex).isEmpty() );
     }
 
     SECTION("command-line index 4 (file.txt)")
@@ -238,6 +242,7 @@ TEST_CASE("SimpleApp")
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) == 0 );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
+      REQUIRE( attributes.optionNameAtCommandLineIndex(commandLineIndex).isEmpty() );
     }
 
     SECTION("command-line index 5 (/tmp)")
@@ -248,6 +253,7 @@ TEST_CASE("SimpleApp")
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) == 1 );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
+      REQUIRE( attributes.optionNameAtCommandLineIndex(commandLineIndex).isEmpty() );
     }
   }
 

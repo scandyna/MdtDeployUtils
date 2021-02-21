@@ -159,6 +159,41 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
     return boost::apply_visitor(IsOptionArgument(), argument);
   }
 
+  /*! \internal Visitor to get the option name of a argument
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT OptionName : public boost::static_visitor<QString>
+  {
+   public:
+
+    QString operator()(const Option & option) const noexcept
+    {
+      return option.name;
+    }
+
+    QString operator()(const OptionWithValue & option) const noexcept
+    {
+      return option.name;
+    }
+
+    template<typename T>
+    QString operator()(const T &) const noexcept
+    {
+      return QString();
+    }
+  };
+
+  /*! \brief Get the option name for \a argument
+   *
+   * Returns the name of the option if \a argument it is one
+   * (i.e. a option or a option with value),
+   * otherwise a empty string
+   */
+  inline
+  QString optionName(const Argument & argument)
+  {
+    return boost::apply_visitor(OptionName(), argument);
+  }
+
   /*! \internal Visitor to check if a argument is a option
    */
   class MDT_COMMANDLINEPARSER_EXPORT IsOptionOrOptionWithValueOrAnyDash : public boost::static_visitor<bool>

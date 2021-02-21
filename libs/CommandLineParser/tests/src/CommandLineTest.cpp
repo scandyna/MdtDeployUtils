@@ -91,6 +91,47 @@ TEST_CASE("isOptionOrOptionWithValueOrAnyDash")
   }
 }
 
+TEST_CASE("optionName")
+{
+  Argument argument;
+
+  SECTION("Option")
+  {
+    argument = Option{QLatin1String("help")};
+    REQUIRE( optionName(argument) == QLatin1String("help") );
+  }
+
+  SECTION("Option expecting value")
+  {
+    argument = Option{QLatin1String("copy-mode"),true};
+    REQUIRE( optionName(argument) == QLatin1String("copy-mode") );
+  }
+
+  SECTION("OptionValue")
+  {
+    argument = OptionValue{QLatin1String("help")};
+    REQUIRE( optionName(argument).isEmpty() );
+  }
+
+  SECTION("OptionWithValue")
+  {
+    argument = OptionWithValue{QLatin1String("help"),QLatin1String("true")};
+    REQUIRE( optionName(argument) == QLatin1String("help") );
+  }
+
+  SECTION("-")
+  {
+    argument = SingleDash{};
+    REQUIRE( optionName(argument).isEmpty() );
+  }
+
+  SECTION("--")
+  {
+    argument = DoubleDash{};
+    REQUIRE( optionName(argument).isEmpty() );
+  }
+}
+
 TEST_CASE("isOptionExpectingValue")
 {
   Argument argument;

@@ -24,6 +24,7 @@
 #include "Argument.h"
 #include "Algorithm.h"
 #include "mdt_commandlineparser_export.h"
+#include <QString>
 #include <cassert>
 #include <algorithm>
 #include <iterator>
@@ -136,7 +137,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       return *iteratorFromCommandLineIndex(commandLineIndex);
     }
 
-    /*! \brief Check if \a commandLineIndex refers to a option in the main command
+    /*! \brief Check if \a commandLineIndex refers to a option
      *
      * \a preditcate will be used to determine if the argument at \a commandLineIndex is a option.
      * It should be of the form:
@@ -152,6 +153,49 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
      * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
      */
     template<typename UnaryPredicate>
+    bool isCommandLineIndexAtOption(int commandLineIndex, UnaryPredicate predicate) const noexcept
+    {
+      assert( commandLineIndex >= 0 );
+      assert( commandLineIndex < commandLineArgumentCount() );
+
+      return predicate( argumentAtCommandLineIndex(commandLineIndex) );
+    }
+
+    /*! \brief Get the name of the option at \a commandLineIndex
+     *
+     * Returns the name of the option if it is one
+     * (i.e. a option or a option with value),
+     * otherwise a empty string
+     *
+     * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
+     * \sa optionName()
+     */
+    QString optionNameAtCommandLineIndex(int commandLineIndex) const
+    {
+      assert( commandLineIndex >= 0 );
+      assert( commandLineIndex < commandLineArgumentCount() );
+
+      return optionName( argumentAtCommandLineIndex(commandLineIndex) );
+    }
+
+    /*! \brief Check if \a commandLineIndex refers to a option that expects a value
+     *
+     * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
+     */
+    bool isCommandLineIndexAtOptionExpectingValue(int commandLineIndex) const noexcept
+    {
+      assert( commandLineIndex >= 0 );
+      assert( commandLineIndex < commandLineArgumentCount() );
+
+      return isOptionExpectingValue( argumentAtCommandLineIndex(commandLineIndex) );
+    }
+
+    /*! \brief Check if \a commandLineIndex refers to a option in the main command
+     *
+     * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
+     * \sa isCommandLineIndexAtOption()
+     */
+    template<typename UnaryPredicate>
     bool isCommandLineIndexAtMainCommandOption(int commandLineIndex, UnaryPredicate predicate) const noexcept
     {
       assert( commandLineIndex >= 0 );
@@ -161,12 +205,13 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
         return false;
       }
 
-      return predicate( argumentAtCommandLineIndex(commandLineIndex) );
+      return isCommandLineIndexAtOption(commandLineIndex, predicate);
     }
 
     /*! \brief Check if \a commandLineIndex refers to a option that expects a value, in the main command
      *
      * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
+     * \sa isCommandLineIndexAtOptionExpectingValue()
      */
     bool isCommandLineIndexAtMainCommandOptionExpectingValue(int commandLineIndex) const noexcept
     {
@@ -177,7 +222,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
         return false;
       }
 
-      return isOptionExpectingValue( argumentAtCommandLineIndex(commandLineIndex) );
+      return isCommandLineIndexAtOptionExpectingValue(commandLineIndex);
     }
 
     /*! \brief Get the count of positional arguments in the main command
