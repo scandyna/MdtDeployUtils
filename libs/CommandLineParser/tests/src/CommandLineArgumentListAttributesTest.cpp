@@ -79,6 +79,7 @@ TEST_CASE("SimpleApp")
       const int commandLineIndex = 0;
       REQUIRE( !attributes.isCommandLineIndexAtMainCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
+      REQUIRE( !attributes.isCommandLineIndexAtSubCommandName(commandLineIndex) );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
     }
@@ -98,6 +99,7 @@ TEST_CASE("SimpleApp")
       const int commandLineIndex = 0;
       REQUIRE( !attributes.isCommandLineIndexAtMainCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
+      REQUIRE( !attributes.isCommandLineIndexAtSubCommandName(commandLineIndex) );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
     }
@@ -107,6 +109,7 @@ TEST_CASE("SimpleApp")
       const int commandLineIndex = 1;
       REQUIRE( !attributes.isCommandLineIndexAtMainCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) == 0 );
+      REQUIRE( !attributes.isCommandLineIndexAtSubCommandName(commandLineIndex) );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
     }
@@ -116,6 +119,7 @@ TEST_CASE("SimpleApp")
       const int commandLineIndex = 2;
       REQUIRE( !attributes.isCommandLineIndexAtMainCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) == 1 );
+      REQUIRE( !attributes.isCommandLineIndexAtSubCommandName(commandLineIndex) );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
     }
@@ -374,6 +378,7 @@ TEST_CASE("AppWithSubCommand")
       const int commandLineIndex = 0;
       REQUIRE( !attributes.isCommandLineIndexAtMainCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
+      REQUIRE( !attributes.isCommandLineIndexAtSubCommandName(commandLineIndex) );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
     }
@@ -383,6 +388,7 @@ TEST_CASE("AppWithSubCommand")
       const int commandLineIndex = 1;
       REQUIRE( !attributes.isCommandLineIndexAtMainCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
+      REQUIRE( attributes.isCommandLineIndexAtSubCommandName(commandLineIndex) );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
     }
@@ -392,6 +398,7 @@ TEST_CASE("AppWithSubCommand")
       const int commandLineIndex = 2;
       REQUIRE( !attributes.isCommandLineIndexAtMainCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
+      REQUIRE( !attributes.isCommandLineIndexAtSubCommandName(commandLineIndex) );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) == 0 );
     }
@@ -401,6 +408,7 @@ TEST_CASE("AppWithSubCommand")
       const int commandLineIndex = 3;
       REQUIRE( !attributes.isCommandLineIndexAtMainCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) < 0 );
+      REQUIRE( !attributes.isCommandLineIndexAtSubCommandName(commandLineIndex) );
       REQUIRE( !attributes.isCommandLineIndexAtSubCommandOption(commandLineIndex, isOptionOrOptionWithValueOrAnyDash) );
       REQUIRE( attributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(commandLineIndex) == 1 );
     }

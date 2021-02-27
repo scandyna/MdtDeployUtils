@@ -290,6 +290,29 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       return isCommandLineIteratorInMainCommand( iteratorFromCommandLineIndex(commandLineIndex) );
     }
 
+    /*! \brief Check if \a commandLineIt is at the sub-command name
+     *
+     * \sa isCommandLineIndexAtSubCommandName()
+     */
+    bool isCommandLineIteratorAtSubCommandName(const_iterator commandLineIt) const noexcept
+    {
+      return commandLineIt == mSubCommandNameIt;
+    }
+
+    /*! \brief Check if \a commandLineIndex is at the sub-command name
+     *
+     * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
+     * \sa isCommandLineIteratorAtSubCommandName()
+     */
+    inline
+    bool isCommandLineIndexAtSubCommandName(int commandLineIndex) const noexcept
+    {
+      assert( commandLineIndex >= 0 );
+      assert( commandLineIndex < commandLineArgumentCount() );
+
+      return isCommandLineIteratorAtSubCommandName( iteratorFromCommandLineIndex(commandLineIndex) );
+    }
+
     /*! \brief Check if \a commandLineIt is in the sub-command
      *
      * Return true if \a commandLineIt is past the sub-command name,
@@ -305,6 +328,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
      * Return true if \a commandLineIndex is past the sub-command name,
      * otherwise false.
      */
+    inline
     bool isCommandLineIndexInSubCommand(int commandLineIndex) const noexcept
     {
       return isCommandLineIteratorInSubCommand( iteratorFromCommandLineIndex(commandLineIndex) );
