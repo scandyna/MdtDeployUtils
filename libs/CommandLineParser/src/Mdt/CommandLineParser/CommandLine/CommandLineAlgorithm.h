@@ -45,6 +45,17 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
     return findSubCommandNameArgumentIndex( commandLine.argumentList() );
   }
 
+  /*! \brief Find the sub-command name in \a commandLine
+   *
+   * Returns the name of the sub-command if it exists in \a commandLine ,
+   * otherwise a empty string
+   */
+  inline
+  QString findSubCommandName(const CommandLine & commandLine) noexcept
+  {
+    return findSubCommandName( commandLine.argumentList() );
+  }
+
 }}} // namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
 
 #endif // #ifndef MDT_COMMAND_LINE_PARSER_COMMAND_LINE_COMMAND_LINE_ALGORITHM_H

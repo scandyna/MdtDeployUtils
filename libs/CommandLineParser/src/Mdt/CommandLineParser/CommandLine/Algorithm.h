@@ -130,6 +130,22 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
     return boost::apply_visitor(GetSubCommandName(), argument);
   }
 
+  /*! \brief Find the sub-command name in \a arguments
+   *
+   * Returns the name of the sub-command if it exists in \a arguments ,
+   * otherwise a empty string
+   */
+  inline
+  QString findSubCommandName(const ArgumentList & arguments) noexcept
+  {
+    const auto it = findSubCommandNameArgument(arguments);
+    if( it == arguments.cend() ){
+      return QString();
+    }
+
+    return getSubCommandName(*it);
+  }
+
   /*! \internal Visitor to check if a argument is a option
    */
   class MDT_COMMANDLINEPARSER_EXPORT IsOptionArgument : public boost::static_visitor<bool>

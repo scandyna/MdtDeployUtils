@@ -266,3 +266,26 @@ TEST_CASE("findSubCommandNameArgument")
     REQUIRE( findSubCommandNameArgumentIndex(commandLine) == 1 );
   }
 }
+
+TEST_CASE("findSubCommandName")
+{
+  CommandLine commandLine;
+
+  SECTION("empty")
+  {
+    REQUIRE( findSubCommandName(commandLine).isEmpty() );
+  }
+
+  SECTION("app")
+  {
+    commandLine.setExecutableName( QLatin1String("app") );
+    REQUIRE( findSubCommandName(commandLine).isEmpty() );
+  }
+
+  SECTION("app copy")
+  {
+    commandLine.setExecutableName( QLatin1String("app") );
+    commandLine.appendSubCommandName( QLatin1String("copy") );
+    REQUIRE( findSubCommandName(commandLine) == QLatin1String("copy") );
+  }
+}
