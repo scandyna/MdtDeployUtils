@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -29,6 +29,9 @@
 #include <boost/optional.hpp>
 #include <vector>
 #include <algorithm>
+#include <iterator>
+#include <cstddef>
+#include <cassert>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -210,9 +213,19 @@ namespace Mdt{ namespace CommandLineParser{
       return !mSubCommands.empty();
     }
 
-    /*! \brief Find a sub-command by \a name
+    /*! \brief Get the count of sub-commands
      */
-    boost::optional<const ParserDefinitionCommand &> findSubCommandByName(const QString & name) const noexcept
+    int subCommandCount() const noexcept
+    {
+      return static_cast<int>( mSubCommands.size() );
+    }
+
+    /*! \brief Get the index of the sub-command named \a name
+     *
+     * Returns the index of the sub-command named \a name ,
+     * or a value < 0 if not found.
+     */
+    int findSubCommandIndexByName(const QString & name) const noexcept
     {
       const auto pred = [&name](const ParserDefinitionCommand & command){
         return command.name() == name;
@@ -220,22 +233,42 @@ namespace Mdt{ namespace CommandLineParser{
 
       const auto it = std::find_if(mSubCommands.cbegin(), mSubCommands.cend(), pred);
       if( it == mSubCommands.cend() ){
+        return -1;
+      }
+
+      return static_cast<int>( std::distance( mSubCommands.cbegin(), it ) );
+    }
+
+    /*! \brief Find a sub-command by \a name
+     */
+    boost::optional<const ParserDefinitionCommand &> findSubCommandByName(const QString & name) const noexcept
+    {
+      const int index = findSubCommandIndexByName(name);
+
+      if(index < 0){
         return boost::none;
       }
 
-      return *it;
+      return subCommandAt(index);
     }
 
     /*! \brief Check if this definition contains a sub-command named \a subCommandName
      */
     bool containsSubCommand(const QString & subCommandName) const noexcept
     {
-      const auto command = findSubCommandByName(subCommandName);
-      if(command){
-        return true;
-      }
+      return findSubCommandIndexByName(subCommandName) >= 0;
+    }
 
-      return false;
+    /*! \brief Access the sub-command at \a index
+     *
+     * \pre \a index must be in valid range ( 0 <= \a index < subCommandCount() )
+     */
+    const ParserDefinitionCommand & subCommandAt(int index) const noexcept
+    {
+      assert( index >= 0 );
+      assert( index < subCommandCount() );
+
+      return mSubCommands[static_cast<size_t>(index)];
     }
 
     /*! \brief Get subcommands
