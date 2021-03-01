@@ -63,6 +63,8 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
    * // positional arguments index in main command:                0
    * // positional arguments index in sub-command:                                                        0        1
    * \endcode
+   *
+   * \sa CommandLine
    */
   class MDT_COMMANDLINEPARSER_EXPORT ArgumentListAttributes
   {
@@ -227,11 +229,20 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
 
     /*! \brief Get the count of positional arguments in the main command
      *
-     * \todo What about dash and double dash ?
+     * \a preditcate will be used to determine if a argument is a positional argument.
+     * It should be of the form:
+     * \code
+     * bool predicate(const Argument & argument);
+     * \endcode
+     * and return true if \a argument is considered a positional argument.
+     *
+     * There are some functions that can be used:
+     * - isPositionalArgument(const Argument & argument)
      */
-    int findMainCommandPositionalArgumentCount() const noexcept
+    template<typename UnaryPredicate>
+    int findMainCommandPositionalArgumentCount(UnaryPredicate predicate) const noexcept
     {
-      return static_cast<int>( std::count_if( mBegin, mSubCommandNameIt, isPositionalArgument ) );
+      return static_cast<int>( std::count_if( mBegin, mSubCommandNameIt, predicate ) );
     }
 
     /*! \brief Get the index of a positional argument in the main command from \a commandLineIndex
@@ -239,11 +250,20 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
      * Returns the positional argument index in the main command if \a commandLineIndex refers to any,
      * otherwise a value < 0
      *
-     * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
+     * \a preditcate will be used to determine if the argument at \a commandLineIndex is a positional argument.
+     * It should be of the form:
+     * \code
+     * bool predicate(const Argument & argument);
+     * \endcode
+     * and return true if \a argument is considered a positional argument.
      *
-     * \todo What about dash and double dash ?
+     * There are some functions that can be used:
+     * - isPositionalArgument(const Argument & argument)
+     *
+     * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
      */
-    int findMainCommandPositionalArgumentIndexFromCommandLineIndex(int commandLineIndex) const noexcept
+    template<typename UnaryPredicate>
+    int findMainCommandPositionalArgumentIndexFromCommandLineIndex(int commandLineIndex, UnaryPredicate predicate) const noexcept
     {
       assert( commandLineIndex >= 0 );
       assert( commandLineIndex < commandLineArgumentCount() );
@@ -254,7 +274,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       }
       ++it; // Act like a past-the-end iterator
 
-      return static_cast<int>( std::count_if( mBegin, it, isPositionalArgument ) ) - 1;
+      return static_cast<int>( std::count_if( mBegin, it, predicate ) ) - 1;
     }
 
     /*! \brief Get the index of the sub-command name in this command line
@@ -362,14 +382,43 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       return preditcate( argumentAtCommandLineIndex(commandLineIndex) );
     }
 
+    /*! \brief Get the count of positional arguments in the sub-command
+     *
+     * \a preditcate will be used to determine if a argument is a positional argument.
+     * It should be of the form:
+     * \code
+     * bool predicate(const Argument & argument);
+     * \endcode
+     * and return true if \a argument is considered a positional argument.
+     *
+     * There are some functions that can be used:
+     * - isPositionalArgument(const Argument & argument)
+     */
+    template<typename UnaryPredicate>
+    int findSubCommandPositionalArgumentCount(UnaryPredicate predicate) const noexcept
+    {
+      return static_cast<int>( std::count_if( mSubCommandNameIt, mEnd, predicate ) );
+    }
+
     /*! \brief Get the index of a positional argument in the sub-command in the result from \a commandLineIndex
      *
      * Returns the positional argument index in the sub-command if \a commandLineIndex refers to any,
      * otherwise a value < 0
      *
+     * \a preditcate will be used to determine if the argument at \a commandLineIndex is a positional argument.
+     * It should be of the form:
+     * \code
+     * bool predicate(const Argument & argument);
+     * \endcode
+     * and return true if \a argument is considered a positional argument.
+     *
+     * There are some functions that can be used:
+     * - isPositionalArgument(const Argument & argument)
+     *
      * \pre \a commandLineIndex must be in valid range ( 0 <= \a commandLineIndex < commandLineArgumentCount() )
      */
-    int findSubCommandPositionalArgumentIndexFromCommandLineIndex(int commandLineIndex) const noexcept
+    template<typename UnaryPredicate>
+    int findSubCommandPositionalArgumentIndexFromCommandLineIndex(int commandLineIndex, UnaryPredicate preditcate) const noexcept
     {
       assert( commandLineIndex >= 0 );
       assert( commandLineIndex < commandLineArgumentCount() );
@@ -380,7 +429,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       }
       ++it; // Act like a past-the-end iterator
 
-      return static_cast<int>( std::count_if( mSubCommandNameIt+1, it, isPositionalArgument ) ) - 1;
+      return static_cast<int>( std::count_if( mSubCommandNameIt+1, it, preditcate ) ) - 1;
     }
 
    private:

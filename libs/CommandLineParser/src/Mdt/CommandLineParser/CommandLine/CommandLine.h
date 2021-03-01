@@ -41,6 +41,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
    * ParserResult should be used
    *
    * \sa ParserResult
+   * \sa ArgumentListAttributes
    * \sa https://www.gnu.org/software/guile/manual/html_node/Command-Line-Format.html
    * \sa https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html
    */
@@ -241,7 +242,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
 
     /*! \brief Check if \a name is a valid name for a option
      *
-     * \sa ParserDefinitionOption::isValidName(name)
+     * \sa Mdt::CommandLineParser::ParserDefinitionOption::isValidName()
      */
     static
     bool isValidOptionName(const QString & name)
