@@ -93,6 +93,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME BashCompletionCompgenCommandTest
+  TARGET bashCompletionCompgenCommandTest
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BashCompletionCompgenCommandTest.cpp
+)
+
+mdt_add_test(
   NAME BashCompletionGeneratorTest
   TARGET bashCompletionGeneratorTest
   DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
@@ -115,3 +123,19 @@ mdt_add_test(
   SOURCE_FILES
     src/BashCompletionParserTest.cpp
 )
+
+mdt_add_test(
+  NAME BashCompletionParserQueryTest
+  TARGET bashCompletionParserQueryTest
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BashCompletionParserQueryTest.cpp
+)
+
+# mdt_add_test(
+#   NAME BashCompletionParserQueryTest_OLD
+#   TARGET bashCompletionParserQueryTest_OLD
+#   DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/BashCompletionParserQueryTest_OLD.cpp
+# )
