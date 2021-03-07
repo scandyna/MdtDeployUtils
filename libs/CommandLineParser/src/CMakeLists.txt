@@ -51,6 +51,10 @@ add_library(Mdt_CommandLineParser
   Mdt/CommandLineParser/BashCompletion/CompgenArgumentAlgorithm.cpp
   Mdt/CommandLineParser/BashCompletion/CompgenWordList.cpp
   Mdt/CommandLineParser/BashCompletion/CompgenCommand.cpp
+  Mdt/CommandLineParser/BashCompletion/CustomAction.cpp
+  Mdt/CommandLineParser/BashCompletion/ActionVariant.cpp
+  Mdt/CommandLineParser/BashCompletion/ActionVariantAlgorithm.cpp
+  Mdt/CommandLineParser/BashCompletion/Action.cpp
 )
 add_library(Mdt::CommandLineParser ALIAS Mdt_CommandLineParser)
 
