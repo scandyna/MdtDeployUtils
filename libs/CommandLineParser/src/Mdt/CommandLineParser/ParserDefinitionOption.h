@@ -186,6 +186,32 @@ namespace Mdt{ namespace CommandLineParser{
       return mValueName;
     }
 
+    /*! \brief Set the possible values
+     *
+     * \sa possibleValues()
+     * \sa setDefaultValue()
+     */
+    void setPossibleValues(const QStringList & values) noexcept
+    {
+      mPossibleValues = values;
+    }
+
+    /*! \brief Check if this option has possible values
+     */
+    bool hasPossibleValues() const noexcept
+    {
+      return !mPossibleValues.isEmpty();
+    }
+
+    /*! \brief Get the possible values
+     *
+     * \sa setPossibleValues()
+     */
+    const QStringList & possibleValues() const noexcept
+    {
+      return mPossibleValues;
+    }
+
     /*! \brief Sets the default value used for this option
      *
      * The default value is used if the user of the application does not specify the option on the command line.
@@ -258,6 +284,7 @@ namespace Mdt{ namespace CommandLineParser{
     QString mName;
     QString mDescription;
     QString mValueName;
+    QStringList mPossibleValues;
     QStringList mDefaultValues;
     ArgumentType mValueType = ArgumentType::Unspecified;
   };

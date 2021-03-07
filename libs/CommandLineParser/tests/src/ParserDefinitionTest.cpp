@@ -192,6 +192,16 @@ TEST_CASE("ParserDefinitionOption")
     REQUIRE( option.valueName() == QLatin1String("directory") );
   }
 
+  SECTION("possible vales")
+  {
+    ParserDefinitionOption option( QLatin1String("overwrite-behavior"), QLatin1String("Overwrite behavior") );
+    option.setValueName( QLatin1String("behavior") );
+    REQUIRE( !option.hasPossibleValues() );
+    option.setPossibleValues({QLatin1String("keep"),QLatin1String("fail"),QLatin1String("overwrite")});
+    REQUIRE( option.hasPossibleValues() );
+    REQUIRE( option.possibleValues() == QStringList({QLatin1String("keep"),QLatin1String("fail"),QLatin1String("overwrite")}) );
+  }
+
   SECTION("default value")
   {
     ParserDefinitionOption option( QLatin1String("destination"), QLatin1String("Destination directory") );
