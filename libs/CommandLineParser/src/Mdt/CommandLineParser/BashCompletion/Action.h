@@ -83,6 +83,20 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
       return isActionVariantDefined(mAction);
     }
 
+    /*! \brief Check if this action is a compgen command
+     */
+    bool isCompgenCommand() const noexcept
+    {
+      return isActionVariantCompgenCommand(mAction);
+    }
+
+    /*! \brief Check if this action is a custom action
+     */
+    bool isCustomAction() const noexcept
+    {
+      return isActionVariantCustomAction(mAction);
+    }
+
     /*! \brief Get the COMPREPLY string for this action
      */
     QString toCompreplyString() const noexcept

@@ -26,31 +26,30 @@
 
 using namespace Mdt::CommandLineParser::BashCompletion;
 
-TEST_CASE("isActionVariant_CompgenCommand_CustomAction")
+TEST_CASE("is_CompgenCommand_CustomAction")
 {
-  ActionVariant action;
+  Action action;
 
   SECTION("Default constructed")
   {
-    REQUIRE( !isActionVariantCompgenCommand(action) );
-    REQUIRE( !isActionVariantCustomAction(action) );
+    REQUIRE( !action.isCompgenCommand() );
+    REQUIRE( !action.isCustomAction() );
   }
 
   SECTION("compgen command")
   {
     CompgenCommand command;
     command.addAction(CompgenAction::ListFiles);
-    action = command;
-    REQUIRE( isActionVariantCompgenCommand(action) );
-    REQUIRE( !isActionVariantCustomAction(action) );
+    action.setCompgenCommand(command);
+    REQUIRE( action.isCompgenCommand() );
+    REQUIRE( !action.isCustomAction() );
   }
 
   SECTION("custom action")
   {
-    CustomAction customAction{QLatin1String("some action")};
-    action = customAction;
-    REQUIRE( !isActionVariantCompgenCommand(action) );
-    REQUIRE( isActionVariantCustomAction(action) );
+    action.setCustomAction( QLatin1String("$executable completion-list-packages") );
+    REQUIRE( !action.isCompgenCommand() );
+    REQUIRE( action.isCustomAction() );
   }
 }
 
