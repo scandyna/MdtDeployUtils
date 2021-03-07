@@ -26,6 +26,34 @@
 
 using namespace Mdt::CommandLineParser::BashCompletion;
 
+TEST_CASE("isActionVariant_CompgenCommand_CustomAction")
+{
+  ActionVariant action;
+
+  SECTION("Default constructed")
+  {
+    REQUIRE( !isActionVariantCompgenCommand(action) );
+    REQUIRE( !isActionVariantCustomAction(action) );
+  }
+
+  SECTION("compgen command")
+  {
+    CompgenCommand command;
+    command.addAction(CompgenAction::ListFiles);
+    action = command;
+    REQUIRE( isActionVariantCompgenCommand(action) );
+    REQUIRE( !isActionVariantCustomAction(action) );
+  }
+
+  SECTION("custom action")
+  {
+    CustomAction customAction{QLatin1String("some action")};
+    action = customAction;
+    REQUIRE( !isActionVariantCompgenCommand(action) );
+    REQUIRE( isActionVariantCustomAction(action) );
+  }
+}
+
 TEST_CASE("isDefined")
 {
   Action action;

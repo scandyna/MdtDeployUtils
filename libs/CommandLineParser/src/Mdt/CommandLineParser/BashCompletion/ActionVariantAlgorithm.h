@@ -54,6 +54,58 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
     return boost::apply_visitor(IsActionVariantDefined(), action);
   }
 
+  /*! \internal Visitor for isActionVariantCompgenCommand()
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsActionVariantCompgenCommand : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const CompgenCommand &) const noexcept
+    {
+      return true;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \internal
+   */
+  static
+  bool isActionVariantCompgenCommand(const ActionVariant & action) noexcept
+  {
+    return boost::apply_visitor(IsActionVariantCompgenCommand(), action);
+  }
+
+  /*! \internal Visitor for isActionVariantCustomAction()
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsActionVariantCustomAction : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const CustomAction &) const noexcept
+    {
+      return true;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \internal
+   */
+  static
+  bool isActionVariantCustomAction(const ActionVariant & action) noexcept
+  {
+    return boost::apply_visitor(IsActionVariantCustomAction(), action);
+  }
+
   /*! \internal
    */
   MDT_COMMANDLINEPARSER_EXPORT
