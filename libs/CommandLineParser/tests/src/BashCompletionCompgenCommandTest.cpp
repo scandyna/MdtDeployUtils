@@ -53,12 +53,14 @@ TEST_CASE("attributes")
   SECTION("Default constructed")
   {
     REQUIRE( command.argumentCount() == 0 );
+    REQUIRE( command.isEmpty() );
   }
 
   SECTION("1 action")
   {
     command.addAction(CompgenAction::ListFiles);
     REQUIRE( command.argumentCount() == 1 );
+    REQUIRE( !command.isEmpty() );
     REQUIRE( compgenArgumentToString( command.argumentAt(0) ) == QLatin1String("-A file") );
   }
 
@@ -66,6 +68,7 @@ TEST_CASE("attributes")
   {
     command.addWordList({QLatin1String("-h"),QLatin1String("--help")});
     REQUIRE( command.argumentCount() == 1 );
+    REQUIRE( !command.isEmpty() );
     REQUIRE( compgenArgumentToString( command.argumentAt(0) ) == QLatin1String("-W \"-h --help\"") );
   }
 }

@@ -67,6 +67,15 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
       mArgumentList.emplace_back( CompgenWordList{wordList} );
     }
 
+    /*! \brief Check if this command is empty
+     *
+     * \sa argumentCount()
+     */
+    bool isEmpty() const noexcept
+    {
+      return mArgumentList.empty();
+    }
+
     /*! \brief Get the count of arguments in this command
      */
     int argumentCount() const noexcept
