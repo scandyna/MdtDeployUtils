@@ -27,6 +27,8 @@
 #include "mdt_commandlineparser_export.h"
 #include <QString>
 #include <QStringList>
+#include <cstddef>
+#include <cassert>
 
 namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
 
@@ -63,6 +65,30 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
     void addWordList(const QStringList & wordList) noexcept
     {
       mArgumentList.emplace_back( CompgenWordList{wordList} );
+    }
+
+    /*! \brief Get the count of arguments in this command
+     */
+    int argumentCount() const noexcept
+    {
+      return static_cast<int>( mArgumentList.size() );
+    }
+
+    /*! \brief Get the argument at \a index
+     *
+     * \note Currently, Boost.Variant is used,
+     *  but std::variant will be used in the future.
+     *  This means that the caller will probably have to rewrite
+     *  some pieces, like the visitors.
+     *
+     * \pre \a index must be in valid range ( 0 <= \a index < argumentCount() ).
+     */
+    const CompgenArgument & argumentAt(int index) const noexcept
+    {
+      assert( index >= 0 );
+      assert( index < argumentCount() );
+
+      return mArgumentList[static_cast<size_t>(index)];
     }
 
     /*! \brief Returns the string representation of this command

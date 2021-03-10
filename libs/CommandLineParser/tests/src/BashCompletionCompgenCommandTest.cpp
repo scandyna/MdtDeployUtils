@@ -34,10 +34,39 @@ TEST_CASE("compgenArgumentToString")
     REQUIRE( compgenArgumentToString(CompgenAction::ListFiles) == QLatin1String("-A file") );
   }
 
+  SECTION("List directories")
+  {
+    REQUIRE( compgenArgumentToString(CompgenAction::ListDirectories) == QLatin1String("-A directory") );
+  }
+
   SECTION("-h --help word list")
   {
     const CompgenWordList wordList{{QLatin1String("-h"),QLatin1String("--help")}};
     REQUIRE( compgenArgumentToString(wordList) == QLatin1String("-W \"-h --help\"") );
+  }
+}
+
+TEST_CASE("attributes")
+{
+  CompgenCommand command;
+
+  SECTION("Default constructed")
+  {
+    REQUIRE( command.argumentCount() == 0 );
+  }
+
+  SECTION("1 action")
+  {
+    command.addAction(CompgenAction::ListFiles);
+    REQUIRE( command.argumentCount() == 1 );
+    REQUIRE( compgenArgumentToString( command.argumentAt(0) ) == QLatin1String("-A file") );
+  }
+
+  SECTION("1 word list")
+  {
+    command.addWordList({QLatin1String("-h"),QLatin1String("--help")});
+    REQUIRE( command.argumentCount() == 1 );
+    REQUIRE( compgenArgumentToString( command.argumentAt(0) ) == QLatin1String("-W \"-h --help\"") );
   }
 }
 

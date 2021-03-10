@@ -27,7 +27,8 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
    */
   enum class CompgenAction
   {
-    ListFiles /*!< compgen -A file */
+    ListFiles,      /*!< compgen -A file */
+    ListDirectories /*!< compgen -A directory */
   };
 
 }}} // namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{

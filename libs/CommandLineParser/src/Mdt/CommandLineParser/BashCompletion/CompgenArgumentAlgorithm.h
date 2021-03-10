@@ -41,6 +41,8 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
     switch(action){
       case CompgenAction::ListFiles:
         return QLatin1String("-A file");
+      case CompgenAction::ListDirectories:
+        return QLatin1String("-A directory");
     }
 
     return QString();
