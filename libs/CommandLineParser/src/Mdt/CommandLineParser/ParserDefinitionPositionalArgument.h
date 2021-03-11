@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -24,6 +24,7 @@
 #include "ArgumentType.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
+#include <QStringList>
 #include <cassert>
 
 namespace Mdt{ namespace CommandLineParser{
@@ -107,12 +108,38 @@ namespace Mdt{ namespace CommandLineParser{
       return mSyntax;
     }
 
+    /*! \brief Set the possible values
+     *
+     * \sa possibleValues()
+     */
+    void setPossibleValues(const QStringList & values) noexcept
+    {
+      mPossibleValues = values;
+    }
+
+    /*! \brief Check if this option has possible values
+     */
+    bool hasPossibleValues() const noexcept
+    {
+      return !mPossibleValues.isEmpty();
+    }
+
+    /*! \brief Get the possible values
+     *
+     * \sa setPossibleValues()
+     */
+    const QStringList & possibleValues() const noexcept
+    {
+      return mPossibleValues;
+    }
+
    private:
 
     ArgumentType mType;
     QString mName;
     QString mDescription;
     QString mSyntax;
+    QStringList mPossibleValues;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

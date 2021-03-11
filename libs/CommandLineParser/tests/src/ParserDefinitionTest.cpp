@@ -265,6 +265,15 @@ TEST_CASE("ParserDefinitionPositionalArgument")
     REQUIRE( argument.name() == QLatin1String("source") );
     REQUIRE( argument.description() == QLatin1String("Source file") );
   }
+
+  SECTION("possible vales")
+  {
+    ParserDefinitionPositionalArgument argument( ArgumentType::Directory, QLatin1String("file-type"), QLatin1String("File type") );
+    REQUIRE( !argument.hasPossibleValues() );
+    argument.setPossibleValues({QLatin1String("executable"),QLatin1String("library"),QLatin1String("config")});
+    REQUIRE( argument.hasPossibleValues() );
+    REQUIRE( argument.possibleValues() == QStringList({QLatin1String("executable"),QLatin1String("library"),QLatin1String("config")}) );
+  }
 }
 
 TEST_CASE("ParserDefinitionCommand_name")
