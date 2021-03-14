@@ -109,6 +109,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME BashCompletionScriptTest
+  TARGET bashCompletionScriptTest
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BashCompletionScriptTest.cpp
+)
+
+mdt_add_test(
   NAME BashCompletionGeneratorTest
   TARGET bashCompletionGeneratorTest
   DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
