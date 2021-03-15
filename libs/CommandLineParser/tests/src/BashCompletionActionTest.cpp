@@ -21,6 +21,7 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "Mdt/CommandLineParser/BashCompletion/Action.h"
+#include "Mdt/CommandLineParser/BashCompletion/ActionList.h"
 #include <QString>
 #include <QLatin1String>
 
@@ -77,6 +78,40 @@ TEST_CASE("isDefined")
   }
 }
 
+TEST_CASE("toCompreplyArrayItemString")
+{
+  Action action;
+  QString expectedString;
+
+  SECTION("Default constructed")
+  {
+    REQUIRE( action.toCompreplyArrayItemString().isEmpty() );
+  }
+
+  SECTION("List files compgen action")
+  {
+    CompgenCommand command;
+    command.addAction(CompgenAction::ListFiles);
+    action.setCompgenCommand(command);
+    expectedString = QLatin1String("$(compgen -A file -- \"$cur\")");
+    REQUIRE( action.toCompreplyArrayItemString() == expectedString );
+  }
+
+  SECTION("Custom action using curl")
+  {
+    action.setCustomAction( QLatin1String("curl www.somesite.org") );
+    expectedString = QLatin1String("$(curl www.somesite.org -- \"$cur\")");
+    REQUIRE( action.toCompreplyArrayItemString() == expectedString );
+  }
+
+  SECTION("Custom action to list packages")
+  {
+    action.setCustomAction( QLatin1String("\"$executable\" completion-list-packages") );
+    expectedString = QLatin1String("$(\"$executable\" completion-list-packages -- \"$cur\")");
+    REQUIRE( action.toCompreplyArrayItemString() == expectedString );
+  }
+}
+
 TEST_CASE("toCompreplyString")
 {
   Action action;
@@ -108,5 +143,67 @@ TEST_CASE("toCompreplyString")
     action.setCustomAction( QLatin1String("\"$executable\" completion-list-packages") );
     expectedString = QLatin1String("COMPREPLY=($(\"$executable\" completion-list-packages -- \"$cur\"))");
     REQUIRE( action.toCompreplyString() == expectedString );
+  }
+}
+
+TEST_CASE("ActionList_attributes")
+{
+  ActionList list;
+
+  SECTION("Default constructed")
+  {
+    REQUIRE( list.isEmpty() );
+    REQUIRE( list.actionCount() == 0 );
+  }
+
+  SECTION("Add a action")
+  {
+    Action action;
+    CompgenCommand command;
+    command.addAction(CompgenAction::ListFiles);
+    action.setCompgenCommand(command);
+
+    list.addAction(action);
+    REQUIRE( !list.isEmpty() );
+    REQUIRE( list.actionCount() == 1 );
+    REQUIRE( list.actionAt(0).isDefined() );
+  }
+}
+
+TEST_CASE("ActionList_toCompreplyString")
+{
+  Action action;
+  ActionList list;
+  QString expectedString;
+
+  SECTION("Default constructed")
+  {
+    REQUIRE( list.toCompreplyString().isEmpty() );
+  }
+
+  SECTION("List files compgen action")
+  {
+    CompgenCommand command;
+    command.addAction(CompgenAction::ListFiles);
+    action.setCompgenCommand(command);
+    list.addAction(action);
+    expectedString = QLatin1String("COMPREPLY=($(compgen -A file -- \"$cur\"))");
+    REQUIRE( list.toCompreplyString() == expectedString );
+  }
+
+  SECTION("2 compgen actions")
+  {
+    CompgenCommand command1;
+    command1.addAction(CompgenAction::ListFiles);
+    action.setCompgenCommand(command1);
+    list.addAction(action);
+
+    CompgenCommand command2;
+    command2.addAction(CompgenAction::ListDirectories);
+    action.setCompgenCommand(command2);
+    list.addAction(action);
+
+    expectedString = QLatin1String("COMPREPLY=($(compgen -A file -- \"$cur\") $(compgen -A directory -- \"$cur\"))");
+    REQUIRE( list.toCompreplyString() == expectedString );
   }
 }

@@ -18,21 +18,25 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "Action.h"
+#include "ActionList.h"
+#include "../Algorithm.h"
 #include <QLatin1String>
 #include <QLatin1Char>
 #include <QStringBuilder>
 
 namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
 
-QString Action::toCompreplyString() const noexcept
+QString ActionList::toCompreplyString() const noexcept
 {
-  const QString arrayItemString = toCompreplyArrayItemString();
-  if( arrayItemString.isEmpty() ){
+  if( isEmpty() ){
     return QString();
   }
 
-  return QLatin1String("COMPREPLY=(") % arrayItemString % QLatin1Char(')');
+  const auto extract = [](const Action & action){
+    return action.toCompreplyArrayItemString();
+  };
+
+  return QLatin1String("COMPREPLY=(") % joinToQString(mActions, ' ', extract) % QLatin1Char(')');
 }
 
 }}} // namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{

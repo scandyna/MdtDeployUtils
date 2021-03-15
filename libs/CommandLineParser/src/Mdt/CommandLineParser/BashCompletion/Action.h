@@ -31,6 +31,17 @@
 namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
 
   /*! \brief Action to perform in a Bash completion script
+   *
+   * \todo Should review custom actions.
+   * 1) should provide a way the application can give a list of words,
+   *    and let compgen do the completion:
+   * \code
+   * COMPREPLY=($(compgen -W "$("$executable" completion-list-packages)" -- "$cur"))
+   * \endcode
+   * 2) the user can handle the completion itself, which seems not so interesting:
+   * \code
+   * COMPREPLY=($("$executable" completion-list-packages -- "$cur"))
+   * \endcode
    */
   class MDT_COMMANDLINEPARSER_EXPORT Action
   {
@@ -97,12 +108,26 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
       return isActionVariantCustomAction(mAction);
     }
 
-    /*! \brief Get the COMPREPLY string for this action
+    /*! \brief Get the COMPREPLY item string for this action
+     *
+     * Returns the string of the form:
+     * \code
+     * $(compgen -A file -- \"$cur\")
+     * \endcode
      */
-    QString toCompreplyString() const noexcept
+    QString toCompreplyArrayItemString() const noexcept
     {
-      return actionVariantToCompreplyString(mAction);
+      return actionVariantToCompreplyArrayItemString(mAction);
     }
+
+    /*! \brief Get the COMPREPLY string for this action
+     *
+     * Returns the string of the form:
+     * \code
+     * COMPREPLY=($(compgen -A file -- \"$cur\"))
+     * \endcode
+     */
+    QString toCompreplyString() const noexcept;
 
    private:
 

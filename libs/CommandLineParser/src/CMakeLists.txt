@@ -55,6 +55,7 @@ add_library(Mdt_CommandLineParser
   Mdt/CommandLineParser/BashCompletion/ActionVariant.cpp
   Mdt/CommandLineParser/BashCompletion/ActionVariantAlgorithm.cpp
   Mdt/CommandLineParser/BashCompletion/Action.cpp
+  Mdt/CommandLineParser/BashCompletion/ActionList.cpp
   Mdt/CommandLineParser/BashCompletion/ScriptCaseClause.cpp
   Mdt/CommandLineParser/BashCompletion/ScriptCaseStatement.cpp
   Mdt/CommandLineParser/BashCompletion/ScriptCompletionsFunctionVariable.cpp

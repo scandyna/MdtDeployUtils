@@ -109,7 +109,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
   /*! \internal
    */
   MDT_COMMANDLINEPARSER_EXPORT
-  QString actionVariantToCompreplyString(const ActionVariant & action) noexcept;
+  QString actionVariantToCompreplyArrayItemString(const ActionVariant & action) noexcept;
 
 }}} // namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
 

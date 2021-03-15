@@ -21,12 +21,13 @@
 #include "ActionVariantAlgorithm.h"
 #include <QStringBuilder>
 #include <QLatin1String>
+#include <QLatin1Char>
 
 namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
 
-/*! \internal Visitor for actionVariantToCompreplyString()
+/*! \internal Visitor for actionVariantToCompreplyArrayItemString()
  */
-class MDT_COMMANDLINEPARSER_EXPORT ActionVariantToCompreplyString : public boost::static_visitor<QString>
+class MDT_COMMANDLINEPARSER_EXPORT ActionVariantToCompreplyArrayItemString : public boost::static_visitor<QString>
 {
   public:
 
@@ -39,18 +40,18 @@ class MDT_COMMANDLINEPARSER_EXPORT ActionVariantToCompreplyString : public boost
   {
     const QString compgenWord = QLatin1String("$cur");
 
-    return QLatin1String("COMPREPLY=($(") % command.toCompgenCommandString(compgenWord) % QLatin1String("))");
+    return QLatin1String("$(") % command.toCompgenCommandString(compgenWord) % QLatin1Char(')');
   }
 
   QString operator()(const CustomAction & action) const noexcept
   {
-    return QLatin1String("COMPREPLY=($(") % action.action % QLatin1String(" -- \"$cur\"))");
+    return QLatin1String("$(") % action.action % QLatin1String(" -- \"$cur\")");
   }
 };
 
-QString actionVariantToCompreplyString(const ActionVariant & action) noexcept
+QString actionVariantToCompreplyArrayItemString(const ActionVariant & action) noexcept
 {
-  return boost::apply_visitor(ActionVariantToCompreplyString(), action);
+  return boost::apply_visitor(ActionVariantToCompreplyArrayItemString(), action);
 }
 
 }}} // namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
