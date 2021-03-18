@@ -26,6 +26,7 @@
 #include "../ParserDefinitionOption.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
+#include <vector>
 #include <cstddef>
 #include <cassert>
 
@@ -112,14 +113,39 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       mArgumentList.emplace_back( Option{name,true} );
     }
 
+    /*! \brief Add a list of short options to the end of this command line
+     *
+     * \pre each name in \a options must be a valid short name
+     * \sa isValidShortOptionNameList()
+     */
+    void appendShortOptionList(const std::vector<char> & options) noexcept
+    {
+      assert( isValidShortOptionNameList(options) );
+
+      mArgumentList.emplace_back( ShortOptionList{options,false} );
+    }
+
+    /*! \brief Add a list of short options, with the last one expecting a value, to the end of this command line
+     *
+     * \pre each name in \a options must be a valid short name
+     * \sa isValidShortOptionNameList()
+     */
+    void appendShortOptionListWithLastExpectingValue(const std::vector<char> & options) noexcept
+    {
+      assert( isValidShortOptionNameList(options) );
+
+      mArgumentList.emplace_back( ShortOptionList{options,true} );
+    }
+
     /*! \brief Add a option value to the end of this command line
      *
-     * \pre the last insert argument must be a option
+     * \pre the last insert argument must be a option expecting a value,
+     *  or a short option list with the last one expecting a value
      */
     void appendOptionValue(const QString & value)
     {
       assert( !isEmpty() );
-      assert( isOption( mArgumentList.back() ) );
+      assert( isOptionExpectingValue( mArgumentList.back() ) );
 
       mArgumentList.emplace_back( OptionValue{value} );
     }
@@ -175,25 +201,18 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       return static_cast<int>( mArgumentList.size() );
     }
 
-//     /*! \brief Get the index of the sub-command name in this command line
-//      *
-//      * Returns the index of of the sub-command name if exists,
-//      * otherwise -1.
-//      */
-//     int subCommandNameIndex() const noexcept
-//     {
-//       return mSubCommandNameIndex;
-//     }
+    /*! \brief Get the executable name
+     *
+     * \pre the executable name must have been set
+     * \sa setExecutableName()
+     */
+    QString executableName() const noexcept
+    {
+      assert( !isEmpty() );
+      assert( isExecutableName( argumentAt(0) ) );
 
-//     /*! \brief Get the value of the argument at \a pos
-//      *
-//      * \pre \a pos must be at valid range ( 0 <= \a pos < argumentCount() ).
-//      */
-//     QString valueAt(int pos) const
-//     {
-//       assert( pos >= 0 );
-//       assert( pos < argumentCount() );
-//     }
+      return getExecutableName( argumentAt(0) );
+    }
 
     /*! \brief Get the argument at \a index
      *
@@ -250,9 +269,24 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       return ParserDefinitionOption::isValidName(name);
     }
 
+    /*! \brief Check if each name in \a options is a valid short name
+     *
+     * \sa Mdt::CommandLineParser::ParserDefinitionOption::isValidShortName()
+     */
+    static
+    bool isValidShortOptionNameList(const std::vector<char> & options) noexcept
+    {
+      for( char c : options ){
+        if( !ParserDefinitionOption::isValidShortName(c) ){
+          return false;
+        }
+      }
+
+      return true;
+    }
+
    private:
 
-//     int mSubCommandNameIndex;
     ArgumentList mArgumentList;
   };
 

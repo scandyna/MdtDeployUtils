@@ -26,10 +26,66 @@
 #include <QString>
 #include <boost/variant.hpp>
 #include <algorithm>
+#include <vector>
 #include <iterator>
 #include <cassert>
 
 namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
+
+  /*! \internal Visitor to check if a argument is the executable name
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsExecutableName : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const Executable &) const noexcept
+    {
+      return true;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \brief Check if \a argument is the executable name
+   */
+  inline
+  bool isExecutableName(const Argument & argument) noexcept
+  {
+    return boost::apply_visitor(IsExecutableName(), argument);
+  }
+
+  /*! \internal Visitor for executableName
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT GetExecutableName : public boost::static_visitor<QString>
+  {
+   public:
+
+    QString operator()(const Executable & argument) const
+    {
+      return argument.name;
+    }
+
+    template<typename T>
+    QString operator()(const T &) const noexcept
+    {
+      return QString();
+    }
+  };
+
+  /*! \brief Get the executable name for given \a argument
+   *
+   * \pre \a argument must be a executable name
+   * \sa isExecutableName()
+   */
+  inline
+  QString getExecutableName(const Argument & argument) noexcept
+  {
+    return boost::apply_visitor(GetExecutableName(), argument);
+  }
 
   /*! \internal Visitor to check if a argument is the sub-command name
    */
@@ -175,9 +231,35 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
     return boost::apply_visitor(IsOptionArgument(), argument);
   }
 
+  /*! \internal Visitor for isShortOptionList()
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsShortOptionList : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const ShortOptionList &) const noexcept
+    {
+      return true;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \brief Check if \a argument is a list of short options
+   */
+  inline
+  bool isShortOptionList(const Argument & argument) noexcept
+  {
+    return boost::apply_visitor(IsShortOptionList(), argument);
+  }
+
   /*! \internal Visitor to get the option name of a argument
    */
-  class MDT_COMMANDLINEPARSER_EXPORT OptionName : public boost::static_visitor<QString>
+  class MDT_COMMANDLINEPARSER_EXPORT GetOptionName : public boost::static_visitor<QString>
   {
    public:
 
@@ -205,9 +287,35 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
    * otherwise a empty string
    */
   inline
-  QString optionName(const Argument & argument)
+  QString getOptionName(const Argument & argument)
   {
-    return boost::apply_visitor(OptionName(), argument);
+    return boost::apply_visitor(GetOptionName(), argument);
+  }
+
+  /*! \internal Visitor for getShortOptionListNames()
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT GetShortOptionListNames : public boost::static_visitor< std::vector<char> >
+  {
+   public:
+
+    std::vector<char> operator()(const ShortOptionList & option) const noexcept
+    {
+      return option.names;
+    }
+
+    template<typename T>
+    std::vector<char> operator()(const T &) const noexcept
+    {
+      return std::vector<char>{};
+    }
+  };
+
+  /*! \brief Get the short option list names for \a argument
+   */
+  inline
+  std::vector<char> getShortOptionListNames(const Argument & argument) noexcept
+  {
+    return boost::apply_visitor(GetShortOptionListNames(), argument);
   }
 
   /*! \internal Visitor to check if a argument is a option
@@ -268,6 +376,11 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       return option.expectsValue;
     }
 
+    bool operator()(const ShortOptionList & option) const noexcept
+    {
+      return option.lastOptionExpectsValue;
+    }
+
     template<typename T>
     bool operator()(const T &) const noexcept
     {
@@ -281,6 +394,145 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
   bool isOptionExpectingValue(const Argument & argument) noexcept
   {
     return boost::apply_visitor(IsOptionExpectingValueArgument(), argument);
+  }
+
+  /*! \internal Visitor for isOptionValue()
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsOptionValue : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const OptionValue &) const noexcept
+    {
+      return true;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \brief Check if \a argument is a option value
+   */
+  inline
+  bool isOptionValue(const Argument & argument) noexcept
+  {
+    return boost::apply_visitor(IsOptionValue(), argument);
+  }
+
+  /*! \internal Visitor for isOptionWithValue()
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsOptionWithValue : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const OptionWithValue &) const noexcept
+    {
+      return true;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \brief Check if \a argument is a option with a value
+   */
+  inline
+  bool isOptionWithValue(const Argument & argument) noexcept
+  {
+    return boost::apply_visitor(IsOptionWithValue(), argument);
+  }
+
+  /*! \internal Visitor for getOptionValue()
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT GetOptionValue : public boost::static_visitor<QString>
+  {
+   public:
+
+    QString operator()(const OptionValue & option) const noexcept
+    {
+      return option.value;
+    }
+
+    QString operator()(const OptionWithValue & option) const noexcept
+    {
+      return option.value;
+    }
+
+    template<typename T>
+    QString operator()(const T &) const noexcept
+    {
+      return QString();
+    }
+  };
+
+  /*! \brief Get the option value for \a argument
+   *
+   * Returns the value of the option if \a argument it is one
+   * (i.e. a option value or a option with value),
+   * otherwise a empty string
+   */
+  inline
+  QString getOptionValue(const Argument & argument)
+  {
+    return boost::apply_visitor(GetOptionValue(), argument);
+  }
+
+  /*! \internal Visitor for isSingleDash()
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsSingleDash : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const SingleDash &) const noexcept
+    {
+      return true;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \brief Check if \a argument is a single dash
+   */
+  inline
+  bool isSingleDash(const Argument & argument) noexcept
+  {
+    return boost::apply_visitor(IsSingleDash(), argument);
+  }
+
+  /*! \internal Visitor for isDoubleDash()
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsDoubleDash : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const DoubleDash &) const noexcept
+    {
+      return true;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \brief Check if \a argument is a double dash
+   */
+  inline
+  bool isDoubleDash(const Argument & argument) noexcept
+  {
+    return boost::apply_visitor(IsDoubleDash(), argument);
   }
 
   /*! \internal Visitor to check if a argument is a positional argument

@@ -50,6 +50,14 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
     bool expectsValue = false;
   };
 
+  /*! \brief A list of short options in the command line
+   */
+  struct MDT_COMMANDLINEPARSER_EXPORT ShortOptionList
+  {
+    std::vector<char> names;
+    bool lastOptionExpectsValue = false;
+  };
+
   /*! \brief A option value in the command line
    */
   struct MDT_COMMANDLINEPARSER_EXPORT OptionValue
@@ -88,7 +96,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
    */
   using Argument = boost::variant<
     Executable, PositionalArgument, SubCommandName,
-    Option, OptionValue, OptionWithValue,
+    Option, ShortOptionList, OptionValue, OptionWithValue,
     SingleDash, DoubleDash>;
 
   /*! \brief List of arguments in the command line

@@ -177,7 +177,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       assert( commandLineIndex >= 0 );
       assert( commandLineIndex < commandLineArgumentCount() );
 
-      return optionName( argumentAtCommandLineIndex(commandLineIndex) );
+      return getOptionName( argumentAtCommandLineIndex(commandLineIndex) );
     }
 
     /*! \brief Check if \a commandLineIndex refers to a option that expects a value
