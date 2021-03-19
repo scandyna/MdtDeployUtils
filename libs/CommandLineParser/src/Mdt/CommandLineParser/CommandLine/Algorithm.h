@@ -303,6 +303,11 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       return option.names;
     }
 
+    std::vector<char> operator()(const ShortOptionListWithLastHavingValue & option) const noexcept
+    {
+      return option.names;
+    }
+
     template<typename T>
     std::vector<char> operator()(const T &) const noexcept
     {
@@ -316,6 +321,32 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
   std::vector<char> getShortOptionListNames(const Argument & argument) noexcept
   {
     return boost::apply_visitor(GetShortOptionListNames(), argument);
+  }
+
+  /*! \internal Visitor for isShortOptionListWithLastHavingValue()
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsShortOptionListWithLastHavingValue : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const ShortOptionListWithLastHavingValue &) const noexcept
+    {
+      return true;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \brief Check if \a argument is a short option list with the last having a value
+   */
+  inline
+  bool isShortOptionListWithLastHavingValue(const Argument & argument) noexcept
+  {
+    return boost::apply_visitor(IsShortOptionListWithLastHavingValue(), argument);
   }
 
   /*! \internal Visitor to check if a argument is a option
@@ -460,6 +491,11 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
     }
 
     QString operator()(const OptionWithValue & option) const noexcept
+    {
+      return option.value;
+    }
+
+    QString operator()(const ShortOptionListWithLastHavingValue & option) const noexcept
     {
       return option.value;
     }

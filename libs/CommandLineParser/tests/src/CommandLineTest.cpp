@@ -194,6 +194,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
   Argument shortOptionList = ShortOptionList{{'f','h'}};
   Argument optionValue = OptionValue{QLatin1String("keep")};
   Argument optionWithValue = OptionWithValue{QLatin1String("dir"),QLatin1String("/tmp")};
+  Argument shortOptionListWithLastHavingValue = ShortOptionListWithLastHavingValue{{'f','o'},QLatin1String("skip")};
   Argument singleDash = SingleDash{};
   Argument doubleDash = DoubleDash{};
 
@@ -206,6 +207,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( !isExecutableName(shortOptionList) );
     REQUIRE( !isExecutableName(optionValue) );
     REQUIRE( !isExecutableName(optionWithValue) );
+    REQUIRE( !isExecutableName(shortOptionListWithLastHavingValue) );
     REQUIRE( !isExecutableName(singleDash) );
     REQUIRE( !isExecutableName(doubleDash) );
   }
@@ -219,6 +221,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( !isSingleDash(shortOptionList) );
     REQUIRE( !isSingleDash(optionValue) );
     REQUIRE( !isSingleDash(optionWithValue) );
+    REQUIRE( !isSingleDash(shortOptionListWithLastHavingValue) );
     REQUIRE( isSingleDash(singleDash) );
     REQUIRE( !isSingleDash(doubleDash) );
   }
@@ -232,6 +235,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( !isDoubleDash(shortOptionList) );
     REQUIRE( !isDoubleDash(optionValue) );
     REQUIRE( !isDoubleDash(optionWithValue) );
+    REQUIRE( !isDoubleDash(shortOptionListWithLastHavingValue) );
     REQUIRE( !isDoubleDash(singleDash) );
     REQUIRE( isDoubleDash(doubleDash) );
   }
@@ -245,6 +249,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( isShortOptionList(shortOptionList) );
     REQUIRE( !isShortOptionList(optionValue) );
     REQUIRE( !isShortOptionList(optionWithValue) );
+    REQUIRE( !isShortOptionList(shortOptionListWithLastHavingValue) );
     REQUIRE( !isShortOptionList(singleDash) );
     REQUIRE( !isShortOptionList(doubleDash) );
   }
@@ -258,6 +263,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( !isOptionValue(shortOptionList) );
     REQUIRE( isOptionValue(optionValue) );
     REQUIRE( !isOptionValue(optionWithValue) );
+    REQUIRE( !isOptionValue(shortOptionListWithLastHavingValue) );
     REQUIRE( !isOptionValue(singleDash) );
     REQUIRE( !isOptionValue(doubleDash) );
   }
@@ -271,8 +277,23 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( !isOptionWithValue(shortOptionList) );
     REQUIRE( !isOptionWithValue(optionValue) );
     REQUIRE( isOptionWithValue(optionWithValue) );
+    REQUIRE( !isOptionWithValue(shortOptionListWithLastHavingValue) );
     REQUIRE( !isOptionWithValue(singleDash) );
     REQUIRE( !isOptionWithValue(doubleDash) );
+  }
+
+  SECTION("isShortOptionListWithLastHavingValue")
+  {
+    REQUIRE( !isShortOptionListWithLastHavingValue(executableName) );
+    REQUIRE( !isShortOptionListWithLastHavingValue(subCommandName) );
+    REQUIRE( !isShortOptionListWithLastHavingValue(positionalArgument) );
+    REQUIRE( !isShortOptionListWithLastHavingValue(option) );
+    REQUIRE( !isShortOptionListWithLastHavingValue(shortOptionList) );
+    REQUIRE( !isShortOptionListWithLastHavingValue(optionValue) );
+    REQUIRE( !isShortOptionListWithLastHavingValue(optionWithValue) );
+    REQUIRE( isShortOptionListWithLastHavingValue(shortOptionListWithLastHavingValue) );
+    REQUIRE( !isShortOptionListWithLastHavingValue(singleDash) );
+    REQUIRE( !isShortOptionListWithLastHavingValue(doubleDash) );
   }
 
   SECTION("getOptionValue")
@@ -284,6 +305,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( getOptionValue(shortOptionList).isEmpty() );
     REQUIRE( getOptionValue(optionValue) == QLatin1String("keep") );
     REQUIRE( getOptionValue(optionWithValue) == QLatin1String("/tmp") );
+    REQUIRE( getOptionValue(shortOptionListWithLastHavingValue) == QLatin1String("skip") );
     REQUIRE( getOptionValue(singleDash).isEmpty() );
     REQUIRE( getOptionValue(doubleDash).isEmpty() );
   }
@@ -297,6 +319,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( getShortOptionListNames(shortOptionList) == std::vector<char>{'f','h'} );
     REQUIRE( getShortOptionListNames(optionValue).empty() );
     REQUIRE( getShortOptionListNames(optionWithValue).empty() );
+    REQUIRE( getShortOptionListNames(shortOptionListWithLastHavingValue) == std::vector<char>{'f','o'} );
     REQUIRE( getShortOptionListNames(singleDash).empty() );
     REQUIRE( getShortOptionListNames(doubleDash).empty() );
   }
@@ -381,6 +404,17 @@ TEST_CASE("CommandLine")
     commandLine.appendOptionValue( QLatin1String("keep") );
 
     REQUIRE( commandLine.argumentCount() == 3 );
+  }
+
+  SECTION("myapp -fo=keep")
+  {
+    commandLine.setExecutableName( QLatin1String("myapp") );
+    commandLine.appendShortOptionListWithLastHavingValue({'f','o'},QLatin1String("keep"));
+
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( isShortOptionListWithLastHavingValue( commandLine.argumentAt(1) ) );
+    REQUIRE( getShortOptionListNames( commandLine.argumentAt(1) ) == std::vector<char>{'f','o'} );
+    REQUIRE( getOptionValue( commandLine.argumentAt(1) ) == QLatin1String("keep") );
   }
 }
 

@@ -73,6 +73,14 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
     QString value;
   };
 
+  /*! \brief A list of short options with the last one having a value
+   */
+  struct MDT_COMMANDLINEPARSER_EXPORT ShortOptionListWithLastHavingValue
+  {
+    std::vector<char> names;
+    QString value;
+  };
+
   /*! \brief A single dash in the command line
    */
   struct MDT_COMMANDLINEPARSER_EXPORT SingleDash
@@ -97,6 +105,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
   using Argument = boost::variant<
     Executable, PositionalArgument, SubCommandName,
     Option, ShortOptionList, OptionValue, OptionWithValue,
+    ShortOptionListWithLastHavingValue,
     SingleDash, DoubleDash>;
 
   /*! \brief List of arguments in the command line

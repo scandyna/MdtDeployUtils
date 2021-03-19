@@ -115,11 +115,13 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
 
     /*! \brief Add a list of short options to the end of this command line
      *
+     * \pre \a options must have more than 1 option
      * \pre each name in \a options must be a valid short name
      * \sa isValidShortOptionNameList()
      */
     void appendShortOptionList(const std::vector<char> & options) noexcept
     {
+      assert( options.size() > 1 );
       assert( isValidShortOptionNameList(options) );
 
       mArgumentList.emplace_back( ShortOptionList{options,false} );
@@ -127,11 +129,13 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
 
     /*! \brief Add a list of short options, with the last one expecting a value, to the end of this command line
      *
+     * \pre \a options must have more than 1 option
      * \pre each name in \a options must be a valid short name
      * \sa isValidShortOptionNameList()
      */
     void appendShortOptionListWithLastExpectingValue(const std::vector<char> & options) noexcept
     {
+      assert( options.size() > 1 );
       assert( isValidShortOptionNameList(options) );
 
       mArgumentList.emplace_back( ShortOptionList{options,true} );
@@ -160,6 +164,20 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       assert( isValidOptionName(name) );
 
       mArgumentList.emplace_back( OptionWithValue{name,value} );
+    }
+
+    /*! \brief Add a list of short options, with the last having a value, to this end of this command line
+     *
+     * \pre \a options must have more than 1 option
+     * \pre each name in \a options must be a valid short name
+     * \sa isValidShortOptionNameList()
+     */
+    void appendShortOptionListWithLastHavingValue(const std::vector<char> & options, const QString & value) noexcept
+    {
+      assert( options.size() > 1 );
+      assert( isValidShortOptionNameList(options) );
+
+      mArgumentList.emplace_back( ShortOptionListWithLastHavingValue{options,value} );
     }
 
     /*! \brief Add a single dash to the end of this command line
