@@ -23,6 +23,7 @@
 
 #include "ParserDefinition.h"
 #include "ParserResult.h"
+#include "CommandLine/CommandLine.h"
 #include "mdt_commandlineparser_export.h"
 #include <QStringList>
 #include <QCoreApplication>
@@ -43,11 +44,13 @@ namespace Mdt{ namespace CommandLineParser{
    *   ...
    *
    *   Parser parser;
-   *   ParserResult parserResult = parser.parse( parserDefinition, app.arguments() );
-   *   if( parserResult.hasError() ){
+   *   if( !parser.parse( parserDefinition, app.arguments() ) ){
    *     // Error handling
    *     return 1;
    *   }
+   *
+   *   const ParserResult parserResult = parser.toParserResult();
+   *
    * }
    * \endcode
    *
@@ -62,8 +65,6 @@ namespace Mdt{ namespace CommandLineParser{
    public:
 
     /*! \brief Parse \a arguments regarding \a parserDefinition
-     *
-     * This function uses QCommandLineParser internally.
      *
      * As QCommandLineParser, it is checked if a unknown option exists in \a arguments,
      * but no check is made to enforce the count of positional arguments.
@@ -84,11 +85,8 @@ namespace Mdt{ namespace CommandLineParser{
      * myapp file1.txt /tmp other-positional-argument
      * \endcode
      *
-     * If \a parserDefinition contains sub-commands,
-     * \a arguments is split into 2 set of arguments,
-     * then parsed separately with QCommandLineParser.
-     *
-     * For example:
+     * Sub-commands are also supported,
+     * for example:
      * \code
      * myapp [options] command [command-options] command-argument-1 command-argument-2
      * \endcode
@@ -104,7 +102,41 @@ namespace Mdt{ namespace CommandLineParser{
      * myapp arg1 copy file1.txt /tmp arg2
      * \endcode
      */
-    ParserResult parse(const ParserDefinition & parserDefinition, const QStringList & arguments);
+    bool parse(const ParserDefinition & parserDefinition, const QStringList & arguments);
+
+    /*! \brief Check if this parser has error
+     */
+    bool hasError() const noexcept
+    {
+      return !mErrorText.isEmpty();
+    }
+
+    /*! \brief Get the error text of this parser
+     *
+     * This should only be called when parse() returns false.
+     */
+    const QString & errorText() const noexcept
+    {
+      return mErrorText;
+    }
+
+    /*! \brief Get the command line of this parser
+     *
+     * \sa toParserResult()
+     */
+    const CommandLine::CommandLine & commandLine() const noexcept
+    {
+      return mCommandLine;
+    }
+
+    /*! \brief Get a parser result out from this parser
+     */
+    ParserResult toParserResult() const noexcept;
+
+   private:
+
+    CommandLine::CommandLine mCommandLine;
+    QString mErrorText;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

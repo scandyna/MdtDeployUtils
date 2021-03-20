@@ -44,7 +44,7 @@
 #include <cassert>
 #include <cstddef>
 
-#include <QDebug>
+// #include <QDebug>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -526,6 +526,7 @@ namespace Mdt{ namespace CommandLineParser{
     /*! \internal
      *
      * \todo should not search about sub-command in the loop, but once (benchmark this)
+     * \todo Refactor, code is ugly (at least copy/paste sections)
      */
     static
     bool parse(const QStringList & arguments, const ParserDefinition & parserDefinition, CommandLine::CommandLine & commandLine, ParseError & error) noexcept
@@ -560,6 +561,12 @@ namespace Mdt{ namespace CommandLineParser{
             commandLine.appendSubCommandName( command->name() );
             ++first;
             if(first == last){
+              return true;
+            }
+            if( *first == QLatin1String("--") ){
+              commandLine.appendDoubleDash();
+              ++first;
+              parseAsPositionalArgument(first, last, commandLine);
               return true;
             }
           }

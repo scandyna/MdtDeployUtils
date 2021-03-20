@@ -21,7 +21,9 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "Mdt/CommandLineParser/Parser.h"
+
 #include "Mdt/CommandLineParser/Impl/Parser.h"
+
 #include "Mdt/CommandLineParser/ParserDefinition.h"
 #include "Mdt/CommandLineParser/ParserResult.h"
 #include <QLatin1String>
@@ -62,11 +64,10 @@ class SimpleCopyAppCommandLineParser
   bool parseWithoutPostChecks(const QStringList & arguments)
   {
     Parser parser;
-    mResult = parser.parse(mDefinition, arguments);
-
-    if( mResult.hasError() ){
+    if( !parser.parse(mDefinition, arguments) ){
       return false;
     }
+    mResult = parser.toParserResult();
 
     return true;
   }
@@ -78,7 +79,7 @@ class SimpleCopyAppCommandLineParser
     }
 
     if( !mResult.hasOptions() && !mResult.hasPositionalArguments() ){
-      mResult.setErrorText( QLatin1String("Expected at least arguments or a option") );
+//       mResult.setErrorText( QLatin1String("Expected at least arguments or a option") );
       return false;
     }
 
@@ -129,11 +130,16 @@ class AppWithSubCommandCommandLineParser
   bool parseWithoutPostChecks(const QStringList & arguments)
   {
     Parser parser;
-    mResult = parser.parse(mDefinition, arguments);
-
-    if( mResult.hasError() ){
+    if( !parser.parse(mDefinition, arguments) ){
       return false;
     }
+    mResult = parser.toParserResult();
+
+//     mResult = parser.parse(mDefinition, arguments);
+
+//     if( mResult.hasError() ){
+//       return false;
+//     }
 
     return true;
   }
@@ -144,17 +150,17 @@ class AppWithSubCommandCommandLineParser
       return false;
     }
 
-    if( mResult.hasError() ){
-      return false;
-    }
+//     if( mResult.hasError() ){
+//       return false;
+//     }
     if( mResult.hasSubCommand() ){
       if( !mResult.subCommand().hasOptions() && !mResult.subCommand().hasPositionalArguments() ){
-        mResult.setErrorText( QLatin1String("Expected at least arguments or a option") );
+//         mResult.setErrorText( QLatin1String("Expected at least arguments or a option") );
         return false;
       }
     }else{
       if( !mResult.hasOptions() && !mResult.hasPositionalArguments() ){
-        mResult.setErrorText( QLatin1String("Expected at least arguments or a option") );
+//         mResult.setErrorText( QLatin1String("Expected at least arguments or a option") );
         return false;
       }
     }
@@ -658,7 +664,7 @@ TEST_CASE("fillResultCommandFromQtParser")
     arguments << QLatin1String("--force") << QLatin1String("file.txt") << QLatin1String("/tmp");
     REQUIRE( qtParser.parse(arguments) );
     fillResultCommandFromQtParser(resultCommand, qtParser, defCommand);
-    REQUIRE( resultCommand.isSet( QLatin1String("force") ) );
+    REQUIRE( resultCommand.isOptionLongNameSet( QLatin1String("force") ) );
     REQUIRE( resultCommand.positionalArgumentCount() == 2 );
     REQUIRE( resultCommand.positionalArgumentAt(0) == QLatin1String("file.txt") );
     REQUIRE( resultCommand.positionalArgumentAt(1) == QLatin1String("/tmp") );
@@ -843,16 +849,22 @@ TEST_CASE("Parser_parse")
 
     SECTION("myapp")
     {
-      result = parser.parse(parserDefinition, arguments);
-      REQUIRE( !result.hasError() );
+      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( !parser.hasError() );
+      result = parser.toParserResult();
+//       result = parser.parse(parserDefinition, arguments);
+//       REQUIRE( !result.hasError() );
       REQUIRE( result.positionalArgumentCount() == 0 );
     }
 
     SECTION("myapp file1.txt")
     {
       arguments << QLatin1String("file1.txt");
-      result = parser.parse(parserDefinition, arguments);
-      REQUIRE( !result.hasError() );
+      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( !parser.hasError() );
+      result = parser.toParserResult();
+//       result = parser.parse(parserDefinition, arguments);
+//       REQUIRE( !result.hasError() );
       REQUIRE( result.positionalArgumentCount() == 1 );
       REQUIRE( result.positionalArgumentAt(0) == QLatin1String("file1.txt") );
     }
@@ -860,8 +872,11 @@ TEST_CASE("Parser_parse")
     SECTION("myapp file1.txt /tmp other-positional-argument")
     {
       arguments << QLatin1String("file1.txt") << QLatin1String("/tmp") << QLatin1String("other-positional-argument");
-      result = parser.parse(parserDefinition, arguments);
-      REQUIRE( !result.hasError() );
+      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( !parser.hasError() );
+      result = parser.toParserResult();
+//       result = parser.parse(parserDefinition, arguments);
+//       REQUIRE( !result.hasError() );
       REQUIRE( result.positionalArgumentCount() == 3 );
       REQUIRE( result.positionalArgumentAt(0) == QLatin1String("file1.txt") );
       REQUIRE( result.positionalArgumentAt(1) == QLatin1String("/tmp") );
@@ -878,8 +893,11 @@ TEST_CASE("Parser_parse")
       SECTION("myapp --destination /tmp file1.txt")
       {
         arguments << QLatin1String("--destination") << QLatin1String("/tmp") << QLatin1String("file1.txt");
-        result = parser.parse(parserDefinition, arguments);
-        REQUIRE( !result.hasError() );
+        REQUIRE( parser.parse(parserDefinition, arguments) );
+        REQUIRE( !parser.hasError() );
+        result = parser.toParserResult();
+//         result = parser.parse(parserDefinition, arguments);
+//         REQUIRE( !result.hasError() );
         REQUIRE( result.getValues(destinationOption) == QStringList{QLatin1String("/tmp")} );
         REQUIRE( result.positionalArgumentCount() == 1 );
         REQUIRE( result.positionalArgumentAt(0) == QLatin1String("file1.txt") );
@@ -888,8 +906,11 @@ TEST_CASE("Parser_parse")
       SECTION("myapp file1.txt")
       {
         arguments << QLatin1String("file1.txt");
-        result = parser.parse(parserDefinition, arguments);
-        REQUIRE( !result.hasError() );
+        REQUIRE( parser.parse(parserDefinition, arguments) );
+        REQUIRE( !parser.hasError() );
+        result = parser.toParserResult();
+//         result = parser.parse(parserDefinition, arguments);
+//         REQUIRE( !result.hasError() );
         REQUIRE( result.getValues(destinationOption) == QStringList{QLatin1String("/usr/bin")} );
         REQUIRE( result.positionalArgumentCount() == 1 );
         REQUIRE( result.positionalArgumentAt(0) == QLatin1String("file1.txt") );
@@ -909,16 +930,22 @@ TEST_CASE("Parser_parse")
 
     SECTION("myapp")
     {
-      result = parser.parse(parserDefinition, arguments);
-      REQUIRE( !result.hasError() );
+      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( !parser.hasError() );
+      result = parser.toParserResult();
+//       result = parser.parse(parserDefinition, arguments);
+//       REQUIRE( !result.hasError() );
       REQUIRE( result.positionalArgumentCount() == 0 );
     }
 
     SECTION("myapp copy")
     {
       arguments << QLatin1String("copy");
-      result = parser.parse(parserDefinition, arguments);
-      REQUIRE( !result.hasError() );
+      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( !parser.hasError() );
+      result = parser.toParserResult();
+//       result = parser.parse(parserDefinition, arguments);
+//       REQUIRE( !result.hasError() );
       REQUIRE( result.positionalArgumentCount() == 0 );
       REQUIRE( result.hasSubCommand() );
       REQUIRE( result.subCommand().name() == QLatin1String("copy") );
@@ -928,8 +955,11 @@ TEST_CASE("Parser_parse")
     SECTION("myapp copy file1.txt /tmp")
     {
       arguments << QLatin1String("copy") << QLatin1String("file1.txt") << QLatin1String("/tmp");
-      result = parser.parse(parserDefinition, arguments);
-      REQUIRE( !result.hasError() );
+      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( !parser.hasError() );
+      result = parser.toParserResult();
+//       result = parser.parse(parserDefinition, arguments);
+//       REQUIRE( !result.hasError() );
       REQUIRE( result.positionalArgumentCount() == 0 );
       REQUIRE( result.hasSubCommand() );
       REQUIRE( result.subCommand().positionalArgumentCount() == 2 );
@@ -940,8 +970,11 @@ TEST_CASE("Parser_parse")
     SECTION("myapp arg1 copy file1.txt /tmp arg2")
     {
       arguments << QLatin1String("arg1") << QLatin1String("copy") << QLatin1String("file1.txt") << QLatin1String("/tmp") << QLatin1String("arg2");
-      result = parser.parse(parserDefinition, arguments);
-      REQUIRE( !result.hasError() );
+      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( !parser.hasError() );
+      result = parser.toParserResult();
+//       result = parser.parse(parserDefinition, arguments);
+//       REQUIRE( !result.hasError() );
       REQUIRE( result.positionalArgumentCount() == 1 );
       REQUIRE( result.positionalArgumentAt(0) == QLatin1String("arg1") );
       REQUIRE( result.hasSubCommand() );
@@ -950,5 +983,21 @@ TEST_CASE("Parser_parse")
       REQUIRE( result.subCommand().positionalArgumentAt(1) == QLatin1String("/tmp") );
       REQUIRE( result.subCommand().positionalArgumentAt(2) == QLatin1String("arg2") );
     }
+  }
+}
+
+TEST_CASE("Parser_parse_error")
+{
+  ParserDefinition parserDefinition;
+  Parser parser;
+  ParserResult result;
+  QStringList arguments{QLatin1String("myapp")};
+
+  SECTION("myapp --unknown-option")
+  {
+    arguments << QLatin1String("--unknown-option");
+    REQUIRE( !parser.parse(parserDefinition, arguments) );
+    REQUIRE( parser.hasError() );
+    REQUIRE( !parser.errorText().isEmpty() );
   }
 }

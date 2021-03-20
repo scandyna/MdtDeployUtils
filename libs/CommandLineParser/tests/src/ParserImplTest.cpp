@@ -610,13 +610,15 @@ TEST_CASE("parse")
     arguments = qStringListFromUtf8Strings({"app","--unknown-option"});
     REQUIRE( !parse(arguments, parserDefinition, commandLine, error) );
     REQUIRE( error.unknownOptionNames == qStringListFromUtf8Strings({"unknown-option"}) );
+    REQUIRE( error.hasError() );
   }
 
-  SECTION("app -u (unknown-option)")
+  SECTION("app -u")
   {
     arguments = qStringListFromUtf8Strings({"app","-u"});
     REQUIRE( !parse(arguments, parserDefinition, commandLine, error) );
     REQUIRE( error.unknownOptionNames == qStringListFromUtf8Strings({"u"}) );
+    REQUIRE( error.hasError() );
   }
 
   SECTION("app -")
@@ -795,6 +797,30 @@ TEST_CASE("parse_AppWithSubCommand")
     REQUIRE( getSubCommandName( commandLine.argumentAt(1) ) == QLatin1String("copy") );
     REQUIRE( isPositionalArgument( commandLine.argumentAt(2) ) );
     REQUIRE( getPositionalArgumentValue( commandLine.argumentAt(2) ) == QLatin1String("copy") );
+    REQUIRE( !error.hasError() );
+  }
+
+  SECTION("app copy -")
+  {
+    arguments = qStringListFromUtf8Strings({"app","copy","-"});
+    REQUIRE( parse(arguments, parserDefinition, commandLine, error) );
+    REQUIRE( commandLine.argumentCount() == 3 );
+    REQUIRE( commandLine.executableName() == QLatin1String("app") );
+    REQUIRE( isSubCommandNameArgument( commandLine.argumentAt(1) ) );
+    REQUIRE( getSubCommandName( commandLine.argumentAt(1) ) == QLatin1String("copy") );
+    REQUIRE( isSingleDash( commandLine.argumentAt(2) ) );
+    REQUIRE( !error.hasError() );
+  }
+
+  SECTION("app copy --")
+  {
+    arguments = qStringListFromUtf8Strings({"app","copy","--"});
+    REQUIRE( parse(arguments, parserDefinition, commandLine, error) );
+    REQUIRE( commandLine.argumentCount() == 3 );
+    REQUIRE( commandLine.executableName() == QLatin1String("app") );
+    REQUIRE( isSubCommandNameArgument( commandLine.argumentAt(1) ) );
+    REQUIRE( getSubCommandName( commandLine.argumentAt(1) ) == QLatin1String("copy") );
+    REQUIRE( isDoubleDash( commandLine.argumentAt(2) ) );
     REQUIRE( !error.hasError() );
   }
 }

@@ -20,50 +20,29 @@
  ****************************************************************************/
 #include "Parser.h"
 #include "Impl/Parser.h"
+#include "Impl/ParserResultFromCommandLine.h"
 #include "ParserResultCommand.h"
-#include <QCommandLineParser>
 #include <QString>
 #include <QStringList>
 #include <cassert>
 
-// #include <QDebug>
-
 namespace Mdt{ namespace CommandLineParser{
 
-ParserResult Parser::parse(const ParserDefinition & parserDefinition, const QStringList & arguments)
+bool Parser::parse(const ParserDefinition & parserDefinition, const QStringList & arguments)
 {
-  ParserResult result;
+  Impl::ParseError error;
 
-  if( parserDefinition.hasSubCommands() ){
-    QStringList mainCommandArguments;
-    QStringList subCommandArguments;
-
-    Impl::splitToMainAndSubCommandArguments(arguments, parserDefinition, mainCommandArguments, subCommandArguments);
-
-//     qDebug() << "arguments: " << arguments;
-//     qDebug() << "mainCommandArguments: " << mainCommandArguments;
-//     qDebug() << "subCommandArguments: " << subCommandArguments;
-
-    if( !Impl::parseMainCommandToResult(parserDefinition.mainCommand(), mainCommandArguments, result) ){
-      return result;
-    }
-
-    if( subCommandArguments.isEmpty() ){
-      return result;
-    }
-    assert( subCommandArguments.size() >= 2 );
-
-    const auto subCommand = parserDefinition.findSubCommandByName( subCommandArguments.at(1) );
-    // If sub-command is not found, its a bug in Impl::splitToMainAndSubCommandArguments()
-    assert(subCommand);
-
-    subCommandArguments.removeAt(1);
-    Impl::parseSubCommandToResult(*subCommand, subCommandArguments, result);
-  }else{
-    Impl::parseMainCommandToResult(parserDefinition.mainCommand(), arguments, result);
+  if( !Impl::parse(arguments, parserDefinition, mCommandLine, error) ){
+    mErrorText = error.errorText;
+    return false;
   }
 
-  return result;
+  return true;
+}
+
+ParserResult Parser::toParserResult() const noexcept
+{
+  return Impl::parserResultFromCommandLine(mCommandLine);
 }
 
 }} // namespace Mdt{ namespace CommandLineParser{
