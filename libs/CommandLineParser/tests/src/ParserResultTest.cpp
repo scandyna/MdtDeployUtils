@@ -44,23 +44,6 @@ TEST_CASE("ParserResultOption")
   }
 }
 
-TEST_CASE("ParserResult_error")
-{
-  ParserResult result;
-
-  SECTION("No error")
-  {
-    REQUIRE( !result.hasError() );
-  }
-
-  SECTION("With error")
-  {
-    result.setErrorText( QLatin1String("Some error") );
-    REQUIRE( result.hasError() );
-    REQUIRE( result.errorText() == QLatin1String("Some error") );
-  }
-}
-
 TEST_CASE("ParserResultCommand_options_isSet")
 {
   ParserDefinitionOption helpOptionDefinition( 'h', QLatin1String("help"), QLatin1String("Help option") );

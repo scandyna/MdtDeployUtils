@@ -36,30 +36,6 @@ namespace Mdt{ namespace CommandLineParser{
   {
    public:
 
-    /*! \brief Set the error text to this result
-     */
-    [[deprecated]]
-    void setErrorText(const QString & text)
-    {
-      mErrorText = text.trimmed();
-    }
-
-    /*! \brief Check if this result has error
-     */
-    [[deprecated]]
-    bool hasError() const noexcept
-    {
-      return !mErrorText.isEmpty();
-    }
-
-    /*! \brief Get the error text of this result
-     */
-    [[deprecated]]
-    const QString & errorText() const noexcept
-    {
-      return mErrorText;
-    }
-
     /*! \brief Set the main command result
      */
     void setMainCommand(const ParserResultCommand & command)
@@ -220,7 +196,6 @@ namespace Mdt{ namespace CommandLineParser{
 
     ParserResultCommand mMainCommand;
     ParserResultCommand mSubCommand;
-    QString mErrorText;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{
