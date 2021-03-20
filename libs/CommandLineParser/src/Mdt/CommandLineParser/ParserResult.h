@@ -38,6 +38,7 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Set the error text to this result
      */
+    [[deprecated]]
     void setErrorText(const QString & text)
     {
       mErrorText = text.trimmed();
@@ -45,6 +46,7 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Check if this result has error
      */
+    [[deprecated]]
     bool hasError() const noexcept
     {
       return !mErrorText.isEmpty();
@@ -52,6 +54,7 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Get the error text of this result
      */
+    [[deprecated]]
     const QString & errorText() const noexcept
     {
       return mErrorText;
@@ -83,40 +86,50 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Check if \a option is set in this result
      *
-     * \note If you use subcommands,
-     * also query if a option is set for the expected subcommand.
-     */
-    bool isSet(const ParserDefinitionOption & option) const
-    {
-      return mMainCommand.isSet(option);
-    }
-
-    /*! \brief Check if \a optionName is set in this result
+     * Will return true if \a option was set on the command line,
+     * either by its long name or by its short name if \a option has a short name.
      *
      * \note If you use subcommands,
      * also query if a option is set for the expected subcommand.
      */
-    bool isSet(const QString & optionName) const
+    bool isSet(const ParserDefinitionOption & option) const noexcept
     {
-      return mMainCommand.isSet(optionName);
+      return mMainCommand.isSet(option);
     }
 
-//     /*! \brief Check if \a optionShortName is set in this result
-//      *
-//      * \note If you use subcommands,
-//      * also query if a option is set for the expected subcommand.
-//      */
-//     bool isSet(char optionShortName) const
-//     {
-//       return mMainCommand.isSet(optionShortName);
-//     }
+    /*! \brief Check if \a optionLongName is set in this result
+     *
+     * Will return true if the long option was set on the command line,
+     * otherwise false.
+     *
+     * \sa isSet(const ParserDefinitionOption &)
+     *
+     * \note If you use subcommands,
+     * also query if a option is set for the expected subcommand.
+     */
+    bool isOptionLongNameSet(const QString & optionLongName) const noexcept
+    {
+      return mMainCommand.isOptionLongNameSet(optionLongName);
+    }
+
+    /*! \brief Check if \a optionShortName is set in this result
+     *
+     * Will return true if the short option was set on the command line,
+     * otherwise false.
+     *
+     * \sa isSet(const ParserDefinitionOption &)
+     */
+    bool isOptionShortNameSet(char optionShortName) const noexcept
+    {
+      return mMainCommand.isOptionShortNameSet(optionShortName);
+    }
 
     /*! \brief Check if the help option is set in this result
      *
      * \note If you use subcommands,
      * also query if the help option is set for the expected subcommand.
      */
-    bool isHelpOptionSet() const
+    bool isHelpOptionSet() const noexcept
     {
       return mMainCommand.isHelpOptionSet();
     }

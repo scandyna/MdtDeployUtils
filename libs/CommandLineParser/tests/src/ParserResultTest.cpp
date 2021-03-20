@@ -61,27 +61,44 @@ TEST_CASE("ParserResult_error")
   }
 }
 
-TEST_CASE("ParserResultCommand_options")
+TEST_CASE("ParserResultCommand_options_isSet")
 {
+  ParserDefinitionOption helpOptionDefinition( 'h', QLatin1String("help"), QLatin1String("Help option") );
   ParserResultCommand command;
-
-  SECTION("empty")
-  {
-    REQUIRE( !command.isSet( QLatin1String("verbose") ) );
-  }
-
-  SECTION("force")
-  {
-    command.addOption( ParserResultOption( QLatin1String("force") ) );
-    REQUIRE( command.isSet( QLatin1String("force") ) );
-    REQUIRE( !command.isSet( QLatin1String("verbose") ) );
-  }
 
   SECTION("help")
   {
-    command.addOption( ParserResultOption( QLatin1String("help") ) );
-    REQUIRE( command.isHelpOptionSet() );
+    SECTION("Empty result command")
+    {
+      REQUIRE( !command.isOptionLongNameSet( QLatin1String("help") ) );
+      REQUIRE( !command.isOptionShortNameSet('h') );
+      REQUIRE( !command.isSet(helpOptionDefinition) );
+      REQUIRE( !command.isHelpOptionSet() );
+    }
+
+    SECTION("--help")
+    {
+      command.addOption( ParserResultOption( QLatin1String("help") ) );
+      REQUIRE( command.isOptionLongNameSet( QLatin1String("help") ) );
+      REQUIRE( !command.isOptionShortNameSet('h') );
+      REQUIRE( command.isSet(helpOptionDefinition) );
+      REQUIRE( command.isHelpOptionSet() );
+    }
+
+    SECTION("-h")
+    {
+      command.addOption( ParserResultOption( QLatin1String("h") ) );
+      REQUIRE( !command.isOptionLongNameSet( QLatin1String("help") ) );
+      REQUIRE( command.isOptionShortNameSet('h') );
+      REQUIRE( command.isSet(helpOptionDefinition) );
+      REQUIRE( command.isHelpOptionSet() );
+    }
   }
+}
+
+TEST_CASE("ParserResultCommand_options")
+{
+  ParserResultCommand command;
 
   SECTION("getValues")
   {

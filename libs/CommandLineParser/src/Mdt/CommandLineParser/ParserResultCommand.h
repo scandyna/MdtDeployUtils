@@ -24,6 +24,7 @@
 #include "ParserResultOption.h"
 #include "ParserDefinitionOption.h"
 #include "mdt_commandlineparser_export.h"
+#include <QChar>
 #include <QString>
 #include <QLatin1String>
 #include <QStringList>
@@ -130,18 +131,50 @@ namespace Mdt{ namespace CommandLineParser{
     }
 
     /*! \brief Check if \a option is set in this result command
+     *
+     * Will return true if \a option was set on the command line,
+     * either by its long name or by its short name if \a option has a short name.
      */
-    bool isSet(const ParserDefinitionOption & option) const
+    bool isSet(const ParserDefinitionOption & option) const noexcept
     {
-      return isSet( option.name() );
+      if( option.hasShortName() ){
+        if( isOptionShortNameSet( option.shortName() ) ){
+          return true;
+        }
+      }
+      return isOptionLongNameSet( option.name() );
     }
 
-    /*! \brief Check if \a optionName is set in this result command
+    /*! \brief Check if \a optionLongName is set in this result command
+     *
+     * Will return true if the long option was set on the command line,
+     * otherwise false.
+     *
+     * \sa isSet(const ParserDefinitionOption &)
      */
-    bool isSet(const QString & optionName) const
+    bool isOptionLongNameSet(const QString & optionLongName) const noexcept
     {
-      const auto pred = [&optionName](const ParserResultOption & option){
-        return option.name() == optionName;
+      const auto pred = [&optionLongName](const ParserResultOption & option){
+        return option.name() == optionLongName;
+      };
+      const auto it = std::find_if(mOptions.cbegin(), mOptions.cend(), pred);
+
+      return it != mOptions.cend();
+    }
+
+    /*! \brief Check if \a optionShortName is set in this result command
+     *
+     * Will return true if the short option was set on the command line,
+     * otherwise false.
+     *
+     * \sa isSet(const ParserDefinitionOption &)
+     */
+    bool isOptionShortNameSet(char optionShortName) const noexcept
+    {
+      const QString optionShortNameStr = QString( QChar::fromLatin1(optionShortName) );
+
+      const auto pred = [&optionShortNameStr](const ParserResultOption & option){
+        return option.name() == optionShortNameStr;
       };
       const auto it = std::find_if(mOptions.cbegin(), mOptions.cend(), pred);
 
@@ -150,9 +183,12 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Check if the help option is set in this result command
      */
-    bool isHelpOptionSet() const
+    bool isHelpOptionSet() const noexcept
     {
-      return isSet( QLatin1String("help") );
+      if( isOptionShortNameSet('h') ){
+        return true;
+      }
+      return isOptionLongNameSet( QLatin1String("help") );
     }
 
     /*! \brief Returns a list of option values found for the given \a option
