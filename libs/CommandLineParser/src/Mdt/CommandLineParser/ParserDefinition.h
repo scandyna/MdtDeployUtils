@@ -64,6 +64,7 @@ namespace Mdt{ namespace CommandLineParser{
    *
    * ParserDefinitionOption installCommandBuildOption('b', "build");
    * installCommandBuildOption.setValueName("BUILD");
+   * installCommandBuildOption.setPossibleValues({"all","missing","never"});
    * installCommandBuildOption.setDefaultValue("never");
    * installCommandBuildOption.setDescription("Choose if you want to build from sources.");
    * installCommand.addOption(installCommandBuildOption);
