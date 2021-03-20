@@ -22,6 +22,7 @@
 #define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_SCRIPT_H
 
 #include "ScriptCompletionsFunction.h"
+#include "ScriptCaseClause.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
 #include <QLatin1String>
@@ -52,6 +53,13 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
     }
 
     /*! \brief Add a clause to this script
+     */
+    void addClause(const ScriptCaseClause & clause) noexcept
+    {
+      mCompletionsFunction.addClause(clause);
+    }
+
+    /*! \brief Add a clause to this script
      *
      * \pre \a pattern and \a command must be valid
      * \sa ScriptCaseClause::isValidPattern()
@@ -70,6 +78,25 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
     void addDefaultClause() noexcept
     {
       mCompletionsFunction.addDefaultClause();
+    }
+
+    /*! \brief Get the count of clauses in this script
+     */
+    int clauseCount() const noexcept
+    {
+      return mCompletionsFunction.clauseCount();
+    }
+
+    /*! \brief Get the clause at \a index
+     *
+     * \pre \a index must be in valid range ( 0 <= \a index < clauseCount() )
+     */
+    const ScriptCaseClause & clauseAt(int index) const noexcept
+    {
+      assert( index >= 0 );
+      assert( index < clauseCount() );
+
+      return mCompletionsFunction.clauseAt(index);
     }
 
     /*! \brief Get the completions function

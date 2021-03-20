@@ -88,6 +88,13 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
       return mVariables[static_cast<size_t>(index)];
     }
 
+    /*! \brief Add a clause to this script
+     */
+    void addClause(const ScriptCaseClause & clause) noexcept
+    {
+      mCaseStatement.addClause(clause);
+    }
+
     /*! \brief Add a clause to this function
      *
      * \pre \a pattern and \a command must be valid
@@ -107,6 +114,25 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
     void addDefaultClause() noexcept
     {
       mCaseStatement.addDefaultClause();
+    }
+
+    /*! \brief Get the count of clauses in this function
+     */
+    int clauseCount() const noexcept
+    {
+      return mCaseStatement.clauseCount();
+    }
+
+    /*! \brief Get the clause at \a index
+     *
+     * \pre \a index must be in valid range ( 0 <= \a index < clauseCount() )
+     */
+    const ScriptCaseClause & clauseAt(int index) const noexcept
+    {
+      assert( index >= 0 );
+      assert( index < clauseCount() );
+
+      return mCaseStatement.clauseAt(index);
     }
 
     /*! \brief Get the variables bloc string representation

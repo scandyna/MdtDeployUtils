@@ -78,6 +78,13 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
     {
     }
 
+    /*! \brief Add a clause to this script
+     */
+    void addClause(const ScriptCaseClause & clause) noexcept
+    {
+      mClauses.push_back(clause);
+    }
+
     /*! \brief Add a clause to this statement
      *
      * \pre \a pattern and \a command must be valid
