@@ -767,6 +767,17 @@ TEST_CASE("parse_AppWithSubCommand")
     REQUIRE( !error.hasError() );
   }
 
+  SECTION("app copy")
+  {
+    arguments = qStringListFromUtf8Strings({"app","copy"});
+    REQUIRE( parse(arguments, parserDefinition, commandLine, error) );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( commandLine.executableName() == QLatin1String("app") );
+    REQUIRE( isSubCommandNameArgument( commandLine.argumentAt(1) ) );
+    REQUIRE( getSubCommandName( commandLine.argumentAt(1) ) == QLatin1String("copy") );
+    REQUIRE( !error.hasError() );
+  }
+
   SECTION("app copy -h")
   {
     arguments = qStringListFromUtf8Strings({"app","copy","-h"});

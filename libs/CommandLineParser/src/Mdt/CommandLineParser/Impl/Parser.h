@@ -524,6 +524,8 @@ namespace Mdt{ namespace CommandLineParser{
     }
 
     /*! \internal
+     *
+     * \todo should not search about sub-command in the loop, but once (benchmark this)
      */
     static
     bool parse(const QStringList & arguments, const ParserDefinition & parserDefinition, CommandLine::CommandLine & commandLine, ParseError & error) noexcept
@@ -537,6 +539,9 @@ namespace Mdt{ namespace CommandLineParser{
       const auto last = arguments.cend();
       assert( first != last );
 
+      const ParserDefinitionCommand *command = &parserDefinition.mainCommand();
+      bool inSubCommand = false;
+
       commandLine.setExecutableName(*first);
       ++first;
 
@@ -547,7 +552,19 @@ namespace Mdt{ namespace CommandLineParser{
           parseAsPositionalArgument(first, last, commandLine);
           return true;
         }
-        if( !addOptionOrDashToCommandLine(first, last, parserDefinition.mainCommand(), commandLine, error) ){
+        if(!inSubCommand){
+          const auto subCommand = parserDefinition.findSubCommandByName(*first);
+          if(subCommand){
+            inSubCommand = true;
+            command = &(*subCommand);
+            commandLine.appendSubCommandName( command->name() );
+            ++first;
+            if(first == last){
+              return true;
+            }
+          }
+        }
+        if( !addOptionOrDashToCommandLine(first, last, *command, commandLine, error) ){
           if( error.hasError() ){
             return false;
           }

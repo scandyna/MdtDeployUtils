@@ -93,6 +93,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME ParserImplTest
+  TARGET parserImplTest
+  DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ParserImplTest.cpp
+)
+
+mdt_add_test(
   NAME BashCompletionCompgenCommandTest
   TARGET bashCompletionCompgenCommandTest
   DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
