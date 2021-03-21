@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "TestUtils.h"
 #include "Mdt/CommandLineParser/Parser.h"
 #include "Mdt/CommandLineParser/ParserDefinition.h"
 #include "Mdt/CommandLineParser/ParserResult.h"
@@ -431,7 +432,6 @@ TEST_CASE("Parser_parse_error")
 {
   ParserDefinition parserDefinition;
   Parser parser;
-  ParserResult result;
   QStringList arguments{QLatin1String("myapp")};
 
   SECTION("myapp --unknown-option")
@@ -441,4 +441,24 @@ TEST_CASE("Parser_parse_error")
     REQUIRE( parser.hasError() );
     REQUIRE( !parser.errorText().isEmpty() );
   }
+}
+
+TEST_CASE("Parser_parse_multiple_time")
+{
+  Parser parser;
+  ParserResult result;
+  ParserDefinition parserDefinition;
+  parserDefinition.addOption( 'f', QLatin1String("force"), QLatin1String("Force option") );
+
+  const QStringList arguments = qStringListFromUtf8Strings({"app","-f","file.txt","/tmp"});
+
+  REQUIRE( parser.parse(parserDefinition, arguments) );
+  result = parser.toParserResult();
+  REQUIRE( result.isOptionShortNameSet('f') );
+  REQUIRE( result.positionalArgumentCount() == 2 );
+
+  REQUIRE( parser.parse(parserDefinition, arguments) );
+  result = parser.toParserResult();
+  REQUIRE( result.isOptionShortNameSet('f') );
+  REQUIRE( result.positionalArgumentCount() == 2 );
 }

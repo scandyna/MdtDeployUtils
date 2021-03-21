@@ -32,6 +32,8 @@ bool Parser::parse(const ParserDefinition & parserDefinition, const QStringList 
 {
   Impl::ParseError error;
 
+  mCommandLine.clear();
+
   if( !Impl::parse(arguments, parserDefinition, mCommandLine, error) ){
     mErrorText = error.errorText;
     return false;
