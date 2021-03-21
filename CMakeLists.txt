@@ -50,6 +50,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
 option(BUILD_TESTS "Build the tests" OFF)
+option(BUILD_BENCHMARKS "Build the benchmarks" OFF)
 option(BUILD_DOCS "Build the documentations" OFF)
 mdt_set_available_build_types(Release Debug RelWithDebInfo MinSizeRel Instrumented)
 option(WARNING_AS_ERROR "Threat warnings as errors" OFF)
@@ -131,8 +132,12 @@ find_package(Mdt0 COMPONENTS CommandLineArguments ConsoleApplication REQUIRED)
 find_package(Boost REQUIRED)
 
 
-if(BUILD_TESTS OR BUILD_BENCHMARKS)
+if(BUILD_TESTS)
   find_package(Catch2 REQUIRED)
+endif()
+
+if(BUILD_BENCHMARKS)
+  find_package(Qt5 COMPONENTS Test REQUIRED)
 endif()
 
 if(BUILD_DOCS)
