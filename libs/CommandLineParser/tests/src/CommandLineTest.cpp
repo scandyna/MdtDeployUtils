@@ -386,6 +386,9 @@ TEST_CASE("CommandLine")
     REQUIRE( isOptionExpectingValue( commandLine.argumentAt(1) ) );
     REQUIRE( !isOptionExpectingValue( commandLine.argumentAt(2) ) );
     REQUIRE( !isOptionExpectingValue( commandLine.argumentAt(3) ) );
+
+    commandLine.clear();
+    REQUIRE( commandLine.argumentCount() == 0 );
   }
 
   SECTION("myapp -fh")

@@ -201,6 +201,13 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       mArgumentList.emplace_back( SubCommandName{name} );
     }
 
+    /*! \brief Clear this command line
+     */
+    void clear() noexcept
+    {
+      mArgumentList.clear();
+    }
+
     /*! \brief Check if this command line is empty
      *
      * \sa argumentCount()
