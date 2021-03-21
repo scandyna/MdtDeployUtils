@@ -20,12 +20,11 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "TestUtils.h"
 #include "Mdt/CommandLineParser/Impl/Parser.h"
 #include "Mdt/CommandLineParser/CommandLine/Algorithm.h"
 #include <QLatin1String>
 #include <QStringList>
-#include <string>
-#include <vector>
 
 #include <QDebug>
 
@@ -34,17 +33,6 @@ using namespace Mdt::CommandLineParser::Impl;
 using namespace Mdt::CommandLineParser::CommandLine;
 // using Mdt::CommandLineParser::CommandLine::CommandLine;
 // using Mdt::CommandLineParser::CommandLine::getPositionalArgumentValue;
-
-QStringList qStringListFromUtf8Strings(const std::vector<std::string> & args)
-{
-  QStringList arguments;
-
-  for(const auto & arg : args){
-    arguments.append( QString::fromStdString(arg) );
-  }
-
-  return arguments;
-}
 
 
 /**
