@@ -18,8 +18,8 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_COMMAND_LINE_IMPL_PARSER_PARSER_H
-#define MDT_COMMAND_LINE_IMPL_PARSER_PARSER_H
+#ifndef MDT_COMMAND_LINE_PARSER_IMPL_PARSER_H
+#define MDT_COMMAND_LINE_PARSER_IMPL_PARSER_H
 
 #include "../ParserDefinition.h"
 #include "../ParserDefinitionCommand.h"
@@ -206,6 +206,7 @@ namespace Mdt{ namespace CommandLineParser{
       const auto optionNameFirstIt = current->cbegin() + 2;
       const auto optionNameEndIt = std::find( current->cbegin(), current->cend(), QChar::fromLatin1('=') );
 
+      /// \todo make a dedicated function ?
       QString optionName;
       std::copy( optionNameFirstIt, optionNameEndIt, std::back_inserter(optionName) );
 
@@ -310,10 +311,94 @@ namespace Mdt{ namespace CommandLineParser{
       }
     }
 
+    /*! \internal Parse a argument
+     *
+     * Will add the argument referenced by \a first
+     * and add the appropriate argument type to the command line.
+     *
+     * If \a first references the double dash, it will be added
+     * to the command line and parse the rest of the arguments as positional arguments.
+     *
+     * If required, \a first will be incremented (case of adding a option value),
+     * but will never be past \a last (i.e. the caller have to increment \a first as usual).
+     *
+     * Because all arguments could be parsed after a double dash,
+     * the caller must check if \a first reached \a last after calling this function.
+     *
+     * \note This function ignores sub-command name
+     *
+     * \pre \a commandLine must have the executable name allready set
+     */
+    static
+    bool parseArgument(QStringList::const_iterator & first, QStringList::const_iterator last,
+                       const ParserDefinitionCommand & command,
+                       CommandLine::CommandLine & commandLine, ParseError & error) noexcept
+    {
+      assert( commandLine.argumentCount() >= 1 );
+      assert( first != last );
+
+      if( *first == QLatin1String("--") ){
+        commandLine.appendDoubleDash();
+        ++first;
+        parseAsPositionalArgument(first, last, commandLine);
+        first = last;
+        return true;
+      }
+
+      if( !addOptionOrDashToCommandLine(first, last, command, commandLine, error) ){
+        if( error.hasError() ){
+          return false;
+        }
+        commandLine.appendPositionalArgument(*first);
+      }
+
+      return true;
+    }
+
     /*! \internal
      *
-     * \todo should not search about sub-command in the loop, but once (benchmark this)
-     * \todo Refactor, code is ugly (at least copy/paste sections)
+     * Will parse arguments until a known sub-command have been reached.
+     *
+     * If a sub-command was found, \a first will reference the sub-command name.
+     *
+     * If a sub-command was found, \a command will reference the sub-command,
+     * otherwise it will be untouched.
+     *
+     * It no sub-command name was found, \a first will be at end.
+     * \sa parseArgument() for some more details.
+     *
+     * \pre \a parserDefinition must have at least 1 sub-command
+     * \pre \a commandLine must have the executable name allready set
+     */
+    static
+    bool parseArgumentsUntilSubCommandName(QStringList::const_iterator & first, QStringList::const_iterator last,
+                                           const ParserDefinition & parserDefinition, const ParserDefinitionCommand **command,
+                                           CommandLine::CommandLine & commandLine, ParseError & error) noexcept
+    {
+      assert( parserDefinition.hasSubCommands() );
+      assert( commandLine.argumentCount() >= 1 );
+      assert( first != last );
+
+      while(first != last){
+        const auto subCommand = parserDefinition.findSubCommandByName(*first);
+        if(subCommand){
+          *command = &(*subCommand);
+          commandLine.appendSubCommandName( subCommand->name() );
+          return true;
+        }
+        if( !parseArgument(first, last, parserDefinition.mainCommand(), commandLine, error) ){
+          return false;
+        }
+        if(first == last){
+          return true;
+        }
+        ++first;
+      }
+
+      return true;
+    }
+
+    /*! \internal
      */
     static
     bool parse(const QStringList & arguments, const ParserDefinition & parserDefinition, CommandLine::CommandLine & commandLine, ParseError & error) noexcept
@@ -328,11 +413,47 @@ namespace Mdt{ namespace CommandLineParser{
       assert( first != last );
 
       const ParserDefinitionCommand *command = &parserDefinition.mainCommand();
-      bool inSubCommand = false;
+//       bool inSubCommand = false;
 
       commandLine.setExecutableName(*first);
       ++first;
 
+      if( parserDefinition.hasSubCommands() ){
+        if(first == last){
+          return true;
+        }
+        if( !parseArgumentsUntilSubCommandName(first, last, parserDefinition, &command, commandLine, error) ){
+          return false;
+        }
+        if(first == last){
+          return true;
+        }
+        ++first;
+      }
+
+      while(first != last){
+//         if(!inSubCommand){
+//           const auto subCommand = parserDefinition.findSubCommandByName(*first);
+//           if(subCommand){
+//             inSubCommand = true;
+//             command = &(*subCommand);
+//             commandLine.appendSubCommandName( command->name() );
+//             ++first;
+//             if(first == last){
+//               return true;
+//             }
+//           }
+//         }
+        if( !parseArgument(first, last, *command, commandLine, error) ){
+          return false;
+        }
+        if(first == last){
+          return true;
+        }
+        ++first;
+      }
+
+      /*
       while(first != last){
         if( *first == QLatin1String("--") ){
           commandLine.appendDoubleDash();
@@ -366,6 +487,7 @@ namespace Mdt{ namespace CommandLineParser{
         }
         ++first;
       }
+      */
 
       return true;
     }
@@ -374,4 +496,4 @@ namespace Mdt{ namespace CommandLineParser{
 
 }} // namespace Mdt{ namespace CommandLineParser{
 
-#endif // #ifndef MDT_COMMAND_LINE_IMPL_PARSER_PARSER_H
+#endif // #ifndef MDT_COMMAND_LINE_PARSER_IMPL_PARSER_H

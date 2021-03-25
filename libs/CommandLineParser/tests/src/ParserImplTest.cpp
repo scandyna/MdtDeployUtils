@@ -534,6 +534,165 @@ TEST_CASE("parseAsPositionalArgument")
   }
 }
 
+TEST_CASE("parseArgument")
+{
+  QStringList arguments;
+  CommandLine::CommandLine commandLine;
+  ParseError error;
+
+  ParserDefinitionOption overwriteBehaviorOption( 'o', QLatin1String("overwrite-behavior"), QLatin1String("Overwrite behavior") );
+  overwriteBehaviorOption.setValueName( QLatin1String("behavior") );
+
+  ParserDefinitionCommand command;
+  command.addHelpOption();
+  command.addOption(overwriteBehaviorOption);
+
+  commandLine.setExecutableName( QLatin1String("app") );
+
+  SECTION("-h")
+  {
+    arguments = qStringListFromUtf8Strings({"-h"});
+    auto first = arguments.cbegin();
+    REQUIRE( parseArgument( first, arguments.cend(), command, commandLine, error ) );
+    REQUIRE( first == arguments.cbegin() );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("h") );
+  }
+
+  SECTION("--")
+  {
+    arguments = qStringListFromUtf8Strings({"--"});
+    auto first = arguments.cbegin();
+    REQUIRE( parseArgument( first, arguments.cend(), command, commandLine, error ) );
+    REQUIRE( first == arguments.cend() );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( isDoubleDash( commandLine.argumentAt(1) ) );
+  }
+
+  SECTION("-- -h")
+  {
+    arguments = qStringListFromUtf8Strings({"--","-h"});
+    auto first = arguments.cbegin();
+    REQUIRE( parseArgument( first, arguments.cend(), command, commandLine, error ) );
+    REQUIRE( first == arguments.cend() );
+    REQUIRE( commandLine.argumentCount() == 3 );
+    REQUIRE( isDoubleDash( commandLine.argumentAt(1) ) );
+    REQUIRE( getPositionalArgumentValue( commandLine.argumentAt(2) ) == QLatin1String("-h") );
+  }
+
+  SECTION("file.txt")
+  {
+    arguments = qStringListFromUtf8Strings({"file.txt"});
+    auto first = arguments.cbegin();
+    REQUIRE( parseArgument( first, arguments.cend(), command, commandLine, error ) );
+    REQUIRE( first == arguments.cbegin() );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( getPositionalArgumentValue( commandLine.argumentAt(1) ) == QLatin1String("file.txt") );
+  }
+
+  SECTION("-o keep")
+  {
+    arguments = qStringListFromUtf8Strings({"-o","keep"});
+    auto first = arguments.cbegin();
+    REQUIRE( parseArgument( first, arguments.cend(), command, commandLine, error ) );
+    REQUIRE( first == arguments.cbegin()+1 );
+    REQUIRE( commandLine.argumentCount() == 3 );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("o") );
+    REQUIRE( getOptionValue( commandLine.argumentAt(2) ) == QLatin1String("keep") );
+  }
+}
+
+TEST_CASE("parseArgumentsUntilSubCommandName")
+{
+  QStringList arguments;
+  CommandLine::CommandLine commandLine;
+  ParseError error;
+
+  ParserDefinitionOption forceOption( 'f', QLatin1String("force"), QLatin1String("Force") );
+
+  ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+  copyCommand.addOption(forceOption);
+
+  ParserDefinition parserDefinition;
+  parserDefinition.addHelpOption();
+  parserDefinition.addSubCommand(copyCommand);
+
+  commandLine.setExecutableName( QLatin1String("app") );
+
+  const ParserDefinitionCommand *command = nullptr;
+
+  SECTION("-h")
+  {
+    arguments = qStringListFromUtf8Strings({"-h"});
+    auto first = arguments.cbegin();
+    REQUIRE( parseArgumentsUntilSubCommandName( first, arguments.cend(), parserDefinition, &command, commandLine, error ) );
+    REQUIRE( first == arguments.cend() );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("h") );
+    REQUIRE( command == nullptr );
+  }
+
+  SECTION("file.txt")
+  {
+    arguments = qStringListFromUtf8Strings({"file.txt"});
+    auto first = arguments.cbegin();
+    REQUIRE( parseArgumentsUntilSubCommandName( first, arguments.cend(), parserDefinition, &command, commandLine, error ) );
+    REQUIRE( first == arguments.cend() );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( getPositionalArgumentValue( commandLine.argumentAt(1) ) == QLatin1String("file.txt") );
+    REQUIRE( command == nullptr );
+  }
+
+  SECTION("copy")
+  {
+    arguments = qStringListFromUtf8Strings({"copy"});
+    auto first = arguments.cbegin();
+    REQUIRE( parseArgumentsUntilSubCommandName( first, arguments.cend(), parserDefinition, &command, commandLine, error ) );
+    REQUIRE( first == arguments.cbegin() );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( getSubCommandName( commandLine.argumentAt(1) ) == QLatin1String("copy") );
+    REQUIRE( command != nullptr );
+    REQUIRE( command->name() == QLatin1String("copy") );
+  }
+
+  SECTION("-h copy")
+  {
+    arguments = qStringListFromUtf8Strings({"-h","copy"});
+    auto first = arguments.cbegin();
+    REQUIRE( parseArgumentsUntilSubCommandName( first, arguments.cend(), parserDefinition, &command, commandLine, error ) );
+    REQUIRE( first == arguments.cbegin()+1 );
+    REQUIRE( commandLine.argumentCount() == 3 );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("h") );
+    REQUIRE( getSubCommandName( commandLine.argumentAt(2) ) == QLatin1String("copy") );
+    REQUIRE( command != nullptr );
+    REQUIRE( command->name() == QLatin1String("copy") );
+  }
+
+  SECTION("-h copy -f")
+  {
+    arguments = qStringListFromUtf8Strings({"-h","copy","-f"});
+    auto first = arguments.cbegin();
+    REQUIRE( parseArgumentsUntilSubCommandName( first, arguments.cend(), parserDefinition, &command, commandLine, error ) );
+    REQUIRE( first == arguments.cbegin()+1 );
+    REQUIRE( commandLine.argumentCount() == 3 );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("h") );
+    REQUIRE( getSubCommandName( commandLine.argumentAt(2) ) == QLatin1String("copy") );
+    REQUIRE( command != nullptr );
+    REQUIRE( command->name() == QLatin1String("copy") );
+  }
+
+  SECTION("--")
+  {
+    arguments = qStringListFromUtf8Strings({"--"});
+    auto first = arguments.cbegin();
+    REQUIRE( parseArgumentsUntilSubCommandName( first, arguments.cend(), parserDefinition, &command, commandLine, error ) );
+    REQUIRE( first == arguments.cend() );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( isDoubleDash( commandLine.argumentAt(1) ) );
+    REQUIRE( command == nullptr );
+  }
+}
+
 TEST_CASE("parse")
 {
   QStringList arguments;
