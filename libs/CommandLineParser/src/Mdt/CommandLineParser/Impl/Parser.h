@@ -272,10 +272,6 @@ namespace Mdt{ namespace CommandLineParser{
       assert( !error.hasError() );
 
       if( current->startsWith( QLatin1String("--") ) ){
-//         if( current->length() == 2 ){
-//           commandLine.appendDoubleDash();
-//           return true;
-//         }
         assert( current->length() > 2 );
         if( addLongOptionToCommandLine(current, last, command, commandLine, error) ){
           return true;
@@ -413,7 +409,6 @@ namespace Mdt{ namespace CommandLineParser{
       assert( first != last );
 
       const ParserDefinitionCommand *command = &parserDefinition.mainCommand();
-//       bool inSubCommand = false;
 
       commandLine.setExecutableName(*first);
       ++first;
@@ -432,18 +427,6 @@ namespace Mdt{ namespace CommandLineParser{
       }
 
       while(first != last){
-//         if(!inSubCommand){
-//           const auto subCommand = parserDefinition.findSubCommandByName(*first);
-//           if(subCommand){
-//             inSubCommand = true;
-//             command = &(*subCommand);
-//             commandLine.appendSubCommandName( command->name() );
-//             ++first;
-//             if(first == last){
-//               return true;
-//             }
-//           }
-//         }
         if( !parseArgument(first, last, *command, commandLine, error) ){
           return false;
         }
@@ -452,42 +435,6 @@ namespace Mdt{ namespace CommandLineParser{
         }
         ++first;
       }
-
-      /*
-      while(first != last){
-        if( *first == QLatin1String("--") ){
-          commandLine.appendDoubleDash();
-          ++first;
-          parseAsPositionalArgument(first, last, commandLine);
-          return true;
-        }
-        if(!inSubCommand){
-          const auto subCommand = parserDefinition.findSubCommandByName(*first);
-          if(subCommand){
-            inSubCommand = true;
-            command = &(*subCommand);
-            commandLine.appendSubCommandName( command->name() );
-            ++first;
-            if(first == last){
-              return true;
-            }
-            if( *first == QLatin1String("--") ){
-              commandLine.appendDoubleDash();
-              ++first;
-              parseAsPositionalArgument(first, last, commandLine);
-              return true;
-            }
-          }
-        }
-        if( !addOptionOrDashToCommandLine(first, last, *command, commandLine, error) ){
-          if( error.hasError() ){
-            return false;
-          }
-          commandLine.appendPositionalArgument(*first);
-        }
-        ++first;
-      }
-      */
 
       return true;
     }

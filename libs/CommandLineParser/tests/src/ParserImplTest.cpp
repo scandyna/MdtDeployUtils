@@ -26,64 +26,19 @@
 #include <QLatin1String>
 #include <QStringList>
 
-#include <QDebug>
-
 using namespace Mdt::CommandLineParser;
 using namespace Mdt::CommandLineParser::Impl;
-using namespace Mdt::CommandLineParser::CommandLine;
-// using Mdt::CommandLineParser::CommandLine::CommandLine;
-// using Mdt::CommandLineParser::CommandLine::getPositionalArgumentValue;
-
-
-/**
- * should split:
- *  - parse until sub command is found (can be slow, only use if def has sub-command)
- *  - parse until --
- *  - parse the rest which does not have any option, sub command, etc...
- *
- * function to handle short options,
- * which could be combined (-abc == -a -b -c)
- * see also the rule for combination and option value
- * (if a expects a value, is -abc value valid ?,
- *  if c expects a value, is -abc value valid, etc..)
- *
- * \pre \a arg must be at least 2 chars (-h f..ex) just - not accpeted
- * parseShortOption(const QString & arg, iterator & current, ...);
- *  arg and current are redoundant
- *
- * Or better:
- * \pre \a \opt must begin with - and second must not be a dash ( meaybe see isValidShortOptionName() helper )
- * parseShortOption(char[2] opt, iterator & current, ...);
- *  maybe opt and current are redoundant
- */
-
-/** \todo Should also handle --param key=value !
- *
- * \note QCommandLineParser threats it as a option value, see tests
- * All seems ok, just the parser must not be confused by:
- * --param key=value  -> param is option name, key=value is the value
- * --param=value
- *
- * Also test:
- *  --input - (- is the value of input)
- *
- * Also test:
- *  app copy   (copy is a sub-command name)
- *  app --copy copy
- *  app copy copy  (1 positional argument accepted in main command, so the first copy is apos arg, second is the sub-command name)
- *
- * Below is probably not interesting, except for result
- * 1) See if the syntax --param=value is something valid
- * 2) See impact on CommandLine
- * 3) See impact on ParserDefinitionOption
- * 4) See impact on ParserResultOption (should have a key attribute)
- * 5) See impact on Bash completion
- */
 
 /*! \todo If a option expects a value, and it is not given:
  * A) If option def has no default value, should fail ?
  * B) If option def has default value: should accept and not add to the command line
  *    (case should then be handled in the parser result)
+ *
+ * Should also limit to option possible values if defined.
+ * \note see also Bash completion
+ *
+ * Also, the command-line should allways reflect what the user typed,
+ * also true on errors.
  */
 
 TEST_CASE("findOptionByNameInCommand")
@@ -496,17 +451,6 @@ TEST_CASE("addOptionOrDashToCommandLine")
     REQUIRE( current == arguments.cbegin() );
     REQUIRE( !error.hasError() );
   }
-
-//   SECTION("app --")
-//   {
-//     arguments = qStringListFromUtf8Strings({"--"});
-//     auto current = arguments.cbegin();
-//     REQUIRE( addOptionOrDashToCommandLine(current, arguments.cend(), command, commandLine, error) );
-//     REQUIRE( commandLine.argumentCount() == 2 );
-//     REQUIRE( isDoubleDash( commandLine.argumentAt(1) ) );
-//     REQUIRE( current == arguments.cbegin() );
-//     REQUIRE( !error.hasError() );
-//   }
 }
 
 TEST_CASE("parseAsPositionalArgument")
@@ -599,6 +543,17 @@ TEST_CASE("parseArgument")
     REQUIRE( commandLine.argumentCount() == 3 );
     REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("o") );
     REQUIRE( getOptionValue( commandLine.argumentAt(2) ) == QLatin1String("keep") );
+  }
+
+  SECTION("-o -")
+  {
+    arguments = qStringListFromUtf8Strings({"-o","-"});
+    auto first = arguments.cbegin();
+    REQUIRE( parseArgument( first, arguments.cend(), command, commandLine, error ) );
+    REQUIRE( first == arguments.cbegin()+1 );
+    REQUIRE( commandLine.argumentCount() == 3 );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("o") );
+    REQUIRE( getOptionValue( commandLine.argumentAt(2) ) == QLatin1String("-") );
   }
 }
 
@@ -862,12 +817,14 @@ TEST_CASE("parse_AppWithSubCommand")
   ParseError error;
 
   ParserDefinitionOption forceOption( 'f', QLatin1String("force"), QLatin1String("Force") );
+  ParserDefinitionOption copyOption( QLatin1String("copy"), QLatin1String("Copy") );
 
   ParserDefinitionCommand copyCommand( QLatin1String("copy") );
   copyCommand.addOption(forceOption);
 
   ParserDefinition parserDefinition;
   parserDefinition.addHelpOption();
+  parserDefinition.addOption(copyOption);
   parserDefinition.addSubCommand(copyCommand);
 
   SECTION("Empty")
@@ -968,6 +925,19 @@ TEST_CASE("parse_AppWithSubCommand")
     REQUIRE( isSubCommandNameArgument( commandLine.argumentAt(1) ) );
     REQUIRE( getSubCommandName( commandLine.argumentAt(1) ) == QLatin1String("copy") );
     REQUIRE( isDoubleDash( commandLine.argumentAt(2) ) );
+    REQUIRE( !error.hasError() );
+  }
+
+  SECTION("app --copy copy")
+  {
+    arguments = qStringListFromUtf8Strings({"app","--copy","copy"});
+    REQUIRE( parse(arguments, parserDefinition, commandLine, error) );
+    REQUIRE( commandLine.argumentCount() == 3 );
+    REQUIRE( commandLine.executableName() == QLatin1String("app") );
+    REQUIRE( isOption( commandLine.argumentAt(1) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("copy") );
+    REQUIRE( isSubCommandNameArgument( commandLine.argumentAt(2) ) );
+    REQUIRE( getSubCommandName( commandLine.argumentAt(2) ) == QLatin1String("copy") );
     REQUIRE( !error.hasError() );
   }
 }
