@@ -29,18 +29,6 @@
 using namespace Mdt::CommandLineParser;
 using namespace Mdt::CommandLineParser::Impl;
 
-/*! \todo If a option expects a value, and it is not given:
- * A) If option def has no default value, should fail ?
- * B) If option def has default value: should accept and not add to the command line
- *    (case should then be handled in the parser result)
- *
- * Should also limit to option possible values if defined.
- * \note see also Bash completion
- *
- * Also, the command-line should allways reflect what the user typed,
- * also true on errors.
- */
-
 TEST_CASE("findOptionByNameInCommand")
 {
   ParserDefinitionCommand command;
@@ -160,6 +148,9 @@ TEST_CASE("addShortOptionsToCommandLine")
     arguments = qStringListFromUtf8Strings({"-fo"});
     auto current = arguments.cbegin();
     REQUIRE( !addShortOptionsToCommandLine(current, arguments.cend(), command, commandLine, error) );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( isShortOptionList( commandLine.argumentAt(1) ) );
+    REQUIRE( getShortOptionListNames( commandLine.argumentAt(1) ) == std::vector<char>{'f','o'} );
     REQUIRE( current == arguments.cbegin() );
     REQUIRE( error.hasError() );
   }
@@ -169,6 +160,10 @@ TEST_CASE("addShortOptionsToCommandLine")
     arguments = qStringListFromUtf8Strings({"-of","keep"});
     auto current = arguments.cbegin();
     REQUIRE( !addShortOptionsToCommandLine(current, arguments.cend(), command, commandLine, error) );
+//     REQUIRE( commandLine.argumentCount() == 3 );
+//     REQUIRE( isShortOptionList( commandLine.argumentAt(1) ) );
+//     REQUIRE( getShortOptionListNames( commandLine.argumentAt(1) ) == std::vector<char>{'o','f'} );
+    /// \todo What should keep be ? A positional argument ?
     REQUIRE( current == arguments.cbegin() );
     REQUIRE( error.hasError() );
   }
@@ -178,6 +173,9 @@ TEST_CASE("addShortOptionsToCommandLine")
     arguments = qStringListFromUtf8Strings({"-of"});
     auto current = arguments.cbegin();
     REQUIRE( !addShortOptionsToCommandLine(current, arguments.cend(), command, commandLine, error) );
+//     REQUIRE( commandLine.argumentCount() == 2 );
+//     REQUIRE( isShortOptionList( commandLine.argumentAt(1) ) );
+//     REQUIRE( getShortOptionListNames( commandLine.argumentAt(1) ) == std::vector<char>{'o','f'} );
     REQUIRE( current == arguments.cbegin() );
     REQUIRE( error.hasError() );
   }
@@ -200,6 +198,9 @@ TEST_CASE("addShortOptionsToCommandLine")
     arguments = qStringListFromUtf8Strings({"-o="});
     auto current = arguments.cbegin();
     REQUIRE( !addShortOptionsToCommandLine(current, arguments.cend(), command, commandLine, error) );
+//     REQUIRE( commandLine.argumentCount() == 2 );
+//     REQUIRE( isOptionWithValue( commandLine.argumentAt(1) ) );
+//     REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("o") );
     REQUIRE( current == arguments.cbegin() );
     REQUIRE( error.hasError() );
   }

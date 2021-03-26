@@ -57,6 +57,17 @@ namespace Mdt{ namespace CommandLineParser{
    *
    * \sa ParserDefinition
    * \sa ParserResult
+   *
+   * \todo Parser %Impl: If a option expects a value, and it is not given:
+   * A) If option def has no default value, should fail ?
+   * B) If option def has default value: should accept and not add to the command line
+   *    (case should then be handled in the parser result)
+   * Should also limit to option possible values if defined.
+   * \note see also Bash completion
+   *
+   * \todo Parser Impl: Should the command-line reflect what the user typed on error ?
+   * If yes, how to define the undefined ??
+   *
    */
   class MDT_COMMANDLINEPARSER_EXPORT Parser
   {
