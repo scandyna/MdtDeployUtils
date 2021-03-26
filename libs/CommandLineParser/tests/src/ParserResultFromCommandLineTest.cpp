@@ -64,7 +64,7 @@ TEST_CASE("parserResultFromCommandLine")
     commandLine.appendPositionalArgument( QLatin1String("app.conf") );
     commandLine.appendOption( QLatin1String("f") );
     commandLine.appendSubCommandName( QLatin1String("copy") );
-    commandLine.appendOption( QLatin1String("mode") );
+    commandLine.appendOptionExpectingValue( QLatin1String("mode") );
     commandLine.appendOptionValue( QLatin1String("keep") );
     commandLine.appendOptionWithValue( QLatin1String("r"), QLatin1String("true") );
     commandLine.appendPositionalArgument( QLatin1String("file.txt") );
@@ -92,4 +92,50 @@ TEST_CASE("parserResultFromCommandLine")
     REQUIRE( result.subCommand().options()[1].value() == QLatin1String("true") );
   }
 
+  SECTION("myapp -fh")
+  {
+    commandLine.setExecutableName( QLatin1String("myapp") );
+    commandLine.appendShortOptionList({'f','h'});
+
+    result = parserResultFromCommandLine(commandLine);
+    REQUIRE( result.mainCommand().optionCount() == 2 );
+    REQUIRE( result.mainCommand().options()[0].name() == QLatin1String("f") );
+    REQUIRE( !result.mainCommand().options()[0].hasValue() );
+    REQUIRE( result.mainCommand().options()[1].name() == QLatin1String("h") );
+    REQUIRE( !result.mainCommand().options()[1].hasValue() );
+  }
+
+  SECTION("myapp -fm keep")
+  {
+    commandLine.setExecutableName( QLatin1String("myapp") );
+    commandLine.appendShortOptionListWithLastExpectingValue({'f','m'});
+    commandLine.appendOptionValue( QLatin1String("keep") );
+
+    result = parserResultFromCommandLine(commandLine);
+    REQUIRE( result.mainCommand().optionCount() == 2 );
+    REQUIRE( result.mainCommand().options()[0].name() == QLatin1String("f") );
+    REQUIRE( !result.mainCommand().options()[0].hasValue() );
+    REQUIRE( result.mainCommand().options()[1].name() == QLatin1String("m") );
+    REQUIRE( result.mainCommand().options()[1].hasValue() );
+    REQUIRE( result.mainCommand().options()[1].value() == QLatin1String("keep") );
+  }
+
+  SECTION("myapp -fm=keep")
+  {
+    commandLine.setExecutableName( QLatin1String("myapp") );
+    commandLine.appendShortOptionListWithLastHavingValue( {'f','m'}, QLatin1String("keep") );
+
+    result = parserResultFromCommandLine(commandLine);
+    REQUIRE( result.mainCommand().optionCount() == 2 );
+    REQUIRE( result.mainCommand().options()[0].name() == QLatin1String("f") );
+    REQUIRE( !result.mainCommand().options()[0].hasValue() );
+    REQUIRE( result.mainCommand().options()[1].name() == QLatin1String("m") );
+    REQUIRE( result.mainCommand().options()[1].hasValue() );
+    REQUIRE( result.mainCommand().options()[1].value() == QLatin1String("keep") );
+  }
+
+  SECTION("When a option expects a value, and it is not provided in the command line, the default value in the definition should be taken")
+  {
+    REQUIRE(false);
+  }
 }

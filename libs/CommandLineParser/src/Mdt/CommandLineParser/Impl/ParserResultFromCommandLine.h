@@ -28,9 +28,11 @@
 #include "../ParserResult.h"
 #include "../ParserResultCommand.h"
 #include <QString>
+#include <QChar>
 #include <QLatin1String>
 #include <boost/variant.hpp>
 #include <algorithm>
+#include <cstddef>
 #include <cassert>
 
 namespace Mdt{ namespace CommandLineParser{ namespace Impl{
@@ -73,6 +75,13 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
       mCommand.addOption( ParserResultOption(argument.name) );
     }
 
+    void operator()(const Mdt::CommandLineParser::CommandLine::ShortOptionList & argument)
+    {
+      for(char name : argument.names){
+        mCommand.addOption( ParserResultOption( QString( QChar::fromLatin1(name) ) ) );
+      }
+    }
+
     void operator()(const Mdt::CommandLineParser::CommandLine::OptionValue & argument)
     {
       assert( mCommand.hasOptions() );
@@ -86,6 +95,20 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
       option.setValue(argument.value);
 
       mCommand.addOption(option);
+    }
+
+    void operator()(const Mdt::CommandLineParser::CommandLine::ShortOptionListWithLastHavingValue & argument) noexcept
+    {
+      const int lastOptionIndex = static_cast<int>( argument.names.size() ) - 1;
+      assert( lastOptionIndex >= 0 );
+
+      for(int i = 0; i < lastOptionIndex; ++i){
+        mCommand.addOption( ParserResultOption( QString( QChar::fromLatin1(argument.names[static_cast<size_t>(i)]) ) ) );
+      }
+
+      ParserResultOption lastOption( QString( QChar::fromLatin1( argument.names.back() ) ) );
+      lastOption.setValue(argument.value);
+      mCommand.addOption(lastOption);
     }
 
     void operator()(const Mdt::CommandLineParser::CommandLine::SubCommandName &) noexcept
