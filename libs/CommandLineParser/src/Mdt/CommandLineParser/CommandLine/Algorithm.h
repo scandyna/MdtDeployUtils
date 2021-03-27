@@ -231,6 +231,35 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
     return boost::apply_visitor(IsOptionArgument(), argument);
   }
 
+  /*! \internal Visitor for isUnknownOption()
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsUnknownOption : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const UnknownOption &) const noexcept
+    {
+      return true;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \brief Check if \a argument is a unknown option
+   *
+   * \note if \a argument is a option value,
+   *  or a option with value, this function returns false
+   */
+  inline
+  bool isUnknownOption(const Argument & argument) noexcept
+  {
+    return boost::apply_visitor(IsUnknownOption(), argument);
+  }
+
   /*! \internal Visitor for isShortOptionList()
    */
   class MDT_COMMANDLINEPARSER_EXPORT IsShortOptionList : public boost::static_visitor<bool>
@@ -264,6 +293,11 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
    public:
 
     QString operator()(const Option & option) const noexcept
+    {
+      return option.name;
+    }
+
+    QString operator()(const UnknownOption & option) const noexcept
     {
       return option.name;
     }

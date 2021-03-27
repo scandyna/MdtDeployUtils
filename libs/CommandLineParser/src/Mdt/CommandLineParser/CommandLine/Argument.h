@@ -50,6 +50,13 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
     bool expectsValue = false;
   };
 
+  /*! \brief A unknown option in the command line
+   */
+  struct MDT_COMMANDLINEPARSER_EXPORT UnknownOption
+  {
+    QString name;
+  };
+
   /*! \brief A list of short options in the command line
    */
   struct MDT_COMMANDLINEPARSER_EXPORT ShortOptionList
@@ -104,7 +111,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
    */
   using Argument = boost::variant<
     Executable, PositionalArgument, SubCommandName,
-    Option, ShortOptionList, OptionValue, OptionWithValue,
+    Option, UnknownOption, ShortOptionList, OptionValue, OptionWithValue,
     ShortOptionListWithLastHavingValue,
     SingleDash, DoubleDash>;
 

@@ -91,7 +91,7 @@ TEST_CASE("isOptionOrOptionWithValueOrAnyDash")
   }
 }
 
-TEST_CASE("optionName")
+TEST_CASE("getOptionName")
 {
   Argument argument;
 
@@ -99,6 +99,12 @@ TEST_CASE("optionName")
   {
     argument = Option{QLatin1String("help")};
     REQUIRE( getOptionName(argument) == QLatin1String("help") );
+  }
+
+  SECTION("Unknown option")
+  {
+    argument = UnknownOption{QLatin1String("unknown-option")};
+    REQUIRE( getOptionName(argument) == QLatin1String("unknown-option") );
   }
 
   SECTION("Option expecting value")
@@ -191,6 +197,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
   Argument subCommandName = SubCommandName{QLatin1String("copy")};
   Argument positionalArgument = PositionalArgument{QLatin1String("file.txt")};
   Argument option = Option{QLatin1String("help")};
+  Argument unknownOption = UnknownOption{QLatin1String("unknown-option")};
   Argument shortOptionList = ShortOptionList{{'f','h'}};
   Argument optionValue = OptionValue{QLatin1String("keep")};
   Argument optionWithValue = OptionWithValue{QLatin1String("dir"),QLatin1String("/tmp")};
@@ -204,6 +211,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( !isExecutableName(subCommandName) );
     REQUIRE( !isExecutableName(positionalArgument) );
     REQUIRE( !isExecutableName(option) );
+    REQUIRE( !isExecutableName(unknownOption) );
     REQUIRE( !isExecutableName(shortOptionList) );
     REQUIRE( !isExecutableName(optionValue) );
     REQUIRE( !isExecutableName(optionWithValue) );
@@ -218,6 +226,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( !isSingleDash(subCommandName) );
     REQUIRE( !isSingleDash(positionalArgument) );
     REQUIRE( !isSingleDash(option) );
+    REQUIRE( !isSingleDash(unknownOption) );
     REQUIRE( !isSingleDash(shortOptionList) );
     REQUIRE( !isSingleDash(optionValue) );
     REQUIRE( !isSingleDash(optionWithValue) );
@@ -232,6 +241,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( !isDoubleDash(subCommandName) );
     REQUIRE( !isDoubleDash(positionalArgument) );
     REQUIRE( !isDoubleDash(option) );
+    REQUIRE( !isDoubleDash(unknownOption) );
     REQUIRE( !isDoubleDash(shortOptionList) );
     REQUIRE( !isDoubleDash(optionValue) );
     REQUIRE( !isDoubleDash(optionWithValue) );
@@ -240,12 +250,28 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( isDoubleDash(doubleDash) );
   }
 
+  SECTION("isUnknownOption")
+  {
+    REQUIRE( !isUnknownOption(executableName) );
+    REQUIRE( !isUnknownOption(subCommandName) );
+    REQUIRE( !isUnknownOption(positionalArgument) );
+    REQUIRE( !isUnknownOption(option) );
+    REQUIRE( isUnknownOption(unknownOption) );
+    REQUIRE( !isUnknownOption(shortOptionList) );
+    REQUIRE( !isUnknownOption(optionValue) );
+    REQUIRE( !isUnknownOption(optionWithValue) );
+    REQUIRE( !isUnknownOption(shortOptionListWithLastHavingValue) );
+    REQUIRE( !isUnknownOption(singleDash) );
+    REQUIRE( !isUnknownOption(doubleDash) );
+  }
+
   SECTION("isShortOptionList")
   {
     REQUIRE( !isShortOptionList(executableName) );
     REQUIRE( !isShortOptionList(subCommandName) );
     REQUIRE( !isShortOptionList(positionalArgument) );
     REQUIRE( !isShortOptionList(option) );
+    REQUIRE( !isShortOptionList(unknownOption) );
     REQUIRE( isShortOptionList(shortOptionList) );
     REQUIRE( !isShortOptionList(optionValue) );
     REQUIRE( !isShortOptionList(optionWithValue) );
@@ -260,6 +286,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( !isOptionValue(subCommandName) );
     REQUIRE( !isOptionValue(positionalArgument) );
     REQUIRE( !isOptionValue(option) );
+    REQUIRE( !isOptionValue(unknownOption) );
     REQUIRE( !isOptionValue(shortOptionList) );
     REQUIRE( isOptionValue(optionValue) );
     REQUIRE( !isOptionValue(optionWithValue) );
@@ -274,6 +301,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( !isOptionWithValue(subCommandName) );
     REQUIRE( !isOptionWithValue(positionalArgument) );
     REQUIRE( !isOptionWithValue(option) );
+    REQUIRE( !isOptionWithValue(unknownOption) );
     REQUIRE( !isOptionWithValue(shortOptionList) );
     REQUIRE( !isOptionWithValue(optionValue) );
     REQUIRE( isOptionWithValue(optionWithValue) );
@@ -288,6 +316,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( !isShortOptionListWithLastHavingValue(subCommandName) );
     REQUIRE( !isShortOptionListWithLastHavingValue(positionalArgument) );
     REQUIRE( !isShortOptionListWithLastHavingValue(option) );
+    REQUIRE( !isShortOptionListWithLastHavingValue(unknownOption) );
     REQUIRE( !isShortOptionListWithLastHavingValue(shortOptionList) );
     REQUIRE( !isShortOptionListWithLastHavingValue(optionValue) );
     REQUIRE( !isShortOptionListWithLastHavingValue(optionWithValue) );
@@ -302,6 +331,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( getOptionValue(subCommandName).isEmpty() );
     REQUIRE( getOptionValue(positionalArgument).isEmpty() );
     REQUIRE( getOptionValue(option).isEmpty() );
+    REQUIRE( getOptionValue(unknownOption).isEmpty() );
     REQUIRE( getOptionValue(shortOptionList).isEmpty() );
     REQUIRE( getOptionValue(optionValue) == QLatin1String("keep") );
     REQUIRE( getOptionValue(optionWithValue) == QLatin1String("/tmp") );
@@ -316,6 +346,7 @@ TEST_CASE("argumentTypeChecksAndGetters")
     REQUIRE( getShortOptionListNames(subCommandName).empty() );
     REQUIRE( getShortOptionListNames(positionalArgument).empty() );
     REQUIRE( getShortOptionListNames(option).empty() );
+    REQUIRE( getShortOptionListNames(unknownOption).empty() );
     REQUIRE( getShortOptionListNames(shortOptionList) == std::vector<char>{'f','h'} );
     REQUIRE( getShortOptionListNames(optionValue).empty() );
     REQUIRE( getShortOptionListNames(optionWithValue).empty() );
@@ -418,6 +449,16 @@ TEST_CASE("CommandLine")
     REQUIRE( isShortOptionListWithLastHavingValue( commandLine.argumentAt(1) ) );
     REQUIRE( getShortOptionListNames( commandLine.argumentAt(1) ) == std::vector<char>{'f','o'} );
     REQUIRE( getOptionValue( commandLine.argumentAt(1) ) == QLatin1String("keep") );
+  }
+
+  SECTION("myapp --unknown-option")
+  {
+    commandLine.setExecutableName( QLatin1String("myapp") );
+    commandLine.appendUnknownOption( QLatin1String("unknown-option") );
+
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(1) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("unknown-option") );
   }
 }
 

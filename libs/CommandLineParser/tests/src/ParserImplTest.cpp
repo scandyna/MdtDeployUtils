@@ -284,6 +284,18 @@ TEST_CASE("addShortOptionsToCommandLine")
     REQUIRE( current == (arguments.cbegin()+1) );
     REQUIRE( !error.hasError() );
   }
+
+  SECTION("-u (unknown option)")
+  {
+    arguments = qStringListFromUtf8Strings({"-u"});
+    auto current = arguments.cbegin();
+    REQUIRE( !addShortOptionsToCommandLine(current, arguments.cend(), command, commandLine, error) );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(1) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("u") );
+    REQUIRE( current == arguments.cbegin() );
+    REQUIRE( error.hasError() );
+  }
 }
 
 TEST_CASE("addLongOptionToCommandLine")
@@ -321,6 +333,9 @@ TEST_CASE("addLongOptionToCommandLine")
     arguments = qStringListFromUtf8Strings({"--unknown-option"});
     auto current = arguments.cbegin();
     REQUIRE( !addLongOptionToCommandLine(current, arguments.cend(), command, commandLine, error) );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(1) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("unknown-option") );
     REQUIRE( current == arguments.cbegin() );
     REQUIRE( error.hasError() );
   }
@@ -712,7 +727,10 @@ TEST_CASE("parse")
   {
     arguments = qStringListFromUtf8Strings({"app","--unknown-option"});
     REQUIRE( !parse(arguments, parserDefinition, commandLine, error) );
-    REQUIRE( error.unknownOptionNames == qStringListFromUtf8Strings({"unknown-option"}) );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( commandLine.executableName() == QLatin1String("app") );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(1) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("unknown-option") );
     REQUIRE( error.hasError() );
   }
 
@@ -720,7 +738,10 @@ TEST_CASE("parse")
   {
     arguments = qStringListFromUtf8Strings({"app","-u"});
     REQUIRE( !parse(arguments, parserDefinition, commandLine, error) );
-    REQUIRE( error.unknownOptionNames == qStringListFromUtf8Strings({"u"}) );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( commandLine.executableName() == QLatin1String("app") );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(1) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("u") );
     REQUIRE( error.hasError() );
   }
 

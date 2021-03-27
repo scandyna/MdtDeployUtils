@@ -101,6 +101,18 @@ namespace Mdt{ namespace CommandLineParser{ namespace CommandLine{
       mArgumentList.emplace_back( Option{name} );
     }
 
+    /*! \brief Add a unknown option to the end of this command line
+     *
+     * \pre \a name must be a valid option name
+     * \sa isValidOptionName()
+     */
+    void appendUnknownOption(const QString & name)
+    {
+      assert( isValidOptionName(name) );
+
+      mArgumentList.emplace_back( UnknownOption{name} );
+    }
+
     /*! \brief Add a option that expects a value to the end of this command line
      *
      * \pre \a name must be a valid option name

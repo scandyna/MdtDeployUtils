@@ -76,7 +76,6 @@ namespace Mdt{ namespace CommandLineParser{
      public:
 
       QString errorText;
-      QStringList unknownOptionNames;
 
       bool hasError() const noexcept
       {
@@ -118,8 +117,9 @@ namespace Mdt{ namespace CommandLineParser{
 
         const auto parserDefinitionOptionIt = findOptionByShortNameInCommand(optionName, command);
         if( parserDefinitionOptionIt == command.options().cend() ){
+          /// \todo make a dedicated function to create a QString from ca char
+          commandLine.appendUnknownOption( QString( QChar::fromLatin1(optionName) ) );
           error.errorText = ParseError::tr("Unknown option '%1'").arg(optionName);
-          error.unknownOptionNames.append( QString( QChar::fromLatin1(optionName) ) );
           return false;
         }
 
@@ -139,9 +139,11 @@ namespace Mdt{ namespace CommandLineParser{
       if( optionNames.size() == 1 ){
         if(lastShortOptionExpectsValue){
           if(valueShouldBeNextArgument){
+            /// \todo make a dedicated function to create a QString from ca char
             commandLine.appendOptionExpectingValue( QString( QChar::fromLatin1(optionNames[0]) ) );
           }
         }else{
+          /// \todo make a dedicated function to create a QString from ca char
           commandLine.appendOption( QString( QChar::fromLatin1(optionNames[0]) ) );
         }
       }else{
@@ -173,6 +175,7 @@ namespace Mdt{ namespace CommandLineParser{
           QString value;
           std::copy( valueIt, current->cend(), std::back_inserter(value) );
           if( optionNames.size() == 1 ){
+            /// \todo make a dedicated function to create a QString from ca char
             commandLine.appendOptionWithValue( QString( QChar::fromLatin1(optionNames[0]) ), value);
           }else{
             commandLine.appendShortOptionListWithLastHavingValue(optionNames, value);
@@ -214,8 +217,8 @@ namespace Mdt{ namespace CommandLineParser{
 
       const auto parserDefinitionOptionIt = findOptionByLongNameInCommand(optionName, command);
       if( parserDefinitionOptionIt == command.options().cend() ){
+        commandLine.appendUnknownOption(optionName);
         error.errorText = ParseError::tr("Unknown option '%1'").arg(optionName);
-        error.unknownOptionNames.append(optionName);
         return false;
       }
 
