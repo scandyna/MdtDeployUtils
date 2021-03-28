@@ -21,14 +21,11 @@
 #ifndef MDT_COMMAND_LINE_PARSER_IMPL_BASH_COMPLETION_PARSER_H
 #define MDT_COMMAND_LINE_PARSER_IMPL_BASH_COMPLETION_PARSER_H
 
-#include "../ParserResult.h"
-
 #include "../CommandLine/CommandLine.h"
 #include "../ParserDefinition.h"
 #include "../BashCompletionParserQuery.h"
 #include "../BashCompletionParserCurrentArgument.h"
 #include "../BashCompletionParserCurrentArgumentType.h"
-
 #include <QLatin1String>
 #include <QString>
 #include <QLatin1Char>
@@ -535,7 +532,6 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
     assert( BashCompletionParserQuery::isValidBashCompletionQuery(commandLine, parserDefinition) );
 
     BashCompletionParserQuery query(commandLine, parserDefinition);
-
     BashCompletionParserCurrentArgument currentArgument;
 
     if( query.isCursorPastTheCompLine() ){
