@@ -26,6 +26,8 @@
 #include "../CommandLine/CommandLine.h"
 #include "../ParserDefinition.h"
 #include "../BashCompletionParserQuery.h"
+#include "../BashCompletionParserCurrentArgument.h"
+#include "../BashCompletionParserCurrentArgumentType.h"
 
 #include <QLatin1String>
 #include <QString>
@@ -34,7 +36,7 @@
 #include <cassert>
 
 // #include "../ParserResultDebug.h"
-#include <QDebug>
+// #include <QDebug>
 // #include <iostream>
 
 namespace Mdt{ namespace CommandLineParser{ namespace Impl{
@@ -46,7 +48,283 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
 //     return QLatin1String("completion-find-current-positional-argument-name");
 //   }
 
+  /*! \internal Find the current argument type in the command line for completion
+   *
+   * Examples:
+   * \code
+   * <...> 1 app -
+   * //  cursor: ^
+   * // return: Options
+   *
+   * <...> 1 app --
+   * //  cursor: ^
+   * // return: Options
+   *
+   * <...> 1 app -h
+   * //  cursor: ^
+   * // return: Options
+   *
+   * <...> 1 app --verbose
+   * //  cursor: ^
+   * // return: Options
+   *
+   * <...> 2 app --overwrite-behavior k
+   * //                       cursor: ^
+   * // return: OptionNameValue
+   *
+   * <...> 1 app copy
+   * //  cursor: ^
+   * // return: Commands
+   * // Why: the cursor is at the sub-command name (no ambiguity)
+   *
+   * <...> 2 app copy -h
+   * //       cursor: ^
+   * // return: Options
+   *
+   * <...> 1 app fi
+   * //  cursor: ^
+   * // return:
+   * // - PositionalArgumentName if the definition has at least 1 positional argument in its main command
+   * // - Commands if the definition has no positional argument, but has sub-commands
+   * // - Undefined if none of above is true
+   *
+   * <...> 2 app file.conf c
+   * //            cursor: ^
+   * // return:
+   * // - PositionalArgumentName if the definition has at least 2 positional arguments in its main command
+   * // - Commands if the definition has less than 2 positional argument, but has sub-commands
+   * // - Undefined if none of above is true
+   *
+   * <...> 2 app file.txt /
+   * //           cursor: ^
+   * // return:
+   * // - PositionalArgumentName if the definition has at least 2 positional arguments in its main command
+   * // - Commands if the definition has less than 2 positional argument, but has sub-commands
+   * // - Undefined if none of above is true
+   *
+   * <...> 2 app copy fi
+   * //       cursor: ^
+   * // return:
+   * // - PositionalArgumentName if the definition has at least 1 positional argument in its copy sub-command
+   * // - Undefined if none of above is true
+   * \endcode
+   *
+   * \note While the user types a option, following happens with current parser:
+   * \code
+   * app -
+   * // The parser adds a single dash to the command line
+   *
+   * app -h
+   * // The parser adds the 'h' option to the command line
+   * // Bash will complete and put a space
+   *
+   * app --
+   * // The parser adds a double dash to the command line
+   *
+   * app --h
+   * // The parser will fail and not add anything to the command-line
+   * // In this case, this function is not called, but completionFindCurrentArgumentForCursorPastTheCompLine() will be
+   * // Bash will then receive, for example, options-or-<positionalArgumentName> (with to much possibilities),
+   * // but compgen will filter them out and suggest --help as result.
+   * \endcode
+   *
+   * \pre the cursor must be in the COMP_LINE, not past
+   */
+  static
+  BashCompletionParserCurrentArgumentType completionFindCurrentArgumentTypeForCursorInTheCompLine(const BashCompletionParserQuery & query)
+  {
+    assert( !query.isCursorPastTheCompLine() );
+
+    if( query.isCursorAtOption() ){
+      return BashCompletionParserCurrentArgumentType::Options;
+    }
+    if( query.isCursorAtOptionValue() ){
+      return BashCompletionParserCurrentArgumentType::OptionNameValue;
+    }
+
+    if( query.isCursorInMainCommand() ){
+      const int commandLinePositionalArgumentCount = query.mainCommandPositionalArgumentCount();
+      const int definitionPositionalArgumentCount = query.parserDefinitionMainCommandPositionalArgumentCount();
+
+      if( commandLinePositionalArgumentCount > definitionPositionalArgumentCount ){
+        if( query.parserDefinitionHasSubCommand() ){
+          return BashCompletionParserCurrentArgumentType::Commands;
+        }
+        return BashCompletionParserCurrentArgumentType::Undefined;
+      }
+      return BashCompletionParserCurrentArgumentType::PositionalArgumentName;
+    }
+
+    if( query.isCursorAtSubCommandName() ){
+      return BashCompletionParserCurrentArgumentType::Commands;
+    }
+
+    if( query.isCursorInSubCommand() ){
+      const int commandLinePositionalArgumentCount = query.subCommandPositionalArgumentCount();
+      const int definitionPositionalArgumentCount = query.parserDefinitionSubCommandPositionalArgumentCount();
+
+      if( commandLinePositionalArgumentCount <= definitionPositionalArgumentCount ){
+        return BashCompletionParserCurrentArgumentType::PositionalArgumentName;
+      }
+    }
+
+    return BashCompletionParserCurrentArgumentType::Undefined;
+  }
+
   /*! \internal Find the current argument in the command line for completion
+   *
+   * \pre the cursor must be in the COMP_LINE, not past
+   */
+  static
+  BashCompletionParserCurrentArgument completionFindCurrentArgumentForCursorInTheCompLine(const BashCompletionParserQuery & query)
+  {
+    assert( !query.isCursorPastTheCompLine() );
+
+    BashCompletionParserCurrentArgument currentArgument;
+
+    currentArgument.setType( completionFindCurrentArgumentTypeForCursorInTheCompLine(query) );
+    currentArgument.setInSubCommand( query.isCursorInSubCommand() );
+
+    return currentArgument;
+  }
+
+  /*! \internal Find the current argument in the command line for completion
+   *
+   * Examples:
+   * \code
+   * <...> 1 app
+   * //  cursor: ^
+   * // return:
+   * // - OptionsOrPositionalArgumentName if the definition has at least 1 positional argument in its main command
+   * //    (if more positional arguments are available in the main command of the definition)
+   * // - Options if the definition has no positional argument and no sub-commands
+   * //    (if the cursor is past the available positional arguments in the main command of the definition)
+   * // - OptionsOrCommands if the definition has no positional argument, but has sub-commands
+   * //    (if the cursor is past the available positional arguments in the main command of the definition
+   * //     and the definition has sub-commands)
+   * // - Undefined if none of above is true
+   *
+   * <...> 2 app --verbose
+   * //            cursor: ^
+   * // return:
+   * // - OptionsOrPositionalArgumentName if the definition has at least 1 positional argument in its main command
+   * //    (if more positional arguments are available in the main command of the definition)
+   * // - Options if the definition has no positional argument and no sub-commands
+   * //    (if the cursor is past the available positional arguments in the main command of the definition)
+   * // - OptionsOrCommands if the definition has no positional argument, but has sub-commands
+   * //    (if the cursor is past the available positional arguments in the main command of the definition
+   * //     and the definition has sub-commands)
+   * // - Undefined if none of above is true
+   *
+   * <...> 2 app --overwrite-behavior
+   * //                       cursor: ^
+   * // return: OptionNameValue
+   *
+   * <...> 2 app file.txt
+   * //           cursor: ^
+   * // return:
+   * // - OptionsOrPositionalArgumentName if the definition has at least 2 positional arguments in its main command
+   * //    (if more positional arguments are available in the main command of the definition)
+   * // - Options if the definition has 1 positional argument and no sub-commands
+   * //    (if the cursor is past the available positional arguments in the main command of the definition)
+   * // - OptionsOrCommands if the definition has 1 positional argument and has sub-commands
+   * //    (if the cursor is past the available positional arguments in the main command of the definition
+   * //     and the definition has sub-commands)
+   * // - Undefined if none of above is true
+   *
+   * <...> 2 app co
+   * //     cursor: ^
+   * // return:
+   * // - OptionsOrPositionalArgumentName if the definition has at least 2 positional arguments in its main command
+   * //    (if more positional arguments are available in the main command of the definition)
+   * // - Options if the definition has 1 positional argument and no sub-commands
+   * //    (if the cursor is past the available positional arguments in the main command of the definition)
+   * // - OptionsOrCommands if the definition has 1 positional argument and has sub-commands
+   * //    (if the cursor is past the available positional arguments in the main command of the definition
+   * //     and the definition has sub-commands)
+   * // - Undefined if none of above is true
+   *
+   * <...> 2 app copy
+   * //       cursor: ^
+   * // return:
+   * // - OptionsOrPositionalArgumentName if the definition has at least 1 positional argument in its sub-command
+   * // - Options if the definition has no positional argument in its sub-command
+   * // - Undefined if none of above is true
+   * \endcode
+   *
+   * \pre the cursor must be past the COMP_LINE
+   */
+  static
+  BashCompletionParserCurrentArgumentType completionFindCurrentArgumentTypeForCursorPastTheCompLine(const BashCompletionParserQuery & query)
+  {
+    assert( query.isCursorPastTheCompLine() );
+
+    if( query.isCursorAtOptionValue() ){
+      return BashCompletionParserCurrentArgumentType::OptionNameValue;
+    }
+
+    if( query.isCursorInMainCommand() ){
+      const int commandLinePositionalArgumentCount = query.mainCommandPositionalArgumentCount() + 1;
+      const int definitionPositionalArgumentCount = query.parserDefinitionMainCommandPositionalArgumentCount();
+
+      if( commandLinePositionalArgumentCount > (definitionPositionalArgumentCount+1) ){
+        return BashCompletionParserCurrentArgumentType::Undefined;
+      }
+
+      if( commandLinePositionalArgumentCount > definitionPositionalArgumentCount ){
+        if( query.parserDefinitionHasSubCommand() ){
+          return BashCompletionParserCurrentArgumentType::OptionsOrCommands;
+//           if( commandLinePositionalArgumentCount >= 0 ){
+//             return BashCompletionParserCurrentArgumentType::Commands;
+//           }else{
+//             return BashCompletionParserCurrentArgumentType::OptionsOrCommands;
+//           }
+        }
+        return BashCompletionParserCurrentArgumentType::Options;
+      }
+//       if( (commandLinePositionalArgumentCount == 1) && query.parserDefinitionHasSubCommand() ){
+//         return BashCompletionParserCurrentArgumentType::OptionsOrCommands;
+//       }
+      return BashCompletionParserCurrentArgumentType::OptionsOrPositionalArgumentName;
+    }
+
+//     if( query.isCursorAtSubCommandName() ){
+//       return BashCompletionParserCurrentArgumentType::OptionsOrPositionalArgumentName;
+//     }
+
+//     if( query.isCursorInSubCommand() ){
+    if( query.compLineHasSubCommand() ){
+      const int commandLinePositionalArgumentCount = query.subCommandPositionalArgumentCount() + 1;
+      const int definitionPositionalArgumentCount = query.parserDefinitionSubCommandPositionalArgumentCount();
+
+      if( commandLinePositionalArgumentCount <= definitionPositionalArgumentCount ){
+        return BashCompletionParserCurrentArgumentType::OptionsOrPositionalArgumentName;
+      }
+    }
+
+    return BashCompletionParserCurrentArgumentType::Undefined;
+  }
+
+  /*! \internal Find the current argument in the command line for completion
+   *
+   * \pre the cursor must be past the COMP_LINE
+   */
+  static
+  BashCompletionParserCurrentArgument completionFindCurrentArgumentForCursorPastTheCompLine(const BashCompletionParserQuery & query)
+  {
+    assert( query.isCursorPastTheCompLine() );
+
+    BashCompletionParserCurrentArgument currentArgument;
+
+    currentArgument.setType( completionFindCurrentArgumentTypeForCursorPastTheCompLine(query) );
+    currentArgument.setInSubCommand( query.compLineHasSubCommand() );
+
+    return currentArgument;
+  }
+
+  /*! \internal Find the current argument in the command line for completion
+   *
+   * \todo Should document in the public BashCompletionParser class
    *
    * The completion script will call the executable as follow:
    * \code
@@ -130,8 +408,8 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
    *
    * app completion-find-current-argument 5 app --verbose --overwrite-behavior keep file.txt
    * //                                                                             cursor:  ^
-   * // return: destination
-   * // related in script: compgen -A directory -- "$cur"
+   * // return: options-or-destination
+   * // related in script: compgen -A directory -W "-h --help --verbose --overwrite-behavior" -- "$cur"
    * \endcode
    *
    * \subsection note_About_ShortOptionsValues Note about short options with values
@@ -229,10 +507,12 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
    *
    * app completion-find-current-argument 3 app copy file.txt
    * //                                              cursor:  ^
-   * // return: copy-destination
-   * // related in script: compgen -A directory -- "$cur"
+   * // return: copy-options-or-destination
+   * // related in script: compgen -A directory -W "-h --help --dereference --overwrite-behavior" -- "$cur"
    * \endcode
    *
+   *
+   * \subsection appWithPositionalArgumentAndSubCommand App with positional arguments and sub-command
    *
    * Here is a other example that take a positional argument before the sub-command:
    * \code
@@ -265,9 +545,23 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
    *
    * app completion-find-current-argument 2 app file.conf
    * //                                          cursor:  ^
+   * // return: options-or-commands
+   * // related in script: compgen -W "-h --help --verbose copy cut" -- "$cur"
+   *
+   * app completion-find-current-argument 2 app file.conf c
+   * //                                          cursor:  ^
    * // return: commands
    * // related in script: compgen -W "copy cut" -- "$cur"
    * \endcode
+   *
+   * \note Current version will not try to find out if the command line is allready complete.
+   * This would requiere to know how many positional arguments are possible (maybe more than in the parser definition ?).
+   * For options, it would also be required to know how many times a specific option can be passed.
+   *
+   * \note The fact that any options or sub-commands are available is not handled here,
+   * but in the generated completion script.
+   * If this function returns, for example \a "options", and the parser definition has no options,
+   * the *) (\a else) case will be triggered in the script.
    *
    * \pre \a commandLine must be a valid Bash completion query
    * \sa BashCompletionParserQuery::isValidBashCompletionQuery()
@@ -281,7 +575,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
   static
   QString completionFindCurrentArgument(const CommandLine::CommandLine & commandLine, const ParserDefinition & parserDefinition)
   {
-    assert( BashCompletionParserQuery::isValidBashCompletionQuery(commandLine) );
+    assert( BashCompletionParserQuery::isValidBashCompletionQuery(commandLine, parserDefinition) );
 
     BashCompletionParserQuery query(commandLine, parserDefinition);
 
@@ -341,36 +635,85 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
      *   -> sub-command
      * \note If cursor past the command line, and command line has sub-command, we are in the sub-command
      */
+    
+    /*
+     *
+     * BashCompletionParserCurrentArgument completionFindCurrentArgument()
+     *
+     * completionFindCurrentArgumentString()
+     */
+    
+    BashCompletionParserCurrentArgument currentArgument;
+    
+//     qDebug() << "cursor past the compline: " << query.isCursorPastTheCompLine();
+    
+    if( query.isCursorPastTheCompLine() ){
+      currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(query);
+    }else{
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(query);
+    }
 
-    const int positionalArgumentIndexInDefinition = query.cursorMainCommandPositionalArgumentsIndexInDefinition();
-
-    qDebug() << "positionalArgumentIndexInDefinition: " << positionalArgumentIndexInDefinition;
-
-
-    if( query.isCursorPastTheCompLine() && !query.compLineHasSubCommand() ){
-      if( query.isCursorAtMainCommandOptionValue() ){
-        return QLatin1String("option-") % query.optionNameRelatedToCurrentOptionValue() % QLatin1String("-value");
+//     qDebug() << "currentArgument IN sub-command: " << currentArgument.isInSubCommand();
+//     qDebug() << "currentArgument type: " << (int)currentArgument.type();
+    
+    if( currentArgument.isInSubCommand() ){
+      const QString subCommandName = query.subCommandName();
+      switch( currentArgument.type() ){
+        case BashCompletionParserCurrentArgumentType::Options:
+          return subCommandName % QLatin1String("-options");
+        case BashCompletionParserCurrentArgumentType::OptionNameValue:
+          return subCommandName % QLatin1String("-option-") % query.optionNameRelatedToCurrentOptionValue() % QLatin1String("-value");
+        case BashCompletionParserCurrentArgumentType::PositionalArgumentName:
+          return subCommandName % QLatin1Char('-') % query.cursorSubCommandPositionalArgumentName();
+        case BashCompletionParserCurrentArgumentType::OptionsOrPositionalArgumentName:
+          return subCommandName % QLatin1String("-options-or-") % query.cursorSubCommandPositionalArgumentName();
+      }
+    }else{
+      switch( currentArgument.type() ){
+        case BashCompletionParserCurrentArgumentType::Options:
+          return QLatin1String("options");
+        case BashCompletionParserCurrentArgumentType::OptionNameValue:
+          return QLatin1String("option-") % query.optionNameRelatedToCurrentOptionValue() % QLatin1String("-value");
+        case BashCompletionParserCurrentArgumentType::PositionalArgumentName:
+          return query.cursorMainCommandPositionalArgumentName();
+        case BashCompletionParserCurrentArgumentType::OptionsOrPositionalArgumentName:
+          return QLatin1String("options-or-") % query.cursorMainCommandPositionalArgumentName();
+        case BashCompletionParserCurrentArgumentType::Commands:
+          return QLatin1String("commands");
+        case BashCompletionParserCurrentArgumentType::OptionsOrCommands:
+          return QLatin1String("options-or-commands");
       }
     }
+
+//     const int positionalArgumentIndexInDefinition = query.cursorMainCommandPositionalArgumentIndexInDefinition();
+// 
+//     qDebug() << "positionalArgumentIndexInDefinition: " << positionalArgumentIndexInDefinition;
+
+
+//     if( query.isCursorPastTheCompLine() && !query.compLineHasSubCommand() ){
+//       if( query.isCursorAtMainCommandOptionValue() ){
+//         return QLatin1String("option-") % query.optionNameRelatedToCurrentOptionValue() % QLatin1String("-value");
+//       }
+//     }
 
 //     if( !query.isCursorPastTheCompLine() && !query.compLineHasSubCommand() && query.isCursorAtMainCommandOption() ){
 //       return QLatin1String("options");
 //     }
 
-    if( !query.isCursorPastTheCompLine() && !query.compLineHasSubCommand() ){
-      if( query.isCursorAtMainCommandOption() ){
-        return QLatin1String("options");
-      }
-      if(positionalArgumentIndexInDefinition >= 0){
-        assert( parserDefinition.mainCommand().hasPositionalArgumentAt(positionalArgumentIndexInDefinition) );
-        return parserDefinition.mainCommand().positionalArgumentAt(positionalArgumentIndexInDefinition).name();
-      }
-    }
-
-    if( query.isCursorPastTheCompLine() && !query.compLineHasSubCommand() && (positionalArgumentIndexInDefinition >= 0) ){
-      assert( parserDefinition.mainCommand().hasPositionalArgumentAt(positionalArgumentIndexInDefinition) );
-      return QLatin1String("options-or-") % parserDefinition.mainCommand().positionalArgumentAt(positionalArgumentIndexInDefinition).name();
-    }
+//     if( !query.isCursorPastTheCompLine() && !query.compLineHasSubCommand() ){
+// //       if( query.isCursorAtMainCommandOption() ){
+// //         return QLatin1String("options");
+// //       }
+//       if(positionalArgumentIndexInDefinition >= 0){
+//         assert( parserDefinition.mainCommand().hasPositionalArgumentAt(positionalArgumentIndexInDefinition) );
+//         return parserDefinition.mainCommand().positionalArgumentAt(positionalArgumentIndexInDefinition).name();
+//       }
+//     }
+// 
+//     if( query.isCursorPastTheCompLine() && !query.compLineHasSubCommand() && (positionalArgumentIndexInDefinition >= 0) ){
+//       assert( parserDefinition.mainCommand().hasPositionalArgumentAt(positionalArgumentIndexInDefinition) );
+//       return QLatin1String("options-or-") % parserDefinition.mainCommand().positionalArgumentAt(positionalArgumentIndexInDefinition).name();
+//     }
 
     return QString();
   }
@@ -418,67 +761,67 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
   static
   QString findCurrentPositionalArgumentName(const ParserResult & result, const ParserDefinition & parserDefinition)
   {
-    assert( BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-
-    BashCompletionParserQuery query(result, parserDefinition);
-
-    if( query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() ){
-      const int index = query.cursorMainCommandPositionalArgumentsIndexInDefinition();
-      if(index >= 0){
-        if( parserDefinition.mainCommand().hasPositionalArgumentAt(index) ){
-          return parserDefinition.mainCommand().positionalArgumentAt(index).name() % QLatin1String("-or-command");
-        }
-      }
-    }
-
-    if( query.isCursorAtMainCommandOption() ){
-      return QLatin1String("options");
-    }
-
-    if( query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() ){
-
-      // If the (main) command is complete
-      if( query.mainCommandPositionalArgumentsCount() > parserDefinition.mainCommand().positionalArgumentCount() ){
-        return QString();
-      }
-
-      const int index = query.cursorMainCommandPositionalArgumentsIndexInDefinition();
-      assert( index >= 0 );
-      if( parserDefinition.mainCommand().hasPositionalArgumentAt(index) ){
-        return parserDefinition.mainCommand().positionalArgumentAt(index).name();
-      }
-
-    }
-
-    if( query.isCursorAtSubCommandNameIndexInDefinition() ){
-      return QLatin1String("command");
-    }
-
-    const auto subCommandDefinition = parserDefinition.findSubCommandByName( result.subCommand().name() );
-    if( !subCommandDefinition ){
-      return QString();
-    }
-
-    if( query.isCursorAtSubCommandOption() ){
-      return subCommandDefinition->name() % QLatin1String("-options");
-    }
-
-    if( query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() ){
-
-      // If the command is complete
-      if( query.subCommandPositionalArgumentsCount() > subCommandDefinition->positionalArgumentCount() ){
-        return QString();
-      }
-
-      const int index = query.cursorSubCommandPositionalArgumentsIndexInDefinition();
-      assert( index >= 0 );
-      if( subCommandDefinition->hasPositionalArgumentAt(index) ){
-        return subCommandDefinition->name() % QLatin1Char('-') % subCommandDefinition->positionalArgumentAt(index).name();
-      }
-
-    }
-
-    return QString();
+//     assert( BashCompletionParserQuery::isValidBashCompletionQuery(result) );
+// 
+//     BashCompletionParserQuery query(result, parserDefinition);
+// 
+//     if( query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() ){
+//       const int index = query.cursorMainCommandPositionalArgumentIndexInDefinition();
+//       if(index >= 0){
+//         if( parserDefinition.mainCommand().hasPositionalArgumentAt(index) ){
+//           return parserDefinition.mainCommand().positionalArgumentAt(index).name() % QLatin1String("-or-command");
+//         }
+//       }
+//     }
+// 
+//     if( query.isCursorAtMainCommandOption() ){
+//       return QLatin1String("options");
+//     }
+// 
+//     if( query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() ){
+// 
+//       // If the (main) command is complete
+//       if( query.mainCommandPositionalArgumentCount() > parserDefinition.mainCommand().positionalArgumentCount() ){
+//         return QString();
+//       }
+// 
+//       const int index = query.cursorMainCommandPositionalArgumentIndexInDefinition();
+//       assert( index >= 0 );
+//       if( parserDefinition.mainCommand().hasPositionalArgumentAt(index) ){
+//         return parserDefinition.mainCommand().positionalArgumentAt(index).name();
+//       }
+// 
+//     }
+// 
+//     if( query.isCursorAtSubCommandNameIndexInDefinition() ){
+//       return QLatin1String("command");
+//     }
+// 
+//     const auto subCommandDefinition = parserDefinition.findSubCommandByName( result.subCommand().name() );
+//     if( !subCommandDefinition ){
+//       return QString();
+//     }
+// 
+//     if( query.isCursorAtSubCommandOption() ){
+//       return subCommandDefinition->name() % QLatin1String("-options");
+//     }
+// 
+//     if( query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() ){
+// 
+//       // If the command is complete
+//       if( query.subCommandPositionalArgumentCount() > subCommandDefinition->positionalArgumentCount() ){
+//         return QString();
+//       }
+// 
+//       const int index = query.cursorSubCommandPositionalArgumentIndexInDefinition();
+//       assert( index >= 0 );
+//       if( subCommandDefinition->hasPositionalArgumentAt(index) ){
+//         return subCommandDefinition->name() % QLatin1Char('-') % subCommandDefinition->positionalArgumentAt(index).name();
+//       }
+// 
+//     }
+// 
+//     return QString();
   }
 
 }}} // namespace Mdt{ namespace CommandLineParser{ namespace Impl{

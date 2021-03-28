@@ -20,14 +20,18 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "TestUtils.h"
 #include "Mdt/CommandLineParser/BashCompletionParser.h"
 #include "Mdt/CommandLineParser/BashCompletionParserQuery.h"
+#include "Mdt/CommandLineParser/BashCompletionParserCurrentArgument.h"
 #include "Mdt/CommandLineParser/Impl/BashCompletionParser.h"
 #include "Mdt/CommandLineParser/ParserDefinition.h"
 #include "Mdt/CommandLineParser/Parser.h"
 #include <QString>
 #include <QLatin1String>
 #include <QStringList>
+#include <vector>
+#include <string>
 
 // #include "Mdt/CommandLineParser/ParserResultDebug.h"
 // #include <iostream>
@@ -36,751 +40,65 @@ using namespace Mdt::CommandLineParser;
 
 bool parseArgumentsToResult(const ParserDefinition & parserDefinition, const QStringList & arguments, ParserResult & result)
 {
-  Parser parser;
-
-  result = parser.parse(parserDefinition, arguments);
-
-  return !result.hasError();
+  return false;
+//   Parser parser;
+//   result = parser.parse(parserDefinition, arguments);
+//   parser.parse(parserDefinition, arguments);
+//
+//   return !result.hasError();
 }
 
 QString completionFindCurrentPositionalArgumentNameString()
 {
-  return BashCompletionParserQuery::findCurrentPositionalArgumentNameString();
+  return BashCompletionParserQuery::findCurrentArgumentString();
 }
 
 QString completionFindCurrentArgumentString()
 {
-  return BashCompletionParserQuery::findCurrentPositionalArgumentNameString();
+  return BashCompletionParserQuery::findCurrentArgumentString();
 }
 
-TEST_CASE("BashCompletionParserQuery_isValidBashCompletionQuery_OLD")
+BashCompletionParserCurrentArgument
+completionFindCurrentArgumentForCursorInTheCompLine(const CommandLine::CommandLine & commandLine, const ParserDefinition & parserDefinition)
 {
-  ParserDefinition parserDefinition;
-  QStringList arguments;
-  ParserResult result;
+  assert( BashCompletionParserQuery::isValidBashCompletionQuery(commandLine, parserDefinition) );
 
-  SECTION("argument count validity")
-  {
-    SECTION("empty")
-    {
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-    }
+  BashCompletionParserQuery query(commandLine, parserDefinition);
 
-    SECTION("myapp")
-    {
-      arguments << QLatin1String("myapp");
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name")
-    {
-      arguments << QLatin1String("myapp") << completionFindCurrentPositionalArgumentNameString();
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 1")
-    {
-      arguments << QLatin1String("myapp") << completionFindCurrentPositionalArgumentNameString() << QLatin1String("1");
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp")
-    {
-      arguments << QLatin1String("myapp") << completionFindCurrentPositionalArgumentNameString() << QLatin1String("1") << QLatin1String("myapp");
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-    }
-  }
-
-  SECTION("cursor validity")
-  {
-    arguments << QLatin1String("myapp") << completionFindCurrentPositionalArgumentNameString();
-
-    // The parser not accept this, because it threat -1 as a unknown option
-//     SECTION("-1")
-//     {
-//       arguments << QLatin1String("-1") << QLatin1String("myapp");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-//     }
-
-    SECTION("myapp completion-find-current-positional-argument-name 0 myapp")
-    {
-      arguments << QLatin1String("0") << QLatin1String("myapp");
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp")
-    {
-      arguments << QLatin1String("1") << QLatin1String("myapp");
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 2 myapp")
-    {
-      arguments << QLatin1String("2") << QLatin1String("myapp");
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 100 myapp")
-    {
-      arguments << QLatin1String("100") << QLatin1String("myapp");
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-    }
-
-    SECTION("A")
-    {
-      arguments << QLatin1String("A") << QLatin1String("myapp");
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-    }
-
-    SECTION("1")
-    {
-      arguments << QLatin1String("1") << QLatin1String("myapp");
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( BashCompletionParserQuery::isValidBashCompletionQuery(result) );
-    }
-  }
+  return Impl::completionFindCurrentArgumentForCursorInTheCompLine(query);
 }
 
-TEST_CASE("BashCompletionParserQuery_isValidBashCompletionQuery")
+BashCompletionParserCurrentArgument
+completionFindCurrentArgumentForCursorPastTheCompLine(const CommandLine::CommandLine & commandLine, const ParserDefinition & parserDefinition)
 {
-  CommandLine::CommandLine commandLine;
+  assert( BashCompletionParserQuery::isValidBashCompletionQuery(commandLine, parserDefinition) );
 
-  SECTION("argument count validity")
-  {
-    SECTION("empty")
-    {
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(commandLine) );
-    }
+  BashCompletionParserQuery query(commandLine, parserDefinition);
 
-    SECTION("myapp")
-    {
-      commandLine.setExecutableName( QLatin1String("myapp") );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(commandLine) );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name")
-    {
-      commandLine.setExecutableName( QLatin1String("myapp") );
-      commandLine.appendPositionalArgument( completionFindCurrentPositionalArgumentNameString() );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(commandLine) );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 1")
-    {
-      commandLine.setExecutableName( QLatin1String("myapp") );
-      commandLine.appendPositionalArgument( completionFindCurrentPositionalArgumentNameString() );
-      commandLine.appendPositionalArgument( QLatin1String("1") );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(commandLine) );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp")
-    {
-      commandLine.setExecutableName( QLatin1String("myapp") );
-      commandLine.appendPositionalArgument( completionFindCurrentPositionalArgumentNameString() );
-      commandLine.appendPositionalArgument( QLatin1String("1") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      REQUIRE( BashCompletionParserQuery::isValidBashCompletionQuery(commandLine) );
-    }
-  }
-
-  SECTION("cursor validity")
-  {
-    commandLine.setExecutableName( QLatin1String("myapp") );
-    commandLine.appendPositionalArgument( completionFindCurrentPositionalArgumentNameString() );
-
-    SECTION("-1")
-    {
-      commandLine.appendPositionalArgument( QLatin1String("-1") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(commandLine) );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 0 myapp")
-    {
-      commandLine.appendPositionalArgument( QLatin1String("0") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      REQUIRE( BashCompletionParserQuery::isValidBashCompletionQuery(commandLine) );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp")
-    {
-      commandLine.appendPositionalArgument( QLatin1String("1") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      REQUIRE( BashCompletionParserQuery::isValidBashCompletionQuery(commandLine) );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 2 myapp")
-    {
-      commandLine.appendPositionalArgument( QLatin1String("2") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(commandLine) );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 100 myapp")
-    {
-      commandLine.appendPositionalArgument( QLatin1String("100") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(commandLine) );
-    }
-
-    SECTION("A")
-    {
-      commandLine.appendPositionalArgument( QLatin1String("A") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      REQUIRE( !BashCompletionParserQuery::isValidBashCompletionQuery(commandLine) );
-    }
-
-    SECTION("1")
-    {
-      commandLine.appendPositionalArgument( QLatin1String("1") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      REQUIRE( BashCompletionParserQuery::isValidBashCompletionQuery(commandLine) );
-    }
-  }
+  return Impl::completionFindCurrentArgumentForCursorPastTheCompLine(query);
 }
 
-TEST_CASE("BashCompletionParserQuery_parserResultWithoutQueryArguments")
+
+TEST_CASE("BashCompletionParserCurrentArgument")
 {
-  ParserResult queryResult;
-
-  ParserResultCommand mainCommand;
-  mainCommand.addOption( ParserResultOption( QLatin1String("verbose") ) );
-  mainCommand.addPositionalArgument( completionFindCurrentPositionalArgumentNameString() );
-  mainCommand.addPositionalArgument( QLatin1String("2") );
-  mainCommand.addPositionalArgument( QLatin1String("myapp") );
-  mainCommand.addPositionalArgument( QLatin1String("mode-a") );
-  queryResult.setMainCommand(mainCommand);
-
-  ParserResultCommand copyCommand( QLatin1String("copy") );
-  copyCommand.addOption( ParserResultOption( QLatin1String("force") ) );
-  copyCommand.addPositionalArgument( QLatin1String("file.txt") );
-  copyCommand.addPositionalArgument( QLatin1String("/tmp") );
-  queryResult.setSubCommand(copyCommand);
-
-  const auto result = BashCompletionParserQuery::parserResultWithoutQueryArguments(queryResult);
-  REQUIRE( result.mainCommand().optionCount() == 1 );
-  REQUIRE( result.mainCommand().options()[0].name() == QLatin1String("verbose") );
-  REQUIRE( result.mainCommand().positionalArgumentCount() == 1 );
-  REQUIRE( result.mainCommand().positionalArgumentAt(0) == QLatin1String("mode-a") );
-  REQUIRE( result.subCommand().name() == QLatin1String("copy") );
-  REQUIRE( result.subCommand().optionCount() == 1 );
-  REQUIRE( result.subCommand().options()[0].name() == QLatin1String("force") );
-  REQUIRE( result.subCommand().positionalArgumentCount() == 2 );
-  REQUIRE( result.subCommand().positionalArgumentAt(0) == QLatin1String("file.txt") );
-  REQUIRE( result.subCommand().positionalArgumentAt(1) == QLatin1String("/tmp") );
-}
-
-/** \todo Test case in transtion for CommandLine proof of concept
- *
- * Must be adapted once done
- */
-TEST_CASE("BashCompletionParserQuery")
-{
-  ParserDefinition parserDefinition;
-//   QStringList arguments{QLatin1String("myapp"),completionFindCurrentPositionalArgumentNameString()};
-//   ParserResult result;
-  
-  CommandLine::CommandLine commandLine;
-  commandLine.setExecutableName( QLatin1String("myapp") );
-  commandLine.appendPositionalArgument( completionFindCurrentPositionalArgumentNameString() );
-
-  SECTION("Simple app")
+  SECTION("Default constructed")
   {
-    parserDefinition.addHelpOption();
-    parserDefinition.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
-    parserDefinition.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
-
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp")
-    {
-      commandLine.appendPositionalArgument( QLatin1String("1") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      
-//       arguments << QLatin1String("1") << QLatin1String("myapp");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      
-//       BashCompletionParserQuery query(result, parserDefinition);
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-      REQUIRE( !query.compLineHasSubCommand() );
-      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
-      REQUIRE( !query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 0 );
-      REQUIRE( query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp -")
-    {
-//       arguments << QLatin1String("1") << QLatin1String("myapp")  << QLatin1String("-");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("1") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-      REQUIRE( !query.compLineHasSubCommand() );
-      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
-      REQUIRE( !query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    /// Currently not supported because QCommandLineParser or Bash filters -- out
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp --")
-    {
-//       arguments << QLatin1String("1") << QLatin1String("myapp")  << QLatin1String("--");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("1") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      commandLine.appendDoubleDash();
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-      REQUIRE( !query.compLineHasSubCommand() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
-      REQUIRE( !query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp -h")
-    {
-//       arguments << QLatin1String("1") << QLatin1String("myapp") << QLatin1String("-h");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("1") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      commandLine.appendOption( QLatin1String("h") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-      REQUIRE( !query.compLineHasSubCommand() );
-      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
-      REQUIRE( !query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 2 myapp -h")
-    {
-//       arguments << QLatin1String("2") << QLatin1String("myapp") << QLatin1String("-h");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("2") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      commandLine.appendOption( QLatin1String("h") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
-      REQUIRE( !query.compLineHasSubCommand() );
-      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
-      REQUIRE( !query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 0 );
-      REQUIRE( query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 2 myapp file.txt")
-    {
-//       arguments << QLatin1String("2") << QLatin1String("myapp") << QLatin1String("file.txt");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("2") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      commandLine.appendPositionalArgument( QLatin1String("file.txt") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
-      REQUIRE( !query.compLineHasSubCommand() );
-      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
-      REQUIRE( !query.isCursorInSubCommand() );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 1 );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 1 );
-      REQUIRE( query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
+    BashCompletionParserCurrentArgument currentArgument;
+    REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Undefined );
+    REQUIRE( !currentArgument.isInSubCommand() );
   }
 
-  SECTION("App with subCommand")
+  SECTION("set/get")
   {
-    parserDefinition.addHelpOption();
-
-    ParserDefinitionCommand copyCommand( QLatin1String("copy") );
-    copyCommand.addHelpOption();
-    copyCommand.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
-    copyCommand.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
-    parserDefinition.addSubCommand(copyCommand);
-
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp")
-    {
-//       arguments << QLatin1String("1") << QLatin1String("myapp");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("1") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-      REQUIRE( !query.compLineHasSubCommand() );
-      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
-      REQUIRE( query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( query.subCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 2 myapp -h")
-    {
-//       arguments << QLatin1String("2") << QLatin1String("myapp") << QLatin1String("-h");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("2") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      commandLine.appendOption( QLatin1String("h") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
-      REQUIRE( !query.compLineHasSubCommand() );
-      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() == 2 );
-      REQUIRE( query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( query.subCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 2 myapp copy")
-    {
-//       arguments << QLatin1String("2") << QLatin1String("myapp") << QLatin1String("copy");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("2") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      commandLine.appendSubCommandName( QLatin1String("copy") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
-      REQUIRE( query.compLineHasSubCommand() );
-      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
-      REQUIRE( query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( query.subCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() == 0 );
-      REQUIRE( query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp co (user is typing)")
-    {
-//       arguments << QLatin1String("1") << QLatin1String("myapp") << QLatin1String("co");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("1") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      commandLine.appendPositionalArgument( QLatin1String("co") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-      REQUIRE( !query.compLineHasSubCommand() );
-      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
-      REQUIRE( query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 1 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( query.subCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 3 myapp copy file.txt")
-    {
-//       arguments << QLatin1String("3") << QLatin1String("myapp") << QLatin1String("copy") << QLatin1String("file.txt");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("3") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      commandLine.appendSubCommandName( QLatin1String("copy") );
-      commandLine.appendPositionalArgument( QLatin1String("file.txt") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 3 );
-      REQUIRE( query.compLineHasSubCommand() );
-      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
-      REQUIRE( query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( query.subCommandPositionalArgumentsCount() == 1 );
-      REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() == 1 );
-      REQUIRE( query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 3 myapp copy -h")
-    {
-//       arguments << QLatin1String("3") << QLatin1String("myapp") << QLatin1String("copy") << QLatin1String("-h");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("3") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      commandLine.appendSubCommandName( QLatin1String("copy") );
-      commandLine.appendOption( QLatin1String("h") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 3 );
-      REQUIRE( query.compLineHasSubCommand() );
-      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
-      REQUIRE( query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( query.subCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() == 0 );
-      REQUIRE( query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 2 myapp copy -h")
-    {
-//       arguments << QLatin1String("2") << QLatin1String("myapp") << QLatin1String("copy") << QLatin1String("-h");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("2") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      commandLine.appendSubCommandName( QLatin1String("copy") );
-      commandLine.appendOption( QLatin1String("h") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
-      REQUIRE( query.compLineHasSubCommand() );
-      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
-      REQUIRE( query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( query.subCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( query.isCursorAtSubCommandOption() );
-    }
-
-    /// Currently not supported because QCommandLineParser or Bash filters -- out
-//     SECTION("myapp completion-find-current-positional-argument-name 2 myapp unknown")
-//     {
-//       arguments << QLatin1String("2") << QLatin1String("myapp") << QLatin1String("unknown");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-//       
-//       commandLine.appendPositionalArgument( QLatin1String("2") );
-//       commandLine.appendPositionalArgument( QLatin1String("myapp") );
-//       commandLine.appendSubCommandName( QLatin1String("copy") );
-//       commandLine.appendOption( QLatin1String("h") );
-//       BashCompletionParserQuery query(commandLine, parserDefinition);
-//       REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
-//       REQUIRE( !query.compLineHasSubCommand() );
-//       REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-//       REQUIRE( query.compLineSubCommandNamePositionIndex() < 0 );
-//       REQUIRE( !query.isCursorInSubCommand() );
-//       REQUIRE( query.mainCommandPositionalArgumentsCount() == 1 );
-//       REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 1 );
-//       REQUIRE( query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-//       REQUIRE( !query.isCursorAtMainCommandOption() );
-//       REQUIRE( query.subCommandPositionalArgumentsCount() == 0 );
-//       REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() < 0 );
-//       REQUIRE( !query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
-//       REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
-//       REQUIRE( !query.isCursorAtSubCommandOption() );
-//     }
-
-  }
-
-  SECTION("App with main arg and subCommand")
-  {
-    parserDefinition.addHelpOption();
-    parserDefinition.addPositionalArgument( QLatin1String("main-arg"), QLatin1String("Some main argument") );
-
-    ParserDefinitionCommand copyCommand( QLatin1String("copy") );
-    copyCommand.addHelpOption();
-    copyCommand.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
-    copyCommand.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
-    parserDefinition.addSubCommand(copyCommand);
-
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp")
-    {
-//       arguments << QLatin1String("1") << QLatin1String("myapp");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("1") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-      REQUIRE( !query.compLineHasSubCommand() );
-      REQUIRE( query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-//       REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
-//       REQUIRE( query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 0 );
-      REQUIRE( query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( query.subCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 2 myapp arg1")
-    {
-//       arguments << QLatin1String("2") << QLatin1String("myapp") << QLatin1String("arg1");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("2") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      commandLine.appendPositionalArgument( QLatin1String("arg1") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
-      REQUIRE( !query.compLineHasSubCommand() );
-      REQUIRE( query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-//       REQUIRE( query.compLineSubCommandNamePositionIndex() == 2 );
-//       REQUIRE( query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 1 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( query.subCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp arg1")
-    {
-//       arguments << QLatin1String("1") << QLatin1String("myapp") << QLatin1String("arg1");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("1") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      commandLine.appendPositionalArgument( QLatin1String("arg1") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-      REQUIRE( !query.compLineHasSubCommand() );
-      REQUIRE( query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-//       REQUIRE( query.compLineSubCommandNamePositionIndex() == 2 );
-//       REQUIRE( !query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 1 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 0 );
-      REQUIRE( query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( query.subCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp copy")
-    {
-//       arguments << QLatin1String("1") << QLatin1String("myapp") << QLatin1String("copy");
-//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-//       BashCompletionParserQuery query(result, parserDefinition);
-      
-      commandLine.appendPositionalArgument( QLatin1String("1") );
-      commandLine.appendPositionalArgument( QLatin1String("myapp") );
-      commandLine.appendSubCommandName( QLatin1String("copy") );
-      BashCompletionParserQuery query(commandLine, parserDefinition);
-      REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-      REQUIRE( query.compLineHasSubCommand() );
-      REQUIRE( !query.compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-      REQUIRE( query.compLineSubCommandNamePositionIndex() == 1 );
-      REQUIRE( query.isCursorInSubCommand() );
-      REQUIRE( query.mainCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( query.subCommandPositionalArgumentsCount() == 0 );
-      REQUIRE( query.cursorSubCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtSubCommandPositionalArgumentsIndexInDefinition() );
-      REQUIRE( query.isCursorAtSubCommandNameIndexInDefinition() );
-      REQUIRE( !query.isCursorAtSubCommandOption() );
-    }
-
+    BashCompletionParserCurrentArgument currentArgument;
+    currentArgument.setType(BashCompletionParserCurrentArgumentType::Options);
+    currentArgument.setInSubCommand(true);
+    REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+    REQUIRE( currentArgument.isInSubCommand() );
   }
 }
 
-TEST_CASE("BashCompletionParserQuery_SimpleApp")
+TEST_CASE("completionFindCurrentArgumentForCursorInTheCompLine_SimpleApp")
 {
   ParserDefinitionOption overwriteBehavior( QLatin1String("overwrite-behavior"), QLatin1String("Overwrite behavior") );
   overwriteBehavior.setValueName( QLatin1String("behavior") );
@@ -796,427 +114,585 @@ TEST_CASE("BashCompletionParserQuery_SimpleApp")
   commandLine.setExecutableName( QLatin1String("app") );
   commandLine.appendPositionalArgument( completionFindCurrentArgumentString() );
 
-  SECTION("app completion-find-current-argument 1 app")
+  BashCompletionParserCurrentArgument currentArgument;
+
+  SECTION("1 app x")
   {
     commandLine.appendPositionalArgument( QLatin1String("1") );
     commandLine.appendPositionalArgument( QLatin1String("app") );
-    BashCompletionParserQuery query(commandLine, parserDefinition);
-    REQUIRE( query.compLineArgumentCount() == 1 );
-    REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-    REQUIRE( query.isCursorPastTheCompLine() );
-    REQUIRE( !query.compLineHasSubCommand() );
-    REQUIRE( !query.isCursorInSubCommand() );
 
-    SECTION("cursor based results")
+    SECTION("1 app -")
     {
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+      commandLine.appendSingleDash();
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+      REQUIRE( !currentArgument.isInSubCommand() );
     }
 
-    SECTION("compLineIndex 0")
+    SECTION("1 app --")
     {
-      const int compLineIndex = 0;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
+      commandLine.appendDoubleDash();
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+      REQUIRE( !currentArgument.isInSubCommand() );
     }
 
-    SECTION("compLineIndex 1")
+    SECTION("1 app -h")
     {
-      const int compLineIndex = 1;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
-  }
-
-  SECTION("app completion-find-current-argument 1 app -")
-  {
-    commandLine.appendPositionalArgument( QLatin1String("1") );
-    commandLine.appendPositionalArgument( QLatin1String("app") );
-    commandLine.appendSingleDash();
-    BashCompletionParserQuery query(commandLine, parserDefinition);
-    REQUIRE( query.compLineArgumentCount() == 2 );
-    REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-    REQUIRE( !query.isCursorPastTheCompLine() );
-    REQUIRE( !query.compLineHasSubCommand() );
-    REQUIRE( !query.isCursorInSubCommand() );
-
-    SECTION("cursor based results")
-    {
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+      commandLine.appendOption( QLatin1String("h") );
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+      REQUIRE( !currentArgument.isInSubCommand() );
     }
 
-    SECTION("compLineIndex 1")
+    SECTION("1 app --overwrite-behavior")
     {
-      const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
+      commandLine.appendOptionExpectingValue( QLatin1String("overwrite-behavior") );
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
+
+    SECTION("1 app fi")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("fi") );
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::PositionalArgumentName );
+      REQUIRE( !currentArgument.isInSubCommand() );
     }
   }
 
-  SECTION("app completion-find-current-argument 1 app --")
-  {
-    commandLine.appendPositionalArgument( QLatin1String("1") );
-    commandLine.appendPositionalArgument( QLatin1String("app") );
-    commandLine.appendDoubleDash();
-    BashCompletionParserQuery query(commandLine, parserDefinition);
-    REQUIRE( query.compLineArgumentCount() == 2 );
-    REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-    REQUIRE( !query.isCursorPastTheCompLine() );
-    REQUIRE( !query.compLineHasSubCommand() );
-    REQUIRE( !query.isCursorInSubCommand() );
-
-    SECTION("cursor based results")
-    {
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
-    }
-
-    SECTION("compLineIndex 1")
-    {
-      const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
-
-    SECTION("compLineIndex 2")
-    {
-      const int compLineIndex = 2;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
-  }
-
-  SECTION("app completion-find-current-argument 2 app --verbose")
+  SECTION("2 app x y")
   {
     commandLine.appendPositionalArgument( QLatin1String("2") );
     commandLine.appendPositionalArgument( QLatin1String("app") );
-    commandLine.appendOption( QLatin1String("verbose") );
-    BashCompletionParserQuery query(commandLine, parserDefinition);
-    REQUIRE( query.compLineArgumentCount() == 2 );
-    REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
-    REQUIRE( query.isCursorPastTheCompLine() );
-    REQUIRE( !query.compLineHasSubCommand() );
-    REQUIRE( !query.isCursorInSubCommand() );
 
-    SECTION("cursor based results")
+    SECTION("2 app --overwrite-behavior k")
     {
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+      commandLine.appendOptionExpectingValue( QLatin1String("overwrite-behavior") );
+      commandLine.appendOptionValue( QLatin1String("k") );
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::OptionNameValue );
+      REQUIRE( !currentArgument.isInSubCommand() );
     }
 
-    SECTION("compLineIndex 1")
+    SECTION("2 app --verbose fi")
     {
-      const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
+      commandLine.appendOption( QLatin1String("verbose") );
+      commandLine.appendPositionalArgument( QLatin1String("fi") );
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::PositionalArgumentName );
+      REQUIRE( !currentArgument.isInSubCommand() );
     }
 
-    SECTION("compLineIndex 2")
+    SECTION("2 app file.txt /")
     {
-      const int compLineIndex = 2;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
-  }
-
-  SECTION("app completion-find-current-argument 2 app --verbose fi")
-  {
-    commandLine.appendPositionalArgument( QLatin1String("2") );
-    commandLine.appendPositionalArgument( QLatin1String("app") );
-    commandLine.appendOption( QLatin1String("verbose") );
-    commandLine.appendPositionalArgument( QLatin1String("fi") );
-    BashCompletionParserQuery query(commandLine, parserDefinition);
-    REQUIRE( query.compLineArgumentCount() == 3 );
-    REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
-    REQUIRE( !query.isCursorPastTheCompLine() );
-    REQUIRE( !query.compLineHasSubCommand() );
-    REQUIRE( !query.isCursorInSubCommand() );
-
-    SECTION("cursor based results")
-    {
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
-    }
-
-    SECTION("compLineIndex 1")
-    {
-      const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
-
-    SECTION("compLineIndex 2")
-    {
-      const int compLineIndex = 2;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
-
-  }
-
-  SECTION("app completion-find-current-argument 2 app --verbose -")
-  {
-    commandLine.appendPositionalArgument( QLatin1String("2") );
-    commandLine.appendPositionalArgument( QLatin1String("app") );
-    commandLine.appendOption( QLatin1String("verbose") );
-    commandLine.appendSingleDash();
-    BashCompletionParserQuery query(commandLine, parserDefinition);
-    REQUIRE( query.compLineArgumentCount() == 3 );
-    REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
-    REQUIRE( !query.isCursorPastTheCompLine() );
-    REQUIRE( !query.compLineHasSubCommand() );
-    REQUIRE( !query.isCursorInSubCommand() );
-
-    SECTION("cursor based results")
-    {
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
-    }
-
-    SECTION("compLineIndex 1")
-    {
-      const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
-
-    SECTION("compLineIndex 2")
-    {
-      const int compLineIndex = 2;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
+      commandLine.appendPositionalArgument( QLatin1String("file.txt") );
+      commandLine.appendPositionalArgument( QLatin1String("/") );
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::PositionalArgumentName );
+      REQUIRE( !currentArgument.isInSubCommand() );
     }
   }
 
-  SECTION("app completion-find-current-argument 3 app --verbose --overwrite-behavior")
+  SECTION("3 app x y z")
   {
     commandLine.appendPositionalArgument( QLatin1String("3") );
     commandLine.appendPositionalArgument( QLatin1String("app") );
-    commandLine.appendOption( QLatin1String("verbose") );
-    commandLine.appendOptionExpectingValue( QLatin1String("overwrite-behavior") );
-    BashCompletionParserQuery query(commandLine, parserDefinition);
-    REQUIRE( query.compLineArgumentCount() == 3 );
-    REQUIRE( query.cursorInCompLinePositionIndex() == 3 );
-    REQUIRE( query.isCursorPastTheCompLine() );
-    REQUIRE( !query.compLineHasSubCommand() );
-    REQUIRE( !query.isCursorInSubCommand() );
 
-    SECTION("cursor based results")
+    SECTION("3 app file.txt /tmp o")
     {
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( query.isCursorAtMainCommandOptionValue() );
-      REQUIRE( query.optionNameRelatedToCurrentOptionValue() == QLatin1String("overwrite-behavior") );
+      commandLine.appendPositionalArgument( QLatin1String("file.txt") );
+      commandLine.appendPositionalArgument( QLatin1String("/tmp") );
+      commandLine.appendPositionalArgument( QLatin1String("o") );
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Undefined );
+      REQUIRE( !currentArgument.isInSubCommand() );
     }
 
-    SECTION("compLineIndex 1")
+    SECTION("3 app file.txt /tmp -")
     {
-      const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
+      commandLine.appendPositionalArgument( QLatin1String("file.txt") );
+      commandLine.appendPositionalArgument( QLatin1String("/tmp") );
+      commandLine.appendSingleDash();
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+      REQUIRE( !currentArgument.isInSubCommand() );
     }
 
-    SECTION("compLineIndex 2")
+    SECTION("3 app file.txt /tmp --")
     {
-      const int compLineIndex = 2;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
+      commandLine.appendPositionalArgument( QLatin1String("file.txt") );
+      commandLine.appendPositionalArgument( QLatin1String("/tmp") );
+      commandLine.appendDoubleDash();
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+      REQUIRE( !currentArgument.isInSubCommand() );
     }
 
-    SECTION("compLineIndex 3")
+    SECTION("3 app file.txt /tmp --h (partially typed --help)")
     {
-      const int compLineIndex = 3;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
-  }
-
-  SECTION("app completion-find-current-argument 4 app --verbose --overwrite-behavior keep")
-  {
-    commandLine.appendPositionalArgument( QLatin1String("4") );
-    commandLine.appendPositionalArgument( QLatin1String("app") );
-    commandLine.appendOption( QLatin1String("verbose") );
-    commandLine.appendOptionExpectingValue( QLatin1String("overwrite-behavior") );
-    commandLine.appendOptionValue( QLatin1String("keep") );
-    BashCompletionParserQuery query(commandLine, parserDefinition);
-    REQUIRE( query.compLineArgumentCount() == 4 );
-    REQUIRE( query.cursorInCompLinePositionIndex() == 4 );
-    REQUIRE( query.isCursorPastTheCompLine() );
-    REQUIRE( !query.compLineHasSubCommand() );
-    REQUIRE( !query.isCursorInSubCommand() );
-
-    SECTION("cursor based results")
-    {
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
-    }
-
-    SECTION("compLineIndex 1")
-    {
-      const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
-
-    SECTION("compLineIndex 2")
-    {
-      const int compLineIndex = 2;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
-
-    SECTION("compLineIndex 3")
-    {
-      const int compLineIndex = 3;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
-
-    SECTION("compLineIndex 4")
-    {
-      const int compLineIndex = 4;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
+      commandLine.appendPositionalArgument( QLatin1String("file.txt") );
+      commandLine.appendPositionalArgument( QLatin1String("/tmp") );
+      commandLine.appendUnknownOption( QLatin1String("h") );
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+      REQUIRE( !currentArgument.isInSubCommand() );
     }
   }
+}
 
-  SECTION("app completion-find-current-argument 5 app --verbose --overwrite-behavior keep file.txt")
-  {
-    commandLine.appendPositionalArgument( QLatin1String("5") );
-    commandLine.appendPositionalArgument( QLatin1String("app") );
-    commandLine.appendOption( QLatin1String("verbose") );
-    commandLine.appendOptionExpectingValue( QLatin1String("overwrite-behavior") );
-    commandLine.appendOptionValue( QLatin1String("keep") );
-    commandLine.appendPositionalArgument( QLatin1String("file.txt") );
-    BashCompletionParserQuery query(commandLine, parserDefinition);
-    REQUIRE( query.compLineArgumentCount() == 5 );
-    REQUIRE( query.cursorInCompLinePositionIndex() == 5 );
-    REQUIRE( query.isCursorPastTheCompLine() );
-    REQUIRE( !query.compLineHasSubCommand() );
-    REQUIRE( !query.isCursorInSubCommand() );
+TEST_CASE("completionFindCurrentArgumentForCursorInTheCompLine_AppWithSubCommand")
+{
+  ParserDefinitionOption overwriteBehavior( QLatin1String("overwrite-behavior"), QLatin1String("Overwrite behavior") );
+  overwriteBehavior.setValueName( QLatin1String("behavior") );
 
-    SECTION("cursor based results")
-    {
-      REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 1 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
-      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
-    }
+  ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+  copyCommand.addHelpOption();
+  copyCommand.addOption( QLatin1String("dereference"), QLatin1String("Dereference option") );
+  copyCommand.addOption(overwriteBehavior);
+  copyCommand.addPositionalArgument( QLatin1String("source"), QLatin1String("Source file") );
+  copyCommand.addPositionalArgument( QLatin1String("destination"), QLatin1String("Destination directory") );
 
-    SECTION("compLineIndex 2")
-    {
-      const int compLineIndex = 2;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
+  ParserDefinitionCommand cutCommand( QLatin1String("cut") );
 
-    SECTION("compLineIndex 3")
-    {
-      const int compLineIndex = 3;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
+  ParserDefinition parserDefinition;
+  parserDefinition.addHelpOption();
+  parserDefinition.addOption( QLatin1String("verbose"), QLatin1String("Verbose mode") );
+  parserDefinition.addSubCommand(copyCommand);
+  parserDefinition.addSubCommand(cutCommand);
 
-    SECTION("compLineIndex 4")
-    {
-      const int compLineIndex = 4;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
-      REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
-    }
-  }
+  CommandLine::CommandLine commandLine;
+  commandLine.setExecutableName( QLatin1String("app") );
+  commandLine.appendPositionalArgument( completionFindCurrentArgumentString() );
 
-  SECTION("app completion-find-current-argument 1 app file.txt")
+  BashCompletionParserCurrentArgument currentArgument;
+
+  SECTION("1 app x")
   {
     commandLine.appendPositionalArgument( QLatin1String("1") );
     commandLine.appendPositionalArgument( QLatin1String("app") );
-    commandLine.appendPositionalArgument( QLatin1String("file.txt") );
-    BashCompletionParserQuery query(commandLine, parserDefinition);
-    REQUIRE( query.compLineArgumentCount() == 2 );
-    REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
-    REQUIRE( !query.isCursorPastTheCompLine() );
-    REQUIRE( !query.compLineHasSubCommand() );
-    REQUIRE( !query.isCursorInSubCommand() );
-    REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 0 );
-    REQUIRE( !query.isCursorAtMainCommandOption() );
-    REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+
+    SECTION("1 app fi")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("fi") );
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Commands );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
+
+    SECTION("1 app copy")
+    {
+      commandLine.appendSubCommandName( QLatin1String("copy") );
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Commands );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
   }
 
-  SECTION("app completion-find-current-argument 2 app file.txt")
+  SECTION("2 app x y")
   {
     commandLine.appendPositionalArgument( QLatin1String("2") );
     commandLine.appendPositionalArgument( QLatin1String("app") );
-    commandLine.appendPositionalArgument( QLatin1String("file.txt") );
-    BashCompletionParserQuery query(commandLine, parserDefinition);
-    REQUIRE( query.compLineArgumentCount() == 2 );
-    REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
-    REQUIRE( query.isCursorPastTheCompLine() );
-    REQUIRE( !query.compLineHasSubCommand() );
-    REQUIRE( !query.isCursorInSubCommand() );
-    REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 1 );
-    REQUIRE( !query.isCursorAtMainCommandOption() );
-    REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+
+    SECTION("2 app --verbose copy")
+    {
+      commandLine.appendOption( QLatin1String("verbose") );
+      commandLine.appendSubCommandName( QLatin1String("copy") );
+
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Commands );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
   }
 
-  SECTION("app completion-find-current-argument 2 app file.txt /tmp")
+  SECTION("2 app copy x")
   {
     commandLine.appendPositionalArgument( QLatin1String("2") );
     commandLine.appendPositionalArgument( QLatin1String("app") );
-    commandLine.appendPositionalArgument( QLatin1String("file.txt") );
-    commandLine.appendPositionalArgument( QLatin1String("/tmp") );
-    BashCompletionParserQuery query(commandLine, parserDefinition);
-    REQUIRE( query.compLineArgumentCount() == 3 );
-    REQUIRE( query.cursorInCompLinePositionIndex() == 2 );
-    REQUIRE( !query.isCursorPastTheCompLine() );
-    REQUIRE( !query.compLineHasSubCommand() );
-    REQUIRE( !query.isCursorInSubCommand() );
-    REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() == 1 );
-    REQUIRE( !query.isCursorAtMainCommandOption() );
-    REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+    commandLine.appendSubCommandName( QLatin1String("copy") );
+
+    SECTION("2 app copy -h")
+    {
+      commandLine.appendOption( QLatin1String("h") );
+
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+      REQUIRE( currentArgument.isInSubCommand() );
+    }
+
+    SECTION("2 app copy fi")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("fi") );
+
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::PositionalArgumentName );
+      REQUIRE( currentArgument.isInSubCommand() );
+    }
+
+    SECTION("2 app copy -")
+    {
+      commandLine.appendSingleDash();
+
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+      REQUIRE( currentArgument.isInSubCommand() );
+    }
+
+    SECTION("2 app copy --")
+    {
+      commandLine.appendDoubleDash();
+
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+      REQUIRE( currentArgument.isInSubCommand() );
+    }
+
+    SECTION("2 app copy --dereference")
+    {
+      commandLine.appendOption( QLatin1String("dereference") );
+
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+      REQUIRE( currentArgument.isInSubCommand() );
+    }
   }
 
-  SECTION("app completion-find-current-argument 4 app --verbose file.txt /tmp")
+  SECTION("2 app cut x")
   {
-    commandLine.appendPositionalArgument( QLatin1String("4") );
+    commandLine.appendPositionalArgument( QLatin1String("2") );
     commandLine.appendPositionalArgument( QLatin1String("app") );
-    commandLine.appendOption( QLatin1String("verbose") );
-    commandLine.appendPositionalArgument( QLatin1String("file.txt") );
-    commandLine.appendPositionalArgument( QLatin1String("/tmp") );
-    BashCompletionParserQuery query(commandLine, parserDefinition);
-    REQUIRE( query.compLineArgumentCount() == 4 );
-    REQUIRE( query.cursorInCompLinePositionIndex() == 4 );
-    REQUIRE( query.isCursorPastTheCompLine() );
-    REQUIRE( !query.compLineHasSubCommand() );
-    REQUIRE( !query.isCursorInSubCommand() );
-    REQUIRE( query.cursorMainCommandPositionalArgumentsIndexInDefinition() < 0 );
-    REQUIRE( !query.isCursorAtMainCommandOption() );
-    REQUIRE( !query.isCursorAtMainCommandOptionValue() );
-  }
-}
+    commandLine.appendSubCommandName( QLatin1String("cut") );
 
-TEST_CASE("BashCompletionParserQuery_AppWithSubCommand")
-{
-  SECTION("Test not complete")
+    SECTION("2 app cut fi")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("fi") );
+
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Undefined );
+      REQUIRE( currentArgument.isInSubCommand() );
+    }
+  }
+
+  SECTION("3 app copy x y")
   {
-    REQUIRE(false);
-  }
+    commandLine.appendPositionalArgument( QLatin1String("3") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+    commandLine.appendSubCommandName( QLatin1String("copy") );
 
+    SECTION("3 app copy --overwrite-behavior k")
+    {
+      commandLine.appendOptionExpectingValue( QLatin1String("overwrite-behavior") );
+      commandLine.appendOptionValue( QLatin1String("k") );
+
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::OptionNameValue );
+      REQUIRE( currentArgument.isInSubCommand() );
+    }
+
+    SECTION("3 app copy file.txt /")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("file.txt") );
+      commandLine.appendPositionalArgument( QLatin1String("/") );
+
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::PositionalArgumentName );
+      REQUIRE( currentArgument.isInSubCommand() );
+    }
+  }
 }
 
-TEST_CASE("BashCompletionParserQuery_MainPositionalArgument_and_AppWithSubCommand")
+TEST_CASE("completionFindCurrentArgumentForCursorInTheCompLine_MainPositionalArgument_and_AppWithSubCommand")
 {
-  SECTION("Test not complete")
+  ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+
+  ParserDefinition parserDefinition;
+  parserDefinition.addHelpOption();
+  parserDefinition.addPositionalArgument( QLatin1String("config"), QLatin1String("Config") );
+  parserDefinition.addSubCommand(copyCommand);
+
+  CommandLine::CommandLine commandLine;
+  commandLine.setExecutableName( QLatin1String("app") );
+  commandLine.appendPositionalArgument( completionFindCurrentArgumentString() );
+
+  BashCompletionParserCurrentArgument currentArgument;
+
+  SECTION("1 app x")
   {
-    REQUIRE(false);
+    commandLine.appendPositionalArgument( QLatin1String("1") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+
+    SECTION("1 app fi")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("fi") );
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::PositionalArgumentName );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
+  }
+
+  SECTION("2 app x y")
+  {
+    commandLine.appendPositionalArgument( QLatin1String("2") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+
+    SECTION("2 app file.conf c")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("file.conf") );
+      commandLine.appendPositionalArgument( QLatin1String("c") );
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Commands );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
+
+    SECTION("2 app file.conf copy")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("file.conf") );
+      commandLine.appendSubCommandName( QLatin1String("copy") );
+      currentArgument = completionFindCurrentArgumentForCursorInTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Commands );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
   }
 }
 
+TEST_CASE("completionFindCurrentArgumentForCursorPastTheCompLine_SimpleApp_NoPositionalArgument")
+{
+  ParserDefinition parserDefinition;
+  parserDefinition.addHelpOption();
+  parserDefinition.addOption( QLatin1String("verbose"), QLatin1String("Verbose mode") );
+
+  CommandLine::CommandLine commandLine;
+  commandLine.setExecutableName( QLatin1String("app") );
+  commandLine.appendPositionalArgument( completionFindCurrentArgumentString() );
+
+  BashCompletionParserCurrentArgument currentArgument;
+
+  SECTION("1 app")
+  {
+    commandLine.appendPositionalArgument( QLatin1String("1") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+
+    currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+    REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+    REQUIRE( !currentArgument.isInSubCommand() );
+  }
+
+  SECTION("2 app x")
+  {
+    commandLine.appendPositionalArgument( QLatin1String("2") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+
+    SECTION("2 app --verbose")
+    {
+      commandLine.appendOption( QLatin1String("verbose") );
+      currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
+  }
+}
+
+TEST_CASE("completionFindCurrentArgumentForCursorPastTheCompLine_SimpleApp")
+{
+  ParserDefinitionOption overwriteBehavior( QLatin1String("overwrite-behavior"), QLatin1String("Overwrite behavior") );
+  overwriteBehavior.setValueName( QLatin1String("behavior") );
+
+  ParserDefinition parserDefinition;
+  parserDefinition.addHelpOption();
+  parserDefinition.addOption( QLatin1String("verbose"), QLatin1String("Verbose mode") );
+  parserDefinition.addOption(overwriteBehavior);
+  parserDefinition.addPositionalArgument( QLatin1String("source"), QLatin1String("Source file") );
+  parserDefinition.addPositionalArgument( QLatin1String("destination"), QLatin1String("Destination directory") );
+
+  CommandLine::CommandLine commandLine;
+  commandLine.setExecutableName( QLatin1String("app") );
+  commandLine.appendPositionalArgument( completionFindCurrentArgumentString() );
+
+  BashCompletionParserCurrentArgument currentArgument;
+
+  SECTION("1 app")
+  {
+    commandLine.appendPositionalArgument( QLatin1String("1") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+
+    currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+    REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::OptionsOrPositionalArgumentName );
+    REQUIRE( !currentArgument.isInSubCommand() );
+  }
+
+  SECTION("2 app x")
+  {
+    commandLine.appendPositionalArgument( QLatin1String("2") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+
+    SECTION("2 app --verbose")
+    {
+      commandLine.appendOption( QLatin1String("verbose") );
+      currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::OptionsOrPositionalArgumentName );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
+
+    SECTION("2 app --overwrite-behavior")
+    {
+      commandLine.appendOptionExpectingValue( QLatin1String("overwrite-behavior") );
+      currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::OptionNameValue );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
+
+    SECTION("2 app file.txt")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("file.txt") );
+      currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::OptionsOrPositionalArgumentName );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
+  }
+
+  SECTION("3 app x y")
+  {
+    commandLine.appendPositionalArgument( QLatin1String("3") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+
+    SECTION("3 app file.txt /tmp")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("file.txt") );
+      commandLine.appendPositionalArgument( QLatin1String("/tmp") );
+      currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Options );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
+  }
+}
+
+TEST_CASE("completionFindCurrentArgumentForCursorPastTheCompLine_AppWithSubCommand")
+{
+  ParserDefinitionOption overwriteBehavior( QLatin1String("overwrite-behavior"), QLatin1String("Overwrite behavior") );
+  overwriteBehavior.setValueName( QLatin1String("behavior") );
+
+  ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+  copyCommand.addHelpOption();
+  copyCommand.addOption( QLatin1String("dereference"), QLatin1String("Dereference option") );
+  copyCommand.addOption(overwriteBehavior);
+  copyCommand.addPositionalArgument( QLatin1String("source"), QLatin1String("Source file") );
+  copyCommand.addPositionalArgument( QLatin1String("destination"), QLatin1String("Destination directory") );
+
+  ParserDefinitionCommand cutCommand( QLatin1String("cut") );
+
+  ParserDefinition parserDefinition;
+  parserDefinition.addHelpOption();
+  parserDefinition.addOption( QLatin1String("verbose"), QLatin1String("Verbose mode") );
+  parserDefinition.addSubCommand(copyCommand);
+  parserDefinition.addSubCommand(cutCommand);
+
+  CommandLine::CommandLine commandLine;
+  commandLine.setExecutableName( QLatin1String("app") );
+  commandLine.appendPositionalArgument( completionFindCurrentArgumentString() );
+
+  BashCompletionParserCurrentArgument currentArgument;
+
+  SECTION("1 app")
+  {
+    commandLine.appendPositionalArgument( QLatin1String("1") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+
+    currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+    REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::OptionsOrCommands );
+    REQUIRE( !currentArgument.isInSubCommand() );
+  }
+
+  SECTION("2 app x")
+  {
+    commandLine.appendPositionalArgument( QLatin1String("2") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+
+    SECTION("2 app co")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("co") );
+
+      currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::Undefined );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
+
+    SECTION("2 app copy")
+    {
+      commandLine.appendSubCommandName( QLatin1String("copy") );
+
+      currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::OptionsOrPositionalArgumentName );
+      REQUIRE( currentArgument.isInSubCommand() );
+    }
+  }
+
+  SECTION("3 app copy x")
+  {
+    commandLine.appendPositionalArgument( QLatin1String("3") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+    commandLine.appendSubCommandName( QLatin1String("copy") );
+
+    SECTION("3 app copy --dereference")
+    {
+      commandLine.appendOption( QLatin1String("dereference") );
+
+      currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::OptionsOrPositionalArgumentName );
+      REQUIRE( currentArgument.isInSubCommand() );
+    }
+
+    SECTION("3 app copy --overwrite-behavior")
+    {
+      commandLine.appendOptionExpectingValue( QLatin1String("overwrite-behavior") );
+
+      currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::OptionNameValue );
+      REQUIRE( currentArgument.isInSubCommand() );
+    }
+  }
+}
+
+TEST_CASE("completionFindCurrentArgumentForCursorPastTheCompLine_MainPositionalArgument_and_AppWithSubCommand")
+{
+  ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+
+  ParserDefinition parserDefinition;
+  parserDefinition.addHelpOption();
+  parserDefinition.addPositionalArgument( QLatin1String("config"), QLatin1String("Config") );
+  parserDefinition.addSubCommand(copyCommand);
+
+  CommandLine::CommandLine commandLine;
+  commandLine.setExecutableName( QLatin1String("app") );
+  commandLine.appendPositionalArgument( completionFindCurrentArgumentString() );
+
+  BashCompletionParserCurrentArgument currentArgument;
+
+  SECTION("1 app")
+  {
+    commandLine.appendPositionalArgument( QLatin1String("1") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+
+    currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+    REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::OptionsOrPositionalArgumentName );
+    REQUIRE( !currentArgument.isInSubCommand() );
+  }
+
+  SECTION("2 app x")
+  {
+    commandLine.appendPositionalArgument( QLatin1String("2") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+
+    SECTION("2 app file.conf")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("file.conf") );
+
+      currentArgument = completionFindCurrentArgumentForCursorPastTheCompLine(commandLine, parserDefinition);
+      REQUIRE( currentArgument.type() == BashCompletionParserCurrentArgumentType::OptionsOrCommands );
+      REQUIRE( !currentArgument.isInSubCommand() );
+    }
+  }
+}
 
 TEST_CASE("completionFindCurrentArgument_SimpleApp")
 {
@@ -1312,7 +788,7 @@ TEST_CASE("completionFindCurrentArgument_SimpleApp")
     commandLine.appendOptionExpectingValue( QLatin1String("overwrite-behavior") );
     commandLine.appendOptionValue( QLatin1String("keep") );
     commandLine.appendPositionalArgument( QLatin1String("file.txt") );
-    REQUIRE( completionFindCurrentArgument(commandLine, parserDefinition) == QLatin1String("destination") );
+    REQUIRE( completionFindCurrentArgument(commandLine, parserDefinition) == QLatin1String("options-or-destination") );
   }
 }
 
@@ -1327,6 +803,8 @@ TEST_CASE("completionFindCurrentArgument_AppWithSubCommand")
   copyCommand.addHelpOption();
   copyCommand.addOption( QLatin1String("dereference"), QLatin1String("Dereference option") );
   copyCommand.addOption(overwriteBehavior);
+  copyCommand.addPositionalArgument( QLatin1String("source"), QLatin1String("Source file") );
+  copyCommand.addPositionalArgument( QLatin1String("destination"), QLatin1String("Destination directory") );
 
   ParserDefinitionCommand cutCommand( QLatin1String("cut") );
 
@@ -1389,6 +867,8 @@ TEST_CASE("completionFindCurrentArgument_AppWithSubCommand")
 
   SECTION("app completion-find-current-argument 2 app copy")
   {
+//     qDebug() << "TEST: 2 app copy";
+    
     commandLine.appendPositionalArgument( QLatin1String("2") );
     commandLine.appendPositionalArgument( QLatin1String("app") );
     commandLine.appendSubCommandName( QLatin1String("copy") );
@@ -1437,7 +917,7 @@ TEST_CASE("completionFindCurrentArgument_AppWithSubCommand")
     commandLine.appendPositionalArgument( QLatin1String("app") );
     commandLine.appendSubCommandName( QLatin1String("copy") );
     commandLine.appendPositionalArgument( QLatin1String("file.txt") );
-    REQUIRE( completionFindCurrentArgument(commandLine, parserDefinition) == QLatin1String("copy-destination") );
+    REQUIRE( completionFindCurrentArgument(commandLine, parserDefinition) == QLatin1String("copy-options-or-destination") );
   }
 }
 
@@ -1502,11 +982,11 @@ TEST_CASE("completionFindCurrentArgument_MainPositionalArgument_and_AppWithSubCo
     commandLine.appendPositionalArgument( QLatin1String("2") );
     commandLine.appendPositionalArgument( QLatin1String("app") );
     commandLine.appendPositionalArgument( QLatin1String("file.conf") );
-    REQUIRE( completionFindCurrentArgument(commandLine, parserDefinition) == QLatin1String("commands") );
+    REQUIRE( completionFindCurrentArgument(commandLine, parserDefinition) == QLatin1String("options-or-commands") );
   }
 }
 
-TEST_CASE("findCurrentPositionalArgumentName")
+TEST_CASE("findCurrentPositionalArgumentName","[.]")
 {
   using Impl::findCurrentPositionalArgumentName;
 //   using Impl::completionFindCurrentPositionalArgumentNameString;
@@ -1729,8 +1209,9 @@ TEST_CASE("handleBashCompletion")
 //   using Impl::completionFindCurrentPositionalArgumentNameString;
 
   ParserDefinition parserDefinition;
-  QStringList arguments{QLatin1String("myapp")};
-  ParserResult result;
+  QStringList arguments{QLatin1String("app")};
+  Parser parser;
+//   ParserResult result;
 
   SECTION("Simple app")
   {
@@ -1738,17 +1219,22 @@ TEST_CASE("handleBashCompletion")
     parserDefinition.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
     parserDefinition.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
 
-    SECTION("myapp")
+    SECTION("app")
     {
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( !handleBashCompletion(result, parserDefinition) );
+//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( !handleBashCompletion(parser.commandLine(), parserDefinition) );
     }
 
-    SECTION("myapp completion-find-current-positional-argument-name 1 myapp")
+    SECTION("app completion-find-current-argument 1 app")
     {
-      arguments << completionFindCurrentPositionalArgumentNameString() << QLatin1String("1") << QLatin1String("myapp");
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( handleBashCompletion(result, parserDefinition) );
+//       arguments << completionFindCurrentPositionalArgumentNameString() << QLatin1String("1") << QLatin1String("myapp");
+//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+//       REQUIRE( handleBashCompletion(result, parserDefinition) );
+
+      arguments << completionFindCurrentArgumentString() << qStringListFromUtf8Strings({"1","app"});
+      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( handleBashCompletion(parser.commandLine(), parserDefinition) );
     }
 
     // The parser not accept this, because it threat -1 as a unknown option
@@ -1759,18 +1245,26 @@ TEST_CASE("handleBashCompletion")
 //       REQUIRE( !handleBashCompletion(result, parserDefinition) );
 //     }
 
-    SECTION("myapp completion-find-current-positional-argument-name 100 myapp (invalid cursor)")
+    SECTION("app completion-find-current-argument 100 app (invalid cursor)")
     {
-      arguments << completionFindCurrentPositionalArgumentNameString() << QLatin1String("100") << QLatin1String("myapp");
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( !handleBashCompletion(result, parserDefinition) );
+//       arguments << completionFindCurrentPositionalArgumentNameString() << QLatin1String("100") << QLatin1String("myapp");
+//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+//       REQUIRE( !handleBashCompletion(result, parserDefinition) );
+
+      arguments << completionFindCurrentArgumentString() << qStringListFromUtf8Strings({"100","app"});
+      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( !handleBashCompletion(parser.commandLine(), parserDefinition) );
     }
 
-    SECTION("myapp completion-find-current-positional-argument-name A myapp (invalid cursor)")
+    SECTION("myapp completion-find-current-argument A myapp (invalid cursor)")
     {
-      arguments << completionFindCurrentPositionalArgumentNameString() << QLatin1String("A") << QLatin1String("myapp");
-      REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( !handleBashCompletion(result, parserDefinition) );
+//       arguments << completionFindCurrentPositionalArgumentNameString() << QLatin1String("A") << QLatin1String("myapp");
+//       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
+//       REQUIRE( !handleBashCompletion(result, parserDefinition) );
+
+      arguments << completionFindCurrentArgumentString() << qStringListFromUtf8Strings({"A","app"});
+      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( !handleBashCompletion(parser.commandLine(), parserDefinition) );
     }
   }
 }

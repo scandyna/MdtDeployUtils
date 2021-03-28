@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -22,7 +22,9 @@
 #define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_PARSER_H
 
 #include "ParserResult.h"
+
 #include "ParserDefinition.h"
+#include "CommandLine/CommandLine.h"
 #include "mdt_commandlineparser_export.h"
 
 namespace Mdt{ namespace CommandLineParser{
@@ -46,8 +48,37 @@ namespace Mdt{ namespace CommandLineParser{
    * }
    * \endcode
    */
+//   [[deprecated]]
+//   MDT_COMMANDLINEPARSER_EXPORT
+//   bool handleBashCompletion(const ParserResult & result, const ParserDefinition & parserDefinition);
+
+  /*! \brief Handles the Bash completion
+   *
+   * If the first positional argument in \a commandLine is a request from the Bash completion script,
+   * it will be handled.
+   *
+   * Returns true if a Bash completion has been handled, otherwise false.
+   *
+   * Example:
+   * \code
+   * using namespace Mdt::CommandLineParser;
+   *
+   * Parser parser;
+   *
+   * parser.parse(parserDefinition, arguments);
+   * // Error handling omitted here
+   *
+   * if( handleBashCompletion(parser.commandLine(), parserDefinition) ){
+   *   exit(0);
+   * }
+   *
+   * if( parser.hasError() ){
+   *   // Error handling here
+   * }
+   * \endcode
+   */
   MDT_COMMANDLINEPARSER_EXPORT
-  bool handleBashCompletion(const ParserResult & result, const ParserDefinition & parserDefinition);
+  bool handleBashCompletion(const CommandLine::CommandLine & commandLine, const ParserDefinition & parserDefinition);
 
 }} // namespace Mdt{ namespace CommandLineParser{
 

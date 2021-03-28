@@ -22,6 +22,7 @@
 #define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_PARSER_QUERY_H
 
 #include "CommandLine/CommandLine.h"
+#include "CommandLine/Argument.h"
 #include "CommandLine/Algorithm.h"
 #include "CommandLine/CommandLineAlgorithm.h"
 #include "CommandLine/ArgumentListAttributes.h"
@@ -29,17 +30,62 @@
 #include "ParserResult.h"
 #include "ParserDefinition.h"
 
-#include "ParserResultInCommandLineIndexMap.h"
-
 #include "mdt_commandlineparser_export.h"
+#include <boost/variant.hpp>
 #include <QString>
 #include <QLatin1String>
 #include <QChar>
 #include <cassert>
 
-#include <QDebug>
+// #include <QDebug>
 
 namespace Mdt{ namespace CommandLineParser{
+
+  /*! \internal Visitor for isBashCompletionOption()
+   */
+  class MDT_COMMANDLINEPARSER_EXPORT IsBashCompletionOption : public boost::static_visitor<bool>
+  {
+   public:
+
+    bool operator()(const CommandLine::Option &) const noexcept
+    {
+      return true;
+    }
+
+    bool operator()(const CommandLine::UnknownOption &) const noexcept
+    {
+      return true;
+    }
+
+    bool operator()(const CommandLine::OptionWithValue &) const noexcept
+    {
+      return true;
+    }
+
+    bool operator()(const CommandLine::SingleDash &) const noexcept
+    {
+      return true;
+    }
+
+    bool operator()(const CommandLine::DoubleDash &) const noexcept
+    {
+      return true;
+    }
+
+    template<typename T>
+    bool operator()(const T &) const noexcept
+    {
+      return false;
+    }
+  };
+
+  /*! \brief Check if \a argument is a option in the view of a Bash completion
+   */
+  inline
+  bool isBashCompletionOption(const CommandLine::Argument & argument) noexcept
+  {
+    return boost::apply_visitor(IsBashCompletionOption(), argument);
+  }
 
   /*! \brief Helper class to access a parser reult with Bash completion arguments
    *
@@ -122,31 +168,33 @@ namespace Mdt{ namespace CommandLineParser{
      * \pre \a parserResult must be a valid Bash completion query
      * \sa isValidBashCompletionQuery()
      */
-    explicit BashCompletionParserQuery(const ParserResult & parserResult, const ParserDefinition & parserDefinition)
-     : mParserResultInCommandLineIndexMap( parserResultWithoutQueryArguments(parserResult) )
-    {
-      assert( isValidBashCompletionQuery(parserResult) );
-
-      mCursorInCompLinePositionIndex = extractCursorInComplinePositionIndex(parserResult);
-      assert( mCursorInCompLinePositionIndex >= 0 );
-
-      mParserDefinitionHasSubCommand = parserDefinition.hasSubCommands();
-      mParserDefinitionMainCommandPositionalArgumentsCount = parserDefinition.mainCommand().positionalArgumentCount();
-
-      mResultHasSubCommand = parserResult.hasSubCommand();
-
-      mSubCommandPositionalArgumentsCount = parserResult.subCommand().positionalArgumentCount();
-    }
+//     explicit BashCompletionParserQuery(const ParserResult & parserResult, const ParserDefinition & parserDefinition)
+//      : mParserResultInCommandLineIndexMap( parserResultWithoutQueryArguments(parserResult) ),
+//        mParserDefinition(parserDefinition)
+//     {
+//       assert( isValidBashCompletionQuery(parserResult) );
+// 
+//       mCursorInCompLinePositionIndex = extractCursorInComplinePositionIndex(parserResult);
+//       assert( mCursorInCompLinePositionIndex >= 0 );
+// 
+// //       mParserDefinitionHasSubCommand = parserDefinition.hasSubCommands();
+// //       mParserDefinitionMainCommandPositionalArgumentsCount = parserDefinition.mainCommand().positionalArgumentCount();
+// 
+//       mResultHasSubCommand = parserResult.hasSubCommand();
+// 
+// //       mSubCommandPositionalArgumentsCount = parserResult.subCommand().positionalArgumentCount();
+//     }
 
     /*! \brief Construct a query from \a commandLine and \a parserDefinition
      *
      * \pre \a commandLine must be a valid Bash completion query
      * \sa isValidBashCompletionQuery()
+     * \warning \a commandLine and \a parserDefinition must be valid for the whole lifetime of this BashCompletionParserQuery
      */
     explicit BashCompletionParserQuery(const CommandLine::CommandLine & commandLine, const ParserDefinition & parserDefinition)
-     : mParserResultInCommandLineIndexMap( ParserResult() )
+     : mParserDefinition(parserDefinition)
     {
-      assert( isValidBashCompletionQuery(commandLine) );
+      assert( isValidBashCompletionQuery(commandLine, parserDefinition) );
 
       /*
        * We are interested by the command-line part in the query:
@@ -160,10 +208,15 @@ namespace Mdt{ namespace CommandLineParser{
       mCursorInCompLinePositionIndex = extractCursorInComplinePositionIndex(commandLine);
       assert( mCursorInCompLinePositionIndex >= 0 );
 
-      mParserDefinitionHasSubCommand = parserDefinition.hasSubCommands();
-      mParserDefinitionMainCommandPositionalArgumentsCount = parserDefinition.mainCommand().positionalArgumentCount();
+//       mParserDefinitionHasSubCommand = parserDefinition.hasSubCommands();
+//       mParserDefinitionMainCommandPositionalArgumentsCount = parserDefinition.mainCommand().positionalArgumentCount();
       
       mInCompLineSubCommandNameIndex = mCompLineArgumentListAttributes.subCommandNameIndex();
+      if( compLineHasSubCommand() ){
+        const QString subCommandName = Mdt::CommandLineParser::CommandLine::findSubCommandName(commandLine);
+        mInDefinitionSubCommandIndex = mParserDefinition.findSubCommandIndexByName(subCommandName);
+        assert( mInDefinitionSubCommandIndex >= 0 );
+      }
 //       mInCompLineSubCommandNameIndex = CommandLine::findSubCommandNameArgumentIndex(commandLine) - 3;
     }
 
@@ -222,13 +275,39 @@ namespace Mdt{ namespace CommandLineParser{
 //       return cursorInCompLinePositionIndex() >= compLineArgumentCount();
     }
 
+    /*! \brief Check if the parser definition has sub-command
+     */
+    bool parserDefinitionHasSubCommand() const noexcept
+    {
+      return mParserDefinition.hasSubCommands();
+    }
+
     /*! \brief Check if the COMP_LINE has a sub-command
      *
      * Will return true if the COMP_LINE has a least a sub-command name
+     *
+     * \note if the command line has a sub-command name,
+     * it is a known sub-command
+     * (it exists in the parser definition).
+     *
+     * \sa isValidBashCompletionQuery()
      */
     bool compLineHasSubCommand() const noexcept
     {
       return mInCompLineSubCommandNameIndex > 0;
+    }
+
+    /*! \brief Get the sub-command name
+     *
+     * \pre The COMP_LINE must have a at least a sub-command name
+     * \sa compLineHasSubCommand()
+     */
+    QString subCommandName() const noexcept
+    {
+      assert( compLineHasSubCommand() );
+      assert( mInDefinitionSubCommandIndex >= 0 );
+
+      return mParserDefinition.subCommandAt(mInDefinitionSubCommandIndex).name();
     }
 
     /*! \brief Check if the command line can be either a main command positional argument or a sub-command name
@@ -262,10 +341,10 @@ namespace Mdt{ namespace CommandLineParser{
      */
     bool compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() const noexcept
     {
-      if( !mParserDefinitionHasSubCommand ){
+      if( !parserDefinitionHasSubCommand() ){
         return false;
       }
-      if( mParserDefinitionMainCommandPositionalArgumentsCount < 1 ){
+      if( parserDefinitionMainCommandPositionalArgumentCount() < 1 ){
         return false;
       }
       
@@ -338,7 +417,7 @@ namespace Mdt{ namespace CommandLineParser{
     {
       assert( !compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
 
-      if( !mParserDefinitionHasSubCommand ){
+      if( !parserDefinitionHasSubCommand() ){
         return -1;
       }
       return mCompLineArgumentListAttributes.subCommandNameIndex();
@@ -348,39 +427,93 @@ namespace Mdt{ namespace CommandLineParser{
 //       return 1 + mParserResultInCommandLineIndexMap.mainCommandOptionCount();
     }
 
+    /*! \brief Check if the cursor is in the main command
+     *
+     * If the cursor is past the command-line,
+     * returns true if the command-line has no sub-command name.
+     *
+     * If the cursor is in the command-line,
+     * return true if it is before the sub-command name.
+     */
+    bool isCursorInMainCommand() const noexcept
+    {
+      if( isCursorPastTheCompLine() ){
+        return !compLineHasSubCommand();
+      }
+      return mCompLineArgumentListAttributes.isCommandLineIndexInMainCommand( cursorInCompLinePositionIndex() );
+    }
+
+    /*! \brief Check if the cursor is at the sub-command name
+     *
+     * Returns true if the cursor is exactly at the sub-command name,
+     * otherwise false.
+     *
+     * \note If the command line contains a partially typed sub-command name,
+     * it will be a positional argument.
+     *
+     * Examples:
+     * \code
+     * completion-find-current-argument 1 app co
+     * // return: false
+     * // Why: co is not a known sub-command name, but a positional argument
+     *
+     * completion-find-current-argument 1 app copy
+     * // return: true
+     * // Why: copy is a known sub-command name
+     * \endcode
+     */
+    bool isCursorAtSubCommandName() const noexcept
+    {
+      if( isCursorPastTheCompLine() ){
+        return false;
+      }
+      return mCompLineArgumentListAttributes.isCommandLineIndexAtSubCommandName( cursorInCompLinePositionIndex() );
+    }
+
     /*! \brief Check if the cursor is in the sub-command in the command line
      *
      * Return true if the cursor is past the sub-command name,
      * otherwise false.
      */
-//     bool isCursorInSubCommand() const noexcept
-//     {
-//     }
-
-    /*! \brief Check if the cursor is in the sub-command in the command line
-     *
-     * \sa compLineSubCommandNamePositionIndex()
-     * \pre The command line must not have the ambiguity about positional arguments or command
-     * \sa compLineCouldBeMainCommandPositionalArgumentOrSubCommandName()
-     */
     bool isCursorInSubCommand() const noexcept
     {
-      assert( !compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-
-//       return mCompLineArgumentListAttributes.isCommandLineIndexInSubCommand( cursorInCompLinePositionIndex() );
-      const int subCommandIndex = compLineSubCommandNamePositionIndex();
-      if(subCommandIndex < 0){
-        return false;
+      if( isCursorPastTheCompLine() ){
+        return mCompLineArgumentListAttributes.isCommandLineIndexInSubCommand( cursorInCompLinePositionIndex() - 1 );
       }
-      return cursorInCompLinePositionIndex() >= subCommandIndex;
+      return mCompLineArgumentListAttributes.isCommandLineIndexInSubCommand( cursorInCompLinePositionIndex() );
     }
+
+//     /*! \brief Check if the cursor is in the sub-command in the command line
+//      *
+//      * \sa compLineSubCommandNamePositionIndex()
+//      * \pre The command line must not have the ambiguity about positional arguments or command
+//      * \sa compLineCouldBeMainCommandPositionalArgumentOrSubCommandName()
+//      */
+//     bool isCursorInSubCommand() const noexcept
+//     {
+//       assert( !compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
+// 
+// //       return mCompLineArgumentListAttributes.isCommandLineIndexInSubCommand( cursorInCompLinePositionIndex() );
+//       const int subCommandIndex = compLineSubCommandNamePositionIndex();
+//       if(subCommandIndex < 0){
+//         return false;
+//       }
+//       return cursorInCompLinePositionIndex() >= subCommandIndex;
+//     }
 
     /*! \brief Get the count of positional arguments in the main command
      */
-    [[deprecated]]
-    int mainCommandPositionalArgumentsCount() const noexcept
+    int mainCommandPositionalArgumentCount() const noexcept
     {
-      return mParserResultInCommandLineIndexMap.mainCommandPositionalArgumentCount();
+      return mCompLineArgumentListAttributes.findMainCommandPositionalArgumentCount(CommandLine::isPositionalArgument) - 1;
+//       return mParserResultInCommandLineIndexMap.mainCommandPositionalArgumentCount();
+    }
+
+    /*! \brief Get the count of positional arguments in the main command of the parser definition
+     */
+    int parserDefinitionMainCommandPositionalArgumentCount() const noexcept
+    {
+      return mParserDefinition.mainCommand().positionalArgumentCount();
     }
 
     /*! \brief Get the command line cursor mapped to the positional argument index in the parser definition for the main command
@@ -467,7 +600,7 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \pre cursorInCompLinePositionIndex() must be at least at position 0 (the executable in the command-line)
      */
-    int cursorMainCommandPositionalArgumentsIndexInDefinition() const noexcept
+    int cursorMainCommandPositionalArgumentIndexInDefinition() const noexcept
     {
       const int cursor = cursorInCompLinePositionIndex();
       assert( cursor >= 0 );
@@ -485,21 +618,22 @@ namespace Mdt{ namespace CommandLineParser{
           return -1;
         }
         
-        qDebug() << "Cursor past the command line";
+//         qDebug() << "Cursor past the command line";
+        const int commandLinePositionalArgumentCount = mainCommandPositionalArgumentCount();
         // The first positional argument in the command line is the executable
-        const int commandLinePositionalArgumentCount = mCompLineArgumentListAttributes.findMainCommandPositionalArgumentCount() - 1;
+//         const int commandLinePositionalArgumentCount = mCompLineArgumentListAttributes.findMainCommandPositionalArgumentCount() - 1;
         
-        qDebug() << " def main cmd positional arguments     : " << mParserDefinitionMainCommandPositionalArgumentsCount;
-        qDebug() << " cmd line main cmd positional arguments: " << commandLinePositionalArgumentCount;
+//         qDebug() << " def main cmd positional arguments     : " << parserDefinitionMainCommandPositionalArgumentCount();
+//         qDebug() << " cmd line main cmd positional arguments: " << commandLinePositionalArgumentCount;
         
-        if( commandLinePositionalArgumentCount >= mParserDefinitionMainCommandPositionalArgumentsCount ){
+        if( commandLinePositionalArgumentCount >= parserDefinitionMainCommandPositionalArgumentCount() ){
           return -1;
         }
         // We are after the command line
         return commandLinePositionalArgumentCount;
 
         
-//         return mParserDefinitionMainCommandPositionalArgumentsCount - mCompLineArgumentListAttributes.findMainCommandPositionalArgumentCount();
+//         return parserDefinitionMainCommandPositionalArgumentCount() - mCompLineArgumentListAttributes.findMainCommandPositionalArgumentCount();
       }
 
 
@@ -516,7 +650,7 @@ namespace Mdt{ namespace CommandLineParser{
        */
       
       // The first positional argument in the command line is the executable
-      const int index = mCompLineArgumentListAttributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(cursor) - 1;
+      const int index = mCompLineArgumentListAttributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(cursor, CommandLine::isPositionalArgument) - 1;
 
       /*
        * The cursor in the command-line could be after the parser result.
@@ -527,7 +661,7 @@ namespace Mdt{ namespace CommandLineParser{
 //       const int index = mParserResultInCommandLineIndexMap.mainCommandPositionalArgumentIndexFromCommandLineIndex(cursor-1) + 1;
 
 //       if( compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() ){
-//         if(index >= mParserDefinitionMainCommandPositionalArgumentsCount){
+//         if(index >= parserDefinitionMainCommandPositionalArgumentCount()){
 //           return -1;
 //         }
 //       }else{
@@ -537,6 +671,21 @@ namespace Mdt{ namespace CommandLineParser{
 //       }
 
       return index;
+    }
+
+    /*! \brief Get the name of the positional argument the cursor is in the main command
+     *
+     * \pre the cursor must be at a positional argument in the main command
+     *   that exists in the definition
+     *  (i.e. cursorMainCommandPositionalArgumentIndexInDefinition() must return a index >= 0)
+     */
+    QString cursorMainCommandPositionalArgumentName() const noexcept
+    {
+      const int index = cursorMainCommandPositionalArgumentIndexInDefinition();
+      assert( index >= 0 );
+      assert( mParserDefinition.mainCommand().hasPositionalArgumentAt(index) );
+
+      return mParserDefinition.mainCommand().positionalArgumentAt(index).name();
     }
 
     /*! \brief Check if the cursor is at a positional index of the main command in the parser definition
@@ -562,7 +711,7 @@ namespace Mdt{ namespace CommandLineParser{
     [[deprecated]]
     bool isCursorAtMainCommandPositionalArgumentsIndexInDefinition() const noexcept
     {
-      return cursorMainCommandPositionalArgumentsIndexInDefinition() >= 0;
+      return cursorMainCommandPositionalArgumentIndexInDefinition() >= 0;
     }
 
     /*! \brief Check if \a compLineIndex refers to a option
@@ -615,18 +764,38 @@ namespace Mdt{ namespace CommandLineParser{
      * // return: true
      * \endcode
      *
-     * \sa isCursorAtOption()
+     * \todo update doc, remove example with cursor past the COMP_LINE
+     *
      * \pre \a compLineIndex must be at least at position 0 (the executable in the command-line)
+     * \pre the cursor must not be past de COMP_LINE
+     * \sa isCursorAtOption()
      */
     bool isCompLineIndexAtOption(int compLineIndex) const noexcept
     {
       assert( compLineIndex >= 0 );
+      assert( !isCompLineIndexPastTheCompLine(compLineIndex) );
 
-      if( isCompLineIndexPastTheCompLine(compLineIndex) ){
-        return false;
-      }
+//       if( isCompLineIndexPastTheCompLine(compLineIndex) ){
+//         return false;
+//       }
 
-      return mCompLineArgumentListAttributes.isCommandLineIndexAtOption(compLineIndex, CommandLine::isOptionOrOptionWithValueOrAnyDash);
+      return mCompLineArgumentListAttributes.isCommandLineIndexAtOption(compLineIndex, isBashCompletionOption);
+    }
+
+    /*! \brief Check if the cursor is at a option
+     *
+     * \pre cursorInCompLinePositionIndex() must be at least at position 0 (the executable in the command-line)
+     * \pre the cursor must not be past de COMP_LINE
+     * \sa isCompLineIndexAtOption()
+     * \sa isCursorPastTheCompLine()
+     */
+    bool isCursorAtOption() const noexcept
+    {
+      assert( !isCursorPastTheCompLine() );
+      const int cursor = cursorInCompLinePositionIndex();
+      assert( cursor >= 0 );
+
+      return isCompLineIndexAtOption(cursor);
     }
 
     /*! \brief Check if \a compLineIndex refers to a option value
@@ -661,6 +830,7 @@ namespace Mdt{ namespace CommandLineParser{
      * \endcode
      *
      * \pre \a compLineIndex must be at least at position 0 (the executable in the command-line)
+     * \sa isCursorAtOptionValue()
      */
     bool isCompLineIndexAtOptionValue(int compLineIndex) const noexcept
     {
@@ -671,6 +841,19 @@ namespace Mdt{ namespace CommandLineParser{
       }
 
       return mCompLineArgumentListAttributes.isCommandLineIndexAtOptionExpectingValue(compLineIndex-1);
+    }
+
+    /*! \brief Check if the cursor is at a option value
+     *
+     * \pre cursorInCompLinePositionIndex() must be at least at position 0 (the executable in the command-line)
+     * \sa isCompLineIndexAtOptionValue()
+     */
+    bool isCursorAtOptionValue() const noexcept
+    {
+      const int cursor = cursorInCompLinePositionIndex();
+      assert( cursor >= 0 );
+
+      return isCompLineIndexAtOptionValue(cursor);
     }
 
     /*! \brief Get the name of the current option expecting a value
@@ -770,6 +953,7 @@ namespace Mdt{ namespace CommandLineParser{
      * \sa isCompLineIndexAtMainCommandOption()
      * \pre cursorInCompLinePositionIndex() must be at least at position 0 (the executable in the command-line)
      */
+    [[deprecated]]
     bool isCursorAtMainCommandOption() const noexcept
     {
       const int cursor = cursorInCompLinePositionIndex();
@@ -888,10 +1072,28 @@ namespace Mdt{ namespace CommandLineParser{
     }
 
     /*! \brief Get the count of positional arguments in the sub-command
+     *
+     * \pre The command line must have a sub-command
+     * \sa compLineHasSubCommand()
      */
-    int subCommandPositionalArgumentsCount() const noexcept
+    int subCommandPositionalArgumentCount() const noexcept
     {
-      return mSubCommandPositionalArgumentsCount;
+      assert( compLineHasSubCommand() );
+
+      return mCompLineArgumentListAttributes.findSubCommandPositionalArgumentCount(CommandLine::isPositionalArgument);
+    }
+
+    /*! \brief Get the count of positional arguments in the sub-command of the parser definition
+     *
+     * \pre The command line must have a sub-command
+     * \sa compLineHasSubCommand()
+     */
+    int parserDefinitionSubCommandPositionalArgumentCount() const noexcept
+    {
+      assert( compLineHasSubCommand() );
+      assert( mInDefinitionSubCommandIndex >= 0 );
+
+      return mParserDefinition.subCommandAt(mInDefinitionSubCommandIndex).positionalArgumentCount();
     }
 
     /*! \brief Get the cursor index mapped to the positional argument of the sub-command in the parser definition
@@ -899,42 +1101,53 @@ namespace Mdt{ namespace CommandLineParser{
      * This can be used to get the positional argument in the parser definition.
      *
      * Note that this index will be past of the positional arguments
-     * available in a result most of the time, except if the user goes back:
+     * available in a command line most of the time, except if the user goes back:
      * \code
-     * completion-find-current-positional-argument-name 1 myapp
-     * //                                                cursor ^
+     * completion-find-current-argument 1 app
+     * //                              cursor ^
      *
-     * completion-find-current-positional-argument-name 2 myapp copy some-file
-     * //                                                               cursor ^
+     * completion-find-current-argument 2 app copy some-file
+     * //                                   cursor ^
      * \endcode
      *
      * Examples for a application that can take 1 positional argument,
      * then a sub-command that can take \a source and \a destination as positional arguments:
      * \code
-     * completion-find-current-positional-argument-name 1 myapp
-     * //                                                cursor ^
-     * // return: value < 0
+     * completion-find-current-argument 1 app
+     * //                              cursor ^
+     * // Undefined, see preconditions
      *
-     * completion-find-current-positional-argument-name 2 myapp arg1
-     * //                                                     cursor ^
-     * // return: value < 0
-     *
-     * completion-find-current-positional-argument-name 2 myapp copy
-     * //                                                     cursor ^
+     * completion-find-current-argument 2 app copy
+     * //                                   cursor ^
      * // return: 0
      *
-     * completion-find-current-positional-argument-name 3 myapp copy file.txt
-     * //                                                              cursor ^
+     * completion-find-current-argument 3 app copy file.txt
+     * //                                            cursor ^
      * // return: 1
+     *
+     * completion-find-current-argument 2 app copy --verbose
+     * //                                   cursor ^
+     * // return: < 0
+     * // Why: cursor is at the index of a option in the command line
+     *
+     * completion-find-current-argument 3 app copy --overwrite-behavior
+     * //                                                        cursor ^
+     * // return: < 0
+     * // Why: cursor is at the index of a option value in the command line
      * \endcode
      *
      * \note This index should not be used to get a positional argument
-     * in a result, but in a parser definition.
+     * in the command line, but in a parser definition.
      *
+     * \pre The command line must have a sub-command
+     * \sa compLineHasSubCommand()
      * \pre cursorInCompLinePositionIndex() must be at least at position 0 (the executable in the command-line)
      */
-    int cursorSubCommandPositionalArgumentsIndexInDefinition() const noexcept
+    int cursorSubCommandPositionalArgumentIndexInDefinition() const noexcept
     {
+      assert( compLineHasSubCommand() );
+      assert( mInDefinitionSubCommandIndex >= 0 );
+
       const int cursor = cursorInCompLinePositionIndex();
       assert( cursor >= 0 );
 
@@ -942,13 +1155,51 @@ namespace Mdt{ namespace CommandLineParser{
         return -1;
       }
 
-      /*
-       * The cursor in the command-line could be after the parser result.
-       * This is maybe valid in the parser definition, so
-       * get the positional argument index from the map by passing cursor-1,
-       * then return index+1
-       */
-      return mParserResultInCommandLineIndexMap.subCommandPositionalArgumentIndexFromCommandLineIndex(cursor-1) + 1;
+      if( isCursorPastTheCompLine() ){
+        /*
+         * If the previous argument in the command line is a option,
+         * check if this option accepts a value
+         */
+        if( isCompLineIndexAtOptionValue(cursor) ){
+          return -1;
+        }
+        
+//         qDebug() << "Cursor past the command line";
+        const int commandLinePositionalArgumentCount = subCommandPositionalArgumentCount();
+
+//         qDebug() << " def sub cmd positional arguments     : " << parserDefinitionSubCommandPositionalArgumentCount();
+//         qDebug() << " cmd line sub cmd positional arguments: " << commandLinePositionalArgumentCount;
+        
+        if( commandLinePositionalArgumentCount >= parserDefinitionSubCommandPositionalArgumentCount() ){
+          return -1;
+        }
+        // We are after the command line
+        return commandLinePositionalArgumentCount;
+      }
+
+      const int index = mCompLineArgumentListAttributes.findSubCommandPositionalArgumentIndexFromCommandLineIndex(cursor, CommandLine::isPositionalArgument);
+
+      return index;
+    }
+
+    /*! \brief Get the name of the positional argument the cursor is in the sub-command
+     *
+     * \pre The command line must have a sub-command
+     * \sa compLineHasSubCommand()
+     * \pre the cursor must be at a positional argument in the sub-command
+     *  that exists in the definition
+     *  (i.e. cursorSubCommandPositionalArgumentIndexInDefinition() must return a index >= 0)
+     */
+    QString cursorSubCommandPositionalArgumentName() const noexcept
+    {
+      assert( compLineHasSubCommand() );
+      assert( mInDefinitionSubCommandIndex >= 0 );
+
+      const int index = cursorSubCommandPositionalArgumentIndexInDefinition();
+      assert( index >= 0 );
+      assert( mParserDefinition.subCommandAt(mInDefinitionSubCommandIndex).hasPositionalArgumentAt(index) );
+
+      return mParserDefinition.subCommandAt(mInDefinitionSubCommandIndex).positionalArgumentAt(index).name();
     }
 
     /*! \brief Check if the cursor is at a positional index of the sub-command in the parser definition
@@ -957,7 +1208,7 @@ namespace Mdt{ namespace CommandLineParser{
      */
     bool isCursorAtSubCommandPositionalArgumentsIndexInDefinition() const noexcept
     {
-      return cursorSubCommandPositionalArgumentsIndexInDefinition() >= 0;
+      return cursorSubCommandPositionalArgumentIndexInDefinition() >= 0;
     }
 
     /*! \brief Check if the cursor is at a option of the sub-command
@@ -1001,24 +1252,25 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \pre cursorInCompLinePositionIndex() must be at least at position 0 (the executable in the command-line)
      */
+    [[deprecated]]
     bool isCursorAtSubCommandOption() const noexcept
     {
       const int cursor = cursorInCompLinePositionIndex();
       assert( cursor >= 0 );
 
-      if( cursor >= mParserResultInCommandLineIndexMap.commandLineArgumentCount() ){
-        return false;
-      }
-
-      return mParserResultInCommandLineIndexMap.isCommandLineIndexAtSubCommandOption(cursor);
+//       if( cursor >= mParserResultInCommandLineIndexMap.commandLineArgumentCount() ){
+//         return false;
+//       }
+// 
+//       return mParserResultInCommandLineIndexMap.isCommandLineIndexAtSubCommandOption(cursor);
     }
 
     /*! \brief Returns the name of the "findCurrentPositionalArgumentName" query
      */
     static
-    QString findCurrentPositionalArgumentNameString()
+    QString findCurrentArgumentString()
     {
-      return QLatin1String("completion-find-current-positional-argument-name");
+      return QLatin1String("completion-find-current-argument");
     }
 
     /*! \brief Check if \a parserResult is a valid Bash completion query
@@ -1028,25 +1280,25 @@ namespace Mdt{ namespace CommandLineParser{
      * - The cursor position in the command-line arguments, result of \a COMP_CWORD
      * - The executable (which comes from \a COMP_LINE)
      */
-    static
-    bool isValidBashCompletionQuery(const ParserResult & parserResult)
-    {
-      if( parserResult.positionalArgumentCount() < 3 ){
-        return false;
-      }
-      if( parserResult.positionalArgumentAt(0) != findCurrentPositionalArgumentNameString() ){
-        return false;
-      }
-      const int cursor = extractCursorInComplinePositionIndex(parserResult);
-      if( cursor < 0 ){
-        return false;
-      }
-      if( cursor > ParserResultInCommandLineIndexMap::commandLineArgumentCount( parserResultWithoutQueryArguments(parserResult) ) ){
-        return false;
-      }
-
-      return true;
-    }
+//     static
+//     bool isValidBashCompletionQuery(const ParserResult & parserResult)
+//     {
+//       if( parserResult.positionalArgumentCount() < 3 ){
+//         return false;
+//       }
+//       if( parserResult.positionalArgumentAt(0) != findCurrentArgumentString() ){
+//         return false;
+//       }
+//       const int cursor = extractCursorInComplinePositionIndex(parserResult);
+//       if( cursor < 0 ){
+//         return false;
+//       }
+//       if( cursor > ParserResultInCommandLineIndexMap::commandLineArgumentCount( parserResultWithoutQueryArguments(parserResult) ) ){
+//         return false;
+//       }
+// 
+//       return true;
+//     }
 
     /*! \brief Check if \a commandLine is a valid Bash completion query
      *
@@ -1055,9 +1307,12 @@ namespace Mdt{ namespace CommandLineParser{
      * - The query argument, findCurrentPositionalArgumentNameString()
      * - The cursor position in the command-line arguments, result of \a COMP_CWORD
      * - The executable (which comes from \a COMP_LINE)
+     *
+     * If \a commandLine has a sub-command name,
+     * it must exist in \a parserDefinition
      */
     static
-    bool isValidBashCompletionQuery(const CommandLine::CommandLine & commandLine)
+    bool isValidBashCompletionQuery(const CommandLine::CommandLine & commandLine, const ParserDefinition & parserDefinition)
     {
       using Mdt::CommandLineParser::CommandLine::getPositionalArgumentValue;
 
@@ -1073,7 +1328,7 @@ namespace Mdt{ namespace CommandLineParser{
       if( !commandLine.argumentAtIsPositionalArgument(3) ){
         return false;
       }
-      if( getPositionalArgumentValue( commandLine.argumentAt(1) ) != findCurrentPositionalArgumentNameString() ){
+      if( getPositionalArgumentValue( commandLine.argumentAt(1) ) != findCurrentArgumentString() ){
         return false;
       }
       const int cursor = extractCursorInComplinePositionIndex(commandLine);
@@ -1082,6 +1337,13 @@ namespace Mdt{ namespace CommandLineParser{
       }
       if( cursor > compLineArgumentCount(commandLine) ){
         return false;
+      }
+
+      const QString subCommandName = Mdt::CommandLineParser::CommandLine::findSubCommandName(commandLine);
+      if( !subCommandName.isEmpty() ){
+        if( !parserDefinition.containsSubCommand(subCommandName) ){
+          return false;
+        }
       }
 
       return true;
@@ -1184,18 +1446,21 @@ namespace Mdt{ namespace CommandLineParser{
 
    private:
 
-    ParserResultInCommandLineIndexMap mParserResultInCommandLineIndexMap;
+//     ParserResultInCommandLineIndexMap mParserResultInCommandLineIndexMap;
     
     CommandLine::ArgumentListAttributes mCompLineArgumentListAttributes;
+    const ParserDefinition & mParserDefinition;
     
     int mInCompLineSubCommandNameIndex;
+    int mInDefinitionSubCommandIndex = -1;
     int mCursorInCompLinePositionIndex;
-    int mParserDefinitionMainCommandPositionalArgumentsCount;
-    bool mParserDefinitionHasSubCommand;
+    
+//     int mParserDefinitionMainCommandPositionalArgumentsCount;
+//     bool mParserDefinitionHasSubCommand;
     
     bool mResultHasSubCommand;
     
-    int mSubCommandPositionalArgumentsCount;
+//     int mSubCommandPositionalArgumentsCount;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{
