@@ -240,7 +240,6 @@ namespace Mdt{ namespace CommandLineParser{
     bool isCursorPastTheCompLine() const noexcept
     {
       return isCompLineIndexPastTheCompLine( cursorInCompLinePositionIndex() );
-//       return cursorInCompLinePositionIndex() >= compLineArgumentCount();
     }
 
     /*! \brief Check if the parser definition has sub-command
@@ -339,7 +338,6 @@ namespace Mdt{ namespace CommandLineParser{
     int mainCommandPositionalArgumentCount() const noexcept
     {
       return mCompLineArgumentListAttributes.findMainCommandPositionalArgumentCount(CommandLine::isPositionalArgument) - 1;
-//       return mParserResultInCommandLineIndexMap.mainCommandPositionalArgumentCount();
     }
 
     /*! \brief Get the count of positional arguments in the main command of the parser definition
@@ -450,58 +448,17 @@ namespace Mdt{ namespace CommandLineParser{
         if( isCompLineIndexAtMainCommandOptionValue(cursor) ){
           return -1;
         }
-        
-//         qDebug() << "Cursor past the command line";
+
         const int commandLinePositionalArgumentCount = mainCommandPositionalArgumentCount();
-        // The first positional argument in the command line is the executable
-//         const int commandLinePositionalArgumentCount = mCompLineArgumentListAttributes.findMainCommandPositionalArgumentCount() - 1;
-        
-//         qDebug() << " def main cmd positional arguments     : " << parserDefinitionMainCommandPositionalArgumentCount();
-//         qDebug() << " cmd line main cmd positional arguments: " << commandLinePositionalArgumentCount;
-        
         if( commandLinePositionalArgumentCount >= parserDefinitionMainCommandPositionalArgumentCount() ){
           return -1;
         }
         // We are after the command line
         return commandLinePositionalArgumentCount;
-
-        
-//         return parserDefinitionMainCommandPositionalArgumentCount() - mCompLineArgumentListAttributes.findMainCommandPositionalArgumentCount();
       }
 
-
-      /** \todo Here, the first argument of COMP_LINE is the app,
-       * which is seen as a positional argument (subset)
-       */
-      
-      
-      /*
-       * The cursor, COMP_CWORD, could be past the end of the command line.
-       * This is maybe valid in the parser definition,
-       * so get the positional argument index from the command line argument attributes by passing cursor-1,
-       * then return index+1
-       */
-      
       // The first positional argument in the command line is the executable
       const int index = mCompLineArgumentListAttributes.findMainCommandPositionalArgumentIndexFromCommandLineIndex(cursor, CommandLine::isPositionalArgument) - 1;
-
-      /*
-       * The cursor in the command-line could be after the parser result.
-       * This is maybe valid in the parser definition, so
-       * get the positional argument index from the map by passing cursor-1,
-       * then return index+1
-       */
-//       const int index = mParserResultInCommandLineIndexMap.mainCommandPositionalArgumentIndexFromCommandLineIndex(cursor-1) + 1;
-
-//       if( compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() ){
-//         if(index >= parserDefinitionMainCommandPositionalArgumentCount()){
-//           return -1;
-//         }
-//       }else{
-//         if( isCursorInSubCommand() ){
-//           return -1;
-//         }
-//       }
 
       return index;
     }
@@ -802,13 +759,9 @@ namespace Mdt{ namespace CommandLineParser{
         if( isCompLineIndexAtOptionValue(cursor) ){
           return -1;
         }
-        
-//         qDebug() << "Cursor past the command line";
+
         const int commandLinePositionalArgumentCount = subCommandPositionalArgumentCount();
 
-//         qDebug() << " def sub cmd positional arguments     : " << parserDefinitionSubCommandPositionalArgumentCount();
-//         qDebug() << " cmd line sub cmd positional arguments: " << commandLinePositionalArgumentCount;
-        
         if( commandLinePositionalArgumentCount >= parserDefinitionSubCommandPositionalArgumentCount() ){
           return -1;
         }
