@@ -147,11 +147,3 @@ mdt_add_test(
   SOURCE_FILES
     src/BashCompletionParserQueryTest.cpp
 )
-
-# mdt_add_test(
-#   NAME BashCompletionParserQueryTest_OLD
-#   TARGET bashCompletionParserQueryTest_OLD
-#   DEPENDENCIES Mdt::CommandLineParser Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/BashCompletionParserQueryTest_OLD.cpp
-# )

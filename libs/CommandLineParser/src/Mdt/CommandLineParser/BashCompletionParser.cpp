@@ -26,38 +26,6 @@
 
 namespace Mdt{ namespace CommandLineParser{
 
-// bool handleBashCompletion(const ParserResult & result, const ParserDefinition & parserDefinition)
-// {
-// //   std::cerr << toDebugString(result).toStdString() << std::endl;
-//   
-//   if( !BashCompletionParserQuery::isValidBashCompletionQuery(result) ){
-//     return false;
-//   }
-// //   if( !result.hasPositionalArgumentAt(0) ){
-// //     qDebug() << "result has no args";
-// //     return false;
-// //   }
-// // 
-// //   if( result.positionalArgumentAt(0) != Impl::completionFindCurrentPositionalArgumentNameString() ){
-// //     qDebug() << "result has not expected arg";
-// //     return false;
-// //   }
-//   
-// //   std::cerr << toDebugString(result).toStdString() << std::endl;
-// //   qDebug() << "args: " << result.positionalArgumentCount();
-// //   qDebug() << "arg_0: " << result.positionalArgumentAt(0);
-// //   if(result.hasPositionalArgumentAt(1)){
-// //     qDebug() << "arg_1: " << result.positionalArgumentAt(1);
-// //   }
-// 
-//   const QString argumentName = Impl::findCurrentPositionalArgumentName(result, parserDefinition);
-//   std::cout << argumentName.toStdString() << std::flush;
-//   
-// //   qDebug() << "found: " << argumentName;
-// 
-//   return true;
-// }
-
 bool handleBashCompletion(const CommandLine::CommandLine & commandLine, const ParserDefinition & parserDefinition)
 {
   if( !BashCompletionParserQuery::isValidBashCompletionQuery(commandLine, parserDefinition) ){
@@ -65,9 +33,6 @@ bool handleBashCompletion(const CommandLine::CommandLine & commandLine, const Pa
   }
 
   const QString currentArgument = Impl::completionFindCurrentArgument(commandLine, parserDefinition);
-  
-//   qDebug() << "currentArgument: " << currentArgument;
-  
   std::cout << currentArgument.toStdString() << std::flush;
 
   return true;

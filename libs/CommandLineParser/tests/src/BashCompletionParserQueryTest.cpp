@@ -261,21 +261,18 @@ TEST_CASE("SimpleApp")
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() == 0 );
       REQUIRE( query.cursorMainCommandPositionalArgumentName() == QLatin1String("source") );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
     }
 
     SECTION("compLineIndex 0")
     {
       const int compLineIndex = 0;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
 
     SECTION("compLineIndex 1")
     {
       const int compLineIndex = 1;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
   }
@@ -299,14 +296,12 @@ TEST_CASE("SimpleApp")
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
       REQUIRE( query.isCursorAtOption() );
-      REQUIRE( query.isCursorAtMainCommandOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
     }
 
     SECTION("compLineIndex 1")
     {
       const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
   }
@@ -330,21 +325,18 @@ TEST_CASE("SimpleApp")
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
       REQUIRE( query.isCursorAtOption() );
-      REQUIRE( query.isCursorAtMainCommandOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
     }
 
     SECTION("compLineIndex 1")
     {
       const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
 
     SECTION("compLineIndex 2")
     {
       const int compLineIndex = 2;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
   }
@@ -383,21 +375,18 @@ TEST_CASE("SimpleApp")
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() == 0 );
       REQUIRE( query.cursorMainCommandPositionalArgumentName() == QLatin1String("source") );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
     }
 
     SECTION("compLineIndex 1")
     {
       const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
 
     SECTION("compLineIndex 2")
     {
       const int compLineIndex = 2;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
   }
@@ -423,21 +412,18 @@ TEST_CASE("SimpleApp")
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() == 0 );
       REQUIRE( query.cursorMainCommandPositionalArgumentName() == QLatin1String("source") );
       REQUIRE( !query.isCursorAtOption() );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
     }
 
     SECTION("compLineIndex 1")
     {
       const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
 
     SECTION("compLineIndex 2")
     {
       const int compLineIndex = 2;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
 
@@ -463,21 +449,18 @@ TEST_CASE("SimpleApp")
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
       REQUIRE( query.isCursorAtOption() );
-      REQUIRE( query.isCursorAtMainCommandOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
     }
 
     SECTION("compLineIndex 1")
     {
       const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
 
     SECTION("compLineIndex 2")
     {
       const int compLineIndex = 2;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
   }
@@ -501,7 +484,6 @@ TEST_CASE("SimpleApp")
       REQUIRE( query.isCursorInMainCommand() );
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
       REQUIRE( query.isCursorAtMainCommandOptionValue() );
       REQUIRE( query.optionNameRelatedToCurrentOptionValue() == QLatin1String("overwrite-behavior") );
     }
@@ -509,21 +491,18 @@ TEST_CASE("SimpleApp")
     SECTION("compLineIndex 1")
     {
       const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
 
     SECTION("compLineIndex 2")
     {
       const int compLineIndex = 2;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
 
     SECTION("compLineIndex 3")
     {
       const int compLineIndex = 3;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
   }
@@ -549,35 +528,30 @@ TEST_CASE("SimpleApp")
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() == 0 );
       REQUIRE( query.cursorMainCommandPositionalArgumentName() == QLatin1String("source") );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
     }
 
     SECTION("compLineIndex 1")
     {
       const int compLineIndex = 1;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
 
     SECTION("compLineIndex 2")
     {
       const int compLineIndex = 2;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
 
     SECTION("compLineIndex 3")
     {
       const int compLineIndex = 3;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
 
     SECTION("compLineIndex 4")
     {
       const int compLineIndex = 4;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
   }
@@ -604,28 +578,24 @@ TEST_CASE("SimpleApp")
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() == 1 );
       REQUIRE( query.cursorMainCommandPositionalArgumentName() == QLatin1String("destination") );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
     }
 
     SECTION("compLineIndex 2")
     {
       const int compLineIndex = 2;
-      REQUIRE( query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
 
     SECTION("compLineIndex 3")
     {
       const int compLineIndex = 3;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
 
     SECTION("compLineIndex 4")
     {
       const int compLineIndex = 4;
-      REQUIRE( !query.isCompLineIndexAtMainCommandOption(compLineIndex) );
       REQUIRE( !query.isCompLineIndexAtMainCommandOptionValue(compLineIndex) );
     }
   }
@@ -647,7 +617,6 @@ TEST_CASE("SimpleApp")
     REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() == 0 );
     REQUIRE( query.cursorMainCommandPositionalArgumentName() == QLatin1String("source") );
     REQUIRE( !query.isCursorAtOption() );
-    REQUIRE( !query.isCursorAtMainCommandOption() );
     REQUIRE( !query.isCursorAtMainCommandOptionValue() );
   }
 
@@ -665,7 +634,6 @@ TEST_CASE("SimpleApp")
     REQUIRE( !query.isCursorInSubCommand() );
     REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() == 1 );
     REQUIRE( query.cursorMainCommandPositionalArgumentName() == QLatin1String("destination") );
-    REQUIRE( !query.isCursorAtMainCommandOption() );
     REQUIRE( !query.isCursorAtMainCommandOptionValue() );
   }
 
@@ -687,7 +655,6 @@ TEST_CASE("SimpleApp")
     REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() == 1 );
     REQUIRE( query.cursorMainCommandPositionalArgumentName() == QLatin1String("destination") );
     REQUIRE( !query.isCursorAtOption() );
-    REQUIRE( !query.isCursorAtMainCommandOption() );
     REQUIRE( !query.isCursorAtMainCommandOptionValue() );
   }
 
@@ -708,7 +675,6 @@ TEST_CASE("SimpleApp")
     REQUIRE( !query.isCursorAtSubCommandName() );
     REQUIRE( !query.isCursorInSubCommand() );
     REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
-    REQUIRE( !query.isCursorAtMainCommandOption() );
     REQUIRE( !query.isCursorAtMainCommandOptionValue() );
   }
 }
@@ -760,6 +726,7 @@ TEST_CASE("AppWithSubCommand")
       REQUIRE( query.compLineArgumentCount() == 2 );
       REQUIRE( query.cursorInCompLinePositionIndex() == 1 );
       REQUIRE( !query.isCursorPastTheCompLine() );
+      REQUIRE( !query.isCursorAtOption() );
     }
   }
 
@@ -813,12 +780,12 @@ TEST_CASE("AppWithSubCommand")
     {
       BashCompletionParserQuery query(commandLine, parserDefinition);
       REQUIRE( query.mainCommandPositionalArgumentCount() == 0 );
+      REQUIRE( query.isCursorPastTheCompLine() );
       REQUIRE( !query.compLineHasSubCommand() );
       REQUIRE( query.isCursorInMainCommand() );
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( !query.isCursorInSubCommand() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
     }
 
@@ -828,12 +795,13 @@ TEST_CASE("AppWithSubCommand")
 
       BashCompletionParserQuery query(commandLine, parserDefinition);
       REQUIRE( query.mainCommandPositionalArgumentCount() == 1 );
+      REQUIRE( !query.isCursorPastTheCompLine() );
       REQUIRE( !query.compLineHasSubCommand() );
       REQUIRE( query.isCursorInMainCommand() );
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( !query.isCursorInSubCommand() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() == 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
+      REQUIRE( !query.isCursorAtOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
     }
 
@@ -843,12 +811,13 @@ TEST_CASE("AppWithSubCommand")
 
       BashCompletionParserQuery query(commandLine, parserDefinition);
       REQUIRE( query.mainCommandPositionalArgumentCount() == 0 );
+      REQUIRE( !query.isCursorPastTheCompLine() );
       REQUIRE( query.compLineHasSubCommand() );
       REQUIRE( !query.isCursorInMainCommand() );
       REQUIRE( query.isCursorAtSubCommandName() );
       REQUIRE( !query.isCursorInSubCommand() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
+      REQUIRE( !query.isCursorAtOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
       REQUIRE( query.subCommandPositionalArgumentCount() == 0 );
       REQUIRE( query.parserDefinitionSubCommandPositionalArgumentCount() == 2 );
@@ -860,13 +829,14 @@ TEST_CASE("AppWithSubCommand")
       commandLine.appendSubCommandName( QLatin1String("cut") );
 
       BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( !query.isCursorPastTheCompLine() );
       REQUIRE( query.mainCommandPositionalArgumentCount() == 0 );
       REQUIRE( query.compLineHasSubCommand() );
       REQUIRE( !query.isCursorInMainCommand() );
       REQUIRE( query.isCursorAtSubCommandName() );
       REQUIRE( !query.isCursorInSubCommand() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
+      REQUIRE( !query.isCursorAtOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
       REQUIRE( query.subCommandPositionalArgumentCount() == 0 );
       REQUIRE( query.parserDefinitionSubCommandPositionalArgumentCount() == 0 );
@@ -884,13 +854,13 @@ TEST_CASE("AppWithSubCommand")
       commandLine.appendSubCommandName( QLatin1String("copy") );
 
       BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( query.isCursorPastTheCompLine() );
       REQUIRE( query.mainCommandPositionalArgumentCount() == 0 );
       REQUIRE( query.compLineHasSubCommand() );
       REQUIRE( !query.isCursorInMainCommand() );
       REQUIRE( !query.isCursorAtSubCommandName() );
       ///REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
       REQUIRE( query.subCommandPositionalArgumentCount() == 0 );
       REQUIRE( query.parserDefinitionSubCommandPositionalArgumentCount() == 2 );
@@ -903,13 +873,14 @@ TEST_CASE("AppWithSubCommand")
       commandLine.appendPositionalArgument( QLatin1String("file.txt") );
 
       BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( !query.isCursorPastTheCompLine() );
       REQUIRE( query.mainCommandPositionalArgumentCount() == 0 );
       REQUIRE( query.compLineHasSubCommand() );
       REQUIRE( !query.isCursorInMainCommand() );
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
+      REQUIRE( !query.isCursorAtOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
       REQUIRE( query.subCommandPositionalArgumentCount() == 1 );
       REQUIRE( query.parserDefinitionSubCommandPositionalArgumentCount() == 2 );
@@ -923,13 +894,14 @@ TEST_CASE("AppWithSubCommand")
       commandLine.appendOption( QLatin1String("verbose") );
 
       BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( !query.isCursorPastTheCompLine() );
       REQUIRE( query.mainCommandPositionalArgumentCount() == 0 );
       REQUIRE( query.compLineHasSubCommand() );
       REQUIRE( !query.isCursorInMainCommand() );
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
+      REQUIRE( query.isCursorAtOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
       REQUIRE( query.subCommandPositionalArgumentCount() == 0 );
       REQUIRE( query.parserDefinitionSubCommandPositionalArgumentCount() == 2 );
@@ -948,13 +920,13 @@ TEST_CASE("AppWithSubCommand")
       commandLine.appendOptionExpectingValue( QLatin1String("overwrite-behavior") );
 
       BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( query.isCursorPastTheCompLine() );
       REQUIRE( query.mainCommandPositionalArgumentCount() == 0 );
       REQUIRE( query.compLineHasSubCommand() );
       REQUIRE( !query.isCursorInMainCommand() );
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
       REQUIRE( query.subCommandPositionalArgumentCount() == 0 );
       REQUIRE( query.parserDefinitionSubCommandPositionalArgumentCount() == 2 );
@@ -968,13 +940,14 @@ TEST_CASE("AppWithSubCommand")
       commandLine.appendPositionalArgument( QLatin1String("/tmp") );
 
       BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( !query.isCursorPastTheCompLine() );
       REQUIRE( query.mainCommandPositionalArgumentCount() == 0 );
       REQUIRE( query.compLineHasSubCommand() );
       REQUIRE( !query.isCursorInMainCommand() );
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
+      REQUIRE( !query.isCursorAtOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
       REQUIRE( query.subCommandPositionalArgumentCount() == 2 );
       REQUIRE( query.parserDefinitionSubCommandPositionalArgumentCount() == 2 );
@@ -988,13 +961,13 @@ TEST_CASE("AppWithSubCommand")
       commandLine.appendPositionalArgument( QLatin1String("file.txt") );
 
       BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( query.isCursorPastTheCompLine() );
       REQUIRE( query.mainCommandPositionalArgumentCount() == 0 );
       REQUIRE( query.compLineHasSubCommand() );
       REQUIRE( !query.isCursorInMainCommand() );
       REQUIRE( !query.isCursorAtSubCommandName() );
       REQUIRE( query.isCursorInSubCommand() );
       REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
-      REQUIRE( !query.isCursorAtMainCommandOption() );
       REQUIRE( !query.isCursorAtMainCommandOptionValue() );
       REQUIRE( query.subCommandPositionalArgumentCount() == 1 );
       REQUIRE( query.parserDefinitionSubCommandPositionalArgumentCount() == 2 );
@@ -1004,17 +977,190 @@ TEST_CASE("AppWithSubCommand")
 
   }
 
-  SECTION("Test not complete")
+  SECTION("4 app x y z (...)")
   {
-    REQUIRE(false);
-  }
+    commandLine.appendPositionalArgument( QLatin1String("4") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
 
+    SECTION("app --verbose copy --overwrite-behavior ke")
+    {
+      commandLine.appendOption( QLatin1String("verbose") );
+      commandLine.appendSubCommandName( QLatin1String("copy") );
+      commandLine.appendOptionExpectingValue( QLatin1String("overwrite-behavior") );
+      commandLine.appendOptionValue( QLatin1String("ke") );
+
+      BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( !query.isCursorPastTheCompLine() );
+      REQUIRE( query.mainCommandPositionalArgumentCount() == 0 );
+      REQUIRE( query.compLineHasSubCommand() );
+      REQUIRE( !query.isCursorInMainCommand() );
+      REQUIRE( !query.isCursorAtSubCommandName() );
+      REQUIRE( query.isCursorInSubCommand() );
+      REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
+      REQUIRE( !query.isCursorAtOption() );
+      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+      REQUIRE( query.isCursorAtOptionValue() );
+      REQUIRE( query.optionNameRelatedToCurrentOptionValue() == QLatin1String("overwrite-behavior") );
+      REQUIRE( query.subCommandPositionalArgumentCount() == 0 );
+      REQUIRE( query.parserDefinitionSubCommandPositionalArgumentCount() == 2 );
+      REQUIRE( query.cursorSubCommandPositionalArgumentIndexInDefinition() < 0 );
+    }
+
+    SECTION("app --verbose copy --overwrite-behavior")
+    {
+      commandLine.appendOption( QLatin1String("verbose") );
+      commandLine.appendSubCommandName( QLatin1String("copy") );
+      commandLine.appendOptionExpectingValue( QLatin1String("overwrite-behavior") );
+
+      BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( query.isCursorPastTheCompLine() );
+      REQUIRE( query.mainCommandPositionalArgumentCount() == 0 );
+      REQUIRE( query.compLineHasSubCommand() );
+      REQUIRE( !query.isCursorInMainCommand() );
+      REQUIRE( !query.isCursorAtSubCommandName() );
+      REQUIRE( query.isCursorInSubCommand() );
+      REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
+      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+      REQUIRE( query.isCursorAtOptionValue() );
+      REQUIRE( query.optionNameRelatedToCurrentOptionValue() == QLatin1String("overwrite-behavior") );
+      REQUIRE( query.subCommandPositionalArgumentCount() == 0 );
+      REQUIRE( query.parserDefinitionSubCommandPositionalArgumentCount() == 2 );
+      REQUIRE( query.cursorSubCommandPositionalArgumentIndexInDefinition() < 0 );
+    }
+  }
 }
 
 TEST_CASE("MainPositionalArgument_and_AppWithSubCommand")
 {
-  SECTION("Test not complete")
+  ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+  copyCommand.addHelpOption();
+  copyCommand.addOption( QLatin1String("dereference"), QLatin1String("Dereference option") );
+  copyCommand.addPositionalArgument( QLatin1String("source"), QLatin1String("Source file") );
+  copyCommand.addPositionalArgument( QLatin1String("destination"), QLatin1String("Destination directory") );
+
+  ParserDefinition parserDefinition;
+  parserDefinition.addHelpOption();
+  parserDefinition.addOption( QLatin1String("verbose"), QLatin1String("Verbose mode") );
+  parserDefinition.addPositionalArgument( QLatin1String("config"), QLatin1String("Config file") );
+  parserDefinition.addSubCommand(copyCommand);
+
+  CommandLine::CommandLine commandLine;
+  commandLine.setExecutableName( QLatin1String("app") );
+  commandLine.appendPositionalArgument( completionFindCurrentArgumentString() );
+
+  SECTION("1 app (x)")
   {
-    REQUIRE(false);
+    commandLine.appendPositionalArgument( QLatin1String("1") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+
+    SECTION("1 app")
+    {
+      BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( query.isCursorPastTheCompLine() );
+      REQUIRE( query.mainCommandPositionalArgumentCount() == 0 );
+      REQUIRE( !query.compLineHasSubCommand() );
+      REQUIRE( query.isCursorInMainCommand() );
+      REQUIRE( !query.isCursorAtSubCommandName() );
+      REQUIRE( !query.isCursorInSubCommand() );
+      REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() == 0 );
+      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+      REQUIRE( !query.isCursorAtOptionValue() );
+    }
+
+    SECTION("1 app -")
+    {
+      commandLine.appendSingleDash();
+
+      BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( !query.isCursorPastTheCompLine() );
+      REQUIRE( query.mainCommandPositionalArgumentCount() == 0 );
+      REQUIRE( !query.compLineHasSubCommand() );
+      REQUIRE( query.isCursorInMainCommand() );
+      REQUIRE( !query.isCursorAtSubCommandName() );
+      REQUIRE( !query.isCursorInSubCommand() );
+      REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
+      REQUIRE( query.isCursorAtOption() );
+      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+      REQUIRE( !query.isCursorAtOptionValue() );
+    }
+
+    SECTION("1 app fi")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("fi") );
+
+      BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( !query.isCursorPastTheCompLine() );
+      REQUIRE( !query.compLineHasSubCommand() );
+      REQUIRE( query.isCursorInMainCommand() );
+      REQUIRE( !query.isCursorAtSubCommandName() );
+      REQUIRE( !query.isCursorInSubCommand() );
+      REQUIRE( query.mainCommandPositionalArgumentCount() == 1 );
+      REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() == 0 );
+      REQUIRE( query.cursorMainCommandPositionalArgumentName() == QLatin1String("config") );
+      REQUIRE( !query.isCursorAtOption() );
+      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+      REQUIRE( !query.isCursorAtOptionValue() );
+    }
+  }
+
+  SECTION("2 app x (y)")
+  {
+    commandLine.appendPositionalArgument( QLatin1String("2") );
+    commandLine.appendPositionalArgument( QLatin1String("app") );
+
+    SECTION("2 app file.conf")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("file.conf") );
+
+      BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( query.isCursorPastTheCompLine() );
+      REQUIRE( !query.compLineHasSubCommand() );
+      REQUIRE( query.isCursorInMainCommand() );
+      REQUIRE( !query.isCursorAtSubCommandName() );
+      REQUIRE( !query.isCursorInSubCommand() );
+      REQUIRE( query.mainCommandPositionalArgumentCount() == 1 );
+      REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
+      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+      REQUIRE( !query.isCursorAtOptionValue() );
+    }
+
+    SECTION("2 app file.conf c")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("file.conf") );
+      commandLine.appendPositionalArgument( QLatin1String("c") );
+
+      BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( !query.isCursorPastTheCompLine() );
+      REQUIRE( !query.compLineHasSubCommand() );
+      REQUIRE( query.isCursorInMainCommand() );
+      REQUIRE( !query.isCursorAtSubCommandName() );
+      REQUIRE( !query.isCursorInSubCommand() );
+      REQUIRE( query.mainCommandPositionalArgumentCount() == 2 );
+      REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() == 1 );
+      REQUIRE( !query.isCursorAtOption() );
+      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+      REQUIRE( !query.isCursorAtOptionValue() );
+    }
+
+    SECTION("2 app file.conf copy")
+    {
+      commandLine.appendPositionalArgument( QLatin1String("file.conf") );
+      commandLine.appendSubCommandName( QLatin1String("copy") );
+
+      BashCompletionParserQuery query(commandLine, parserDefinition);
+      REQUIRE( !query.isCursorPastTheCompLine() );
+      REQUIRE( query.compLineHasSubCommand() );
+      REQUIRE( !query.isCursorInMainCommand() );
+      REQUIRE( query.isCursorAtSubCommandName() );
+      REQUIRE( !query.isCursorInSubCommand() );
+      REQUIRE( query.mainCommandPositionalArgumentCount() == 1 );
+      REQUIRE( query.cursorMainCommandPositionalArgumentIndexInDefinition() < 0 );
+      REQUIRE( !query.isCursorAtOption() );
+      REQUIRE( !query.isCursorAtMainCommandOptionValue() );
+      REQUIRE( !query.isCursorAtOptionValue() );
+      REQUIRE( query.subCommandPositionalArgumentCount() == 0 );
+      REQUIRE( query.parserDefinitionSubCommandPositionalArgumentCount() == 2 );
+      REQUIRE( query.cursorSubCommandPositionalArgumentIndexInDefinition() < 0 );
+    }
   }
 }

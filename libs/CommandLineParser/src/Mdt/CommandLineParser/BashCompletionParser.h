@@ -21,36 +21,11 @@
 #ifndef MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_PARSER_H
 #define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_PARSER_H
 
-#include "ParserResult.h"
-
 #include "ParserDefinition.h"
 #include "CommandLine/CommandLine.h"
 #include "mdt_commandlineparser_export.h"
 
 namespace Mdt{ namespace CommandLineParser{
-
-  /*! \brief Handles the Bash completion
-   *
-   * If the first positional argument in \a result is a request from the Bash completion script,
-   * it will be handled.
-   *
-   * Returns true if a Bash completion has been handled, otherwise false.
-   *
-   * Example:
-   * \code
-   * using namespace Mdt::CommandLineParser;
-   *
-   * const ParserResult result = Parser::parse(parserDefinition, arguments);
-   * // Error handling omitted here
-   *
-   * if( handleBashCompletion(result, parserDefinition) ){
-   *   exit(0);
-   * }
-   * \endcode
-   */
-//   [[deprecated]]
-//   MDT_COMMANDLINEPARSER_EXPORT
-//   bool handleBashCompletion(const ParserResult & result, const ParserDefinition & parserDefinition);
 
   /*! \brief Handles the Bash completion
    *

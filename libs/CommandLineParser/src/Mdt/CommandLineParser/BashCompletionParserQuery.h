@@ -26,18 +26,13 @@
 #include "CommandLine/Algorithm.h"
 #include "CommandLine/CommandLineAlgorithm.h"
 #include "CommandLine/ArgumentListAttributes.h"
-
-#include "ParserResult.h"
 #include "ParserDefinition.h"
-
 #include "mdt_commandlineparser_export.h"
 #include <boost/variant.hpp>
 #include <QString>
 #include <QLatin1String>
 #include <QChar>
 #include <cassert>
-
-// #include <QDebug>
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -163,28 +158,6 @@ namespace Mdt{ namespace CommandLineParser{
 
     BashCompletionParserQuery() = delete;
 
-    /*! \brief Construct a query from \a parserResult
-     *
-     * \pre \a parserResult must be a valid Bash completion query
-     * \sa isValidBashCompletionQuery()
-     */
-//     explicit BashCompletionParserQuery(const ParserResult & parserResult, const ParserDefinition & parserDefinition)
-//      : mParserResultInCommandLineIndexMap( parserResultWithoutQueryArguments(parserResult) ),
-//        mParserDefinition(parserDefinition)
-//     {
-//       assert( isValidBashCompletionQuery(parserResult) );
-// 
-//       mCursorInCompLinePositionIndex = extractCursorInComplinePositionIndex(parserResult);
-//       assert( mCursorInCompLinePositionIndex >= 0 );
-// 
-// //       mParserDefinitionHasSubCommand = parserDefinition.hasSubCommands();
-// //       mParserDefinitionMainCommandPositionalArgumentsCount = parserDefinition.mainCommand().positionalArgumentCount();
-// 
-//       mResultHasSubCommand = parserResult.hasSubCommand();
-// 
-// //       mSubCommandPositionalArgumentsCount = parserResult.subCommand().positionalArgumentCount();
-//     }
-
     /*! \brief Construct a query from \a commandLine and \a parserDefinition
      *
      * \pre \a commandLine must be a valid Bash completion query
@@ -198,26 +171,21 @@ namespace Mdt{ namespace CommandLineParser{
 
       /*
        * We are interested by the command-line part in the query:
-       * "myapp" completion-find-current-positional-argument-name 1 myapp
-       *                                                            ^
+       * "app" completion-find-current-argument 1 app
+       *                                          ^
        */
       const auto commandLineArgumentListFirst = commandLine.argumentList().cbegin() + 3;
-        mCompLineArgumentListAttributes.setArgumentList( commandLineArgumentListFirst, commandLine.argumentList().cend() );
+      mCompLineArgumentListAttributes.setArgumentList( commandLineArgumentListFirst, commandLine.argumentList().cend() );
 
-      
       mCursorInCompLinePositionIndex = extractCursorInComplinePositionIndex(commandLine);
       assert( mCursorInCompLinePositionIndex >= 0 );
 
-//       mParserDefinitionHasSubCommand = parserDefinition.hasSubCommands();
-//       mParserDefinitionMainCommandPositionalArgumentsCount = parserDefinition.mainCommand().positionalArgumentCount();
-      
       mInCompLineSubCommandNameIndex = mCompLineArgumentListAttributes.subCommandNameIndex();
       if( compLineHasSubCommand() ){
         const QString subCommandName = Mdt::CommandLineParser::CommandLine::findSubCommandName(commandLine);
         mInDefinitionSubCommandIndex = mParserDefinition.findSubCommandIndexByName(subCommandName);
         assert( mInDefinitionSubCommandIndex >= 0 );
       }
-//       mInCompLineSubCommandNameIndex = CommandLine::findSubCommandNameArgumentIndex(commandLine) - 3;
     }
 
     /*! \brief Copy construct a query from \a other
@@ -310,123 +278,6 @@ namespace Mdt{ namespace CommandLineParser{
       return mParserDefinition.subCommandAt(mInDefinitionSubCommandIndex).name();
     }
 
-    /*! \brief Check if the command line can be either a main command positional argument or a sub-command name
-     *
-     * Returns true if the command line is ambiguious
-     * because its last, or next, argument could be a positional argument (for the main command),
-     * or the sub-command name position.
-     *
-     * If the parser definition does not have sub-command,
-     * this ambiguity does not exist, and this method returns false.
-     *
-     * If the parser definition does not have positional arguments for its main command,
-     * this ambiguity does not exist, and this method returns false.
-     *
-     * Examples for a application that can take 1 argument for the main command,
-     * and has a copy sub-command:
-     * \code
-     * completion-find-current-argument 1 myapp
-     * // return: true
-     * // Why: after myapp, we could have a positional argument or a sub-command
-     *
-     * completion-find-current-argument 1 myapp co
-     * // return: true
-     * // Why: 'co' could be a positional argument or a partially typed sub-command name
-     * // Note: the possible sub-commands the user can type will be handled in the completion script, we not do it here
-     *
-     * completion-find-current-argument 1 myapp copy
-     * // return: false
-     * // Why: 'copy' is clearly a known sub-command
-     * \endcode
-     */
-    bool compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() const noexcept
-    {
-      if( !parserDefinitionHasSubCommand() ){
-        return false;
-      }
-      if( parserDefinitionMainCommandPositionalArgumentCount() < 1 ){
-        return false;
-      }
-      
-      if( compLineHasSubCommand() ){
-        return false;
-      }
-      
-      /// \todo has no sense
-      if(mResultHasSubCommand){
-        return false;
-      }
-
-      return true;
-    }
-
-    /*! \brief Get the index for which the cursor would be at the sub-command name position in the command-line
-     *
-     * If the parser definition has no sub-command,
-     * this method will allways return invalid index (value < 0).
-     *
-     * Examples for a application that can take 1 argument for the main command,
-     * and has a copy sub-command that can take \a source and \a destination as positional arguments:
-     * \todo clarify undefined cases (old behavior is still documented, what is true?)
-     * \code
-     * completion-find-current-positional-argument-name x myapp
-     * // Undefined
-     * // Why: after myapp, we could have a positional argument or a sub-command
-     * 
-     * // return: 1
-     * // Why: after myapp, we could have a positional argument or a sub-command
-     * //      choice: 1 will be the index of the sub-command name
-     *
-     * completion-find-current-positional-argument-name x myapp copy
-     * // return: 1
-     * // Why: 1 is the index of a known sub-command name
-     *
-     * completion-find-current-positional-argument-name x myapp arg
-     * // Undefined
-     * // Why: 1 could be the index of a positional argument or a partially typed sub-command name
-     * 
-     * // return: 1
-     * // Why: 1 could be the index of a positional argument or a partially typed sub-command name
-     * //      choice: 1 will be the index of the sub-command name
-     *
-     * completion-find-current-positional-argument-name x myapp -h copy
-     * // return: 2
-     * // Why: 2 is the index of a known sub-command name
-     *
-     * completion-find-current-positional-argument-name x myapp arg1 copy
-     * // return: 2
-     * // Why: 2 is the index of a known sub-command name
-     *
-     * completion-find-current-positional-argument-name x myapp arg1 unknown
-     * // Undefined
-     * // Why: 2 could be the index of a known sub-command name while the user is typing
-     * 
-     * // return: 2
-     * // Why: 2 could be the index of a known sub-command name while the user is typing
-     * // Note: the possible sub-commands the user can type will be handled in the completion script, we not do it here
-     *
-     * completion-find-current-positional-argument-name x myapp arg1 copy file.txt
-     * // return: 2
-     * // Why: 2 is the index of a known sub-command name
-     * \endcode
-     *
-     * \pre The command line must not have the ambiguity about positional arguments or command
-     * \sa compLineCouldBeMainCommandPositionalArgumentOrSubCommandName()
-     */
-    int compLineSubCommandNamePositionIndex() const noexcept
-    {
-      assert( !compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-
-      if( !parserDefinitionHasSubCommand() ){
-        return -1;
-      }
-      return mCompLineArgumentListAttributes.subCommandNameIndex();
-//       if( mResultHasSubCommand ){
-//         return 1 + mainCommandPositionalArgumentsCount() + mParserResultInCommandLineIndexMap.mainCommandOptionCount();
-//       }
-//       return 1 + mParserResultInCommandLineIndexMap.mainCommandOptionCount();
-    }
-
     /*! \brief Check if the cursor is in the main command
      *
      * If the cursor is past the command-line,
@@ -482,24 +333,6 @@ namespace Mdt{ namespace CommandLineParser{
       }
       return mCompLineArgumentListAttributes.isCommandLineIndexInSubCommand( cursorInCompLinePositionIndex() );
     }
-
-//     /*! \brief Check if the cursor is in the sub-command in the command line
-//      *
-//      * \sa compLineSubCommandNamePositionIndex()
-//      * \pre The command line must not have the ambiguity about positional arguments or command
-//      * \sa compLineCouldBeMainCommandPositionalArgumentOrSubCommandName()
-//      */
-//     bool isCursorInSubCommand() const noexcept
-//     {
-//       assert( !compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() );
-// 
-// //       return mCompLineArgumentListAttributes.isCommandLineIndexInSubCommand( cursorInCompLinePositionIndex() );
-//       const int subCommandIndex = compLineSubCommandNamePositionIndex();
-//       if(subCommandIndex < 0){
-//         return false;
-//       }
-//       return cursorInCompLinePositionIndex() >= subCommandIndex;
-//     }
 
     /*! \brief Get the count of positional arguments in the main command
      */
@@ -688,40 +521,10 @@ namespace Mdt{ namespace CommandLineParser{
       return mParserDefinition.mainCommand().positionalArgumentAt(index).name();
     }
 
-    /*! \brief Check if the cursor is at a positional index of the main command in the parser definition
-     *
-     * Examples for a simple copy app that can take \a source and \a destination
-     * as positional arguments:
-     * \code
-     * completion-find-current-positional-argument-name 1 myapp
-     * //                                                cursor ^
-     * // return: true
-     * \endcode
-     *
-     * Examples for a app that has a \a copy sub-command
-     * that can take \a source and \a destination as positional arguments:
-     * \code
-     * completion-find-current-positional-argument-name 1 myapp
-     * //                                                cursor ^
-     * // return: false
-     * \endcode
-     *
-     * \pre cursorInCompLinePositionIndex() must be at least at position 0 (the executable in the command-line)
-     */
-    [[deprecated]]
-    bool isCursorAtMainCommandPositionalArgumentsIndexInDefinition() const noexcept
-    {
-      return cursorMainCommandPositionalArgumentIndexInDefinition() >= 0;
-    }
-
     /*! \brief Check if \a compLineIndex refers to a option
      *
      * Examples:
      * \code
-     * completion-find-current-argument x app
-     * //                    compLineIndex==1 ^
-     * // return: false
-     *
      * completion-find-current-argument x app -
      * //                    compLineIndex==1 ^
      * // return: true
@@ -729,10 +532,6 @@ namespace Mdt{ namespace CommandLineParser{
      * completion-find-current-argument x app -h
      * //                    compLineIndex==1 ^
      * // return: true
-     *
-     * completion-find-current-argument x app -h
-     * //                       compLineIndex==2 ^
-     * // return: false
      *
      * completion-find-current-argument x app --
      * //                    compLineIndex==1 ^
@@ -742,7 +541,7 @@ namespace Mdt{ namespace CommandLineParser{
      * //                    compLineIndex==1 ^
      * // return: true
      *
-     * completion-find-current-argument x app --overwrite-behavior
+     * completion-find-current-argument x app --overwrite-behavior k
      * //                                         compLineIndex==2 ^
      * // return: false
      * // Why: compLineIndex refers to a option value, not a option
@@ -750,10 +549,6 @@ namespace Mdt{ namespace CommandLineParser{
      * completion-find-current-argument x app --overwrite-behavior=keep
      * //                    compLineIndex==1 ^
      * // return: true
-     *
-     * completion-find-current-argument x app -
-     * //                      compLineIndex==2 ^
-     * // return: false
      *
      * completion-find-current-argument x app file.txt
      * //                    compLineIndex==1 ^
@@ -764,20 +559,14 @@ namespace Mdt{ namespace CommandLineParser{
      * // return: true
      * \endcode
      *
-     * \todo update doc, remove example with cursor past the COMP_LINE
-     *
      * \pre \a compLineIndex must be at least at position 0 (the executable in the command-line)
-     * \pre the cursor must not be past de COMP_LINE
+     * \pre \a compLineIndex must not be past de COMP_LINE
      * \sa isCursorAtOption()
      */
     bool isCompLineIndexAtOption(int compLineIndex) const noexcept
     {
       assert( compLineIndex >= 0 );
       assert( !isCompLineIndexPastTheCompLine(compLineIndex) );
-
-//       if( isCompLineIndexPastTheCompLine(compLineIndex) ){
-//         return false;
-//       }
 
       return mCompLineArgumentListAttributes.isCommandLineIndexAtOption(compLineIndex, isBashCompletionOption);
     }
@@ -872,101 +661,6 @@ namespace Mdt{ namespace CommandLineParser{
       return mCompLineArgumentListAttributes.optionNameAtCommandLineIndex(cursor-1);
     }
 
-    /*! \brief Check if \a compLineIndex refers to a option in the main command
-     *
-     * Returns the same results as isCompLineIndexAtOption()
-     * as long as \a compLineIndex refers to the main command,
-     * otherwise false.
-     *
-     * Examples:
-     * \code
-     * completion-find-current-argument x app -h
-     * //                    compLineIndex==1 ^
-     * // return: true
-     *
-     * completion-find-current-argument x app copy -h
-     * //                         compLineIndex==2 ^
-     * // return: false
-     * \endcode
-     *
-     * \sa isCursorAtMainCommandOption()
-     * \sa isCompLineIndexAtOption()
-     * \pre \a compLineIndex must be at least at position 0 (the executable in the command-line)
-     */
-    bool isCompLineIndexAtMainCommandOption(int compLineIndex) const noexcept
-    {
-      assert( compLineIndex >= 0 );
-
-      if( isCompLineIndexPastTheCompLine(compLineIndex) ){
-        return false;
-      }
-
-      if( mCompLineArgumentListAttributes.isCommandLineIndexInMainCommand(compLineIndex) ){
-        return isCompLineIndexAtOption(compLineIndex);
-      }
-
-      return false;
-      
-//       if( isCompLineIndexPastTheCompLine(compLineIndex) ){
-//         return false;
-//       }
-
-//       return mCompLineArgumentListAttributes.isCommandLineIndexAtMainCommandOption(compLineIndex, CommandLine::isOptionOrOptionWithValueOrAnyDash);
-    }
-
-    /*! \brief Check if the cursor is at a option of the main command
-     *
-     * Examples:
-     * \code
-     * completion-find-current-argument 1 myapp
-     * //                                cursor ^
-     * // return: false
-     *
-     * completion-find-current-argument 1 myapp -
-     * //                                cursor ^
-     * // return: true
-     *
-     * completion-find-current-argument 1 myapp -h
-     * //                                cursor ^
-     * // return: true
-     *
-     * completion-find-current-argument 1 myapp --
-     * //                                cursor ^
-     * // return: true
-     *
-     * completion-find-current-argument 2 myapp -
-     * //                                  cursor ^
-     * // return: false
-     *
-     * completion-find-current-argument 1 myapp file
-     * //                                cursor ^
-     * // return: false
-     *
-     * completion-find-current-argument 2 myapp -h
-     * //                                   cursor ^
-     * // return: false
-     * \endcode
-     *
-     * For application with sub-command,
-     * this function returns false if the cursor is in the sub-command.
-     *
-     * \sa isCompLineIndexAtMainCommandOption()
-     * \pre cursorInCompLinePositionIndex() must be at least at position 0 (the executable in the command-line)
-     */
-    [[deprecated]]
-    bool isCursorAtMainCommandOption() const noexcept
-    {
-      const int cursor = cursorInCompLinePositionIndex();
-      assert( cursor >= 0 );
-
-      return isCompLineIndexAtMainCommandOption(cursor);
-//       if( cursor >= mParserResultInCommandLineIndexMap.commandLineArgumentCount() ){
-//         return false;
-//       }
-// 
-//       return mParserResultInCommandLineIndexMap.isCommandLineIndexAtMainCommandOption(cursor);
-    }
-
     /*! \brief Check if \a compLineIndex refers to a option value in the main command
      *
      * Returns the same results as isCompLineIndexAtOptionValue()
@@ -1001,18 +695,6 @@ namespace Mdt{ namespace CommandLineParser{
       }
 
       return false;
-
-//       if(compLineIndex < 1){
-//         return false;
-//       }
-// 
-//       return mCompLineArgumentListAttributes.isCommandLineIndexAtMainCommandOptionExpectingValue(compLineIndex-1);
-      //if( isCompLineIndexPastTheCompLine(compLineIndex) ){
-//         if( !isCompLineIndexAtMainCommandOption(compLineIndex-1) ){
-//           return false;
-//         }
-        //
-      //}
     }
 
     /*! \brief Check if the cursor is at a option value of the main command
@@ -1026,49 +708,6 @@ namespace Mdt{ namespace CommandLineParser{
       assert( cursor >= 0 );
 
       return isCompLineIndexAtMainCommandOptionValue(cursor);
-    }
-
-    /*! \brief Check if the cursor is at the position of the sub-command name in the definition
-     *
-     * If the parser definition does not contain any sub-command,
-     * this methods will allways return false.
-     *
-     * Examples for a application that can take 1 argument for the main command,
-     * and has a copy sub-command that can take \a source and \a destination as positional arguments:
-     * \code
-     * completion-find-current-positional-argument-name 1 myapp
-     * //                                                cursor ^
-     * // return: false
-     * // Why: at cursor position we can expect a positional argument or a sub-command name
-     *
-     * completion-find-current-positional-argument-name 2 myapp copy
-     * //                                                     cursor ^
-     * // return: false
-     *
-     * completion-find-current-positional-argument-name 1 myapp copy
-     * //                                                cursor ^
-     * // return: true
-     *
-     * completion-find-current-positional-argument-name 2 myapp arg1
-     * //                                                     cursor ^
-     * // return: true
-     *
-     * completion-find-current-positional-argument-name 1 myapp arg1
-     * //                                                cursor ^
-     * // return: false
-     * // Why: at cursor position can be a positional argument or a partially typed sub-command name
-     * // Note: the possible sub-commands the user can type will be handled in the completion script, we not do it here
-     * \endcode
-     *
-     * \sa compLineCouldBeMainCommandPositionalArgumentOrSubCommandName()
-     * \sa compLineSubCommandNamePositionIndex()
-     */
-    bool isCursorAtSubCommandNameIndexInDefinition() const noexcept
-    {
-      if( compLineCouldBeMainCommandPositionalArgumentOrSubCommandName() ){
-        return !isCursorAtMainCommandPositionalArgumentsIndexInDefinition();
-      }
-      return cursorInCompLinePositionIndex() == compLineSubCommandNamePositionIndex();
     }
 
     /*! \brief Get the count of positional arguments in the sub-command
@@ -1211,60 +850,6 @@ namespace Mdt{ namespace CommandLineParser{
       return cursorSubCommandPositionalArgumentIndexInDefinition() >= 0;
     }
 
-    /*! \brief Check if the cursor is at a option of the sub-command
-     *
-     * Examples:
-     * \code
-     * completion-find-current-positional-argument-name 1 myapp -h
-     * //                                                cursor ^
-     * // return: false
-     *
-     * completion-find-current-positional-argument-name 2 myapp copy
-     * //                                                     cursor ^
-     * // return: false
-     *
-     * completion-find-current-positional-argument-name 2 myapp copy -
-     * //                                                     cursor ^
-     * // return: true
-     *
-     * completion-find-current-positional-argument-name 2 myapp copy -h
-     * //                                                     cursor ^
-     * // return: true
-     *
-     * completion-find-current-positional-argument-name 2 myapp copy --
-     * //                                                     cursor ^
-     * // return: true
-     *
-     * completion-find-current-positional-argument-name 3 myapp copy -
-     * //                                                       cursor ^
-     * // return: false
-     *
-     * completion-find-current-positional-argument-name 2 myapp copy file
-     * //                                                     cursor ^
-     * // return: false
-     *
-     * completion-find-current-positional-argument-name 3 myapp copy -h
-     * //                                                        cursor ^
-     * // return: false
-     * \endcode
-     *
-     * This function returns false if the cursor is not in the sub-command.
-     *
-     * \pre cursorInCompLinePositionIndex() must be at least at position 0 (the executable in the command-line)
-     */
-    [[deprecated]]
-    bool isCursorAtSubCommandOption() const noexcept
-    {
-      const int cursor = cursorInCompLinePositionIndex();
-      assert( cursor >= 0 );
-
-//       if( cursor >= mParserResultInCommandLineIndexMap.commandLineArgumentCount() ){
-//         return false;
-//       }
-// 
-//       return mParserResultInCommandLineIndexMap.isCommandLineIndexAtSubCommandOption(cursor);
-    }
-
     /*! \brief Returns the name of the "findCurrentPositionalArgumentName" query
      */
     static
@@ -1272,33 +857,6 @@ namespace Mdt{ namespace CommandLineParser{
     {
       return QLatin1String("completion-find-current-argument");
     }
-
-    /*! \brief Check if \a parserResult is a valid Bash completion query
-     *
-     * A valid Bash completion query has at least 3 arguments:
-     * - The query argument, findCurrentPositionalArgumentNameString()
-     * - The cursor position in the command-line arguments, result of \a COMP_CWORD
-     * - The executable (which comes from \a COMP_LINE)
-     */
-//     static
-//     bool isValidBashCompletionQuery(const ParserResult & parserResult)
-//     {
-//       if( parserResult.positionalArgumentCount() < 3 ){
-//         return false;
-//       }
-//       if( parserResult.positionalArgumentAt(0) != findCurrentArgumentString() ){
-//         return false;
-//       }
-//       const int cursor = extractCursorInComplinePositionIndex(parserResult);
-//       if( cursor < 0 ){
-//         return false;
-//       }
-//       if( cursor > ParserResultInCommandLineIndexMap::commandLineArgumentCount( parserResultWithoutQueryArguments(parserResult) ) ){
-//         return false;
-//       }
-// 
-//       return true;
-//     }
 
     /*! \brief Check if \a commandLine is a valid Bash completion query
      *
@@ -1349,26 +907,6 @@ namespace Mdt{ namespace CommandLineParser{
       return true;
     }
 
-    /*! \brief Extract cursor position from \a parserResult
-     *
-     * Return -1 on failure
-     *
-     * \pre \a parserResult must have at least 2 positional arguments
-     */
-    static
-    int extractCursorInComplinePositionIndex(const ParserResult & parserResult)
-    {
-      assert( parserResult.positionalArgumentCount() >= 2 );
-
-      bool ok = false;
-      const int cursor = parserResult.positionalArgumentAt(1).toInt(&ok);
-      if( !ok ){
-        return -1;
-      }
-
-      return cursor;
-    }
-
     /*! \brief Extract cursor position from \a commandLine
      *
      * Return -1 on failure
@@ -1409,58 +947,13 @@ namespace Mdt{ namespace CommandLineParser{
       return commandLine.argumentCount() - 3;
     }
 
-    /*! \brief Get a parser result with from \a queryResult with the query command, cursor position and executable removed
-     *
-     * For example:
-     * \code
-     * completion-find-current-positional-argument-name 2 myapp some-file
-     * \endcode
-     * will return:
-     * \code
-     * some-file
-     * \endcode
-     *
-     * All the rest (options, sub-command) are the same as \a queryResult
-     *
-     * \pre \a queryResult must have at least 3 positional arguments (for its main command)
-     */
-    static
-    ParserResult parserResultWithoutQueryArguments(const ParserResult & queryResult)
-    {
-      assert( queryResult.mainCommand().positionalArgumentCount() >= 3 );
-      ParserResult result;
-
-      ParserResultCommand mainCommand;
-      for( const auto & option : queryResult.mainCommand().options() ){
-        mainCommand.addOption(option);
-      }
-      for( int i=3; i < queryResult.mainCommand().positionalArgumentCount(); ++i ){
-        mainCommand.addPositionalArgument( queryResult.mainCommand().positionalArgumentAt(i) );
-      }
-      result.setMainCommand(mainCommand);
-
-      result.setSubCommand( queryResult.subCommand() );
-
-      return result;
-    }
-
    private:
 
-//     ParserResultInCommandLineIndexMap mParserResultInCommandLineIndexMap;
-    
     CommandLine::ArgumentListAttributes mCompLineArgumentListAttributes;
     const ParserDefinition & mParserDefinition;
-    
     int mInCompLineSubCommandNameIndex;
     int mInDefinitionSubCommandIndex = -1;
     int mCursorInCompLinePositionIndex;
-    
-//     int mParserDefinitionMainCommandPositionalArgumentsCount;
-//     bool mParserDefinitionHasSubCommand;
-    
-    bool mResultHasSubCommand;
-    
-//     int mSubCommandPositionalArgumentsCount;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{
