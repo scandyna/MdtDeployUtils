@@ -109,6 +109,12 @@ else()
   endif()
 endif()
 
+# GCC: mangled name for 'xx' will change in C++17 because the exception specification is part of a function type [-Wnoexcept-type]
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80985
+if( (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0) )
+  add_compile_options(-Wno-noexcept-type)
+endif()
+
 #######################
 # Paths to dependencies
 #######################
