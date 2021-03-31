@@ -25,7 +25,7 @@ namespace Mdt{ namespace CommandLineParser{
 
 BashCompletionGeneratorPositionalArgument BashCompletionGeneratorPositionalArgument::fromParserDefinitionPositionalArgument(const ParserDefinitionPositionalArgument & argumentDef)
 {
-  BashCompletionGeneratorPositionalArgument argument( argumentDef.type(), argumentDef.name() );
+  BashCompletionGeneratorPositionalArgument argument( argumentDef.name() );
 
   const auto compgenCommand = Impl::compgenCommandFromParserDefinitionPositionalArgument(argumentDef);
   if( !compgenCommand.isEmpty() ){

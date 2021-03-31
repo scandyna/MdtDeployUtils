@@ -414,14 +414,14 @@ namespace Mdt{ namespace CommandLineParser{
     static
     QString compreplyStatementFromPositionalArgument(const BashCompletionGeneratorPositionalArgument & argument, const QString & curVariableName)
     {
-      const QString actionName = compgenActionNameFromArgumentType( argument.type() );
-
-      if( actionName.isEmpty() ){
-        return QString();
-      }
-
-      return QLatin1String("COMPREPLY=($(compgen -A ") % actionName
-              % QLatin1String(" -- \"$") % curVariableName % QLatin1String("\"))");
+//       const QString actionName = compgenActionNameFromArgumentType( argument.type() );
+// 
+//       if( actionName.isEmpty() ){
+//         return QString();
+//       }
+// 
+//       return QLatin1String("COMPREPLY=($(compgen -A ") % actionName
+//               % QLatin1String(" -- \"$") % curVariableName % QLatin1String("\"))");
     }
 
     /*! \internal Get a COMPREPLY=($(compgen ...)) statement from first positional argument in \a command
@@ -438,18 +438,18 @@ namespace Mdt{ namespace CommandLineParser{
         return compreplyStatementFromPositionalArgument( command.positionalArgumentAt(0), curVariableName );
       }
 
-      const QString actionName = compgenActionNameFromArgumentType( command.positionalArgumentAt(0).type() );
-      const auto actionArgument = [&actionName](){
-        if( actionName.isEmpty() ){
-          return QString();
-        }
-        return QString( QLatin1String(" -A ") + actionName );
-      };
+//       const QString actionName = compgenActionNameFromArgumentType( command.positionalArgumentAt(0).type() );
+//       const auto actionArgument = [&actionName](){
+//         if( actionName.isEmpty() ){
+//           return QString();
+//         }
+//         return QString( QLatin1String(" -A ") + actionName );
+//       };
 
       const QString optionsWordList = commandOptionsToWordListString(command);
 
-      return QLatin1String("COMPREPLY=($(compgen") % actionArgument() % QLatin1String(" -W \"") % optionsWordList % QLatin1Char('"')
-              % QLatin1String(" -- \"$") % curVariableName % QLatin1String("\"))");
+//       return QLatin1String("COMPREPLY=($(compgen") % actionArgument() % QLatin1String(" -W \"") % optionsWordList % QLatin1Char('"')
+//               % QLatin1String(" -- \"$") % curVariableName % QLatin1String("\"))");
     }
 
     /*! \internal Get a COMPREPLY=($(compgen ...)) for a positional argument in \a command

@@ -21,7 +21,6 @@
 #ifndef MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_POSITIONAL_ARGUMENT_H
 #define MDT_COMMAND_LINE_PARSER_BASH_COMPLETION_GENERATOR_POSITIONAL_ARGUMENT_H
 
-#include "ArgumentType.h"
 #include "ParserDefinitionPositionalArgument.h"
 #include "BashCompletion/Action.h"
 #include "mdt_commandlineparser_export.h"
@@ -48,18 +47,6 @@ namespace Mdt{ namespace CommandLineParser{
       assert( !name.trimmed().isEmpty() );
     }
 
-    /*! \brief Construct a argument with a type and a name
-     *
-     * \pre \a name must not be empty
-     */
-    [[deprecated]]
-    BashCompletionGeneratorPositionalArgument(ArgumentType type, const QString & name)
-     : mType(type),
-       mName( name.trimmed() )
-    {
-      assert( !name.trimmed().isEmpty() );
-    }
-
     /*! \brief Copy construct a argument from \a other
      */
     BashCompletionGeneratorPositionalArgument(const BashCompletionGeneratorPositionalArgument & other) = default;
@@ -70,19 +57,11 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Move construct a argument from \a other
      */
-    BashCompletionGeneratorPositionalArgument(BashCompletionGeneratorPositionalArgument && other) = default;
+    BashCompletionGeneratorPositionalArgument(BashCompletionGeneratorPositionalArgument && other) noexcept = default;
 
     /*! \brief Move assign \a other to this argument
      */
-    BashCompletionGeneratorPositionalArgument & operator=(BashCompletionGeneratorPositionalArgument && other) = default;
-
-    /*! \brief Get the type of this argument
-     */
-    [[deprecated]]
-    ArgumentType type() const noexcept
-    {
-      return mType;
-    }
+    BashCompletionGeneratorPositionalArgument & operator=(BashCompletionGeneratorPositionalArgument && other) noexcept = default;
 
     /*! \brief Get the name of this argument
      */
@@ -119,7 +98,6 @@ namespace Mdt{ namespace CommandLineParser{
 
    private:
 
-    ArgumentType mType = ArgumentType::Unspecified;
     QString mName;
     BashCompletion::Action mAction;
   };

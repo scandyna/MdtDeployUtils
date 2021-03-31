@@ -81,32 +81,32 @@ TEST_CASE("option")
   }
 }
 
-TEST_CASE("Argument_OLD")
-{
-  BashCompletionGeneratorPositionalArgument argument( ArgumentType::Directory, QLatin1String("destination") );
-  REQUIRE( argument.type() == ArgumentType::Directory );
-  REQUIRE( argument.name() == QLatin1String("destination") );
-}
+// TEST_CASE("Argument_OLD")
+// {
+//   BashCompletionGeneratorPositionalArgument argument( ArgumentType::Directory, QLatin1String("destination") );
+//   REQUIRE( argument.type() == ArgumentType::Directory );
+//   REQUIRE( argument.name() == QLatin1String("destination") );
+// }
 
 TEST_CASE("PositionalArgument")
 {
   SECTION("Constrcut")
   {
     BashCompletionGeneratorPositionalArgument argument( QLatin1String("destination") );
-    REQUIRE( argument.type() == ArgumentType::Unspecified );
+//     REQUIRE( argument.type() == ArgumentType::Unspecified );
     REQUIRE( argument.name() == QLatin1String("destination") );
     REQUIRE( !argument.hasAction() );
   }
 }
 
-TEST_CASE("Command_arguments_OLD")
-{
-  BashCompletionGeneratorCommand command( QLatin1String("command") );
-  command.addPositionalArgument( ArgumentType::File, QLatin1String("source") );
-  REQUIRE( command.positionalArguments().size() == 1 );
-  REQUIRE( command.positionalArguments()[0].type() == ArgumentType::File );
-  REQUIRE( command.positionalArguments()[0].name() == QLatin1String("source") );
-}
+// TEST_CASE("Command_arguments_OLD")
+// {
+//   BashCompletionGeneratorCommand command( QLatin1String("command") );
+//   command.addPositionalArgument( ArgumentType::File, QLatin1String("source") );
+//   REQUIRE( command.positionalArguments().size() == 1 );
+//   REQUIRE( command.positionalArguments()[0].type() == ArgumentType::File );
+//   REQUIRE( command.positionalArguments()[0].name() == QLatin1String("source") );
+// }
 
 TEST_CASE("Command_arguments")
 {
@@ -353,9 +353,9 @@ TEST_CASE("BashCompletionGeneratorCommand_fromParserDefinitionCommand")
     const auto copyCommand = BashCompletionGeneratorCommand::fromParserDefinitionCommand(copyCommandDef);
     REQUIRE( copyCommand.name() == QLatin1String("copy") );
     REQUIRE( copyCommand.positionalArguments().size() == 2 );
-    REQUIRE( copyCommand.positionalArguments()[0].type() == ArgumentType::File );
+    REQUIRE( copyCommand.positionalArguments()[0].hasAction() );
     REQUIRE( copyCommand.positionalArguments()[0].name() == QLatin1String("source") );
-    REQUIRE( copyCommand.positionalArguments()[1].type() == ArgumentType::Directory );
+    REQUIRE( copyCommand.positionalArguments()[1].hasAction() );
     REQUIRE( copyCommand.positionalArguments()[1].name() == QLatin1String("destination") );
     REQUIRE( copyCommand.options().size() == 1 );
     REQUIRE( copyCommand.options()[0].shortNameWithDash() == QLatin1String("-h") );
@@ -880,145 +880,109 @@ TEST_CASE("compreplyStatementToListCommandOptions")
   }
 }
 
-TEST_CASE("compreplyStatementFromPositionalArgument_OLD")
-{
-  using Impl::compreplyStatementFromPositionalArgument;
+// TEST_CASE("compreplyStatementFromFirstPositionalArgumentInCommand")
+// {
+//   using Impl::compreplyStatementFromFirstPositionalArgumentInCommand;
+// 
+//   QString curVariableName = QLatin1String("cur");
+//   QString expectedResult;
+// 
+//   BashCompletionGeneratorCommand command;
+//   BashCompletionGeneratorPositionalArgument sourceFile( ArgumentType::File, QLatin1String("source") );
+//   BashCompletionGeneratorPositionalArgument someArg( ArgumentType::Unspecified, QLatin1String("somearg") );
+// 
+//   SECTION("command without option")
+//   {
+//     SECTION("source file")
+//     {
+//       command.addPositionalArgument(sourceFile);
+//       expectedResult = QLatin1String("COMPREPLY=($(compgen -A file -- \"$cur\"))");
+//       REQUIRE( compreplyStatementFromFirstPositionalArgumentInCommand(command, curVariableName) == expectedResult );
+//     }
+// 
+//     SECTION("somearg Unspecified")
+//     {
+//       command.addPositionalArgument(someArg);
+//       REQUIRE( compreplyStatementFromFirstPositionalArgumentInCommand(command, curVariableName).isEmpty() );
+//     }
+//   }
+// 
+//   SECTION("command with -h --help option")
+//   {
+//     command.addOption( 'h', QLatin1String("help") );
+// 
+//     SECTION("source file")
+//     {
+//       command.addPositionalArgument(sourceFile);
+//       expectedResult = QLatin1String("COMPREPLY=($(compgen -A file -W \"-h --help\" -- \"$cur\"))");
+//       REQUIRE( compreplyStatementFromFirstPositionalArgumentInCommand(command, curVariableName) == expectedResult );
+//     }
+// 
+//     SECTION("somearg Unspecified")
+//     {
+//       command.addPositionalArgument(someArg);
+//       expectedResult = QLatin1String("COMPREPLY=($(compgen -W \"-h --help\" -- \"$cur\"))");
+//       REQUIRE( compreplyStatementFromFirstPositionalArgumentInCommand(command, curVariableName) == expectedResult );
+//     }
+//   }
+// }
 
-  QString curVariableName = QLatin1String("cur");
-  QString expectedResult;
-
-  SECTION("source file")
-  {
-    BashCompletionGeneratorPositionalArgument argument( ArgumentType::File, QLatin1String("source") );
-    expectedResult = QLatin1String("COMPREPLY=($(compgen -A file -- \"$cur\"))");
-    REQUIRE( compreplyStatementFromPositionalArgument(argument, curVariableName) == expectedResult );
-  }
-
-  SECTION("destination diretory")
-  {
-    BashCompletionGeneratorPositionalArgument argument( ArgumentType::Directory, QLatin1String("destination") );
-    expectedResult = QLatin1String("COMPREPLY=($(compgen -A directory -- \"$cur\"))");
-    REQUIRE( compreplyStatementFromPositionalArgument(argument, curVariableName) == expectedResult );
-  }
-
-  SECTION("destination diretory or file")
-  {
-    BashCompletionGeneratorPositionalArgument argument( ArgumentType::DirectoryOrFile, QLatin1String("destination") );
-    expectedResult = QLatin1String("COMPREPLY=($(compgen -A file -- \"$cur\"))");
-    REQUIRE( compreplyStatementFromPositionalArgument(argument, curVariableName) == expectedResult );
-  }
-
-  SECTION("somearg Unspecified")
-  {
-    BashCompletionGeneratorPositionalArgument argument( ArgumentType::Unspecified, QLatin1String("somearg") );
-    expectedResult = QLatin1String("");
-    REQUIRE( compreplyStatementFromPositionalArgument(argument, curVariableName) == expectedResult );
-  }
-}
-
-TEST_CASE("compreplyStatementFromFirstPositionalArgumentInCommand")
-{
-  using Impl::compreplyStatementFromFirstPositionalArgumentInCommand;
-
-  QString curVariableName = QLatin1String("cur");
-  QString expectedResult;
-
-  BashCompletionGeneratorCommand command;
-  BashCompletionGeneratorPositionalArgument sourceFile( ArgumentType::File, QLatin1String("source") );
-  BashCompletionGeneratorPositionalArgument someArg( ArgumentType::Unspecified, QLatin1String("somearg") );
-
-  SECTION("command without option")
-  {
-    SECTION("source file")
-    {
-      command.addPositionalArgument(sourceFile);
-      expectedResult = QLatin1String("COMPREPLY=($(compgen -A file -- \"$cur\"))");
-      REQUIRE( compreplyStatementFromFirstPositionalArgumentInCommand(command, curVariableName) == expectedResult );
-    }
-
-    SECTION("somearg Unspecified")
-    {
-      command.addPositionalArgument(someArg);
-      REQUIRE( compreplyStatementFromFirstPositionalArgumentInCommand(command, curVariableName).isEmpty() );
-    }
-  }
-
-  SECTION("command with -h --help option")
-  {
-    command.addOption( 'h', QLatin1String("help") );
-
-    SECTION("source file")
-    {
-      command.addPositionalArgument(sourceFile);
-      expectedResult = QLatin1String("COMPREPLY=($(compgen -A file -W \"-h --help\" -- \"$cur\"))");
-      REQUIRE( compreplyStatementFromFirstPositionalArgumentInCommand(command, curVariableName) == expectedResult );
-    }
-
-    SECTION("somearg Unspecified")
-    {
-      command.addPositionalArgument(someArg);
-      expectedResult = QLatin1String("COMPREPLY=($(compgen -W \"-h --help\" -- \"$cur\"))");
-      REQUIRE( compreplyStatementFromFirstPositionalArgumentInCommand(command, curVariableName) == expectedResult );
-    }
-  }
-}
-
-TEST_CASE("compreplyStatementFromPositionalArgumentInCommand")
-{
-  using Impl::compreplyStatementFromPositionalArgumentInCommand;
-
-  QString curVariableName = QLatin1String("cur");
-  QString expectedResult;
-
-  BashCompletionGeneratorCommand command;
-  command.addPositionalArgument( ArgumentType::File, QLatin1String("source") );
-  command.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination") );
-  command.addPositionalArgument( ArgumentType::Unspecified, QLatin1String("somearg") );
-
-  SECTION("command without option")
-  {
-    SECTION("source file")
-    {
-      expectedResult = QLatin1String("COMPREPLY=($(compgen -A file -- \"$cur\"))");
-      REQUIRE( compreplyStatementFromPositionalArgumentInCommand(command, 0, curVariableName) == expectedResult );
-    }
-
-    SECTION("destination diretory")
-    {
-      expectedResult = QLatin1String("COMPREPLY=($(compgen -A directory -- \"$cur\"))");
-      REQUIRE( compreplyStatementFromPositionalArgumentInCommand(command, 1, curVariableName) == expectedResult );
-    }
-
-    SECTION("somearg Unspecified")
-    {
-      expectedResult = QLatin1String("");
-      REQUIRE( compreplyStatementFromPositionalArgumentInCommand(command, 2, curVariableName) == expectedResult );
-    }
-  }
-
-  SECTION("command with -h --help option")
-  {
-    command.addOption( 'h', QLatin1String("help") );
-
-    SECTION("source file")
-    {
-      expectedResult = QLatin1String("COMPREPLY=($(compgen -A file -W \"-h --help\" -- \"$cur\"))");
-      REQUIRE( compreplyStatementFromPositionalArgumentInCommand(command, 0, curVariableName) == expectedResult );
-    }
-
-    SECTION("destination diretory")
-    {
-      expectedResult = QLatin1String("COMPREPLY=($(compgen -A directory -- \"$cur\"))");
-      REQUIRE( compreplyStatementFromPositionalArgumentInCommand(command, 1, curVariableName) == expectedResult );
-    }
-
-    SECTION("somearg Unspecified")
-    {
-      expectedResult = QLatin1String("");
-      REQUIRE( compreplyStatementFromPositionalArgumentInCommand(command, 2, curVariableName) == expectedResult );
-    }
-  }
-}
+// TEST_CASE("compreplyStatementFromPositionalArgumentInCommand")
+// {
+//   using Impl::compreplyStatementFromPositionalArgumentInCommand;
+// 
+//   QString curVariableName = QLatin1String("cur");
+//   QString expectedResult;
+// 
+//   BashCompletionGeneratorCommand command;
+//   command.addPositionalArgument( ArgumentType::File, QLatin1String("source") );
+//   command.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination") );
+//   command.addPositionalArgument( ArgumentType::Unspecified, QLatin1String("somearg") );
+// 
+//   SECTION("command without option")
+//   {
+//     SECTION("source file")
+//     {
+//       expectedResult = QLatin1String("COMPREPLY=($(compgen -A file -- \"$cur\"))");
+//       REQUIRE( compreplyStatementFromPositionalArgumentInCommand(command, 0, curVariableName) == expectedResult );
+//     }
+// 
+//     SECTION("destination diretory")
+//     {
+//       expectedResult = QLatin1String("COMPREPLY=($(compgen -A directory -- \"$cur\"))");
+//       REQUIRE( compreplyStatementFromPositionalArgumentInCommand(command, 1, curVariableName) == expectedResult );
+//     }
+// 
+//     SECTION("somearg Unspecified")
+//     {
+//       expectedResult = QLatin1String("");
+//       REQUIRE( compreplyStatementFromPositionalArgumentInCommand(command, 2, curVariableName) == expectedResult );
+//     }
+//   }
+// 
+//   SECTION("command with -h --help option")
+//   {
+//     command.addOption( 'h', QLatin1String("help") );
+// 
+//     SECTION("source file")
+//     {
+//       expectedResult = QLatin1String("COMPREPLY=($(compgen -A file -W \"-h --help\" -- \"$cur\"))");
+//       REQUIRE( compreplyStatementFromPositionalArgumentInCommand(command, 0, curVariableName) == expectedResult );
+//     }
+// 
+//     SECTION("destination diretory")
+//     {
+//       expectedResult = QLatin1String("COMPREPLY=($(compgen -A directory -- \"$cur\"))");
+//       REQUIRE( compreplyStatementFromPositionalArgumentInCommand(command, 1, curVariableName) == expectedResult );
+//     }
+// 
+//     SECTION("somearg Unspecified")
+//     {
+//       expectedResult = QLatin1String("");
+//       REQUIRE( compreplyStatementFromPositionalArgumentInCommand(command, 2, curVariableName) == expectedResult );
+//     }
+//   }
+// }
 
 TEST_CASE("formatCasePatternBlock")
 {
@@ -1030,28 +994,28 @@ TEST_CASE("formatCasePatternBlock")
   REQUIRE( formatCasePatternBlock( QLatin1String("pattern"), QLatin1String("body") ) == expectedResult );
 }
 
-TEST_CASE("casePatternFromCommandPositionalArgument")
-{
-  using Impl::casePatternFromCommandPositionalArgument;
-
-  BashCompletionGeneratorCommand command;
-  QString curVariableName = QLatin1String("cur");
-  QString expectedResult;
-
-  SECTION("source file")
-  {
-    command.addPositionalArgument( ArgumentType::File, QLatin1String("source") );
-    expectedResult = QLatin1String("    source)\n      COMPREPLY=($(compgen -A file -- \"$cur\"))\n      ;;");
-    REQUIRE( casePatternFromCommandPositionalArgument(command, 0, curVariableName) == expectedResult );
-  }
-
-  SECTION("somearg Unspecified")
-  {
-    command.addPositionalArgument( ArgumentType::Unspecified, QLatin1String("somearg") );
-    expectedResult = QLatin1String("");
-    REQUIRE( casePatternFromCommandPositionalArgument(command, 0, curVariableName) == expectedResult );
-  }
-}
+// TEST_CASE("casePatternFromCommandPositionalArgument")
+// {
+//   using Impl::casePatternFromCommandPositionalArgument;
+// 
+//   BashCompletionGeneratorCommand command;
+//   QString curVariableName = QLatin1String("cur");
+//   QString expectedResult;
+// 
+//   SECTION("source file")
+//   {
+//     command.addPositionalArgument( ArgumentType::File, QLatin1String("source") );
+//     expectedResult = QLatin1String("    source)\n      COMPREPLY=($(compgen -A file -- \"$cur\"))\n      ;;");
+//     REQUIRE( casePatternFromCommandPositionalArgument(command, 0, curVariableName) == expectedResult );
+//   }
+// 
+//   SECTION("somearg Unspecified")
+//   {
+//     command.addPositionalArgument( ArgumentType::Unspecified, QLatin1String("somearg") );
+//     expectedResult = QLatin1String("");
+//     REQUIRE( casePatternFromCommandPositionalArgument(command, 0, curVariableName) == expectedResult );
+//   }
+// }
 
 TEST_CASE("compreplyStatementForCommandCaseBlock")
 {
@@ -1168,72 +1132,72 @@ TEST_CASE("generateScriptToFile")
   REQUIRE( fileExists(dir, fileName) );
 }
 
-TEST_CASE("GenerateScript_sandbox")
-{
-  BashCompletionGenerator generator;
-  generator.setApplicationName( QLatin1String("myapp") );
-  BashCompletionGeneratorCommand mainCommand;
-
-  SECTION("Simple app")
-  {
-    std::cout << "Simple app ";
-
-    SECTION("with positional argument")
-    {
-      std::cout << "with positional argument" << std::endl;
-
-      mainCommand.addPositionalArgument( ArgumentType::File, QLatin1String("mainfile") );
-      generator.setMainCommand(mainCommand);
-      std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
-    }
-
-    SECTION("with option")
-    {
-      std::cout << "with option" << std::endl;
-
-      mainCommand.addOption( 'h', QLatin1String("help") );
-      generator.setMainCommand(mainCommand);
-      std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
-    }
-
-    SECTION("with option and file positional argument")
-    {
-      std::cout << "with option and file positional argument" << std::endl;
-
-      mainCommand.addOption( 'h', QLatin1String("help") );
-      mainCommand.addPositionalArgument( ArgumentType::File, QLatin1String("mainfile") );
-      generator.setMainCommand(mainCommand);
-      std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
-    }
-
-    SECTION("with option and Unspecified positional argument")
-    {
-      std::cout << "with option and Unspecified positional argument" << std::endl;
-
-      mainCommand.addOption( 'h', QLatin1String("help") );
-      mainCommand.addPositionalArgument( ArgumentType::Unspecified, QLatin1String("arg1") );
-      generator.setMainCommand(mainCommand);
-      std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
-    }
-  }
-
-  SECTION("App with sub-command")
-  {
-    std::cout << "App with sub-command ";
-
-    SECTION("myapp [options] command [options] source destination")
-    {
-      std::cout << "myapp [options] command [options] source destination" << std::endl;
-
-      mainCommand.addOption( 'h', QLatin1String("help") );
-      generator.setMainCommand(mainCommand);
-      BashCompletionGeneratorCommand copyCommand( QLatin1String("copy") );
-      copyCommand.addOption( QLatin1String("force") );
-      copyCommand.addPositionalArgument( ArgumentType::File, QLatin1String("source") );
-      copyCommand.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination") );
-      generator.addSubCommand(copyCommand);
-
-      std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
-    }
-  }
-}
+// TEST_CASE("GenerateScript_sandbox")
+// {
+//   BashCompletionGenerator generator;
+//   generator.setApplicationName( QLatin1String("myapp") );
+//   BashCompletionGeneratorCommand mainCommand;
+// 
+//   SECTION("Simple app")
+//   {
+//     std::cout << "Simple app ";
+// 
+//     SECTION("with positional argument")
+//     {
+//       std::cout << "with positional argument" << std::endl;
+// 
+//       mainCommand.addPositionalArgument( ArgumentType::File, QLatin1String("mainfile") );
+//       generator.setMainCommand(mainCommand);
+//       std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
+//     }
+// 
+//     SECTION("with option")
+//     {
+//       std::cout << "with option" << std::endl;
+// 
+//       mainCommand.addOption( 'h', QLatin1String("help") );
+//       generator.setMainCommand(mainCommand);
+//       std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
+//     }
+// 
+//     SECTION("with option and file positional argument")
+//     {
+//       std::cout << "with option and file positional argument" << std::endl;
+// 
+//       mainCommand.addOption( 'h', QLatin1String("help") );
+//       mainCommand.addPositionalArgument( ArgumentType::File, QLatin1String("mainfile") );
+//       generator.setMainCommand(mainCommand);
+//       std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
+//     }
+// 
+//     SECTION("with option and Unspecified positional argument")
+//     {
+//       std::cout << "with option and Unspecified positional argument" << std::endl;
+// 
+//       mainCommand.addOption( 'h', QLatin1String("help") );
+//       mainCommand.addPositionalArgument( ArgumentType::Unspecified, QLatin1String("arg1") );
+//       generator.setMainCommand(mainCommand);
+//       std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
+//     }
+//   }
+// 
+//   SECTION("App with sub-command")
+//   {
+//     std::cout << "App with sub-command ";
+// 
+//     SECTION("myapp [options] command [options] source destination")
+//     {
+//       std::cout << "myapp [options] command [options] source destination" << std::endl;
+// 
+//       mainCommand.addOption( 'h', QLatin1String("help") );
+//       generator.setMainCommand(mainCommand);
+//       BashCompletionGeneratorCommand copyCommand( QLatin1String("copy") );
+//       copyCommand.addOption( QLatin1String("force") );
+//       copyCommand.addPositionalArgument( ArgumentType::File, QLatin1String("source") );
+//       copyCommand.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination") );
+//       generator.addSubCommand(copyCommand);
+// 
+//       std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
+//     }
+//   }
+// }
