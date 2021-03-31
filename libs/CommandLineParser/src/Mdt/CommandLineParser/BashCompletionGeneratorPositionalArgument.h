@@ -23,6 +23,7 @@
 
 #include "ArgumentType.h"
 #include "ParserDefinitionPositionalArgument.h"
+#include "BashCompletion/Action.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
 #include <cassert>
@@ -37,10 +38,21 @@ namespace Mdt{ namespace CommandLineParser{
 
     BashCompletionGeneratorPositionalArgument() = delete;
 
+    /*! \brief Construct a argument with a name
+     *
+     * \pre \a name must not be empty
+     */
+    BashCompletionGeneratorPositionalArgument(const QString & name)
+     : mName( name.trimmed() )
+    {
+      assert( !name.trimmed().isEmpty() );
+    }
+
     /*! \brief Construct a argument with a type and a name
      *
      * \pre \a name must not be empty
      */
+    [[deprecated]]
     BashCompletionGeneratorPositionalArgument(ArgumentType type, const QString & name)
      : mType(type),
        mName( name.trimmed() )
@@ -66,6 +78,7 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Get the type of this argument
      */
+    [[deprecated]]
     ArgumentType type() const noexcept
     {
       return mType;
@@ -78,6 +91,27 @@ namespace Mdt{ namespace CommandLineParser{
       return mName;
     }
 
+    /*! \brief Set the action to complete the value of this option
+     */
+    void setAction(const BashCompletion::Action & action) noexcept
+    {
+      mAction = action;
+    }
+
+    /*! \brief Check if this option has a action attached
+     */
+    bool hasAction() const noexcept
+    {
+      return mAction.isDefined();
+    }
+
+    /*! \brief Access the action of this option
+     */
+    const BashCompletion::Action & action() const noexcept
+    {
+      return mAction;
+    }
+
     /*! \brief Get a Bash completion argument from \a argument
      */
     static
@@ -85,8 +119,9 @@ namespace Mdt{ namespace CommandLineParser{
 
    private:
 
-    ArgumentType mType;
+    ArgumentType mType = ArgumentType::Unspecified;
     QString mName;
+    BashCompletion::Action mAction;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

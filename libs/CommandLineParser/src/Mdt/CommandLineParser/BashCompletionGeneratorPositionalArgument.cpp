@@ -19,12 +19,22 @@
  **
  ****************************************************************************/
 #include "BashCompletionGeneratorPositionalArgument.h"
+#include "Impl/BashCompletionGenerator.h"
 
 namespace Mdt{ namespace CommandLineParser{
 
-BashCompletionGeneratorPositionalArgument BashCompletionGeneratorPositionalArgument::fromParserDefinitionPositionalArgument(const ParserDefinitionPositionalArgument & argument)
+BashCompletionGeneratorPositionalArgument BashCompletionGeneratorPositionalArgument::fromParserDefinitionPositionalArgument(const ParserDefinitionPositionalArgument & argumentDef)
 {
-  return BashCompletionGeneratorPositionalArgument( argument.type(), argument.name() );
+  BashCompletionGeneratorPositionalArgument argument( argumentDef.type(), argumentDef.name() );
+
+  const auto compgenCommand = Impl::compgenCommandFromParserDefinitionPositionalArgument(argumentDef);
+  if( !compgenCommand.isEmpty() ){
+    BashCompletion::Action action;
+    action.setCompgenCommand(compgenCommand);
+    argument.setAction(action);
+  }
+
+  return argument;
 }
 
 }} // namespace Mdt{ namespace CommandLineParser{
