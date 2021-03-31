@@ -91,11 +91,11 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \pre \a name must not be empty
      */
-    void addPositionalArgument(ArgumentType type, const QString & name)
+    void addPositionalArgument(const QString & name)
     {
       assert( !name.trimmed().isEmpty() );
 
-      mArguments.emplace_back(type, name);
+      mArguments.emplace_back(name);
     }
 
     /*! \brief Add a positional argument
