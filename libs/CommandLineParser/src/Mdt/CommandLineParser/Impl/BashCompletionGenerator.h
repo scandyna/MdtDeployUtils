@@ -26,6 +26,12 @@
 #include "../BashCompletionGeneratorOption.h"
 #include "../BashCompletionGeneratorPositionalArgument.h"
 #include "../BashCompletionParserQuery.h"
+#include "../BashCompletion/ActionList.h"
+#include "../BashCompletion/CompgenAction.h"
+#include "../BashCompletion/CompgenCommand.h"
+#include "../BashCompletion/ScriptCaseClause.h"
+#include "../BashCompletion/ScriptCaseStatement.h"
+#include "../BashCompletion/Script.h"
 #include "../Algorithm.h"
 #include <QString>
 #include <QStringList>
@@ -57,8 +63,19 @@ namespace Mdt{ namespace CommandLineParser{
       }
     }
 
+    /*! \internal
+     */
     static
-    QString commandOptionsToWordList(const BashCompletionGeneratorCommand & command)
+    QStringList commandOptionsToWordList(const BashCompletionGeneratorCommand & command)
+    {
+      QStringList wordList;
+      addCommandOptionsToWordList(command, wordList);
+
+      return wordList;
+    }
+
+    static
+    QString commandOptionsToWordListString(const BashCompletionGeneratorCommand & command)
     {
       QStringList wordList;
       addCommandOptionsToWordList(command, wordList);
@@ -69,20 +86,7 @@ namespace Mdt{ namespace CommandLineParser{
     static
     QString completionFindCurrentPositionalArgumentNameString()
     {
-      return BashCompletionParserQuery::findCurrentPositionalArgumentNameString();
-    }
-
-    /*! \internal Get a COMPREPLY=($(compgen -W)) statement for available options in \a command
-     *
-     * \pre \a command must have at least 1 option
-     */
-    static
-    QString compreplyStatementFromCommandOptions(const BashCompletionGeneratorCommand & command, const QString & curVariableName)
-    {
-      assert( command.hasOptions() );
-
-      return QLatin1String("COMPREPLY=($(compgen -W \"") % commandOptionsToWordList(command)
-              % QLatin1String("\" -- \"$") % curVariableName % QLatin1String("\"))");
+      return BashCompletionParserQuery::findCurrentArgumentString();
     }
 
     static
@@ -101,8 +105,312 @@ namespace Mdt{ namespace CommandLineParser{
       return QString();
     }
 
+    /*! \internal Map \a argumentType to corresponding CompgenAction
+     *
+     * \pre \a argumentType must not be Unspecified
+     */
+    static
+    BashCompletion::CompgenAction compgenActionFromArgumentType(ArgumentType argumentType) noexcept
+    {
+      assert( argumentType != ArgumentType::Unspecified );
+
+      using BashCompletion::CompgenAction;
+
+      switch(argumentType){
+        case ArgumentType::File:
+        case ArgumentType::DirectoryOrFile:
+          return CompgenAction::ListFiles;
+        case ArgumentType::Directory:
+          return CompgenAction::ListDirectories;
+        case ArgumentType::Unspecified:
+          break;
+      }
+
+      // Should never be reached (just make the compiler happy)
+      return CompgenAction::ListFiles;
+    }
+
+    /*! \internal Get a compgen command from \a option
+     */
+    static
+    BashCompletion::CompgenCommand compgenCommandFromParserDefinitionOption(const ParserDefinitionOption & option) noexcept
+    {
+      BashCompletion::CompgenCommand compgenCommand;
+
+      if( !option.hasValueName() ){
+        return compgenCommand;
+      }
+
+      if( option.valueType() != ArgumentType::Unspecified ){
+        compgenCommand.addAction( compgenActionFromArgumentType( option.valueType() ) );
+      }
+
+      if( option.hasPossibleValues() ){
+        compgenCommand.addWordList( option.possibleValues() );
+      }
+
+      return compgenCommand;
+    }
+
+    /*! \internal Get a compgen command from \a option
+     */
+    static
+    BashCompletion::CompgenCommand compgenCommandFromParserDefinitionPositionalArgument(const ParserDefinitionPositionalArgument & argument) noexcept
+    {
+      BashCompletion::CompgenCommand compgenCommand;
+
+      if( argument.type() != ArgumentType::Unspecified ){
+        compgenCommand.addAction( compgenActionFromArgumentType( argument.type() ) );
+      }
+
+      if( argument.hasPossibleValues() ){
+        compgenCommand.addWordList( argument.possibleValues() );
+      }
+
+      return compgenCommand;
+    }
+
+    /*! \internal
+     */
+    inline
+    QString caseClausePattern(const BashCompletionGeneratorCommand & command, const QString & rest) noexcept
+    {
+      if( command.hasName() ){
+        return command.name() % QLatin1Char('-') % rest;
+      }
+      return rest;
+    }
+
+    /*! \internal
+     *
+     * \pre \a option must have a action
+     */
+    static
+    BashCompletion::ScriptCaseClause caseClauseForOptionNameValue(const BashCompletionGeneratorCommand & command,
+                                                                  const BashCompletionGeneratorOption & option) noexcept
+    {
+      assert( option.hasAction() );
+
+      const QString name = QLatin1String("option-") % option.name() % QLatin1String("-value");
+      const QString pattern = caseClausePattern( command, name );
+
+      return BashCompletion::ScriptCaseClause( pattern, option.action().toCompreplyString() );
+    }
+
+    /*! \internal
+     *
+     * \pre \a option must have a action
+     * \pre \a option must have a short name
+     */
+    static
+    BashCompletion::ScriptCaseClause caseClauseForOptionShortNameValue(const BashCompletionGeneratorCommand & command,
+                                                                       const BashCompletionGeneratorOption & option) noexcept
+    {
+      assert( option.hasAction() );
+      assert( option.hasShortName() );
+
+      const QString name = QLatin1String("option-") % QLatin1Char( option.shortName() ) % QLatin1String("-value");
+      const QString pattern = caseClausePattern( command, name );
+
+      return BashCompletion::ScriptCaseClause( pattern, option.action().toCompreplyString() );
+    }
+
+    /*! \internal
+     *
+     * \pre \a argument must have a action
+     */
+    static
+    BashCompletion::ScriptCaseClause caseClauseForPositionalArgumentName(const BashCompletionGeneratorCommand & command,
+                                                                         const BashCompletionGeneratorPositionalArgument & argument) noexcept
+    {
+      assert( argument.hasAction() );
+
+      const QString pattern = caseClausePattern( command, argument.name() );
+
+      return BashCompletion::ScriptCaseClause( pattern, argument.action().toCompreplyString() );
+    }
+
+    /*! \internal
+     *
+     * \pre \a command must have at least 1 option
+     */
+    inline
+    BashCompletion::Action actionToListCommandOptions(const BashCompletionGeneratorCommand & command) noexcept
+    {
+      assert( command.hasOptions() );
+
+      BashCompletion::Action action;
+
+      BashCompletion::CompgenCommand compgenCommand;
+      compgenCommand.addWordList( commandOptionsToWordList(command) );
+      action.setCompgenCommand(compgenCommand);
+
+      return action;
+    }
+
+    /*! \internal
+     *
+     * \pre \a command must have at least 1 option
+     */
+    static
+    BashCompletion::ScriptCaseClause caseClauseToListCommandOptions(const BashCompletionGeneratorCommand & command) noexcept
+    {
+      assert( command.hasOptions() );
+
+      const QString pattern = caseClausePattern( command, QLatin1String("options") );
+      const auto action = actionToListCommandOptions(command);
+
+      return BashCompletion::ScriptCaseClause( pattern, action.toCompreplyString() );
+    }
+
+    /*! \internal
+     *
+     * \pre \a command must have at least 1 option
+     * \pre \a argument must have a action
+     */
+    static
+    BashCompletion::ScriptCaseClause caseClauseForOptionsOrPositionalArgumentName(const BashCompletionGeneratorCommand & command,
+                                                                                  const BashCompletionGeneratorPositionalArgument & argument) noexcept
+    {
+      assert( command.hasOptions() );
+      assert( argument.hasAction() );
+
+      const QString patternRightPart = QLatin1String("options") % QLatin1String("-or-") % argument.name();
+      const QString pattern = caseClausePattern(command, patternRightPart);
+
+      BashCompletion::ActionList actions;
+      actions.addAction( actionToListCommandOptions(command) );
+      actions.addAction( argument.action() );
+
+      return BashCompletion::ScriptCaseClause( pattern, actions.toCompreplyString() );
+    }
+
+    /*! \internal
+     */
+    inline
+    QStringList commandListToWordList(const BashCompletionGenerator & generator) noexcept
+    {
+      QStringList wordList;
+
+      for( const auto & command : generator.subCommands() ){
+        wordList.push_back( command.name() );
+      }
+
+      return wordList;
+    }
+
+    /*! \internal
+     *
+     * \pre \a generator must have at least 1 sub-command
+     */
+    static
+    BashCompletion::ScriptCaseClause caseClauseToListAvailableSubCommands(const BashCompletionGenerator & generator) noexcept
+    {
+      assert( generator.hasSubCommands() );
+
+      const QStringList wordList = commandListToWordList(generator);
+      BashCompletion::Action action;
+      BashCompletion::CompgenCommand compgenCommand;
+      compgenCommand.addWordList(wordList);
+      action.setCompgenCommand(compgenCommand);
+
+      return BashCompletion::ScriptCaseClause( QLatin1String("commands"), action.toCompreplyString() );
+    }
+
+    /*! \internal
+     *
+     * \pre \a generator must have at least 1 sub-command
+     * \pre \a generator must have at least 1 option
+     */
+    static
+    BashCompletion::ScriptCaseClause caseClauseToListCommandOptionsOrAvailableSubCommands(const BashCompletionGenerator & generator) noexcept
+    {
+      assert( generator.hasSubCommands() );
+      assert( generator.mainCommand().hasOptions() );
+
+      const QStringList wordList = commandOptionsToWordList( generator.mainCommand() ) + commandListToWordList(generator);
+      BashCompletion::Action action;
+      BashCompletion::CompgenCommand compgenCommand;
+      compgenCommand.addWordList(wordList);
+      action.setCompgenCommand(compgenCommand);
+
+      return BashCompletion::ScriptCaseClause( QLatin1String("options-or-commands"), action.toCompreplyString() );
+    }
+
+    /*! \internal
+     */
+    static
+    void addCaseClausesForCommandPositionalArgumentsToScript(const BashCompletionGeneratorCommand & command, BashCompletion::Script & script) noexcept
+    {
+      for( const auto & argument : command.positionalArguments() ){
+        if( argument.hasAction() ){
+          script.addClause( caseClauseForPositionalArgumentName(command, argument) );
+          if( command.hasOptions() ){
+            script.addClause( caseClauseForOptionsOrPositionalArgumentName(command, argument) );
+          }
+        }
+      }
+    }
+
+    /*! \internal
+     */
+    static
+    void addCaseClausesForCommandOptionsWithValueToScript(const BashCompletionGeneratorCommand & command, BashCompletion::Script & script) noexcept
+    {
+      for( const auto & option : command.options() ){
+        if( option.hasAction() ){
+          script.addClause( caseClauseForOptionNameValue(command, option) );
+          if( option.hasShortName() ){
+            script.addClause( caseClauseForOptionShortNameValue(command, option) );
+          }
+        }
+      }
+    }
+
+    /*! \internal
+     */
+    static
+    void addCaseClausesToScript(const BashCompletionGenerator & generator, BashCompletion::Script & script) noexcept
+    {
+      if( generator.mainCommand().hasOptions() ){
+        script.addClause( caseClauseToListCommandOptions( generator.mainCommand() ) );
+      }
+      addCaseClausesForCommandPositionalArgumentsToScript( generator.mainCommand(), script );
+      addCaseClausesForCommandOptionsWithValueToScript( generator.mainCommand(), script );
+
+      if( generator.hasSubCommands() ){
+        script.addClause( caseClauseToListAvailableSubCommands(generator) );
+        if( generator.mainCommand().hasOptions() ){
+          script.addClause( caseClauseToListCommandOptionsOrAvailableSubCommands(generator) );
+        }
+        for( const auto & command : generator.subCommands() ){
+          if( command.hasOptions() ){
+            script.addClause( caseClauseToListCommandOptions(command) );
+          }
+          addCaseClausesForCommandPositionalArgumentsToScript(command, script);
+          addCaseClausesForCommandOptionsWithValueToScript(command, script);
+        }
+      }
+    }
+
+    /*! \internal Get a COMPREPLY=($(compgen -W)) statement for available options in \a command
+     *
+     * \pre \a command must have at least 1 option
+     */
+    [[deprecated]]
+    static
+    QString compreplyStatementToListCommandOptions(const BashCompletionGeneratorCommand & command, const QString & curVariableName)
+    {
+      assert( command.hasOptions() );
+
+      return QLatin1String("COMPREPLY=($(compgen -W \"") % commandOptionsToWordListString(command)
+              % QLatin1String("\" -- \"$") % curVariableName % QLatin1String("\"))");
+    }
+
+
     /*! \internal Get a COMPREPLY=($(compgen -A)) statement from \a argument
      */
+    [[deprecated]]
     static
     QString compreplyStatementFromPositionalArgument(const BashCompletionGeneratorPositionalArgument & argument, const QString & curVariableName)
     {
@@ -120,6 +428,7 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \pre \a command must have at least 1 positional argument
      */
+    [[deprecated]]
     static
     QString compreplyStatementFromFirstPositionalArgumentInCommand(const BashCompletionGeneratorCommand & command, const QString & curVariableName)
     {
@@ -137,7 +446,7 @@ namespace Mdt{ namespace CommandLineParser{
         return QString( QLatin1String(" -A ") + actionName );
       };
 
-      const QString optionsWordList = commandOptionsToWordList(command);
+      const QString optionsWordList = commandOptionsToWordListString(command);
 
       return QLatin1String("COMPREPLY=($(compgen") % actionArgument() % QLatin1String(" -W \"") % optionsWordList % QLatin1Char('"')
               % QLatin1String(" -- \"$") % curVariableName % QLatin1String("\"))");
@@ -149,6 +458,7 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \pre \a argumentIndex must be in valid range
      */
+    [[deprecated]]
     static
     QString compreplyStatementFromPositionalArgumentInCommand(const BashCompletionGeneratorCommand & command, int argumentIndex, const QString & curVariableName)
     {
@@ -161,10 +471,26 @@ namespace Mdt{ namespace CommandLineParser{
       return compreplyStatementFromPositionalArgument( command.positionalArgumentAt(argumentIndex), curVariableName );
     }
 
+    /*! \internal Get a case pattern bloc from \a pattern and \a body
+     *
+     * \pre \a pattern and \a body must not be empty
+     */
+    [[deprecated]]
+    static
+    QString formatCasePatternBlock(const QString & pattern, const QString & body) noexcept
+    {
+      assert( !pattern.isEmpty() );
+      assert( !body.isEmpty() );
+
+      return QLatin1String("    ") % pattern % QLatin1String(")\n      ")
+             % body % QLatin1String("\n      ;;\n");
+    }
+
     /*! \internal Get a case pattern) for a positional argument in \a command
      *
      * \pre \a argumentIndex must be in valid range
      */
+    [[deprecated]]
     static
     QString casePatternFromCommandPositionalArgument(const BashCompletionGeneratorCommand & command, int argumentIndex, const QString & curVariableName)
     {
@@ -188,6 +514,7 @@ namespace Mdt{ namespace CommandLineParser{
            % QLatin1String("      ;;");
     }
 
+    [[deprecated]]
     static
     QString casePatternsFromCommandPositionalArgumentList(const BashCompletionGeneratorCommand & command, const QString & curVariableName)
     {
@@ -203,6 +530,7 @@ namespace Mdt{ namespace CommandLineParser{
       return casePattern;
     }
 
+    [[deprecated]]
     static
     QString generateCommandCasesBlock(const BashCompletionGeneratorCommand & command, const QString & curVariableName)
     {
@@ -217,7 +545,7 @@ namespace Mdt{ namespace CommandLineParser{
 
       if( command.hasOptions() ){
         block += QLatin1String("    ") % optionsCaseName() % QLatin1String(")\n")
-               % QLatin1String("      ") % compreplyStatementFromCommandOptions(command, curVariableName) % QLatin1Char('\n')
+               % QLatin1String("      ") % compreplyStatementToListCommandOptions(command, curVariableName) % QLatin1Char('\n')
                % QLatin1String("      ;;\n\n");
       }
 
@@ -228,14 +556,16 @@ namespace Mdt{ namespace CommandLineParser{
       return block;
     }
 
+    [[deprecated]]
     static
     QString generateMainCommandCasesBlock(const BashCompletionGenerator & generator, const QString & curVariableName)
     {
       return generateCommandCasesBlock( generator.mainCommand(), curVariableName );
     }
 
+    [[deprecated]]
     static
-    QString commandListToWordList(const BashCompletionGenerator & generator)
+    QString commandListToWordListString(const BashCompletionGenerator & generator)
     {
       QStringList wordList;
 
@@ -250,6 +580,7 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \pre \a generator must have at least 1 sub-command
      */
+    [[deprecated]]
     static
     QString compreplyStatementForCommandCaseBlock(const BashCompletionGenerator & generator, const QString & curVariableName)
     {
@@ -257,13 +588,14 @@ namespace Mdt{ namespace CommandLineParser{
 
       QString wordList;
       if( generator.mainCommand().hasOptions() ){
-        wordList = commandOptionsToWordList( generator.mainCommand() ) % QLatin1Char(' ');
+        wordList = commandOptionsToWordListString( generator.mainCommand() ) % QLatin1Char(' ');
       }
-      wordList += commandListToWordList(generator);
+      wordList += commandListToWordListString(generator);
 
       return QLatin1String("COMPREPLY=($(compgen -W \"") % wordList % QLatin1String("\" -- \"$") % curVariableName % QLatin1String("\"))");
     }
 
+    [[deprecated]]
     static
     QString generateCommandCaseBlock(const BashCompletionGenerator & generator, const QString & curVariableName)
     {
@@ -276,6 +608,7 @@ namespace Mdt{ namespace CommandLineParser{
            % QLatin1String("      ;;\n\n");
     }
 
+    [[deprecated]]
     static
     QString generateSubCommandsCasesBlocks(const BashCompletionGenerator & generator, const QString & curVariableName)
     {
@@ -288,6 +621,7 @@ namespace Mdt{ namespace CommandLineParser{
       return block;
     }
 
+    [[deprecated]]
     static
     QString generateCaseBlock(const BashCompletionGenerator & generator, const QString & queryVariableName)
     {
@@ -301,6 +635,7 @@ namespace Mdt{ namespace CommandLineParser{
         % QLatin1String("  esac");
     }
 
+    [[deprecated]]
     static
     QString generateCompletionFunction(const BashCompletionGenerator & generator)
     {
