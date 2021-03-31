@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -23,6 +23,7 @@
 
 #include "Algorithm.h"
 #include "ParserDefinitionOption.h"
+#include "BashCompletion/Action.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
 #include <QLatin1Char>
@@ -76,6 +77,18 @@ namespace Mdt{ namespace CommandLineParser{
       return mShortName != '\0';
     }
 
+    /*! \brief Get the short name
+     *
+     * \pre must only be called if this command line option has a short name
+     * \sa hasShortName()
+     */
+    char shortName() const noexcept
+    {
+      assert( hasShortName() );
+
+      return mShortName;
+    }
+
     /*! \brief Get the short name with a dash
      *
      * \pre must only be called if this command line option has a short name
@@ -88,11 +101,41 @@ namespace Mdt{ namespace CommandLineParser{
       return qStringFromChars('-', mShortName);
     }
 
+    /*! \brief Get the name
+     */
+    QString name() const noexcept
+    {
+      return mName;
+    }
+
     /*! \brief Get the name with dashes
      */
     QString nameWithDashes() const
     {
       return QLatin1String("--") + mName;
+    }
+
+    /*! \brief Set the action to complete the value of this option
+     *
+     * By default, the action is set regarding the parser definition option.
+     */
+    void setAction(const BashCompletion::Action & action) noexcept
+    {
+      mAction = action;
+    }
+
+    /*! \brief Check if this option has a action attached
+     */
+    bool hasAction() const noexcept
+    {
+      return mAction.isDefined();
+    }
+
+    /*! \brief Access the action of this option
+     */
+    const BashCompletion::Action & action() const noexcept
+    {
+      return mAction;
     }
 
     /*! \brief Get a generator option from \a option
@@ -104,6 +147,7 @@ namespace Mdt{ namespace CommandLineParser{
 
     char mShortName;
     QString mName;
+    BashCompletion::Action mAction;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

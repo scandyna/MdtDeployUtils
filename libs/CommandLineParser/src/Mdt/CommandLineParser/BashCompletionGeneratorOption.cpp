@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -19,12 +19,22 @@
  **
  ****************************************************************************/
 #include "BashCompletionGeneratorOption.h"
+#include "BashCompletion/Action.h"
+#include "Impl/BashCompletionGenerator.h"
 
 namespace Mdt{ namespace CommandLineParser{
 
-BashCompletionGeneratorOption BashCompletionGeneratorOption::fromParserDefinitionOption(const ParserDefinitionOption & option)
+BashCompletionGeneratorOption BashCompletionGeneratorOption::fromParserDefinitionOption(const ParserDefinitionOption & optionDef)
 {
-  return BashCompletionGeneratorOption( option.shortName(), option.name() );
+  BashCompletionGeneratorOption option( optionDef.shortName(), optionDef.name() );
+
+  if( optionDef.hasValueName() ){
+    BashCompletion::Action action;
+    action.setCompgenCommand( Impl::compgenCommandFromParserDefinitionOption(optionDef) );
+    option.setAction(action);
+  }
+
+  return option;
 }
 
 }} // namespace Mdt{ namespace CommandLineParser{
