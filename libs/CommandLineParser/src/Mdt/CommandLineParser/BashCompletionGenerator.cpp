@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "BashCompletionGenerator.h"
 #include "Impl/BashCompletionGenerator.h"
+#include "BashCompletion/Script.h"
 #include "Algorithm.h"
 #include <QLatin1Char>
 #include <QLatin1String>
@@ -58,13 +59,13 @@ QString BashCompletionGenerator::generateScript() const
   assert( !mApplicationName.isEmpty() );
 
   using namespace Impl;
+  using BashCompletion::Script;
 
-  const QString scriptInclude = QLatin1String("#/usr/bin/env bash");
-  const QString completeCommand = QLatin1String("complete -F _") % mApplicationName % QLatin1String("_completions ") % mApplicationName;
+  Script script(mApplicationName);
+  addCaseClausesToScript(*this, script);
+  script.addDefaultClause();
 
-  return scriptInclude % QLatin1String("\n\n")
-          % generateCompletionFunction(*this) % QLatin1String("\n\n")
-          % completeCommand % QLatin1String("\n");
+  return script.toString();
 }
 
 void BashCompletionGenerator::generateScriptToFile(const QString & directoryPath) const
