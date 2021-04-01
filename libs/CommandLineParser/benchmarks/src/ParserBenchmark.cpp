@@ -94,6 +94,9 @@ void ParserBenchmark::mdtCommandLineParserWithSubCommnds_parse()
   ParserDefinition parserDefinition;
   parserDefinition.addHelpOption();
 
+  ParserDefinitionOption forceOption( 'f', QLatin1String("force"), QLatin1String("Force option") );
+  parserDefinition.addOption(forceOption);
+
   ParserDefinitionOption overwriteBehaviorOption( QLatin1String("overwrite-behavior"), QLatin1String("Overwrite behavior") );
   overwriteBehaviorOption.setValueName( QLatin1String("behavior") );
 
