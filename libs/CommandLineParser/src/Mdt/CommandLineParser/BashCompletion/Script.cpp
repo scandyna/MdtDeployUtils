@@ -19,11 +19,26 @@
  **
  ****************************************************************************/
 #include "Script.h"
+#include "../BashCompletionParserQuery.h"
 #include <QLatin1String>
 #include <QLatin1Char>
 #include <QStringBuilder>
 
 namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
+
+Script::Script(const QString & applicationName) noexcept
+ : mApplicationName(applicationName),
+   mCompletionsFunction( applicationName, ScriptCaseStatementExpression( QLatin1String("$currentArgument") ) )
+{
+  assert( !applicationName.isEmpty() );
+
+  mCompletionsFunction.addVariable( QLatin1String("cur"), QLatin1String("\"${COMP_WORDS[COMP_CWORD]}\"") );
+  mCompletionsFunction.addVariable( QLatin1String("executable"), QLatin1String("\"$1\"") );
+
+  const QString queryArgument = BashCompletionParserQuery::findCurrentArgumentString();
+  mCompletionsFunction.addVariable( QLatin1String("currentArgument"),
+                                    QLatin1String("$(\"$executable\" ") % queryArgument %  QLatin1String(" $COMP_CWORD $COMP_LINE)") );
+}
 
 QString Script::getCompleteCommandString() const noexcept
 {

@@ -40,17 +40,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
      *
      * \pre \a applicationName must not be empty
      */
-    explicit Script(const QString & applicationName) noexcept
-     : mApplicationName(applicationName),
-       mCompletionsFunction( applicationName, ScriptCaseStatementExpression( QLatin1String("$currentArgument") ) )
-    {
-      assert( !applicationName.isEmpty() );
-
-      mCompletionsFunction.addVariable( QLatin1String("cur"), QLatin1String("\"${COMP_WORDS[COMP_CWORD]}\"") );
-      mCompletionsFunction.addVariable( QLatin1String("executable"), QLatin1String("\"$1\"") );
-      mCompletionsFunction.addVariable( QLatin1String("currentArgument"),
-                                        QLatin1String("$(\"$executable\" completion-find-current-argument $COMP_CWORD $COMP_LINE)") );
-    }
+    explicit Script(const QString & applicationName) noexcept;
 
     /*! \brief Add a clause to this script
      */
