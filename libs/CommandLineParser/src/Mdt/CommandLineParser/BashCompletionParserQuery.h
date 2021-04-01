@@ -87,61 +87,29 @@ namespace Mdt{ namespace CommandLineParser{
    * This class is mostly not usefull to use this library.
    * handleBashCompletion() should be used, which cares about details exposed here.
    *
-   * \section findCurrentPositionalArgumentName "findCurrentPositionalArgumentName"
-   *
-   * \todo Should be renamed like: findCurrentArgument or findCurrentArgumentTypeOrName
-   * \code
-   * completion-find-current-argument
-   *
-   * completion-find-current-argument-action
-   *
-   * // maybe:
-   * completion-find-current-argument-type-or-name
-   * \endcode
-   *
-   * Also, once a good name has been found,
-   * rename this class.
-   *
-   * In script:
-   * \code
-   * local currentArgument=$("$executable" completion-find-current-argument $COMP_CWORD $COMP_LINE)
-   *
-   * case $currentArgument in
-   *
-   *   options)
-   *     ...
-   *
-   *   command)
-   *     ...
-   *
-   *   copy-shared-libraries-target-depends-on-options)
-   *     ...
-   *
-   *   copy-shared-libraries-target-depends-on-destination)
-   *     ...
-   * \endcode
+   * \section findCurrentArgument "findCurrentArgument"
    *
    * The completion script will call the executable as follow:
    * \code
-   * "$executable" completion-find-current-positional-argument-name $COMP_CWORD $COMP_LINE
+   * "$executable" completion-find-current-argument $COMP_CWORD $COMP_LINE
    * \endcode
    *
-   * After parsing, the parser result will contain at least 3 positional arguments:
-   * - The query argument, findCurrentPositionalArgumentNameString()
+   * After parsing, command line will contain at least 3 arguments:
+   * - The query argument, findCurrentArgument()
    * - The cursor position in the command-line arguments, result of \a COMP_CWORD
    * - The executable in \a COMP_LINE
    *
    * The \a COMP_LINE will again contain the executable name,
    * then the positional arguments we have to parse.
-   * 
+   *
    * For example, if the user types:
    * \code
    * myapp <TAB>
    * \endcode
    * the executable \a myapp will be called with those arguments:
    * \code
-   * "myapp" completion-find-current-positional-argument-name 1 myapp
-   * //                                                      cursor:  ^
+   * "myapp" completion-find-current-argument 1 myapp
+   * //                                      cursor:  ^
    * \endcode
    * Note that the cursor is at position 1,
    * which is just after \a myapp .
@@ -803,7 +771,7 @@ namespace Mdt{ namespace CommandLineParser{
       return cursorSubCommandPositionalArgumentIndexInDefinition() >= 0;
     }
 
-    /*! \brief Returns the name of the "findCurrentPositionalArgumentName" query
+    /*! \brief Returns the name of the "findCurrentArgument" query
      */
     static
     QString findCurrentArgumentString()
