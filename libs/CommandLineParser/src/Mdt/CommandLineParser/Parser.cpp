@@ -21,9 +21,11 @@
 #include "Parser.h"
 #include "Impl/Parser.h"
 #include "Impl/ParserResultFromCommandLine.h"
+#include "CommandLine/Algorithm.h"
 #include "ParserResultCommand.h"
 #include <QString>
 #include <QStringList>
+#include <algorithm>
 #include <cassert>
 
 namespace Mdt{ namespace CommandLineParser{
@@ -40,6 +42,22 @@ bool Parser::parse(const ParserDefinition & parserDefinition, const QStringList 
   }
 
   return true;
+}
+
+QStringList Parser::getUnknownOptionNames() const noexcept
+{
+  using CommandLine::isUnknownOption;
+  using CommandLine::getOptionName;
+
+  QStringList unknownOptionNames;
+
+  for( const auto & argument : mCommandLine.argumentList() ){
+    if( isUnknownOption(argument) ){
+      unknownOptionNames.append( getOptionName(argument) );
+    }
+  }
+
+  return unknownOptionNames;
 }
 
 ParserResult Parser::toParserResult() const noexcept

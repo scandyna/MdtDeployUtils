@@ -272,7 +272,6 @@ namespace Mdt{ namespace CommandLineParser{
                                       ParseError & error) noexcept
     {
       assert(current != last);
-      assert( !error.hasError() );
 
       if( current->startsWith( QLatin1String("--") ) ){
         assert( current->length() > 2 );
@@ -378,6 +377,8 @@ namespace Mdt{ namespace CommandLineParser{
       assert( commandLine.argumentCount() >= 1 );
       assert( first != last );
 
+      bool ok = true;
+
       while(first != last){
         const auto subCommand = parserDefinition.findSubCommandByName(*first);
         if(subCommand){
@@ -386,15 +387,15 @@ namespace Mdt{ namespace CommandLineParser{
           return true;
         }
         if( !parseArgument(first, last, parserDefinition.mainCommand(), commandLine, error) ){
-          return false;
+          ok = false;
         }
         if(first == last){
-          return true;
+          return ok;
         }
         ++first;
       }
 
-      return true;
+      return ok;
     }
 
     /*! \internal
@@ -416,30 +417,32 @@ namespace Mdt{ namespace CommandLineParser{
       commandLine.setExecutableName(*first);
       ++first;
 
+      bool ok = true;
+
       if( parserDefinition.hasSubCommands() ){
         if(first == last){
           return true;
         }
         if( !parseArgumentsUntilSubCommandName(first, last, parserDefinition, &command, commandLine, error) ){
-          return false;
+          ok = false;
         }
         if(first == last){
-          return true;
+          return ok;
         }
         ++first;
       }
 
       while(first != last){
         if( !parseArgument(first, last, *command, commandLine, error) ){
-          return false;
+          ok = false;
         }
         if(first == last){
-          return true;
+          return ok;
         }
         ++first;
       }
 
-      return true;
+      return ok;
     }
 
   } // namespace Impl{

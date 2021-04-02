@@ -131,6 +131,13 @@ namespace Mdt{ namespace CommandLineParser{
       return mErrorText;
     }
 
+    /*! \brief Returns a list of unknown option names
+     *
+     * The list will include the name of unknown options without any prefix dash
+     * (i.e. --unknown-option on the command line will become unknown-option name).
+     */
+    QStringList getUnknownOptionNames() const noexcept;
+
     /*! \brief Get the command line of this parser
      *
      * \sa toParserResult()

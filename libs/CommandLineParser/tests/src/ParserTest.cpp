@@ -443,6 +443,51 @@ TEST_CASE("Parser_parse_error")
   }
 }
 
+TEST_CASE("Parser_unknownOptions")
+{
+  Parser parser;
+  ParserDefinition parserDefinition;
+  parserDefinition.addHelpOption();
+
+  QStringList arguments;
+  QStringList expectedNames;
+
+  SECTION("app -h")
+  {
+    arguments = qStringListFromUtf8Strings({"app","-h"});
+
+    REQUIRE( parser.parse(parserDefinition, arguments) );
+    REQUIRE( parser.getUnknownOptionNames().isEmpty() );
+  }
+
+  SECTION("app --unknown-option")
+  {
+    arguments = qStringListFromUtf8Strings({"app","--unknown-option"});
+    expectedNames = qStringListFromUtf8Strings({"unknown-option"});
+
+    REQUIRE( !parser.parse(parserDefinition, arguments) );
+    REQUIRE( parser.getUnknownOptionNames() == expectedNames );
+  }
+
+  SECTION("app -h --unknown-option")
+  {
+    arguments = qStringListFromUtf8Strings({"app","-h","--unknown-option"});
+    expectedNames = qStringListFromUtf8Strings({"unknown-option"});
+
+    REQUIRE( !parser.parse(parserDefinition, arguments) );
+    REQUIRE( parser.getUnknownOptionNames() == expectedNames );
+  }
+
+  SECTION("app -u --unknown-option")
+  {
+    arguments = qStringListFromUtf8Strings({"app","-u","--unknown-option"});
+    expectedNames = qStringListFromUtf8Strings({"u","unknown-option"});
+
+    REQUIRE( !parser.parse(parserDefinition, arguments) );
+    REQUIRE( parser.getUnknownOptionNames() == expectedNames );
+  }
+}
+
 TEST_CASE("Parser_parse_multiple_time")
 {
   Parser parser;

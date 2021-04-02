@@ -662,6 +662,45 @@ TEST_CASE("parseArgumentsUntilSubCommandName")
     REQUIRE( isDoubleDash( commandLine.argumentAt(1) ) );
     REQUIRE( command == nullptr );
   }
+
+  SECTION("--unknown-option")
+  {
+    arguments = qStringListFromUtf8Strings({"--unknown-option"});
+    auto first = arguments.cbegin();
+    REQUIRE( !parseArgumentsUntilSubCommandName( first, arguments.cend(), parserDefinition, &command, commandLine, error ) );
+    REQUIRE( first == arguments.cend() );
+    REQUIRE( commandLine.argumentCount() == 2 );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(1) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("unknown-option") );
+    REQUIRE( command == nullptr );
+  }
+
+  SECTION("-u --unknown-option")
+  {
+    arguments = qStringListFromUtf8Strings({"-u","--unknown-option"});
+    auto first = arguments.cbegin();
+    REQUIRE( !parseArgumentsUntilSubCommandName( first, arguments.cend(), parserDefinition, &command, commandLine, error ) );
+    REQUIRE( first == arguments.cend() );
+    REQUIRE( commandLine.argumentCount() == 3 );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(1) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("u") );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(2) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(2) ) == QLatin1String("unknown-option") );
+    REQUIRE( command == nullptr );
+  }
+
+  SECTION("-u --")
+  {
+    arguments = qStringListFromUtf8Strings({"-u","--"});
+    auto first = arguments.cbegin();
+    REQUIRE( !parseArgumentsUntilSubCommandName( first, arguments.cend(), parserDefinition, &command, commandLine, error ) );
+    REQUIRE( first == arguments.cend() );
+    REQUIRE( commandLine.argumentCount() == 3 );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(1) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("u") );
+    REQUIRE( isDoubleDash( commandLine.argumentAt(2) ) );
+    REQUIRE( command == nullptr );
+  }
 }
 
 TEST_CASE("parse")
@@ -742,6 +781,19 @@ TEST_CASE("parse")
     REQUIRE( commandLine.executableName() == QLatin1String("app") );
     REQUIRE( isUnknownOption( commandLine.argumentAt(1) ) );
     REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("u") );
+    REQUIRE( error.hasError() );
+  }
+
+  SECTION("app -u --unknown-option")
+  {
+    arguments = qStringListFromUtf8Strings({"app","-u","--unknown-option"});
+    REQUIRE( !parse(arguments, parserDefinition, commandLine, error) );
+    REQUIRE( commandLine.argumentCount() == 3 );
+    REQUIRE( commandLine.executableName() == QLatin1String("app") );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(1) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("u") );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(2) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(2) ) == QLatin1String("unknown-option") );
     REQUIRE( error.hasError() );
   }
 
@@ -913,6 +965,13 @@ TEST_CASE("parse_AppWithSubCommand")
     REQUIRE( error.hasError() );
   }
 
+  SECTION("app copy -h --")
+  {
+    arguments = qStringListFromUtf8Strings({"app","copy","-h","--"});
+    REQUIRE( !parse(arguments, parserDefinition, commandLine, error) );
+    REQUIRE( error.hasError() );
+  }
+
   SECTION("app copy copy")
   {
     arguments = qStringListFromUtf8Strings({"app","copy","copy"});
@@ -961,5 +1020,28 @@ TEST_CASE("parse_AppWithSubCommand")
     REQUIRE( isSubCommandNameArgument( commandLine.argumentAt(2) ) );
     REQUIRE( getSubCommandName( commandLine.argumentAt(2) ) == QLatin1String("copy") );
     REQUIRE( !error.hasError() );
+  }
+
+  SECTION("app -u -h --unknown-option copy --unknown-option -f -u")
+  {
+    arguments = qStringListFromUtf8Strings({"app","-u","-h","--unknown-option","copy","--unknown-option","-f","-u"});
+    REQUIRE( !parse(arguments, parserDefinition, commandLine, error) );
+    REQUIRE( commandLine.argumentCount() == 8 );
+    REQUIRE( commandLine.executableName() == QLatin1String("app") );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(1) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(1) ) == QLatin1String("u") );
+    REQUIRE( isOption( commandLine.argumentAt(2) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(2) ) == QLatin1String("h") );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(3) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(3) ) == QLatin1String("unknown-option") );
+    REQUIRE( isSubCommandNameArgument( commandLine.argumentAt(4) ) );
+    REQUIRE( getSubCommandName( commandLine.argumentAt(4) ) == QLatin1String("copy") );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(5) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(5) ) == QLatin1String("unknown-option") );
+    REQUIRE( isOption( commandLine.argumentAt(6) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(6) ) == QLatin1String("f") );
+    REQUIRE( isUnknownOption( commandLine.argumentAt(7) ) );
+    REQUIRE( getOptionName( commandLine.argumentAt(7) ) == QLatin1String("u") );
+    REQUIRE( error.hasError() );
   }
 }
