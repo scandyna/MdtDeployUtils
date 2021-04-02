@@ -170,8 +170,7 @@ namespace Mdt{ namespace CommandLineParser{
             error.errorText = ParseError::tr("option '%1' expects a value, but was not provided").arg( optionNames.back() );
             return false;
           }
-          QString value;
-          std::copy( valueIt, current->cend(), std::back_inserter(value) );
+          const QString value = qStringFromSubString( valueIt, current->cend() );
           if( optionNames.size() == 1 ){
             commandLine.appendOptionWithValue( qStringFromLatin1Char(optionNames[0]), value);
           }else{
@@ -206,9 +205,7 @@ namespace Mdt{ namespace CommandLineParser{
       const auto optionNameFirstIt = current->cbegin() + 2;
       const auto optionNameEndIt = std::find( current->cbegin(), current->cend(), QChar::fromLatin1('=') );
 
-      /// \todo make a dedicated function ?
-      QString optionName;
-      std::copy( optionNameFirstIt, optionNameEndIt, std::back_inserter(optionName) );
+      const QString optionName = qStringFromSubString( optionNameFirstIt, optionNameEndIt );
 
       const bool valueShouldBeNextArgument = optionNameEndIt == current->cend();
 
@@ -245,8 +242,7 @@ namespace Mdt{ namespace CommandLineParser{
             error.errorText = ParseError::tr("option '%1' expects a value, but was not provided").arg(optionName);
             return false;
           }
-          QString value;
-          std::copy( valueIt, current->cend(), std::back_inserter(value) );
+          const QString value = qStringFromSubString( valueIt, current->cend() );
           commandLine.appendOptionWithValue(optionName, value);
         }
       }

@@ -104,6 +104,42 @@ TEST_CASE("qStringFromLatin1Char")
   REQUIRE( qStringFromLatin1Char('a') == QLatin1String("a") );
 }
 
+TEST_CASE("qStringFromSubString")
+{
+  using Mdt::CommandLineParser::qStringFromSubString;
+
+  QString str;
+
+  SECTION("empty")
+  {
+    REQUIRE( qStringFromSubString( str.cbegin(), str.cend() ).isEmpty() );
+  }
+
+  SECTION("[A]")
+  {
+    str = QLatin1String("A");
+    REQUIRE( qStringFromSubString( str.cbegin(), str.cend() ) == QLatin1String("A") );
+  }
+
+  SECTION("[A]B")
+  {
+    str = QLatin1String("AB");
+    REQUIRE( qStringFromSubString( str.cbegin(), str.cbegin()+1 ) == QLatin1String("A") );
+  }
+
+  SECTION("A[B]")
+  {
+    str = QLatin1String("AB");
+    REQUIRE( qStringFromSubString( str.cbegin()+1, str.cend() ) == QLatin1String("B") );
+  }
+
+  SECTION("A[B]C")
+  {
+    str = QLatin1String("ABC");
+    REQUIRE( qStringFromSubString( str.cbegin()+1, str.cbegin()+2 ) == QLatin1String("B") );
+  }
+}
+
 TEST_CASE("joinToQString")
 {
   using Mdt::CommandLineParser::joinToQString;

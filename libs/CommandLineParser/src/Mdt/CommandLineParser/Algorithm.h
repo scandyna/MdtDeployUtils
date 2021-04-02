@@ -93,6 +93,18 @@ namespace Mdt{ namespace CommandLineParser{
     return QString::fromLatin1(buffer, 2);
   }
 
+  /*! \brief Get a QString with the content of a sub-string
+   */
+  inline
+  QString qStringFromSubString(QString::const_iterator first, QString::const_iterator last) noexcept
+  {
+    QString subString;
+
+    std::copy( first, last, std::back_inserter(subString) );
+
+    return subString;
+  }
+
   /*! \brief Joint each element in \a list to a single string with each element seperated by given \a separator
    *
    * Extract is a functor to extract the string from a element in \a list ,
