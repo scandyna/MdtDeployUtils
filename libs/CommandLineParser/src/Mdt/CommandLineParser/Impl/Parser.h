@@ -25,6 +25,7 @@
 #include "../ParserDefinitionCommand.h"
 #include "../ParserDefinitionOption.h"
 #include "../CommandLine/CommandLine.h"
+#include "../Algorithm.h"
 #include <QString>
 #include <QLatin1String>
 #include <QChar>
@@ -117,8 +118,7 @@ namespace Mdt{ namespace CommandLineParser{
 
         const auto parserDefinitionOptionIt = findOptionByShortNameInCommand(optionName, command);
         if( parserDefinitionOptionIt == command.options().cend() ){
-          /// \todo make a dedicated function to create a QString from ca char
-          commandLine.appendUnknownOption( QString( QChar::fromLatin1(optionName) ) );
+          commandLine.appendUnknownOption( qStringFromLatin1Char(optionName) );
           error.errorText = ParseError::tr("Unknown option '%1'").arg(optionName);
           return false;
         }
@@ -139,12 +139,10 @@ namespace Mdt{ namespace CommandLineParser{
       if( optionNames.size() == 1 ){
         if(lastShortOptionExpectsValue){
           if(valueShouldBeNextArgument){
-            /// \todo make a dedicated function to create a QString from ca char
-            commandLine.appendOptionExpectingValue( QString( QChar::fromLatin1(optionNames[0]) ) );
+            commandLine.appendOptionExpectingValue( qStringFromLatin1Char(optionNames[0]) );
           }
         }else{
-          /// \todo make a dedicated function to create a QString from ca char
-          commandLine.appendOption( QString( QChar::fromLatin1(optionNames[0]) ) );
+          commandLine.appendOption( qStringFromLatin1Char(optionNames[0]) );
         }
       }else{
         if(lastShortOptionExpectsValue){
@@ -175,8 +173,7 @@ namespace Mdt{ namespace CommandLineParser{
           QString value;
           std::copy( valueIt, current->cend(), std::back_inserter(value) );
           if( optionNames.size() == 1 ){
-            /// \todo make a dedicated function to create a QString from ca char
-            commandLine.appendOptionWithValue( QString( QChar::fromLatin1(optionNames[0]) ), value);
+            commandLine.appendOptionWithValue( qStringFromLatin1Char(optionNames[0]), value);
           }else{
             commandLine.appendShortOptionListWithLastHavingValue(optionNames, value);
           }

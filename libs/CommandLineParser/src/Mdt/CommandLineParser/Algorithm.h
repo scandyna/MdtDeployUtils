@@ -75,6 +75,14 @@ namespace Mdt{ namespace CommandLineParser{
     return first;
   }
 
+  /*! \brief Get a QString from latin1 \a c
+   */
+  inline
+  QString qStringFromLatin1Char(char c) noexcept
+  {
+    return QString( QChar::fromLatin1(c) );
+  }
+
   /*! \brief Get a QString out from chars \a a and \a b
    */
   inline
