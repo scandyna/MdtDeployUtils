@@ -97,6 +97,13 @@ TEST_CASE("forEachUntil")
   }
 }
 
+TEST_CASE("qStringFromLatin1Char")
+{
+  using Mdt::CommandLineParser::qStringFromLatin1Char;
+
+  REQUIRE( qStringFromLatin1Char('a') == QLatin1String("a") );
+}
+
 TEST_CASE("joinToQString")
 {
   using Mdt::CommandLineParser::joinToQString;
