@@ -30,14 +30,14 @@ namespace Mdt{ namespace CommandLineParser{
    * - source: path to a file
    * - destination: path to a directory
    *
-   * Specify the argument type could help
+   * Specify the argument's value type could help
    * a parser to enforce what should be passed.
    *
    * The argument type is also used for Bash completion.
    */
   enum class ValueType
   {
-    Unspecified,      /*!< The argument type is not specified */
+    Unspecified,      /*!< The value type is not specified */
     Directory,        /*!< Expect a directory */
     File,             /*!< Expect a file */
     DirectoryOrFile   /*!< Expect a directory or a file */
