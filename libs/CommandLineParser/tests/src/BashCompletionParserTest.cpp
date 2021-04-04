@@ -33,20 +33,7 @@
 #include <vector>
 #include <string>
 
-// #include "Mdt/CommandLineParser/ParserResultDebug.h"
-// #include <iostream>
-
 using namespace Mdt::CommandLineParser;
-
-bool parseArgumentsToResult(const ParserDefinition & parserDefinition, const QStringList & arguments, ParserResult & result)
-{
-  return false;
-//   Parser parser;
-//   result = parser.parse(arguments);
-//   parser.parse(arguments);
-//
-//   return !result.hasError();
-}
 
 QString completionFindCurrentPositionalArgumentNameString()
 {
