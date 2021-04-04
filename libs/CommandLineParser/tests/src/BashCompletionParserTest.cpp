@@ -42,8 +42,8 @@ bool parseArgumentsToResult(const ParserDefinition & parserDefinition, const QSt
 {
   return false;
 //   Parser parser;
-//   result = parser.parse(parserDefinition, arguments);
-//   parser.parse(parserDefinition, arguments);
+//   result = parser.parse(arguments);
+//   parser.parse(arguments);
 //
 //   return !result.hasError();
 }
@@ -992,7 +992,6 @@ TEST_CASE("handleBashCompletion")
 
   ParserDefinition parserDefinition;
   QStringList arguments{QLatin1String("app")};
-  Parser parser;
 //   ParserResult result;
 
   SECTION("Simple app")
@@ -1001,10 +1000,12 @@ TEST_CASE("handleBashCompletion")
     parserDefinition.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
     parserDefinition.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
 
+    Parser parser(parserDefinition);
+
     SECTION("app")
     {
 //       REQUIRE( parseArgumentsToResult(parserDefinition, arguments, result) );
-      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( parser.parse(arguments) );
       REQUIRE( !handleBashCompletion(parser.commandLine(), parserDefinition) );
     }
 
@@ -1015,7 +1016,7 @@ TEST_CASE("handleBashCompletion")
 //       REQUIRE( handleBashCompletion(result, parserDefinition) );
 
       arguments << completionFindCurrentArgumentString() << qStringListFromUtf8Strings({"1","app"});
-      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( parser.parse(arguments) );
       REQUIRE( handleBashCompletion(parser.commandLine(), parserDefinition) );
     }
 
@@ -1034,7 +1035,7 @@ TEST_CASE("handleBashCompletion")
 //       REQUIRE( !handleBashCompletion(result, parserDefinition) );
 
       arguments << completionFindCurrentArgumentString() << qStringListFromUtf8Strings({"100","app"});
-      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( parser.parse(arguments) );
       REQUIRE( !handleBashCompletion(parser.commandLine(), parserDefinition) );
     }
 
@@ -1045,7 +1046,7 @@ TEST_CASE("handleBashCompletion")
 //       REQUIRE( !handleBashCompletion(result, parserDefinition) );
 
       arguments << completionFindCurrentArgumentString() << qStringListFromUtf8Strings({"A","app"});
-      REQUIRE( parser.parse(parserDefinition, arguments) );
+      REQUIRE( parser.parse(arguments) );
       REQUIRE( !handleBashCompletion(parser.commandLine(), parserDefinition) );
     }
   }

@@ -38,6 +38,5 @@ class ParserBenchmark : public QObject
   void qCommandLineParser();
 
   void mdtCommandLineParser();
-  void mdtCommandLineParser_setupAndParse();
   void mdtCommandLineParser_buildResultAndCheck();
 };

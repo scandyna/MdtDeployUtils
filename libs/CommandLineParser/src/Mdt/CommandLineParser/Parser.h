@@ -43,8 +43,8 @@ namespace Mdt{ namespace CommandLineParser{
    *   // Setup parser definition
    *   ...
    *
-   *   Parser parser;
-   *   if( !parser.parse( parserDefinition, app.arguments() ) ){
+   *   Parser parser(parserDefinition);
+   *   if( !parser.parse( app.arguments() ) ){
    *     // Error handling
    *     return 1;
    *   }
@@ -54,15 +54,10 @@ namespace Mdt{ namespace CommandLineParser{
    * }
    * \endcode
    *
-   *
    * \sa ParserDefinition
    * \sa ParserResult
    *
-   * \todo Parser %Impl: If a option expects a value, and it is not given:
-   * A) If option def has no default value, should fail ?
-   * B) If option def has default value: should accept and not add to the command line
-   *    (case should then be handled in the parser result)
-   * Should also limit to option possible values if defined.
+   * \todo Should also limit to option possible values if defined.
    * \note see also Bash completion
    *
    * \todo Parser Impl: Should the command-line reflect what the user typed on error ?
@@ -74,6 +69,13 @@ namespace Mdt{ namespace CommandLineParser{
     Q_DECLARE_TR_FUNCTIONS(Parser)
 
    public:
+
+    /*! \brief Construct a parser for \a parserDefinition
+     */
+    explicit Parser(const ParserDefinition & parserDefinition) noexcept
+     : mParserDefinition(parserDefinition)
+    {
+    }
 
     /*! \brief Parse \a arguments regarding \a parserDefinition
      *
@@ -113,7 +115,7 @@ namespace Mdt{ namespace CommandLineParser{
      * myapp arg1 copy file1.txt /tmp arg2
      * \endcode
      */
-    bool parse(const ParserDefinition & parserDefinition, const QStringList & arguments);
+    bool parse(const QStringList & arguments);
 
     /*! \brief Check if this parser has error
      */
@@ -154,6 +156,7 @@ namespace Mdt{ namespace CommandLineParser{
    private:
 
     CommandLine::CommandLine mCommandLine;
+    ParserDefinition mParserDefinition;
     QString mErrorText;
   };
 

@@ -30,13 +30,13 @@
 
 namespace Mdt{ namespace CommandLineParser{
 
-bool Parser::parse(const ParserDefinition & parserDefinition, const QStringList & arguments)
+bool Parser::parse(const QStringList & arguments)
 {
   Impl::ParseError error;
 
   mCommandLine.clear();
 
-  if( !Impl::parse(arguments, parserDefinition, mCommandLine, error) ){
+  if( !Impl::parse(arguments, mParserDefinition, mCommandLine, error) ){
     mErrorText = error.errorText;
     return false;
   }
@@ -62,7 +62,7 @@ QStringList Parser::getUnknownOptionNames() const noexcept
 
 ParserResult Parser::toParserResult() const noexcept
 {
-  return Impl::parserResultFromCommandLine(mCommandLine);
+  return Impl::parserResultFromCommandLine(mCommandLine, mParserDefinition);
 }
 
 }} // namespace Mdt{ namespace CommandLineParser{

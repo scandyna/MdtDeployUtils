@@ -29,12 +29,16 @@ TEST_CASE("parserResultFromCommandLine")
 {
   using Impl::parserResultFromCommandLine;
 
+  ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+  ParserDefinition parserDefinition;
+  parserDefinition.addSubCommand(copyCommand);
+
   Mdt::CommandLineParser::CommandLine::CommandLine commandLine;
   ParserResult result;
 
   SECTION("empty")
   {
-    result = parserResultFromCommandLine(commandLine);
+    result = parserResultFromCommandLine(commandLine, parserDefinition);
     REQUIRE( !result.hasPositionalArguments() );
   }
 
@@ -43,7 +47,7 @@ TEST_CASE("parserResultFromCommandLine")
     commandLine.setExecutableName( QLatin1String("myapp") );
     commandLine.appendPositionalArgument( QLatin1String("file.txt") );
 
-    result = parserResultFromCommandLine(commandLine);
+    result = parserResultFromCommandLine(commandLine, parserDefinition);
     REQUIRE( result.positionalArgumentCount() == 1 );
     REQUIRE( result.positionalArgumentAt(0) == QLatin1String("file.txt") );
   }
@@ -53,7 +57,7 @@ TEST_CASE("parserResultFromCommandLine")
     commandLine.setExecutableName( QLatin1String("myapp") );
     commandLine.appendSubCommandName( QLatin1String("copy") );
 
-    result = parserResultFromCommandLine(commandLine);
+    result = parserResultFromCommandLine(commandLine, parserDefinition);
     REQUIRE( !result.hasPositionalArguments() );
     REQUIRE( result.subCommand().name() == QLatin1String("copy") );
   }
@@ -73,7 +77,7 @@ TEST_CASE("parserResultFromCommandLine")
     commandLine.appendDoubleDash();
     commandLine.appendPositionalArgument( QLatin1String("--as-positional-argument") );
 
-    result = parserResultFromCommandLine(commandLine);
+    result = parserResultFromCommandLine(commandLine, parserDefinition);
     REQUIRE( result.mainCommand().positionalArgumentCount() == 1 );
     REQUIRE( result.mainCommand().positionalArgumentAt(0) == QLatin1String("app.conf") );
     REQUIRE( result.mainCommand().optionCount() == 1 );
@@ -97,7 +101,7 @@ TEST_CASE("parserResultFromCommandLine")
     commandLine.setExecutableName( QLatin1String("myapp") );
     commandLine.appendShortOptionList({'f','h'});
 
-    result = parserResultFromCommandLine(commandLine);
+    result = parserResultFromCommandLine(commandLine, parserDefinition);
     REQUIRE( result.mainCommand().optionCount() == 2 );
     REQUIRE( result.mainCommand().options()[0].name() == QLatin1String("f") );
     REQUIRE( !result.mainCommand().options()[0].hasValue() );
@@ -111,7 +115,7 @@ TEST_CASE("parserResultFromCommandLine")
     commandLine.appendShortOptionListWithLastExpectingValue({'f','m'});
     commandLine.appendOptionValue( QLatin1String("keep") );
 
-    result = parserResultFromCommandLine(commandLine);
+    result = parserResultFromCommandLine(commandLine, parserDefinition);
     REQUIRE( result.mainCommand().optionCount() == 2 );
     REQUIRE( result.mainCommand().options()[0].name() == QLatin1String("f") );
     REQUIRE( !result.mainCommand().options()[0].hasValue() );
@@ -125,7 +129,7 @@ TEST_CASE("parserResultFromCommandLine")
     commandLine.setExecutableName( QLatin1String("myapp") );
     commandLine.appendShortOptionListWithLastHavingValue( {'f','m'}, QLatin1String("keep") );
 
-    result = parserResultFromCommandLine(commandLine);
+    result = parserResultFromCommandLine(commandLine, parserDefinition);
     REQUIRE( result.mainCommand().optionCount() == 2 );
     REQUIRE( result.mainCommand().options()[0].name() == QLatin1String("f") );
     REQUIRE( !result.mainCommand().options()[0].hasValue() );
@@ -133,9 +137,161 @@ TEST_CASE("parserResultFromCommandLine")
     REQUIRE( result.mainCommand().options()[1].hasValue() );
     REQUIRE( result.mainCommand().options()[1].value() == QLatin1String("keep") );
   }
+}
 
-  SECTION("When a option expects a value, and it is not provided in the command line, the default value in the definition should be taken")
+TEST_CASE("addOptionsWithDefaultValuesMissingInResultCommand")
+{
+  using Impl::addOptionsWithDefaultValuesMissingInResultCommand;
+
+  // Option without default value
+  ParserDefinitionOption overwriteBehaviorOption( QLatin1String("overwrite-behavior"), QLatin1String("Overwrite behavior") );
+  overwriteBehaviorOption.setValueName( QLatin1String("behavior") );
+
+  ParserDefinitionOption paramOption( 'p', QLatin1String("param"), QLatin1String("Pass parameter to the backend") );
+  paramOption.setValueName( QLatin1String("key=value") );
+  paramOption.setDefaultValues( {QLatin1String("storage=sql"),QLatin1String("render=glx")} );
+
+  ParserDefinitionCommand definitionCommand;
+  definitionCommand.addOption(paramOption);
+
+  ParserResultCommand resultCommand;
+
+  SECTION("No option provided")
   {
-    REQUIRE(false);
+    addOptionsWithDefaultValuesMissingInResultCommand(definitionCommand, resultCommand);
+    REQUIRE( resultCommand.optionCount() == 2 );
+    REQUIRE( resultCommand.options()[0].name() == QLatin1String("param") );
+    REQUIRE( resultCommand.options()[0].value() == QLatin1String("storage=sql") );
+    REQUIRE( resultCommand.options()[1].name() == QLatin1String("param") );
+    REQUIRE( resultCommand.options()[1].value() == QLatin1String("render=glx") );
+  }
+
+  SECTION("--param storage=csv provided")
+  {
+    ParserResultOption option( QLatin1String("param") );
+    option.setValue( QLatin1String("storage=csv") );
+    resultCommand.addOption(option);
+
+    addOptionsWithDefaultValuesMissingInResultCommand(definitionCommand, resultCommand);
+    REQUIRE( resultCommand.optionCount() == 1 );
+    REQUIRE( resultCommand.options()[0].name() == QLatin1String("param") );
+    REQUIRE( resultCommand.options()[0].value() == QLatin1String("storage=csv") );
+  }
+
+  SECTION("-p storage=csv provided")
+  {
+    ParserResultOption option( QLatin1String("p") );
+    option.setValue( QLatin1String("storage=csv") );
+    resultCommand.addOption(option);
+
+    addOptionsWithDefaultValuesMissingInResultCommand(definitionCommand, resultCommand);
+    REQUIRE( resultCommand.optionCount() == 1 );
+    REQUIRE( resultCommand.options()[0].name() == QLatin1String("p") );
+    REQUIRE( resultCommand.options()[0].value() == QLatin1String("storage=csv") );
+  }
+
+  SECTION("overwrite-behavior provided")
+  {
+    ParserResultOption option( QLatin1String("overwrite-behavior") );
+    option.setValue( QLatin1String("keep") );
+    resultCommand.addOption(option);
+
+    addOptionsWithDefaultValuesMissingInResultCommand(definitionCommand, resultCommand);
+    REQUIRE( resultCommand.optionCount() == 3 );
+    REQUIRE( resultCommand.options()[0].name() == QLatin1String("overwrite-behavior") );
+    REQUIRE( resultCommand.options()[0].value() == QLatin1String("keep") );
+    REQUIRE( resultCommand.options()[1].name() == QLatin1String("param") );
+    REQUIRE( resultCommand.options()[1].value() == QLatin1String("storage=sql") );
+    REQUIRE( resultCommand.options()[2].name() == QLatin1String("param") );
+    REQUIRE( resultCommand.options()[2].value() == QLatin1String("render=glx") );
+  }
+}
+
+TEST_CASE("optionsWithDefaultValues")
+{
+  using Impl::parserResultFromCommandLine;
+
+  Mdt::CommandLineParser::CommandLine::CommandLine commandLine;
+  ParserResult result;
+
+  ParserDefinitionOption paramOption( 'p', QLatin1String("param"), QLatin1String("Pass parameter to the backend") );
+  paramOption.setValueName( QLatin1String("key=value") );
+  paramOption.setDefaultValues( {QLatin1String("storage=sql"),QLatin1String("render=glx")} );
+
+  ParserDefinitionCommand copyCommand( QLatin1String("copy") );
+  copyCommand.addOption(paramOption);
+
+  ParserDefinition parserDefinition;
+  parserDefinition.addOption(paramOption);
+  parserDefinition.addSubCommand(copyCommand);
+
+  commandLine.setExecutableName( QLatin1String("app") );
+
+  SECTION("app --param storage=csv --param render=sw (values provided on the command line)")
+  {
+    commandLine.appendOptionExpectingValue( QLatin1String("param") );
+    commandLine.appendOptionValue( QLatin1String("storage=csv") );
+    commandLine.appendOptionExpectingValue( QLatin1String("param") );
+    commandLine.appendOptionValue( QLatin1String("render=sw") );
+
+    result = parserResultFromCommandLine(commandLine, parserDefinition);
+    REQUIRE( result.mainCommand().optionCount() == 2 );
+    REQUIRE( result.mainCommand().options()[0].name() == QLatin1String("param") );
+    REQUIRE( result.mainCommand().options()[0].value() == QLatin1String("storage=csv") );
+    REQUIRE( result.mainCommand().options()[1].name() == QLatin1String("param") );
+    REQUIRE( result.mainCommand().options()[1].value() == QLatin1String("render=sw") );
+  }
+
+  SECTION("app --param storage=csv (one value provided on the command line)")
+  {
+    commandLine.appendOptionExpectingValue( QLatin1String("param") );
+    commandLine.appendOptionValue( QLatin1String("storage=csv") );
+
+    result = parserResultFromCommandLine(commandLine, parserDefinition);
+    REQUIRE( result.mainCommand().optionCount() == 1 );
+    REQUIRE( result.mainCommand().options()[0].name() == QLatin1String("param") );
+    REQUIRE( result.mainCommand().options()[0].value() == QLatin1String("storage=csv") );
+  }
+
+  SECTION("app (no value provided on the command line, use default ones)")
+  {
+    result = parserResultFromCommandLine(commandLine, parserDefinition);
+    REQUIRE( result.mainCommand().optionCount() == 2 );
+    REQUIRE( result.mainCommand().options()[0].name() == QLatin1String("param") );
+    REQUIRE( result.mainCommand().options()[0].value() == QLatin1String("storage=sql") );
+    REQUIRE( result.mainCommand().options()[1].name() == QLatin1String("param") );
+    REQUIRE( result.mainCommand().options()[1].value() == QLatin1String("render=glx") );
+  }
+
+  SECTION("copy sub-command")
+  {
+    commandLine.appendSubCommandName( QLatin1String("copy") );
+
+    SECTION("app copy --param storage=csv --param render=sw (values provided on the command line)")
+    {
+      commandLine.appendOptionExpectingValue( QLatin1String("param") );
+      commandLine.appendOptionValue( QLatin1String("storage=csv") );
+      commandLine.appendOptionExpectingValue( QLatin1String("param") );
+      commandLine.appendOptionValue( QLatin1String("render=sw") );
+
+      result = parserResultFromCommandLine(commandLine, parserDefinition);
+      REQUIRE( result.hasSubCommand() );
+      REQUIRE( result.subCommand().optionCount() == 2 );
+      REQUIRE( result.subCommand().options()[0].name() == QLatin1String("param") );
+      REQUIRE( result.subCommand().options()[0].value() == QLatin1String("storage=csv") );
+      REQUIRE( result.subCommand().options()[1].name() == QLatin1String("param") );
+      REQUIRE( result.subCommand().options()[1].value() == QLatin1String("render=sw") );
+    }
+
+    SECTION("app (no value provided on the command line, use default ones)")
+    {
+      result = parserResultFromCommandLine(commandLine, parserDefinition);
+      REQUIRE( result.hasSubCommand() );
+      REQUIRE( result.subCommand().optionCount() == 2 );
+      REQUIRE( result.subCommand().options()[0].name() == QLatin1String("param") );
+      REQUIRE( result.subCommand().options()[0].value() == QLatin1String("storage=sql") );
+      REQUIRE( result.subCommand().options()[1].name() == QLatin1String("param") );
+      REQUIRE( result.subCommand().options()[1].value() == QLatin1String("render=glx") );
+    }
   }
 }

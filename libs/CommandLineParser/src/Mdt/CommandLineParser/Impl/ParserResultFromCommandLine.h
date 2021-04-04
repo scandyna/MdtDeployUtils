@@ -27,6 +27,8 @@
 #include "../Algorithm.h"
 #include "../ParserResult.h"
 #include "../ParserResultCommand.h"
+#include "../ParserDefinition.h"
+#include "../ParserDefinitionCommand.h"
 #include <QString>
 #include <QChar>
 #include <QLatin1String>
@@ -75,6 +77,10 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
       mCommand.addOption( ParserResultOption(argument.name) );
     }
 
+    void operator()(const Mdt::CommandLineParser::CommandLine::UnknownOption &)
+    {
+    }
+
     void operator()(const Mdt::CommandLineParser::CommandLine::ShortOptionList & argument)
     {
       for(char name : argument.names){
@@ -120,9 +126,45 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
     ParserResultCommand & mCommand;
   };
 
+  /*! \internal Check if \a parserDefinitionOption exists in \a parserResultCommand
+   */
+  inline
+  bool parserResultCommandContainsOption(const ParserResultCommand & parserResultCommand,
+                                         const ParserDefinitionOption & parserDefinitionOption) noexcept
+  {
+    return parserResultCommand.isSet(parserDefinitionOption);
+  }
+
+  /*! \internal Add options to \a parserResultCommand for each default value in \a parserDefinitionOption
+   */
+  static
+  void addOptionsToResultCommandForDefinitionOptionDefaultValues(ParserResultCommand & parserResultCommand,
+                                                                 const ParserDefinitionOption & parserDefinitionOption) noexcept
+  {
+    for( const QString & value : parserDefinitionOption.defaultValues() ){
+      ParserResultOption resultOption( parserDefinitionOption.name() );
+      resultOption.setValue(value);
+      parserResultCommand.addOption(resultOption);
+    }
+  }
+
+  /*! \internal Add options that have default values in \a parserDefinitionCommand that are missing in \a parserResultCommand
+   */
+  static
+  void addOptionsWithDefaultValuesMissingInResultCommand(const ParserDefinitionCommand & parserDefinitionCommand,
+                                                         ParserResultCommand & parserResultCommand) noexcept
+  {
+    for( const auto & definitionOption : parserDefinitionCommand.options() ){
+      if( definitionOption.hasDefaultValues() && !parserResultCommandContainsOption(parserResultCommand, definitionOption) ){
+        addOptionsToResultCommandForDefinitionOptionDefaultValues(parserResultCommand, definitionOption);
+      }
+    }
+  }
+
   /*! \internal Get a parser result from \a commandLine
    */
-  ParserResult parserResultFromCommandLine(const CommandLine::CommandLine & commandLine)
+  static
+  ParserResult parserResultFromCommandLine(const CommandLine::CommandLine & commandLine, const ParserDefinition & parserDefinition) noexcept
   {
     ParserResult parserResult;
     const auto & argumentList = commandLine.argumentList();
@@ -131,15 +173,20 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
     AddArgumentToResultCommand addArgumentToMainCommand(mainCommand);
     auto subCommandPosIt = forEachUntil( argumentList.cbegin(), argumentList.cend(),
                                                boost::apply_visitor(addArgumentToMainCommand), CommandLine::isSubCommandNameArgument );
+    addOptionsWithDefaultValuesMissingInResultCommand(parserDefinition.mainCommand(), mainCommand);
     parserResult.setMainCommand(mainCommand);
 
     if( subCommandPosIt != argumentList.cend() ){
-      ParserResultCommand subCommand( getSubCommandName(*subCommandPosIt) );
+      const QString subCommandName = getSubCommandName(*subCommandPosIt);
+      ParserResultCommand subCommand(subCommandName);
+      const auto definitionSubCommand = parserDefinition.findSubCommandByName(subCommandName);
+      assert( definitionSubCommand );
       ++subCommandPosIt;
 
       AddArgumentToResultCommand addArgumentToSubCommand(subCommand);
       std::for_each( subCommandPosIt, argumentList.cend(), boost::apply_visitor(addArgumentToSubCommand) );
 
+      addOptionsWithDefaultValuesMissingInResultCommand(*definitionSubCommand, subCommand);
       parserResult.setSubCommand(subCommand);
     }
 

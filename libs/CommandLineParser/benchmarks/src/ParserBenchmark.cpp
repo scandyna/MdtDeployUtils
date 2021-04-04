@@ -78,10 +78,10 @@ void ParserBenchmark::mdtCommandLineParser_parse()
 
   const QStringList arguments = qStringListFromUtf8Strings({"app","--force","--overwrite-behavior","keep","file.txt","/tmp"});
 
-  Parser parser;
+  Parser parser(parserDefinition);
 
   QBENCHMARK{
-    QVERIFY( parser.parse(parserDefinition, arguments) );
+    QVERIFY( parser.parse(arguments) );
   }
 
   const auto result = parser.toParserResult();
@@ -107,10 +107,10 @@ void ParserBenchmark::mdtCommandLineParserWithSubCommnds_parse()
 
   const QStringList arguments = qStringListFromUtf8Strings({"app","copy","--overwrite-behavior","keep","file.txt","/tmp"});
 
-  Parser parser;
+  Parser parser(parserDefinition);
 
   QBENCHMARK{
-    QVERIFY( parser.parse(parserDefinition, arguments) );
+    QVERIFY( parser.parse(arguments) );
   }
 
   const auto result = parser.toParserResult();
@@ -155,39 +155,14 @@ void ParserBenchmark::mdtCommandLineParser()
     overwriteBehaviorOption.setValueName( QLatin1String("behavior") );
     parserDefinition.addOption(overwriteBehaviorOption);
 
-    Parser parser;
+    Parser parser(parserDefinition);
 
-    QVERIFY( parser.parse(parserDefinition, arguments) );
+    QVERIFY( parser.parse(arguments) );
 
     const auto result = parser.toParserResult();
     QVERIFY( result.isSet(forceOption) );
     QCOMPARE( result.getValues(overwriteBehaviorOption), QStringList{QLatin1String("keep")} );
   }
-}
-
-void ParserBenchmark::mdtCommandLineParser_setupAndParse()
-{
-  const QStringList arguments = qStringListFromUtf8Strings({"app","--force","--overwrite-behavior","keep","file.txt","/tmp"});
-
-  Parser parser;
-
-  QBENCHMARK{
-    ParserDefinition parserDefinition;
-    parserDefinition.addHelpOption();
-
-    ParserDefinitionOption forceOption( 'f', QLatin1String("force"), QLatin1String("Force option") );
-    parserDefinition.addOption(forceOption);
-
-    ParserDefinitionOption overwriteBehaviorOption( QLatin1String("overwrite-behavior"), QLatin1String("Overwrite behavior") );
-    overwriteBehaviorOption.setValueName( QLatin1String("behavior") );
-    parserDefinition.addOption(overwriteBehaviorOption);
-
-    QVERIFY( parser.parse(parserDefinition, arguments) );
-  }
-
-  const auto result = parser.toParserResult();
-  QVERIFY( result.isOptionLongNameSet( QLatin1String("overwrite-behavior") ) );
-//   QCOMPARE( result.getValues(overwriteBehaviorOption), QStringList{QLatin1String("keep")} );
 }
 
 void ParserBenchmark::mdtCommandLineParser_buildResultAndCheck()
@@ -204,8 +179,8 @@ void ParserBenchmark::mdtCommandLineParser_buildResultAndCheck()
   overwriteBehaviorOption.setValueName( QLatin1String("behavior") );
   parserDefinition.addOption(overwriteBehaviorOption);
 
-  Parser parser;
-  QVERIFY( parser.parse(parserDefinition, arguments) );
+  Parser parser(parserDefinition);
+  QVERIFY( parser.parse(arguments) );
 
   QBENCHMARK{
     const auto result = parser.toParserResult();
