@@ -23,7 +23,7 @@
 
 namespace Mdt{ namespace CommandLineParser{
 
-  /*! \brief Argument type
+  /*! \brief Value type of a positional argument or a option value
    *
    * As example, a copy (programm or command of a programm)
    * could accept 2 positional arguments:
