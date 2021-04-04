@@ -21,7 +21,7 @@
 #ifndef MDT_COMMAND_LINE_PARSER_PARSER_DEFINITION_POSITIONAL_ARGUMENT_H
 #define MDT_COMMAND_LINE_PARSER_PARSER_DEFINITION_POSITIONAL_ARGUMENT_H
 
-#include "ArgumentType.h"
+#include "ValueType.h"
 #include "mdt_commandlineparser_export.h"
 #include <QString>
 #include <QStringList>
@@ -37,12 +37,12 @@ namespace Mdt{ namespace CommandLineParser{
 
     ParserDefinitionPositionalArgument() = delete;
 
-    /*! \brief Construct a argument with a type, a name, a description and a optional syntax
+    /*! \brief Construct a argument with a value type, a name, a description and a optional syntax
      *
      * \pre \a name must not be empty
      */
-    ParserDefinitionPositionalArgument(ArgumentType type, const QString & name, const QString & description, const QString & syntax = QString())
-     : mType(type),
+    ParserDefinitionPositionalArgument(ValueType valueType, const QString & name, const QString & description, const QString & syntax = QString())
+     : mValueType(valueType),
        mName( name.trimmed() ),
        mDescription( description.trimmed() ),
        mSyntax( syntax.trimmed() )
@@ -66,11 +66,11 @@ namespace Mdt{ namespace CommandLineParser{
      */
     ParserDefinitionPositionalArgument & operator=(ParserDefinitionPositionalArgument && other) = default;
 
-    /*! \brief Get the type of this argument
+    /*! \brief Get the value type of this argument
      */
-    ArgumentType type() const noexcept
+    ValueType valueType() const noexcept
     {
-      return mType;
+      return mValueType;
     }
 
     /*! \brief Get the name of this argument
@@ -135,7 +135,7 @@ namespace Mdt{ namespace CommandLineParser{
 
    private:
 
-    ArgumentType mType;
+    ValueType mValueType;
     QString mName;
     QString mDescription;
     QString mSyntax;

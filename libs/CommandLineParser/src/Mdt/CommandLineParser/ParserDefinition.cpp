@@ -69,7 +69,7 @@ void ParserDefinition::addPositionalArgument(const QString & name, const QString
   mMainCommand.addPositionalArgument(name, description, syntax);
 }
 
-void ParserDefinition::addPositionalArgument(ArgumentType type, const QString & name, const QString & description, const QString & syntax)
+void ParserDefinition::addPositionalArgument(ValueType type, const QString & name, const QString & description, const QString & syntax)
 {
   assert( !name.trimmed().isEmpty() );
 

@@ -133,49 +133,24 @@ TEST_CASE("ApplicationName")
   REQUIRE( generator.applicationName() == QLatin1String("mytool") );
 }
 
-TEST_CASE("compgenActionNameFromArgumentType")
-{
-  using Impl::compgenActionNameFromArgumentType;
-
-  SECTION("file")
-  {
-    REQUIRE( compgenActionNameFromArgumentType(ArgumentType::File) == QLatin1String("file") );
-  }
-
-  SECTION("directory")
-  {
-    REQUIRE( compgenActionNameFromArgumentType(ArgumentType::Directory) == QLatin1String("directory") );
-  }
-
-  SECTION("diretory or file")
-  {
-    REQUIRE( compgenActionNameFromArgumentType(ArgumentType::DirectoryOrFile) == QLatin1String("file") );
-  }
-
-  SECTION("Unspecified")
-  {
-    REQUIRE( compgenActionNameFromArgumentType(ArgumentType::Unspecified).isEmpty() );
-  }
-}
-
 TEST_CASE("compgenActionFromArgumentType")
 {
-  using Impl::compgenActionFromArgumentType;
+  using Impl::compgenActionFromValueType;
   using BashCompletion::CompgenAction;
 
   SECTION("file")
   {
-    REQUIRE( compgenActionFromArgumentType(ArgumentType::File) == CompgenAction::ListFiles );
+    REQUIRE( compgenActionFromValueType(ValueType::File) == CompgenAction::ListFiles );
   }
 
   SECTION("directory")
   {
-    REQUIRE( compgenActionFromArgumentType(ArgumentType::Directory) == CompgenAction::ListDirectories );
+    REQUIRE( compgenActionFromValueType(ValueType::Directory) == CompgenAction::ListDirectories );
   }
 
   SECTION("diretory or file")
   {
-    REQUIRE( compgenActionFromArgumentType(ArgumentType::DirectoryOrFile) == CompgenAction::ListFiles );
+    REQUIRE( compgenActionFromValueType(ValueType::DirectoryOrFile) == CompgenAction::ListFiles );
   }
 }
 
@@ -196,7 +171,7 @@ TEST_CASE("compgenCommandFromParserDefinitionOption")
   {
     ParserDefinitionOption fileOptionDef( QLatin1String("file"), QLatin1String("File") );
     fileOptionDef.setValueName( QLatin1String("path") );
-    fileOptionDef.setValueType(ArgumentType::File);
+    fileOptionDef.setValueType(ValueType::File);
 
     const auto compgenCommand = compgenCommandFromParserDefinitionOption(fileOptionDef);
     REQUIRE( compgenCommand.argumentCount() == 1 );
@@ -241,7 +216,7 @@ TEST_CASE("BashCompletionGeneratorOption_fromParserDefinitionOption")
     {
       ParserDefinitionOption fileOptionDef( QLatin1String("file"), QLatin1String("File") );
       fileOptionDef.setValueName( QLatin1String("path") );
-      fileOptionDef.setValueType(ArgumentType::File);
+      fileOptionDef.setValueType(ValueType::File);
 
       const auto fileOption = BashCompletionGeneratorOption::fromParserDefinitionOption(fileOptionDef);
       REQUIRE( fileOption.hasAction() );
@@ -257,7 +232,7 @@ TEST_CASE("compgenCommandFromParserDefinitionPositionalArgument")
 
   SECTION("Argument with unspecified value type")
   {
-    ParserDefinitionPositionalArgument argumentDef( ArgumentType::Unspecified, QLatin1String("source"), QLatin1String("Source file") );
+    ParserDefinitionPositionalArgument argumentDef( ValueType::Unspecified, QLatin1String("source"), QLatin1String("Source file") );
 
     const auto compgenCommand = compgenCommandFromParserDefinitionPositionalArgument(argumentDef);
     REQUIRE( compgenCommand.isEmpty() );
@@ -265,7 +240,7 @@ TEST_CASE("compgenCommandFromParserDefinitionPositionalArgument")
 
   SECTION("Argument with file value type")
   {
-    ParserDefinitionPositionalArgument argumentDef( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
+    ParserDefinitionPositionalArgument argumentDef( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
 
     const auto compgenCommand = compgenCommandFromParserDefinitionPositionalArgument(argumentDef);
     REQUIRE( compgenCommand.argumentCount() == 1 );
@@ -274,7 +249,7 @@ TEST_CASE("compgenCommandFromParserDefinitionPositionalArgument")
 
   SECTION("Argument with list of possible values")
   {
-    ParserDefinitionPositionalArgument argumentDef( ArgumentType::Unspecified, QLatin1String("file-type"), QLatin1String("File type") );
+    ParserDefinitionPositionalArgument argumentDef( ValueType::Unspecified, QLatin1String("file-type"), QLatin1String("File type") );
     argumentDef.setPossibleValues({QLatin1String("executable"),QLatin1String("library")});
 
     const auto compgenCommand = compgenCommandFromParserDefinitionPositionalArgument(argumentDef);
@@ -287,7 +262,7 @@ TEST_CASE("BashCompletionGeneratorPositionalArgument_fromParserDefinitionPositio
 {
   SECTION("Check that name is correctly taken")
   {
-    ParserDefinitionPositionalArgument argumentDef( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
+    ParserDefinitionPositionalArgument argumentDef( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
 
     const auto argument = BashCompletionGeneratorPositionalArgument::fromParserDefinitionPositionalArgument(argumentDef);
     REQUIRE( argument.name() == QLatin1String("source") );
@@ -297,7 +272,7 @@ TEST_CASE("BashCompletionGeneratorPositionalArgument_fromParserDefinitionPositio
   {
     SECTION("Argument with unspecified value type -> no action")
     {
-      ParserDefinitionPositionalArgument argumentDef( ArgumentType::Unspecified, QLatin1String("source"), QLatin1String("Source file") );
+      ParserDefinitionPositionalArgument argumentDef( ValueType::Unspecified, QLatin1String("source"), QLatin1String("Source file") );
 
       const auto argument = BashCompletionGeneratorPositionalArgument::fromParserDefinitionPositionalArgument(argumentDef);
       REQUIRE( !argument.hasAction() );
@@ -305,7 +280,7 @@ TEST_CASE("BashCompletionGeneratorPositionalArgument_fromParserDefinitionPositio
 
     SECTION("Argument with File value type -> compgen -A file action")
     {
-      ParserDefinitionPositionalArgument argumentDef( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
+      ParserDefinitionPositionalArgument argumentDef( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
 
       const auto argument = BashCompletionGeneratorPositionalArgument::fromParserDefinitionPositionalArgument(argumentDef);
       REQUIRE( argument.hasAction() );
@@ -328,8 +303,8 @@ TEST_CASE("BashCompletionGeneratorCommand_fromParserDefinitionCommand")
   {
     ParserDefinitionCommand copyCommandDef( QLatin1String("copy") );
     copyCommandDef.setDescription( QLatin1String("Copy a file") );
-    copyCommandDef.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file to copy") );
-    copyCommandDef.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
+    copyCommandDef.addPositionalArgument( ValueType::File, QLatin1String("source"), QLatin1String("Source file to copy") );
+    copyCommandDef.addPositionalArgument( ValueType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
     copyCommandDef.addHelpOption();
 
     const auto copyCommand = BashCompletionGeneratorCommand::fromParserDefinitionCommand(copyCommandDef);
@@ -350,7 +325,7 @@ TEST_CASE("fromParserDefinition")
   ParserDefinition parserDefinition;
   parserDefinition.setApplicationName( QLatin1String("myapp") );
   parserDefinition.setApplicationDescription( QLatin1String("My cool app") );
-  parserDefinition.addPositionalArgument( ArgumentType::Unspecified, QLatin1String("arg1"), QLatin1String("Some argument") );
+  parserDefinition.addPositionalArgument( ValueType::Unspecified, QLatin1String("arg1"), QLatin1String("Some argument") );
   parserDefinition.addHelpOption();
 
   ParserDefinitionCommand copyCommand( QLatin1String("copy") );

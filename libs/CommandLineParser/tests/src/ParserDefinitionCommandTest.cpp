@@ -40,7 +40,7 @@ TEST_CASE("getUsageText")
   ParserDefinitionCommand copyCommand( QLatin1String("copy") );
   QString expectedText;
 
-  ParserDefinitionPositionalArgument sourceFile( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
+  ParserDefinitionPositionalArgument sourceFile( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
 
   SECTION("No arguments and no options")
   {
@@ -58,7 +58,7 @@ TEST_CASE("getUsageText")
 
   SECTION("Arguments with syntax")
   {
-    ParserDefinitionPositionalArgument argument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file"), QLatin1String("[file]") );
+    ParserDefinitionPositionalArgument argument( ValueType::File, QLatin1String("source"), QLatin1String("Source file"), QLatin1String("[file]") );
     copyCommand.addPositionalArgument(argument);
 
     expectedText = QLatin1String("Usage: myapp copy [file]");

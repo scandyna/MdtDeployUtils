@@ -28,7 +28,7 @@ add_library(Mdt_CommandLineParser
   Mdt/CommandLineParser/CommandLine/Algorithm.cpp
   Mdt/CommandLineParser/CommandLine/CommandLineAlgorithm.cpp
   Mdt/CommandLineParser/CommandLine/ArgumentListAttributes.cpp
-  Mdt/CommandLineParser/ArgumentType.cpp
+  Mdt/CommandLineParser/ValueType.cpp
   Mdt/CommandLineParser/ParserDefinitionOption.cpp
   Mdt/CommandLineParser/ParserDefinitionPositionalArgument.cpp
   Mdt/CommandLineParser/ParserDefinitionCommand.cpp
@@ -38,7 +38,6 @@ add_library(Mdt_CommandLineParser
   Mdt/CommandLineParser/ParserResultCommand.cpp
   Mdt/CommandLineParser/ParserResult.cpp
   Mdt/CommandLineParser/ParserResultDebug.cpp
-#   Mdt/CommandLineParser/ParserResultInCommandLineIndexMap.cpp
   Mdt/CommandLineParser/BashCompletionGeneratorPositionalArgument.cpp
   Mdt/CommandLineParser/BashCompletionGeneratorOption.cpp
   Mdt/CommandLineParser/BashCompletionGeneratorCommand.cpp

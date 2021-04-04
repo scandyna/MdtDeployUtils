@@ -187,18 +187,18 @@ namespace Mdt{ namespace CommandLineParser{
     {
       assert( !name.trimmed().isEmpty() );
 
-      addPositionalArgument(ArgumentType::Unspecified, name, description, syntax);
+      addPositionalArgument(ValueType::Unspecified, name, description, syntax);
     }
 
     /*! \brief Add a positional argument
      *
      * \pre \a name must not be empty
      */
-    void addPositionalArgument(ArgumentType type, const QString & name, const QString & description, const QString & syntax = QString())
+    void addPositionalArgument(ValueType valueType, const QString & name, const QString & description, const QString & syntax = QString())
     {
       assert( !name.trimmed().isEmpty() );
 
-      mPositionalArguments.emplace_back(type, name, description, syntax);
+      mPositionalArguments.emplace_back(valueType, name, description, syntax);
     }
 
     /*! \brief Add a positional argument

@@ -373,7 +373,7 @@ TEST_CASE("wrapText_argument")
 
   SECTION("source,longest:10,ml:50")
   {
-    ParserDefinitionPositionalArgument sourceArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
+    ParserDefinitionPositionalArgument sourceArgument( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
     longestNamesStringLengt = 10;
     maxLength = 50;
 
@@ -448,14 +448,14 @@ TEST_CASE("findLongestArgumentNamesStringLength")
 
   SECTION("source")
   {
-    arguments.emplace_back( ArgumentType::File, QLatin1String("source"), QLatin1String("Source description") );
+    arguments.emplace_back( ValueType::File, QLatin1String("source"), QLatin1String("Source description") );
     REQUIRE( findLongestArgumentNamesStringLength(arguments) == 6 );
   }
 
   SECTION("source,destination")
   {
-    arguments.emplace_back( ArgumentType::File, QLatin1String("source"), QLatin1String("Source description") );
-    arguments.emplace_back( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination description") );
+    arguments.emplace_back( ValueType::File, QLatin1String("source"), QLatin1String("Source description") );
+    arguments.emplace_back( ValueType::Directory, QLatin1String("destination"), QLatin1String("Destination description") );
     REQUIRE( findLongestArgumentNamesStringLength(arguments) == 11 );
   }
 }
@@ -466,13 +466,13 @@ TEST_CASE("argumentToUsageString")
 
   SECTION("No syntax")
   {
-    ParserDefinitionPositionalArgument argument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
+    ParserDefinitionPositionalArgument argument( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
     REQUIRE( argumentToUsageString(argument) == QLatin1String("source") );
   }
 
   SECTION("With syntax")
   {
-    ParserDefinitionPositionalArgument argument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file"), QLatin1String("[file]") );
+    ParserDefinitionPositionalArgument argument( ValueType::File, QLatin1String("source"), QLatin1String("Source file"), QLatin1String("[file]") );
     REQUIRE( argumentToUsageString(argument) == QLatin1String("[file]") );
   }
 }
@@ -482,8 +482,8 @@ TEST_CASE("argumentListToUsageString")
   using Impl::argumentListToUsageString;
 
   std::vector<ParserDefinitionPositionalArgument> arguments;
-  arguments.emplace_back( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
-  arguments.emplace_back( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination diretory") );
+  arguments.emplace_back( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
+  arguments.emplace_back( ValueType::Directory, QLatin1String("destination"), QLatin1String("Destination diretory") );
 
   REQUIRE( argumentListToUsageString(arguments) == QLatin1String("source destination") );
 }

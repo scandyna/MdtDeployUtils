@@ -221,9 +221,9 @@ TEST_CASE("ParserDefinitionOption")
   SECTION("valueType")
   {
     ParserDefinitionOption option( QLatin1String("destination"), QLatin1String("Destination directory") );
-    REQUIRE( option.valueType() == ArgumentType::Unspecified );
-    option.setValueType(ArgumentType::Directory);
-    REQUIRE( option.valueType() == ArgumentType::Directory );
+    REQUIRE( option.valueType() == ValueType::Unspecified );
+    option.setValueType(ValueType::Directory);
+    REQUIRE( option.valueType() == ValueType::Directory );
   }
 }
 
@@ -231,8 +231,8 @@ TEST_CASE("ParserDefinitionPositionalArgument")
 {
   SECTION("With syntax")
   {
-    ParserDefinitionPositionalArgument argument( ArgumentType::Unspecified, QLatin1String("source"), QLatin1String("Source file"), QLatin1String("[path]") );
-    REQUIRE( argument.type() == ArgumentType::Unspecified );
+    ParserDefinitionPositionalArgument argument( ValueType::Unspecified, QLatin1String("source"), QLatin1String("Source file"), QLatin1String("[path]") );
+    REQUIRE( argument.valueType() == ValueType::Unspecified );
     REQUIRE( argument.name() == QLatin1String("source") );
     REQUIRE( argument.description() == QLatin1String("Source file") );
     REQUIRE( argument.hasSyntax() );
@@ -241,8 +241,8 @@ TEST_CASE("ParserDefinitionPositionalArgument")
 
   SECTION("With spaces")
   {
-    ParserDefinitionPositionalArgument argument( ArgumentType::Unspecified, QLatin1String(" source"), QLatin1String(" Source file"), QLatin1String(" [path]") );
-    REQUIRE( argument.type() == ArgumentType::Unspecified );
+    ParserDefinitionPositionalArgument argument( ValueType::Unspecified, QLatin1String(" source"), QLatin1String(" Source file"), QLatin1String(" [path]") );
+    REQUIRE( argument.valueType() == ValueType::Unspecified );
     REQUIRE( argument.name() == QLatin1String("source") );
     REQUIRE( argument.description() == QLatin1String("Source file") );
     REQUIRE( argument.hasSyntax() );
@@ -251,8 +251,8 @@ TEST_CASE("ParserDefinitionPositionalArgument")
 
   SECTION("No syntax")
   {
-    ParserDefinitionPositionalArgument argument( ArgumentType::Unspecified, QLatin1String("source"), QLatin1String("Source file") );
-    REQUIRE( argument.type() == ArgumentType::Unspecified );
+    ParserDefinitionPositionalArgument argument( ValueType::Unspecified, QLatin1String("source"), QLatin1String("Source file") );
+    REQUIRE( argument.valueType() == ValueType::Unspecified );
     REQUIRE( argument.name() == QLatin1String("source") );
     REQUIRE( argument.description() == QLatin1String("Source file") );
     REQUIRE( !argument.hasSyntax() );
@@ -260,15 +260,15 @@ TEST_CASE("ParserDefinitionPositionalArgument")
 
   SECTION("Directory type")
   {
-    ParserDefinitionPositionalArgument argument( ArgumentType::Directory, QLatin1String("source"), QLatin1String("Source file") );
-    REQUIRE( argument.type() == ArgumentType::Directory );
+    ParserDefinitionPositionalArgument argument( ValueType::Directory, QLatin1String("source"), QLatin1String("Source file") );
+    REQUIRE( argument.valueType() == ValueType::Directory );
     REQUIRE( argument.name() == QLatin1String("source") );
     REQUIRE( argument.description() == QLatin1String("Source file") );
   }
 
   SECTION("possible vales")
   {
-    ParserDefinitionPositionalArgument argument( ArgumentType::Directory, QLatin1String("file-type"), QLatin1String("File type") );
+    ParserDefinitionPositionalArgument argument( ValueType::Directory, QLatin1String("file-type"), QLatin1String("File type") );
     REQUIRE( !argument.hasPossibleValues() );
     argument.setPossibleValues({QLatin1String("executable"),QLatin1String("library"),QLatin1String("config")});
     REQUIRE( argument.hasPossibleValues() );
@@ -418,7 +418,7 @@ TEST_CASE("ParserDefinition_positionalArguments")
   {
     parser.addPositionalArgument( QLatin1String("name"), QLatin1String("Name of the branch"), QLatin1String("[name]") );
     REQUIRE( parser.hasPositionalArguments() );
-    REQUIRE( parser.mainCommand().positionalArguments()[0].type() == ArgumentType::Unspecified );
+    REQUIRE( parser.mainCommand().positionalArguments()[0].valueType() == ValueType::Unspecified );
     REQUIRE( parser.mainCommand().positionalArguments()[0].name() == QLatin1String("name") );
     REQUIRE( parser.mainCommand().positionalArguments()[0].description() == QLatin1String("Name of the branch") );
     REQUIRE( parser.mainCommand().positionalArguments()[0].syntax() == QLatin1String("[name]") );
@@ -426,9 +426,9 @@ TEST_CASE("ParserDefinition_positionalArguments")
 
   SECTION("source")
   {
-    parser.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file"), QLatin1String("[file]") );
+    parser.addPositionalArgument( ValueType::File, QLatin1String("source"), QLatin1String("Source file"), QLatin1String("[file]") );
     REQUIRE( parser.hasPositionalArguments() );
-    REQUIRE( parser.mainCommand().positionalArguments()[0].type() == ArgumentType::File );
+    REQUIRE( parser.mainCommand().positionalArguments()[0].valueType() == ValueType::File );
     REQUIRE( parser.mainCommand().positionalArguments()[0].name() == QLatin1String("source") );
     REQUIRE( parser.mainCommand().positionalArguments()[0].description() == QLatin1String("Source file") );
     REQUIRE( parser.mainCommand().positionalArguments()[0].syntax() == QLatin1String("[file]") );
@@ -577,7 +577,7 @@ TEST_CASE("getUsageText")
 
   SECTION("Arguments")
   {
-    ParserDefinitionPositionalArgument argument( ArgumentType::File, QLatin1String("source"), QLatin1String("Path to the source file") );
+    ParserDefinitionPositionalArgument argument( ValueType::File, QLatin1String("source"), QLatin1String("Path to the source file") );
     arguments.push_back(argument);
 
     const QString expectedText = QLatin1String("Usage: parser-def-test source");
@@ -586,7 +586,7 @@ TEST_CASE("getUsageText")
 
   SECTION("Arguments with syntax")
   {
-    ParserDefinitionPositionalArgument argument( ArgumentType::File, QLatin1String("source"), QLatin1String("Path to the source file"), QLatin1String("[file]") );
+    ParserDefinitionPositionalArgument argument( ValueType::File, QLatin1String("source"), QLatin1String("Path to the source file"), QLatin1String("[file]") );
     arguments.push_back(argument);
 
     const QString expectedText = QLatin1String("Usage: parser-def-test [file]");
@@ -606,7 +606,7 @@ TEST_CASE("getUsageText")
   {
     ParserDefinitionOption option( QLatin1String("option-1"), QLatin1String("Option 1 description") );
     options.push_back(option);
-    ParserDefinitionPositionalArgument argument( ArgumentType::Unspecified, QLatin1String("argument-1"), QLatin1String("Argument 1 description") );
+    ParserDefinitionPositionalArgument argument( ValueType::Unspecified, QLatin1String("argument-1"), QLatin1String("Argument 1 description") );
     arguments.push_back(argument);
 
     const QString expectedText = QLatin1String("Usage: parser-def-test [options] argument-1");
@@ -733,7 +733,7 @@ TEST_CASE("getPositionalArgumentsHelpText")
 
   SECTION("source")
   {
-    arguments.emplace_back( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
+    arguments.emplace_back( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
     expectedText = QLatin1String("Arguments:\n"
                                  "  source  Source file");
     result = getPositionalArgumentsHelpText(arguments, maxLength);
@@ -742,8 +742,8 @@ TEST_CASE("getPositionalArgumentsHelpText")
 
   SECTION("source,destination")
   {
-    arguments.emplace_back( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
-    arguments.emplace_back( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination file") );
+    arguments.emplace_back( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
+    arguments.emplace_back( ValueType::Directory, QLatin1String("destination"), QLatin1String("Destination file") );
     expectedText = QLatin1String("Arguments:\n"
                                  "  source       Source file\n"
                                  "  destination  Destination file");

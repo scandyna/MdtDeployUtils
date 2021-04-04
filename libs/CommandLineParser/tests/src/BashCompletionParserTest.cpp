@@ -984,8 +984,8 @@ TEST_CASE("handleBashCompletion")
   SECTION("Simple app")
   {
     parserDefinition.addHelpOption();
-    parserDefinition.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
-    parserDefinition.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
+    parserDefinition.addPositionalArgument( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
+    parserDefinition.addPositionalArgument( ValueType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
 
     Parser parser(parserDefinition);
 

@@ -55,8 +55,8 @@ class SimpleCopyAppCommandLineParser
   SimpleCopyAppCommandLineParser()
   {
     mDefinition.addHelpOption();
-    mDefinition.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
-    mDefinition.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
+    mDefinition.addPositionalArgument( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
+    mDefinition.addPositionalArgument( ValueType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
   }
 
   bool parseWithoutPostChecks(const QStringList & arguments)
@@ -120,8 +120,8 @@ class AppWithSubCommandCommandLineParser
     mDefinition.addHelpOption();
 
     mCopyCommandDefinition.addHelpOption();
-    mCopyCommandDefinition.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
-    mCopyCommandDefinition.addPositionalArgument( ArgumentType::File, QLatin1String("destination"), QLatin1String("Destination directory") );
+    mCopyCommandDefinition.addPositionalArgument( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
+    mCopyCommandDefinition.addPositionalArgument( ValueType::File, QLatin1String("destination"), QLatin1String("Destination directory") );
     mDefinition.addSubCommand(mCopyCommandDefinition);
   }
 
@@ -303,8 +303,8 @@ TEST_CASE("Parser_parse")
   SECTION("Simple app")
   {
     parserDefinition.addHelpOption();
-    parserDefinition.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
-    parserDefinition.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
+    parserDefinition.addPositionalArgument( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
+    parserDefinition.addPositionalArgument( ValueType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
 
     SECTION("myapp")
     {
@@ -378,8 +378,8 @@ TEST_CASE("Parser_parse")
 
     ParserDefinitionCommand copyCommand( QLatin1String("copy") );
     copyCommand.addHelpOption();
-    copyCommand.addPositionalArgument( ArgumentType::File, QLatin1String("source"), QLatin1String("Source file") );
-    copyCommand.addPositionalArgument( ArgumentType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
+    copyCommand.addPositionalArgument( ValueType::File, QLatin1String("source"), QLatin1String("Source file") );
+    copyCommand.addPositionalArgument( ValueType::Directory, QLatin1String("destination"), QLatin1String("Destination directory") );
     parserDefinition.addSubCommand(copyCommand);
 
     SECTION("myapp")

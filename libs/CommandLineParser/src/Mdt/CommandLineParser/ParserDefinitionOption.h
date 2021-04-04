@@ -22,7 +22,7 @@
 #define MDT_COMMAND_LINE_PARSER_PARSER_DEFINITION_OPTION_H
 
 #include "Algorithm.h"
-#include "ArgumentType.h"
+#include "ValueType.h"
 #include "mdt_commandlineparser_export.h"
 #include <QChar>
 #include <QLatin1Char>
@@ -146,14 +146,14 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Set the type of value this option may hold
      */
-    void setValueType(ArgumentType type) noexcept
+    void setValueType(ValueType type) noexcept
     {
       mValueType = type;
     }
 
     /*! \brief Get the type of value this option may hold
      */
-    ArgumentType valueType() const noexcept
+    ValueType valueType() const noexcept
     {
       return mValueType;
     }
@@ -293,7 +293,7 @@ namespace Mdt{ namespace CommandLineParser{
     QString mValueName;
     QStringList mPossibleValues;
     QStringList mDefaultValues;
-    ArgumentType mValueType = ArgumentType::Unspecified;
+    ValueType mValueType = ValueType::Unspecified;
   };
 
 }} // namespace Mdt{ namespace CommandLineParser{

@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2011-2020 Philippe Steinmann.
+ ** Copyright (C) 2011-2021 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -18,8 +18,8 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_COMMAND_LINE_PARSER_ARGUMENT_TYPE_H
-#define MDT_COMMAND_LINE_PARSER_ARGUMENT_TYPE_H
+#ifndef MDT_COMMAND_LINE_PARSER_VALUE_TYPE_H
+#define MDT_COMMAND_LINE_PARSER_VALUE_TYPE_H
 
 namespace Mdt{ namespace CommandLineParser{
 
@@ -33,9 +33,9 @@ namespace Mdt{ namespace CommandLineParser{
    * Specify the argument type could help
    * a parser to enforce what should be passed.
    *
-   * The argument type is also used by BashCompletionGenerator .
+   * The argument type is also used for Bash completion.
    */
-  enum class ArgumentType
+  enum class ValueType
   {
     Unspecified,      /*!< The argument type is not specified */
     Directory,        /*!< Expect a directory */
@@ -45,4 +45,4 @@ namespace Mdt{ namespace CommandLineParser{
 
 }} // namespace Mdt{ namespace CommandLineParser{
 
-#endif // #ifndef MDT_COMMAND_LINE_PARSER_ARGUMENT_TYPE_H
+#endif // #ifndef MDT_COMMAND_LINE_PARSER_VALUE_TYPE_H

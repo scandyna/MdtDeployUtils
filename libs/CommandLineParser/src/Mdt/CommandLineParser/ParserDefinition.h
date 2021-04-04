@@ -185,7 +185,7 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * \pre \a name must not be empty
      */
-    void addPositionalArgument(ArgumentType type, const QString & name, const QString & description, const QString & syntax = QString());
+    void addPositionalArgument(ValueType type, const QString & name, const QString & description, const QString & syntax = QString());
 
     /*! \brief Check if this parser has positional arguments
      */

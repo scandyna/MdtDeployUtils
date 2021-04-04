@@ -74,46 +74,24 @@ namespace Mdt{ namespace CommandLineParser{
       return wordList;
     }
 
-//     static
-//     QString completionFindCurrentPositionalArgumentNameString()
-//     {
-//       return BashCompletionParserQuery::findCurrentArgumentString();
-//     }
-
-    static
-    QString compgenActionNameFromArgumentType(ArgumentType argumentType)
-    {
-      switch(argumentType){
-        case ArgumentType::File:
-        case ArgumentType::DirectoryOrFile:
-          return QLatin1String("file");
-        case ArgumentType::Directory:
-          return QLatin1String("directory");
-        case ArgumentType::Unspecified:
-          return QString();
-      }
-
-      return QString();
-    }
-
     /*! \internal Map \a argumentType to corresponding CompgenAction
      *
      * \pre \a argumentType must not be Unspecified
      */
     static
-    BashCompletion::CompgenAction compgenActionFromArgumentType(ArgumentType argumentType) noexcept
+    BashCompletion::CompgenAction compgenActionFromValueType(ValueType valueType) noexcept
     {
-      assert( argumentType != ArgumentType::Unspecified );
+      assert( valueType != ValueType::Unspecified );
 
       using BashCompletion::CompgenAction;
 
-      switch(argumentType){
-        case ArgumentType::File:
-        case ArgumentType::DirectoryOrFile:
+      switch(valueType){
+        case ValueType::File:
+        case ValueType::DirectoryOrFile:
           return CompgenAction::ListFiles;
-        case ArgumentType::Directory:
+        case ValueType::Directory:
           return CompgenAction::ListDirectories;
-        case ArgumentType::Unspecified:
+        case ValueType::Unspecified:
           break;
       }
 
@@ -132,8 +110,8 @@ namespace Mdt{ namespace CommandLineParser{
         return compgenCommand;
       }
 
-      if( option.valueType() != ArgumentType::Unspecified ){
-        compgenCommand.addAction( compgenActionFromArgumentType( option.valueType() ) );
+      if( option.valueType() != ValueType::Unspecified ){
+        compgenCommand.addAction( compgenActionFromValueType( option.valueType() ) );
       }
 
       if( option.hasPossibleValues() ){
@@ -150,8 +128,8 @@ namespace Mdt{ namespace CommandLineParser{
     {
       BashCompletion::CompgenCommand compgenCommand;
 
-      if( argument.type() != ArgumentType::Unspecified ){
-        compgenCommand.addAction( compgenActionFromArgumentType( argument.type() ) );
+      if( argument.valueType() != ValueType::Unspecified ){
+        compgenCommand.addAction( compgenActionFromValueType( argument.valueType() ) );
       }
 
       if( argument.hasPossibleValues() ){
