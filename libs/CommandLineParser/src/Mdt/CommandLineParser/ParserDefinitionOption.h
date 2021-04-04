@@ -233,6 +233,13 @@ namespace Mdt{ namespace CommandLineParser{
       mDefaultValues = values;
     }
 
+    /*! \brief Check if this option has at least one default value
+     */
+    bool hasDefaultValues() const noexcept
+    {
+      return !mDefaultValues.isEmpty();
+    }
+
     /*! \brief Get the default values for this option
      */
     const QStringList & defaultValues() const noexcept
