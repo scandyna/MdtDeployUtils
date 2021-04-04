@@ -101,7 +101,7 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \internal Get a compgen command from \a option
      */
-    static
+    inline
     BashCompletion::CompgenCommand compgenCommandFromParserDefinitionOption(const ParserDefinitionOption & option) noexcept
     {
       BashCompletion::CompgenCommand compgenCommand;
@@ -121,9 +121,9 @@ namespace Mdt{ namespace CommandLineParser{
       return compgenCommand;
     }
 
-    /*! \internal Get a compgen command from \a option
+    /*! \internal Get a compgen command from \a argument
      */
-    static
+    inline
     BashCompletion::CompgenCommand compgenCommandFromParserDefinitionPositionalArgument(const ParserDefinitionPositionalArgument & argument) noexcept
     {
       BashCompletion::CompgenCommand compgenCommand;
@@ -338,7 +338,7 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \internal
      */
-    static
+    inline
     void addCaseClausesToScript(const BashCompletionGenerator & generator, BashCompletion::Script & script) noexcept
     {
       if( generator.mainCommand().hasOptions() ){

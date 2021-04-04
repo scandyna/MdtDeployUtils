@@ -551,6 +551,10 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
           return subCommandName % QLatin1Char('-') % query.cursorSubCommandPositionalArgumentName();
         case BashCompletionParserCurrentArgumentType::OptionsOrPositionalArgumentName:
           return subCommandName % QLatin1String("-options-or-") % query.cursorSubCommandPositionalArgumentName();
+        case BashCompletionParserCurrentArgumentType::Commands:
+        case BashCompletionParserCurrentArgumentType::OptionsOrCommands:
+        case BashCompletionParserCurrentArgumentType::Undefined:
+          return QString();
       }
     }else{
       switch( currentArgument.type() ){
@@ -566,6 +570,8 @@ namespace Mdt{ namespace CommandLineParser{ namespace Impl{
           return QLatin1String("commands");
         case BashCompletionParserCurrentArgumentType::OptionsOrCommands:
           return QLatin1String("options-or-commands");
+        case BashCompletionParserCurrentArgumentType::Undefined:
+          return QString();
       }
     }
 

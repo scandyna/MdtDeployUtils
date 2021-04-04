@@ -74,7 +74,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
 
   /*! \internal
    */
-  static
+  inline
   bool isActionVariantCompgenCommand(const ActionVariant & action) noexcept
   {
     return boost::apply_visitor(IsActionVariantCompgenCommand(), action);
@@ -100,7 +100,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
 
   /*! \internal
    */
-  static
+  inline
   bool isActionVariantCustomAction(const ActionVariant & action) noexcept
   {
     return boost::apply_visitor(IsActionVariantCustomAction(), action);

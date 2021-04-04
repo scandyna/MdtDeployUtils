@@ -89,7 +89,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
 
   /*! \brief Get the string representation for \a argumentList
    */
-  static
+  inline
   QString compgenArgumentListToString(const CompgenArgumentList & argumentList) noexcept
   {
     QString str;
