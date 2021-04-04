@@ -119,9 +119,45 @@ namespace Mdt{ namespace CommandLineParser{
      * \note If you use subcommands,
      * also query about values for the expected subcommand.
      */
-    QStringList getValues(const ParserDefinitionOption & option) const
+    QStringList getValues(const ParserDefinitionOption & option) const noexcept
     {
       return mMainCommand.getValues(option);
+    }
+
+    /*! \brief Returns a list of option values found for the given \a optionLongName
+     *
+     * Will return a list of values for each option named \a optionLongName
+     * present in this result command.
+     *
+     * Note that the list will not contain values
+     * for the option given by its short name in this result command.
+     *
+     * \sa getValues()
+     *
+     * \note If you use subcommands,
+     * also query about values for the expected subcommand.
+     */
+    QStringList getOptionLongNameValues(const QString & optionLongName) const noexcept
+    {
+      return mMainCommand.getOptionLongNameValues(optionLongName);
+    }
+
+    /*! \brief Returns a list of option values found for the given \a optionShortName
+     *
+     * Will return a list of values for each option named \a optionShortName
+     * present in this result command.
+     *
+     * Note that the list will not contain values
+     * for the option given by its long name in this result command.
+     *
+     * \sa getValues()
+     *
+     * \note If you use subcommands,
+     * also query about values for the expected subcommand.
+     */
+    QStringList getOptionShortNameValues(char optionShortName) const noexcept
+    {
+      return mMainCommand.getOptionShortNameValues(optionShortName);
     }
 
     /*! \brief Check if this result has any positional argument

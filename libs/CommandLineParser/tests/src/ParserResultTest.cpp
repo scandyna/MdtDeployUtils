@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "TestUtils.h"
 #include "Mdt/CommandLineParser/ParserResult.h"
 #include "Mdt/CommandLineParser/ParserDefinitionOption.h"
 #include <QLatin1String>
@@ -76,6 +77,59 @@ TEST_CASE("ParserResultCommand_options_isSet")
       REQUIRE( command.isSet(helpOptionDefinition) );
       REQUIRE( command.isHelpOptionSet() );
     }
+  }
+}
+
+TEST_CASE("ParserResultCommand_options_getValues")
+{
+  ParserDefinitionOption paramOption( 'p', QLatin1String("param"), QLatin1String("Parameters") );
+  paramOption.setValueName( QLatin1String("value") );
+
+  ParserResultCommand command;
+
+  SECTION("Empty result")
+  {
+    REQUIRE( command.getOptionLongNameValues( QLatin1String("param") ).isEmpty() );
+    REQUIRE( command.getOptionShortNameValues('p').isEmpty() );
+    REQUIRE( command.getValues(paramOption).isEmpty() );
+  }
+
+  SECTION("--param storage=csv")
+  {
+    ParserResultOption option( QLatin1String("param") );
+    option.setValue( QLatin1String("storage=csv") );
+    command.addOption(option);
+
+    const QStringList expectedValues = qStringListFromUtf8Strings({"storage=csv"});
+    REQUIRE( command.getOptionLongNameValues( QLatin1String("param") ) == expectedValues );
+    REQUIRE( command.getOptionShortNameValues('p').isEmpty() );
+    REQUIRE( command.getValues(paramOption) == expectedValues );
+  }
+
+  SECTION("-p storage=csv")
+  {
+    ParserResultOption option( QLatin1String("p") );
+    option.setValue( QLatin1String("storage=csv") );
+    command.addOption(option);
+
+    const QStringList expectedValues = qStringListFromUtf8Strings({"storage=csv"});
+    REQUIRE( command.getOptionLongNameValues( QLatin1String("param") ).isEmpty() );
+    REQUIRE( command.getOptionShortNameValues('p') == expectedValues );
+    REQUIRE( command.getValues(paramOption) == expectedValues );
+  }
+
+  SECTION("-p storage=csv --param render=sw")
+  {
+    ParserResultOption option1( QLatin1String("p") );
+    option1.setValue( QLatin1String("storage=csv") );
+    ParserResultOption option2( QLatin1String("param") );
+    option2.setValue( QLatin1String("render=sw") );
+    command.addOption(option1);
+    command.addOption(option2);
+
+    REQUIRE( command.getOptionLongNameValues( QLatin1String("param") ) == qStringListFromUtf8Strings({"render=sw"}) );
+    REQUIRE( command.getOptionShortNameValues('p') == qStringListFromUtf8Strings({"storage=csv"}) );
+    REQUIRE( command.getValues(paramOption) == qStringListFromUtf8Strings({"render=sw","storage=csv"}) );
   }
 }
 
@@ -136,22 +190,6 @@ TEST_CASE("ParserResultCommand_options")
       command.addOption(destination);
 
       expectedValues << QLatin1String("/tmp");
-      REQUIRE( command.getValues(destinationDefinition) == expectedValues );
-    }
-
-    SECTION("default values (only expected option exists)")
-    {
-      expectedValues << QLatin1String("/usr/bin");
-      REQUIRE( command.getValues(destinationDefinition) == expectedValues );
-    }
-
-    SECTION("default values (other option exists)")
-    {
-      ParserResultOption source( QLatin1String("source") );
-      source.setValue( QLatin1String("/usr") );
-      command.addOption(source);
-
-      expectedValues << QLatin1String("/usr/bin");
       REQUIRE( command.getValues(destinationDefinition) == expectedValues );
     }
   }

@@ -23,6 +23,7 @@
 
 #include "ParserResultOption.h"
 #include "ParserDefinitionOption.h"
+#include "Algorithm.h"
 #include "mdt_commandlineparser_export.h"
 #include <QChar>
 #include <QString>
@@ -171,7 +172,7 @@ namespace Mdt{ namespace CommandLineParser{
      */
     bool isOptionShortNameSet(char optionShortName) const noexcept
     {
-      const QString optionShortNameStr = QString( QChar::fromLatin1(optionShortName) );
+      const QString optionShortNameStr = qStringFromLatin1Char(optionShortName);
 
       const auto pred = [&optionShortNameStr](const ParserResultOption & option){
         return option.name() == optionShortNameStr;
@@ -197,19 +198,59 @@ namespace Mdt{ namespace CommandLineParser{
      *
      * If the option wasn't specified on the command line, the default values are returned.
      */
-    QStringList getValues(const ParserDefinitionOption & option) const
+    QStringList getValues(const ParserDefinitionOption & option) const noexcept
+    {
+      QStringList values = getOptionLongNameValues( option.name() );
+
+      if( option.hasShortName() ){
+        values += getOptionShortNameValues( option.shortName() );
+      }
+
+      return values;
+    }
+
+    /*! \brief Returns a list of option values found for the given \a optionLongName
+     *
+     * Will return a list of values for each option named \a optionLongName
+     * present in this result command.
+     *
+     * Note that the list will not contain values
+     * for the option given by its short name in this result command.
+     *
+     * \sa getValues()
+     */
+    QStringList getOptionLongNameValues(const QString & optionLongName) const noexcept
     {
       QStringList values;
 
-      // We should have something like std::transform_if() to use STL algorithm
       for(const ParserResultOption & resultOption : mOptions){
-        if( resultOption.name() == option.name() ){
+        if( resultOption.name() == optionLongName ){
           values.push_back( resultOption.value() );
         }
       }
 
-      if( values.isEmpty() ){
-        values = option.defaultValues();
+      return values;
+    }
+
+    /*! \brief Returns a list of option values found for the given \a optionShortName
+     *
+     * Will return a list of values for each option named \a optionShortName
+     * present in this result command.
+     *
+     * Note that the list will not contain values
+     * for the option given by its long name in this result command.
+     *
+     * \sa getValues()
+     */
+    QStringList getOptionShortNameValues(char optionShortName) const noexcept
+    {
+      QStringList values;
+      const QString optionShortNameStr = qStringFromLatin1Char(optionShortName);
+
+      for(const ParserResultOption & resultOption : mOptions){
+        if( resultOption.name() == optionShortNameStr ){
+          values.push_back( resultOption.value() );
+        }
       }
 
       return values;
