@@ -41,33 +41,29 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Construct a command line option
      *
-     * \pre \a shortName must be a character [a-z]
-     * \pre \a name must not be empty
-     * \pre \a name must not begin with a dash or a slash
-     * \pre \a name must not contain any equal
-     *
-     * \todo enforce those precontidions
+     * \pre \a shortName must be a valid option short name
+     * \sa isValidShortName()
+     * \pre \a name must be a valid option name
+     * \sa isValidName()
      */
     explicit BashCompletionGeneratorOption(char shortName, const QString & name)
     : mShortName(shortName),
       mName(name)
     {
-      assert( !name.trimmed().isEmpty() );
+      assert( isValidShortName(shortName) );
+      assert( isValidName(name) );
     }
 
     /*! \brief Construct a command line option
      *
-     * \pre \a name must not be empty
-     * \pre \a name must not begin with a dash or a slash
-     * \pre \a name must not contain any equal
-     *
-     * \todo enforce those precontidions
+     * \pre \a name must be a valid option name
+     * \sa isValidName()
      */
     explicit BashCompletionGeneratorOption(const QString & name)
     : mShortName('\0'),
       mName(name)
     {
-      assert( !name.trimmed().isEmpty() );
+      assert( isValidName(name) );
     }
 
     /*! \brief Check if this command line option has a short name
@@ -136,6 +132,26 @@ namespace Mdt{ namespace CommandLineParser{
     const BashCompletion::Action & action() const noexcept
     {
       return mAction;
+    }
+
+    /*! \brief Check if \a name is a valid short name for a option
+     *
+     * \sa ParserDefinitionOption::isValidShortName()
+     */
+    static
+    bool isValidShortName(char name)
+    {
+      return ParserDefinitionOption::isValidShortName(name);
+    }
+
+    /*! \brief Check if \a name is a valid name for a option
+     *
+     * \sa ParserDefinitionOption::isValidName()
+     */
+    static
+    bool isValidName(const QString & name)
+    {
+      return ParserDefinitionOption::isValidName(name);
     }
 
     /*! \brief Get a generator option from \a option

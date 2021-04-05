@@ -26,7 +26,11 @@ namespace Mdt{ namespace CommandLineParser{
 
 BashCompletionGeneratorOption BashCompletionGeneratorOption::fromParserDefinitionOption(const ParserDefinitionOption & optionDef)
 {
-  BashCompletionGeneratorOption option( optionDef.shortName(), optionDef.name() );
+  BashCompletionGeneratorOption option( optionDef.name() );
+
+  if( optionDef.hasShortName() ){
+    option.mShortName = optionDef.shortName();
+  }
 
   if( optionDef.hasValueName() ){
     BashCompletion::Action action;

@@ -156,31 +156,27 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Add a command line option
      *
-     * \pre \a shortName must be a character [a-z]
-     * \pre \a name must not be empty
-     * \pre \a name must not begin with a dash or a slash
-     * \pre \a name must not contain any equal
-     *
-     * \todo enforce those precontidions
+     * \pre \a shortName must be a valid option short name
+     * \sa BashCompletionGeneratorOption::isValidShortName()
+     * \pre \a name must be a valid option name
+     * \sa BashCompletionGeneratorOption::isValidName()
      */
     void addOption(char shortName, const QString & name)
     {
-      assert( !name.trimmed().isEmpty() );
+      assert( BashCompletionGeneratorOption::isValidShortName(shortName) );
+      assert( BashCompletionGeneratorOption::isValidName(name) );
 
       addOption( BashCompletionGeneratorOption(shortName, name) );
     }
 
     /*! \brief Add a command line option
      *
-     * \pre \a name must not be empty
-     * \pre \a name must not begin with a dash or a slash
-     * \pre \a name must not contain any equal
-     *
-     * \todo enforce those precontidions
+     * \pre \a name must be a valid option name
+     * \sa BashCompletionGeneratorOption::isValidName()
      */
     void addOption(const QString & name)
     {
-      assert( !name.trimmed().isEmpty() );
+      assert( BashCompletionGeneratorOption::isValidName(name) );
 
       addOption( BashCompletionGeneratorOption(name) );
     }
