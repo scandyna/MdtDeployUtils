@@ -27,7 +27,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
 
 QString CompgenCommand::toCompgenCommandString(const QString & word) const noexcept
 {
-  return QLatin1String("compgen ") % compgenArgumentListToString(mArgumentList) % QLatin1String("-- \"$cur\"");
+  return QLatin1String("compgen ") % compgenArgumentListToString(mArgumentList) % QLatin1String("-- \"") % word % QLatin1String("\"");
 }
 
 }}} // namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
