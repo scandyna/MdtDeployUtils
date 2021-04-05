@@ -100,14 +100,14 @@ TEST_CASE("toCompreplyArrayItemString")
   SECTION("Custom action using curl")
   {
     action.setCustomAction( QLatin1String("curl www.somesite.org") );
-    expectedString = QLatin1String("$(curl www.somesite.org -- \"$cur\")");
+    expectedString = QLatin1String("$(curl www.somesite.org)");
     REQUIRE( action.toCompreplyArrayItemString() == expectedString );
   }
 
   SECTION("Custom action to list packages")
   {
-    action.setCustomAction( QLatin1String("\"$executable\" completion-list-packages") );
-    expectedString = QLatin1String("$(\"$executable\" completion-list-packages -- \"$cur\")");
+    action.setCustomAction( QLatin1String("compgen -W \"$(\"$executable\" completion-list-packages)\" -- \"$cur\"") );
+    expectedString = QLatin1String("$(compgen -W \"$(\"$executable\" completion-list-packages)\" -- \"$cur\")");
     REQUIRE( action.toCompreplyArrayItemString() == expectedString );
   }
 }
@@ -134,14 +134,14 @@ TEST_CASE("toCompreplyString")
   SECTION("Custom action using curl")
   {
     action.setCustomAction( QLatin1String("curl www.somesite.org") );
-    expectedString = QLatin1String("COMPREPLY=($(curl www.somesite.org -- \"$cur\"))");
+    expectedString = QLatin1String("COMPREPLY=($(curl www.somesite.org))");
     REQUIRE( action.toCompreplyString() == expectedString );
   }
 
   SECTION("Custom action to list packages")
   {
-    action.setCustomAction( QLatin1String("\"$executable\" completion-list-packages") );
-    expectedString = QLatin1String("COMPREPLY=($(\"$executable\" completion-list-packages -- \"$cur\"))");
+    action.setCustomAction( QLatin1String("compgen -W \"$(\"$executable\" completion-list-packages)\" -- \"$cur\"") );
+    expectedString = QLatin1String("COMPREPLY=($(compgen -W \"$(\"$executable\" completion-list-packages)\" -- \"$cur\"))");
     REQUIRE( action.toCompreplyString() == expectedString );
   }
 }

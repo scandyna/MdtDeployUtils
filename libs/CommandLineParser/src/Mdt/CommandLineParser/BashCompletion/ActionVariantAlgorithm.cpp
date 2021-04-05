@@ -45,7 +45,7 @@ class MDT_COMMANDLINEPARSER_EXPORT ActionVariantToCompreplyArrayItemString : pub
 
   QString operator()(const CustomAction & action) const noexcept
   {
-    return QLatin1String("$(") % action.action % QLatin1String(" -- \"$cur\")");
+    return QLatin1String("$(") % action.action % QLatin1Char(')');
   }
 };
 

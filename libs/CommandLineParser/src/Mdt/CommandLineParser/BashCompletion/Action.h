@@ -30,18 +30,7 @@
 
 namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
 
-  /*! \brief Action to perform in a Bash completion script
-   *
-   * \todo Should review custom actions.
-   * 1) should provide a way the application can give a list of words,
-   *    and let compgen do the completion:
-   * \code
-   * COMPREPLY=($(compgen -W "$("$executable" completion-list-packages)" -- "$cur"))
-   * \endcode
-   * 2) the user can handle the completion itself, which seems not so interesting:
-   * \code
-   * COMPREPLY=($("$executable" completion-list-packages -- "$cur"))
-   * \endcode
+  /*! \brief %Action to perform in a Bash completion script
    */
   class MDT_COMMANDLINEPARSER_EXPORT Action
   {
@@ -61,25 +50,31 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
      * The result for completion has to be out to the standard output (std::cout),
      * and will used in the \a COMPREPLY variable.
      *
-     * To call your application, the \a '$executable' name can be used.
+     * To call your application, the \a '$executable' variable can be used.
      *
      * \note Because the executable could be a path containing spaces,
      * it should be protected with double quotes.
      *
+     * The \a '$cur' is also available, and contains the word
+     * at the cursor position in the command line
+     * (i.e. the word typed before the user presset the tab key).
+     * This variable should also be protected with double quotes.
+     *
      * As example, say you have to list the packages available on the system (like apt-cache).
      * For this, the application will be called with a dedicated query:
      * \code
-     * action.setCustomAction("\"$executable\" completion-list-packages");
+     * action.setCustomAction("compgen -W \"$(\"$executable\" completion-list-packages)\" -- \"$cur\"");
      * \endcode
      *
-     * In the generated script, \a '$executable' will be defined
+     * In the generated script, \a '$executable' and \a '$cur' will be defined
      * in the completion function:
      * \code
+     * cur="${COMP_WORDS[COMP_CWORD]}"
      * executable="$1"
      * \endcode
      * then the executable will be called to fill the \a COMPREPLY variable:
      * \code
-     * COMPREPLY=($("$executable" completion-list-packages))
+     * COMPREPLY=($(compgen -W \"$("$executable" completion-list-packages)\" -- \"$cur\"))
      * \endcode
      */
     void setCustomAction(const QString & action) noexcept
