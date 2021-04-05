@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
  **
- ** Copyright (C) 2020-2020 Philippe Steinmann.
+ ** Copyright (C) 2020-2021 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU General Public License as published by
@@ -29,7 +29,8 @@ enum class CommandLineCommand
 {
   Unknown,                            /*!< Unknown command */
   GetSharedLibrariesTargetDependsOn,  /*!< get-shared-libraries-target-depends-on command */
-  CopySharedLibrariesTargetDependsOn  /*!< copy-shared-libraries-target-depends-on command */
+  CopySharedLibrariesTargetDependsOn, /*!< copy-shared-libraries-target-depends-on command */
+  DeployApplication                   /*!< deploy-application command */
 };
 
 /*! \brief Get command name for \a command

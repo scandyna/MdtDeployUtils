@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
  **
- ** Copyright (C) 2020-2020 Philippe Steinmann.
+ ** Copyright (C) 2020-2021 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU General Public License as published by
@@ -30,6 +30,8 @@ QString commandName( CommandLineCommand command)
       return QLatin1String("get-shared-libraries-target-depends-on");
     case CommandLineCommand::CopySharedLibrariesTargetDependsOn:
       return QLatin1String("copy-shared-libraries-target-depends-on");
+    case CommandLineCommand::DeployApplication:
+      return QLatin1String("deploy-application");
   }
   return QString();
 }
@@ -41,6 +43,9 @@ CommandLineCommand commandFromString(const QString & command)
   }
   if( command == commandName( CommandLineCommand::CopySharedLibrariesTargetDependsOn) ){
     return CommandLineCommand::CopySharedLibrariesTargetDependsOn;
+  }
+  if( command == commandName( CommandLineCommand::DeployApplication) ){
+    return CommandLineCommand::DeployApplication;
   }
 
   return CommandLineCommand::Unknown;
