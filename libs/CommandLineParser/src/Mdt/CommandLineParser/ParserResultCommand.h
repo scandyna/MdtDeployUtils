@@ -151,7 +151,7 @@ namespace Mdt{ namespace CommandLineParser{
      * Will return true if the long option was set on the command line,
      * otherwise false.
      *
-     * \sa isSet(const ParserDefinitionOption &)
+     * \sa isSet()
      */
     bool isOptionLongNameSet(const QString & optionLongName) const noexcept
     {
@@ -168,7 +168,7 @@ namespace Mdt{ namespace CommandLineParser{
      * Will return true if the short option was set on the command line,
      * otherwise false.
      *
-     * \sa isSet(const ParserDefinitionOption &)
+     * \sa isSet()
      */
     bool isOptionShortNameSet(char optionShortName) const noexcept
     {

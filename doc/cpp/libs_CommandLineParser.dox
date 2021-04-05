@@ -21,10 +21,157 @@
 
 /*! \page libs_CommandLineParser Command line parser
  *
+ * In this library, a command line parser is composed of 3 main pieces:
+ * - A parser definition: Mdt::CommandLineParser::ParserDefinition
+ * - A parser: Mdt::CommandLineParser::Parser
+ * - A result: Mdt::CommandLineParser::ParserResult
+ *
+ * It is also possible to add some Bash TAB completion,
+ * which will be covered later.
+ *
+ * \section simple_app_example A simple app example
+ *
+ * \code
+ * #include <Mdt/CommandLineParser/ParserDefinition>
+ * #include <Mdt/CommandLineParser/Parser>
+ * #include <Mdt/CommandLineParser/ParserResult>
+ * #include <QCoreApplication>
+ *
+ * using namespace Mdt::CommandLineParser;
+ *
+ * int main(int argc, char **argv)
+ * {
+ *   QCoreApplication app(argc, argv);
+ *
+ *   ParserDefinition parserDefinition;
+ *   parserDefinition.setApplicationDescription("Copy utility");
+ *   parserDefinition.addHelpOption();
+ *   parserDefinition.addPositionalArgument(ValueType::File, "source", "Source file to copy");
+ *   parserDefinition.addPositionalArgument(ValueType::Directory, "destination", "Destination directory");
+ *   parserDefinition.addOption('f', "force", "Overwrite existing files.");
+ *
+ *   Parser parser(parserDefinition);
+ *   if( !parser.parse( app.arguments() ) ){
+ *     showErrorMessage( parser.errorText() );
+ *     return 1;
+ *   }
+ *
+ *   const ParserResult parserResult = parser.toParserResult();
+ *
+ *   if( parserResult.isHelpOptionSet() ){
+ *     showMessage( parserDefinition.getHelpText() );
+ *     return 0;
+ *   }
+ *
+ *   if( parserResult.positionalArgumentCount() != 2 ){
+ *     showErrorMessage("Expected exactly 2 positional arguments (source file and destination)");
+ *     return 1;
+ *   }
+ *
+ *   bool forceOverwrite = false;
+ *   if( parserResult.isOptionShortNameSet('f') ){
+ *     forceOverwrite = true;
+ *   }
+ *   if( parserResult.isOptionLongNameSet("force") ){
+ *     forceOverwrite = true;
+ *   }
+ *
+ *   copyFile( parserResult.positionalArgumentAt(0), parserResult.positionalArgumentAt(1), forceOverwrite );
+ *
+ *   return 0;
+ * }
+ * \endcode
+ *
+ * Notice that in above example we have to check if the \a force option is set
+ * by querying about the long name and the short name.
+ * To avoid that, its better to create the option separately:
+ * \code
+ * ParserDefinitionOption forceOption('f',"force","Overwrite existing files.");
+ * // Other stuff
+ * parserDefinition.addOption(forceOption);
+ *
+ * // Parsing + get the result
+ *
+ * const bool forceOverwrite = parserResult.isSet(forceOption);
+ * \endcode
+ * In above example, we don't have to care if the user passed \a -f or \a --force on the command line.
+ *
+ * \section OptionWithValue Option with value
+ *
+ * A option can accept a value:
+ * \code
+ * ParserDefinitionOption overwriteBehaviorOption("overwrite-behavior","Behavior to adopt when target file allready exists.");
+ * overwriteBehaviorOption.setValueName("behavior");
+ * overwriteBehaviorOption.setPossibleValues({"overwrite","keep","fail"});
+ * overwriteBehaviorOption.setDefaultValue("fail");
+ * \endcode
+ *
+ * Setting the possible value is not required, but it is used for the help text,
+ * and also for TAB completion.
+ *
+ * The default value, which is also not required, is used when the user does not provide the option on the command line:
+ * \code
+ * app --overwrite-behavior keep ...
+ * \endcode
+ * here, the value of \a overwrite-behavior will be \a keep .
+ *
+ * If the user does not specify the the option, the default value will be used:
+ * \code
+ * app ...
+ * \endcode
+ * here, the value of \a overwrite-behavior will be \a fail .
+ *
+ * Note that specifying the option without its value is a error:
+ * \code
+ * app --overwrite-behavior
+ * \endcode
+ * here the parser will return a error.
+ *
+ * \subsection OptionWithMultipleValues Option with multiple values
+ *
+ * A option could have multiple values, for example:
+ * \code
+ * ParserDefinitionOption paramOption("param","Parameters");
+ * paramOption.setValueName("value");
+ * paramOption.setDefaultValues({"storage=sql","render=glx"});
+ * \endcode
+ *
+ * If the user does not specify the \a --param option at all,
+ * the default values will be used:
+ * \code
+ * app ...
+ * \endcode
+ * here, \a param values will be \a storage=sql and \a render=glx .
+ *
+ * If the user specify the \a --param option at least onces,
+ * no default value will be used at all:
+ * \code
+ * app --param storage=csv ...
+ * \endcode
+ * here, \a param values will be \a storage=csv .
+ *
+ * This seems to be a bit surprising,
+ * but deducing which value has been specified and giving the default ones not specified
+ * on the command line could become application specific.
+ * The above example uses key=value pairs, but it could be something other.
+ * Also, the behavior of QCommandLineParser is the same for multiple option values.
+ *
+ * Finally, the user could specify any number of values:
+ * \code
+ * app --param storage=txt --param render=sw --param logs-format=json ...
+ * \endcode
+ * here, \a param values will be \a storage=txt \a render=sw and \a logs-format=json .
+ *
+ *
+ * \section appWithSubCommand_example Application with sub-command
+ *
+ * \todo document
+ *
  * \section Command_line_parser Command-line parser
  *
- * \sa Mdt::CommandLineParser::ParserDefinition
- * \sa Mdt::CommandLineParser::Parser
+ *
+ * \sa https://www.gnu.org/software/guile/manual/html_node/Command-Line-Format.html
+ * \sa https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html
  *
  * \subsection tab_completion TAB completion
  *
@@ -39,8 +186,6 @@
  * \subsection command_line_parser_rationale About command line parser
  *
  * To parse command line arguments, QCommandLineParser is a helpful tool.
- *
- * This library uses QCommandLineParser, but adds some things missing in it.
  *
  * QCommandLineParser has no natural notion of sub-commands.
  * It is possible to create such sub-commands using a QCommandLineParser for each one.
@@ -62,7 +207,7 @@
  * which is expected for parsing.
  *
  * For some cases, getting the arguments and options given can be useful,
- * for exaple to list available sub-commands in the help,
+ * for example to list available sub-commands in the help,
  * or to generate a Bash-completion script.
  *
  * \subsubsection tab_completion_rationale About TAB completion
@@ -110,13 +255,13 @@
  *
  * So, split and distribute the problem to who knows best.
  * To find the name of the positional argument,
- * ask the C++ part, we can re-use QCommandLineParser for that.
+ * ask the C++ part, we can re-use the parser for that.
  * To list files and directores, let Bash do it with compgen -A .
  *
  * In the generated Bash completion script:
  * \code
  * local executable="$1"
- * local currentPositionalArgument=$("$executable" completion-find-current-positional-argument-name $COMP_LINE)
+ * local currentArgument=$("$executable" completion-find-current-argument $COMP_CWORD $COMP_LINE)
  * \endcode
  *
  * In the parser, a helper function should be provided:
