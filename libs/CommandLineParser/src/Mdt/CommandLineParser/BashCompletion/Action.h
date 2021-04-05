@@ -74,7 +74,7 @@ namespace Mdt{ namespace CommandLineParser{ namespace BashCompletion{
      * \endcode
      * then the executable will be called to fill the \a COMPREPLY variable:
      * \code
-     * COMPREPLY=($(compgen -W \"$("$executable" completion-list-packages)\" -- \"$cur\"))
+     * COMPREPLY=($(compgen -W "$("$executable" completion-list-packages)" -- "$cur"))
      * \endcode
      */
     void setCustomAction(const QString & action) noexcept

@@ -45,9 +45,8 @@ namespace Mdt{ namespace CommandLineParser{
                                        * A custom action could also have been defined for a option named \a package :
                                        * \code
                                        * option-package-value)
-                                       *   COMPREPLY=($(\"$executable\" completion-list-packages -- "$cur"))
+                                       *   COMPREPLY=($(compgen -W "$("$executable" completion-list-packages)" -- "$cur"))
                                        * \endcode
-                                       * \todo Check this last, see Action
                                        */
     PositionalArgumentName,           /*!< In the completion script, a case for a specific positional argument will handle completion.
                                        * For example, a positional argument that accepts a file would be handled as:
@@ -59,7 +58,7 @@ namespace Mdt{ namespace CommandLineParser{
                                        * A custom action could also have been defined for a positional argument:
                                        * \code
                                        * package)
-                                       *   COMPREPLY=($(\"$executable\" completion-list-packages -- "$cur"))
+                                       *   COMPREPLY=($(compgen -W "$("$executable" completion-list-packages)" -- "$cur"))
                                        * \endcode
                                        */
     Options,                          /*!< In the completion script, a case to list options will handle completion.
