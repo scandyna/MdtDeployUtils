@@ -149,3 +149,72 @@
 #
 # On Windows, the shared libraries the ``myApp`` executable depends on are installed to ``${CMAKE_INSTALL_PREFIX}/bin``.
 #
+
+function(mdt_copy_shared_libraries_target_depends_on)
+
+# TODO provide MDT_DEPLOY_UTILS_EXECUTABLE etc.. + do checks - see mdt_deploy_applicastion()
+
+  set(options)
+  set(oneValueArgs TARGET DESTINATION OVERWRITE_BEHAVIOR REMOVE_RPATH)
+  set(multiValueArgs)
+  cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if(NOT ARG_TARGET)
+    message(FATAL_ERROR "mdt_copy_shared_libraries_target_depends_on(): no target provided")
+  endif()
+  if(NOT TARGET ${ARG_TARGET})
+    message(FATAL_ERROR "mdt_copy_shared_libraries_target_depends_on(): ${ARG_TARGET} is not a valid target")
+  endif()
+  if(NOT ARG_DESTINATION)
+    message(FATAL_ERROR "mdt_copy_shared_libraries_target_depends_on(): mandatory argument DESTINATION missing")
+  endif()
+  if(ARG_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "mdt_copy_shared_libraries_target_depends_on(): unknown arguments passed: ${ARG_UNPARSED_ARGUMENTS}")
+  endif()
+
+  add_custom_command(
+    TARGET ${ARG_TARGET}
+    POST_BUILD
+    COMMAND mdtdeployutils copy-shared-libraries-target-depends-on --help
+  )
+
+endfunction()
+
+
+function(mdt_install_shared_libraries_target_depends_on)
+
+# TODO provide MDT_DEPLOY_UTILS_EXECUTABLE etc.. + do checks - see mdt_deploy_applicastion()
+
+  set(options)
+  set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT)
+  set(multiValueArgs)
+  cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if(NOT ARG_TARGET)
+    message(FATAL_ERROR "mdt_install_shared_libraries_target_depends_on(): no target provided")
+  endif()
+  if(NOT TARGET ${ARG_TARGET})
+    message(FATAL_ERROR "mdt_install_shared_libraries_target_depends_on(): ${ARG_TARGET} is not a valid target")
+  endif()
+  if(NOT ARG_RUNTIME_DESTINATION)
+    message(FATAL_ERROR "mdt_install_shared_libraries_target_depends_on(): mandatory argument RUNTIME_DESTINATION missing")
+  endif()
+  if(NOT ARG_LIBRARY_DESTINATION)
+    message(FATAL_ERROR "mdt_install_shared_libraries_target_depends_on(): mandatory argument LIBRARY_DESTINATION missing")
+  endif()
+  if(ARG_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "mdt_install_shared_libraries_target_depends_on(): unknown arguments passed: ${ARG_UNPARSED_ARGUMENTS}")
+  endif()
+
+  set(componentArguments)
+  if(ARG_COMPONENT)
+    set(componentArguments COMPONENT ${ARG_COMPONENT})
+  endif()
+
+  add_custom_command(
+    TARGET ${ARG_TARGET}
+    POST_BUILD
+    COMMAND mdtdeployutils get-shared-libraries-target-depends-on --help
+  )
+
+endfunction()
