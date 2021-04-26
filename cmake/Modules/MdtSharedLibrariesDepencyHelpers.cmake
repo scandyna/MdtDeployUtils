@@ -77,7 +77,7 @@
 #
 # .. command:: mdt_install_shared_libraries_target_depends_on
 #
-# Specify rules to install the shared libraries ``target`` depends on::
+# Install the shared libraries ``target`` depends on::
 #
 #   mdt_install_shared_libraries_target_depends_on(
 #     TARGET <target>
@@ -86,6 +86,7 @@
 #     [INSTALL_IS_UNIX_SYSTEM_WIDE [TRUE|FALSE]]
 #     [COMPONENT <component-name>]
 #   )
+#
 #
 # The shared libraries ``target`` depends on are installed to ``CMAKE_INSTALL_PREFIX``,
 # into a appropriate subdirectory.
@@ -172,18 +173,80 @@ function(mdt_copy_shared_libraries_target_depends_on)
     message(FATAL_ERROR "mdt_copy_shared_libraries_target_depends_on(): unknown arguments passed: ${ARG_UNPARSED_ARGUMENTS}")
   endif()
 
+  set(overwriteBehaviorOption fail)
+  if(ARG_OVERWRITE_BEHAVIOR)
+    if(${ARG_OVERWRITE_BEHAVIOR} STREQUAL "KEEP")
+      set(overwriteBehaviorOption keep)
+    elseif(${ARG_OVERWRITE_BEHAVIOR} STREQUAL "OVERWRITE")
+      set(overwriteBehaviorOption overwrite)
+    elseif(${ARG_OVERWRITE_BEHAVIOR} STREQUAL "FAIL")
+      set(overwriteBehaviorOption fail)
+    else()
+      message(FATAL_ERROR "mdt_copy_shared_libraries_target_depends_on(): OVERWRITE_BEHAVIOR argument ${ARG_OVERWRITE_BEHAVIOR} is not valid."
+                          "Possible values are KEEP, OVERWRITE or FAIL.")
+    endif()
+  endif()
+
+  if(ARG_REMOVE_RPATH)
+    set(removeRpathOptionArgument --remove-rpath)
+  else()
+    set(removeRpathOptionArgument)
+  endif()
+
   add_custom_command(
     TARGET ${ARG_TARGET}
     POST_BUILD
-    COMMAND mdtdeployutils copy-shared-libraries-target-depends-on --help
+    COMMAND mdtdeployutils copy-shared-libraries-target-depends-on
+              --overwrite-behavior ${overwriteBehaviorOption}
+              ${removeRpathOptionArgument}
+              --search-prefix-path-list "${CMAKE_PREFIX_PATH}"
+              $<TARGET_FILE:${ARG_TARGET}>
+              "${ARG_DESTINATION}"
+    VERBATIM
   )
 
 endfunction()
 
-
+# We need:
+# - get the shared libraries the target depend on
+# - install those shared libraries
+# - support the DESTDIR environment variable, which is unknown at build system genration time
+#
+# A intuitive idea could be to define a install(FILES) rule
+# which takes a list of shared libraries to install.
+# This does not work, because install() is evaluated at build generation time,
+# but the list of shared libraries are known at build time (after target has been build).
 function(mdt_install_shared_libraries_target_depends_on)
 
 # TODO provide MDT_DEPLOY_UTILS_EXECUTABLE etc.. + do checks - see mdt_deploy_applicastion()
+
+  # NOTE: first attempt was to get a list shared libraries the target depends on,
+  # then generate install() rules.
+  # This is not possible, because install() rules are evaluated at build system generation time,
+  # but the dependencies are computed at build time (after our target have been built).
+  # TODO: current solution is not relocatable with the DESTDIR !
+  #  see install(SCRIPT) or install(CODE)
+  #  Maybe: mdtdeployutils should generate a install script ??
+  #  See: https://stackoverflow.com/questions/41254902/cmake-run-script-for-install-target
+
+  # TODO: generate a install script using CMake configure_file(),
+  # see: https://stackoverflow.com/questions/20792802/why-variables-are-not-accessed-inside-script-in-cmake
+  # NOTE: what about generator expression $<TARGET_FILE:tgt> ?
+  
+  # TODO TODO first: maybe make it as done in MdtDeplyUtils !
+  # (copy shlibs to a location, then install(FILES) or install(DIRECTORY)
+  # Then document the choice
+  # (i.e. each attempt have a blocker !!
+  # f.ex: expand $<TARGET_FILE:tgt>, LOCATION property not works, getting output not possible with add_custom_command(), etc..  )
+
+  # Should NOT install(DIRECTORY), because could have libraries that are no longer needed.
+  # Try to generate a simple result file with a list a.so;b.so;...
+  # The read this file into a list (a simple file(READ) should do the work easaly !)
+  # Then, install(SCRIPT) to copy those files to the destination DESTDIR/CMAKE_INSTALL_PREFIX/xyz
+  # NOTE: install(FILES) or install(PROGRAMS) frome here Nok, because evaluated at generation time !
+  # See file(<COPY|INSTALL> <files>... DESTINATION <dir> ...)
+
+  
 
   set(options)
   set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT)
@@ -211,10 +274,48 @@ function(mdt_install_shared_libraries_target_depends_on)
     set(componentArguments COMPONENT ${ARG_COMPONENT})
   endif()
 
-  add_custom_command(
+  message("DESTDIR: $ENV{DESTDIR}")
+  
+  if(CMAKE_HOST_WIN32)
+    get_filename_component(librariesDestination "${CMAKE_INSTALL_PREFIX}/${ARG_RUNTIME_DESTINATION}" ABSOLUTE)
+  else()
+    get_filename_component(librariesDestination "${CMAKE_INSTALL_PREFIX}/${ARG_LIBRARY_DESTINATION}" ABSOLUTE)
+  endif()
+  message("librariesDestination: ${librariesDestination}")
+
+  if(ARG_INSTALL_IS_UNIX_SYSTEM_WIDE)
+    set(overwriteBehavior FAIL)
+  else()
+    set(overwriteBehavior OVERWRITE)
+  endif()
+
+  mdt_copy_shared_libraries_target_depends_on(
     TARGET ${ARG_TARGET}
-    POST_BUILD
-    COMMAND mdtdeployutils get-shared-libraries-target-depends-on --help
+    DESTINATION "${librariesDestination}"
+    OVERWRITE_BEHAVIOR ${overwriteBehavior}
+    REMOVE_RPATH ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE}
   )
+  
+  set(TARGET_TO_INSTALL ${ARG_TARGET})
+  set(TARGET_FILE_TO_INSTALL $<TARGET_FILE:${ARG_TARGET}>)
+
+#   get_target_property(targetFile ${TARGET_TO_INSTALL} LOCATION)
+#   message("targetFile: ${targetFile}")
+
+  # TODO configure_file() probably not required anymore
+  set(installScript "${CMAKE_CURRENT_BINARY_DIR}/InstallSandbox.cmake")
+  configure_file("${PROJECT_SOURCE_DIR}/cmake/Modules/InstallSandbox.cmake.in" "${installScript}" @ONLY)
+  
+  install(SCRIPT "${installScript}")
+
+  # NOK, because evaluated at generation time !
+#   file(READ "${CMAKE_BINARY_DIR}/filesToInstall.txt" librariesToInstall)
+#   message("librariesToInstall: ${librariesToInstall}")
+#   install(FILES ${librariesToInstall} DESTINATION lib)
+#   add_custom_command(
+#     TARGET ${ARG_TARGET}
+#     POST_BUILD
+#     COMMAND mdtdeployutils get-shared-libraries-target-depends-on --help
+#   )
 
 endfunction()
