@@ -1,0 +1,114 @@
+# Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
+# file Copyright.txt or https://cmake.org/licensing for details.
+
+message("HI, install...........")
+
+message("DESTDIR: $ENV{DESTDIR}")
+
+message("CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
+
+message("CMAKE_PREFIX_PATH: @CMAKE_PREFIX_PATH@")
+
+# message("TARGET_TO_INSTALL: @TARGET_TO_INSTALL@")
+# 
+# message("TARGET_FILE_TO_INSTALL: @TARGET_FILE_TO_INSTALL@")
+
+# message("CMAKE_HOST_WIN32: ${CMAKE_HOST_WIN32}")
+# message("CMAKE_HOST_UNIX: ${CMAKE_HOST_UNIX}")
+
+set(DESTINATION "@MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_DESTINATION@")
+
+message("DESTINATION: ${DESTINATION}")
+
+if(NOT DESTINATION)
+  message(FATAL_ERROR "MdtInstallSharedLibrariesScript: missing DESTINATION")
+endif()
+
+# message("MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_MDT_DEPLOY_UTILS_COMMAND_FILE: @MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_MDT_DEPLOY_UTILS_COMMAND_FILE@")
+file(STRINGS "@MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_MDT_DEPLOY_UTILS_COMMAND_FILE@" mdtDeployUtilsCommand)
+
+message("mdtDeployUtilsCommand: ${mdtDeployUtilsCommand}")
+
+
+# message("MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE: @MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE@")
+file(STRINGS "@MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE@" targetFile)
+
+message("targetFile: ${targetFile}")
+
+
+get_filename_component(librariesDestination "$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/${DESTINATION}" ABSOLUTE)
+message("librariesDestination: ${librariesDestination}")
+
+set(INSTALL_IS_UNIX_SYSTEM_WIDE @MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_INSTALL_IS_UNIX_SYSTEM_WIDE@)
+if(INSTALL_IS_UNIX_SYSTEM_WIDE)
+  message("Install is Unix system wide")
+  set(overwriteBehavior fail)
+  set(removeRpathOptionArgument --remove-rpath)
+else()
+  message("Install is NOT Unix system wide")
+  set(overwriteBehavior overwrite)
+  set(removeRpathOptionArgument)
+endif()
+
+message("overwriteBehavior: ${overwriteBehavior}")
+message("removeRpathOptionArgument: ${removeRpathOptionArgument}")
+
+#   add_custom_command(
+#     TARGET ${ARG_TARGET}
+#     POST_BUILD
+#     COMMAND mdtdeployutils copy-shared-libraries-target-depends-on
+#               --overwrite-behavior ${overwriteBehaviorOption}
+#               ${removeRpathOptionArgument}
+#               --search-prefix-path-list "${CMAKE_PREFIX_PATH}"
+#               $<TARGET_FILE:${ARG_TARGET}>
+#               "${ARG_DESTINATION}"
+#     VERBATIM
+#   )
+
+execute_process(
+  COMMAND "${mdtDeployUtilsCommand}" copy-shared-libraries-target-depends-on
+            --overwrite-behavior ${overwriteBehavior}
+            ${removeRpathOptionArgument}
+            --search-prefix-path-list "${CMAKE_PREFIX_PATH}"
+            "${targetFile}"
+            "${librariesDestination}"
+  RESULTS_VARIABLE mdtDeployUtilsResult
+  ERROR_VARIABLE mdtDeployUtilsError
+)
+if( NOT (${mdtDeployUtilsResult} EQUAL 0) )
+  message(FATAL_ERROR "mdt_install_shared_libraries_target_depends_on() failed: ${mdtDeployUtilsError}")
+endif()
+
+
+# set(mdtDeployUtilsCommand
+
+# file(READ "${CMAKE_BINARY_DIR}/filesToInstall.txt" librariesToInstall)
+# file(STRINGS "${CMAKE_BINARY_DIR}/filesToInstall.txt" librariesToInstall)
+# message("librariesToInstall: ${librariesToInstall}")
+
+
+# file(INSTALL ${librariesToInstall} DESTINATION ${librariesDestination})
+
+# TODO RPATH - update all shared libraries in ${librariesDestination}
+# execute_process(
+#   COMMAND <cmd1> [<arguments>]
+#   RESULTS_VARIABLE <variable>
+# )
+
+# foreach(file ${librariesToInstall})
+#   message("file: ${file}")
+#   file(INSTALL "${file}" DESTINATION /tmp/install_test/lib)
+# #   file(COPY ${file} DESTINATION /tmp/lib)
+# endforeach()
+
+# NOT scriptable
+# install(FILES ${librariesToInstall} DESTINATION lib)
+# get_target_property(targetFile ${TARGET_TO_INSTALL} LOCATION)
+# message("targetFile: ${targetFile}")
+
+# NOTE: add_custom_command() cannot be in a script !
+# add_custom_command(
+#   TARGET ${TARGET_TO_INSTALL}
+#   POST_BUILD
+#   COMMAND ls -l "$<TARGET_FILE:${TARGET_TO_INSTALL}>"
+# )

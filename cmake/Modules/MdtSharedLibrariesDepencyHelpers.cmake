@@ -216,14 +216,40 @@ endfunction()
 # which takes a list of shared libraries to install.
 # This does not work, because install() is evaluated at build generation time,
 # but the list of shared libraries are known at build time (after target has been build).
+#
+# A solution could be to copy the shared libraries to a known directory in the build tree.
+# Also create a install(DIRECTORY) rule that installs this known directory.
+# This works, but now the shared libraries are copied twice,
+# and it is possible that some garbage may be installed (hidden files, etc..)
+#
+# A solution is to create a cmake script that is called at install time.
+# This is supported by adding a install(SCRIPT) rule.
+#
+# In the script we have to consider limitations.
+# For example, most of CMake variable are not available.
+# To solve this, we can create a script.cmake.in,
+# then use configure_file() to generate the final script with the variables we need.
+# Other limitations to consider are available commands.
+# For example, install(), get_target_property(), add_custom_command() are not available.
+#
+# Also, to get the path to the target file:
+# - get_target_property(targetFile target LOCATION) is not supported (CMake throws a error)
+# - $<TARGET_FILE:target> is not expanded (neither in this file, also not in the script)
+#
+# As result, we have to split the work:
+# - get the list of shared libraries target depends on here (we have all required tools)
+# - install them from the script
+# In the script, file(INSTALL) is available, and seems to be a good solution.
+#
+# An other problem to solve is to exchange the list of shared libraries.
+# add_custom_command() does not support getting results out.
+# The solution is to write a result file,
+# which is easy to read from the script using file(STRINGS).
+# TODO: RPATH with file(INSTALL) ?
 function(mdt_install_shared_libraries_target_depends_on)
 
 # TODO provide MDT_DEPLOY_UTILS_EXECUTABLE etc.. + do checks - see mdt_deploy_applicastion()
 
-  # NOTE: first attempt was to get a list shared libraries the target depends on,
-  # then generate install() rules.
-  # This is not possible, because install() rules are evaluated at build system generation time,
-  # but the dependencies are computed at build time (after our target have been built).
   # TODO: current solution is not relocatable with the DESTDIR !
   #  see install(SCRIPT) or install(CODE)
   #  Maybe: mdtdeployutils should generate a install script ??
@@ -246,7 +272,9 @@ function(mdt_install_shared_libraries_target_depends_on)
   # NOTE: install(FILES) or install(PROGRAMS) frome here Nok, because evaluated at generation time !
   # See file(<COPY|INSTALL> <files>... DESTINATION <dir> ...)
 
-  
+  # TODO TODO for RPATH:
+  # - The target must not be touched here, let the RPATH as is
+  # - For dependencies, update all after install (in the script)
 
   set(options)
   set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT)
@@ -274,9 +302,9 @@ function(mdt_install_shared_libraries_target_depends_on)
     set(componentArguments COMPONENT ${ARG_COMPONENT})
   endif()
 
-  message("DESTDIR: $ENV{DESTDIR}")
+#   message("DESTDIR: $ENV{DESTDIR}")
   
-  if(CMAKE_HOST_WIN32)
+  if(WIN32)
     get_filename_component(librariesDestination "${CMAKE_INSTALL_PREFIX}/${ARG_RUNTIME_DESTINATION}" ABSOLUTE)
   else()
     get_filename_component(librariesDestination "${CMAKE_INSTALL_PREFIX}/${ARG_LIBRARY_DESTINATION}" ABSOLUTE)
@@ -296,17 +324,36 @@ function(mdt_install_shared_libraries_target_depends_on)
     REMOVE_RPATH ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE}
   )
   
-  set(TARGET_TO_INSTALL ${ARG_TARGET})
-  set(TARGET_FILE_TO_INSTALL $<TARGET_FILE:${ARG_TARGET}>)
+#   set(TARGET_TO_INSTALL ${ARG_TARGET})
+#   set(TARGET_FILE_TO_INSTALL $<TARGET_FILE:${ARG_TARGET}>)
+  
+  set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_INSTALL_IS_UNIX_SYSTEM_WIDE ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE})
+  
+  if(WIN32)
+    set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_DESTINATION "${ARG_RUNTIME_DESTINATION}")
+  else()
+    set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_DESTINATION "${ARG_LIBRARY_DESTINATION}")
+  endif()
+
+  set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_MDT_DEPLOY_UTILS_COMMAND_FILE "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsCommand.txt")
+  file(GENERATE
+    OUTPUT "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_MDT_DEPLOY_UTILS_COMMAND_FILE}"
+    CONTENT "$<TARGET_FILE:mdtdeployutils>"
+  )
+
+  set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE  "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsTarget.txt")
+  file(GENERATE
+    OUTPUT "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE}"
+    CONTENT "$<TARGET_FILE:${ARG_TARGET}>"
+  )
 
 #   get_target_property(targetFile ${TARGET_TO_INSTALL} LOCATION)
 #   message("targetFile: ${targetFile}")
 
-  # TODO configure_file() probably not required anymore
-  set(installScript "${CMAKE_CURRENT_BINARY_DIR}/InstallSandbox.cmake")
-  configure_file("${PROJECT_SOURCE_DIR}/cmake/Modules/InstallSandbox.cmake.in" "${installScript}" @ONLY)
+  set(installScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript.cmake")
+  configure_file("${PROJECT_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in" "${installScript}" @ONLY)
   
-  install(SCRIPT "${installScript}")
+  install(SCRIPT "${installScript}" COMPONENT Runtime)
 
   # NOK, because evaluated at generation time !
 #   file(READ "${CMAKE_BINARY_DIR}/filesToInstall.txt" librariesToInstall)
