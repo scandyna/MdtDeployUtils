@@ -172,6 +172,25 @@ namespace Mdt{ namespace CommandLineParser{
       return !mOptions.empty();
     }
 
+    /*! \brief Get the count of options of this result command
+     */
+    int optionCount() const noexcept
+    {
+      return static_cast<int>( mOptions.size() );
+    }
+
+    /*! \brief Get the option at \a index
+     *
+     * \pre \a index must be in valid range ( 0 <= \a index < optionCount() )
+     */
+    const ParserDefinitionOption & optionAt(int index) const noexcept
+    {
+      assert( index >= 0 );
+      assert( index < optionCount() );
+
+      return mOptions[static_cast<size_t>(index)];
+    }
+
     /*! \brief Get the options of this command
      */
     const std::vector<ParserDefinitionOption> & options() const noexcept
@@ -235,7 +254,7 @@ namespace Mdt{ namespace CommandLineParser{
 
     /*! \brief Get the positional argument at \a index
      *
-     * \pre \a index must be in valid range ( 0 <= \a index < argumentCount() )
+     * \pre \a index must be in valid range ( 0 <= \a index < positionalArgumentCount() )
      */
     const ParserDefinitionPositionalArgument & positionalArgumentAt(int index) const noexcept
     {
