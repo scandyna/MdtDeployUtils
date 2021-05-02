@@ -1,4 +1,4 @@
-/****************************************************************************
+/*******************************************************************************************
  **
  ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
  **
@@ -17,16 +17,20 @@
  ** You should have received a copy of the GNU General Public License
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
- ****************************************************************************/
+ ***********************************************************************************************/
 #ifndef MDT_COMMAND_LINE_PARSER_H
 #define MDT_COMMAND_LINE_PARSER_H
 
+#include "CommandLineCommand.h"
+#include "CommandLineParseError.h"
+#include "CopySharedLibrariesTargetDependsOnCommandLineParserDefinition.h"
 #include "Mdt/CommandLineParser/ParserDefinition.h"
 #include "Mdt/CommandLineParser/ParserDefinitionCommand.h"
 #include "Mdt/CommandLineParser/ParserResultCommand.h"
+#include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.h"
 #include <QObject>
-#include <QCommandLineParser>
 #include <QStringList>
+#include <cassert>
 
 /*! \brief \todo document
  */
@@ -46,9 +50,29 @@ class CommandLineParser : public QObject
    */
   explicit CommandLineParser(QObject *parent = nullptr);
 
-  /*! \brief Process arguments given to the application
+  /*! \brief Process given arguments
+   *
+   * \exception CommandLineParseError
    */
-  CommandLineParserResult process();
+  void process(const QStringList & arguments);
+
+  /*! \brief Get the command that have been processed
+   */
+  CommandLineCommand processedCommand() const noexcept
+  {
+    return mCommand;
+  }
+
+  /*! \brief Get the DTO to copy shared libraries a target depends on
+   *
+   * \pre processedCommand() must be CopySharedLibrariesTargetDependsOn
+   */
+  Mdt::DeployUtils::CopySharedLibrariesTargetDependsOnRequest copySharedLibrariesTargetDependsOnRequest() const noexcept
+  {
+    assert( processedCommand() == CommandLineCommand::CopySharedLibrariesTargetDependsOn );
+
+    return mCopySharedLibrariesTargetDependsOnRequest;
+  }
 
   /*! \brief Get the parser definition
    */
@@ -57,29 +81,21 @@ class CommandLineParser : public QObject
     return mParserDefinition;
   }
 
-//   /*! \brief Access the internal parser
-//    */
-//   const QCommandLineParser & parser() const noexcept
-//   {
-//     return mParser;
-//   }
-
  private:
 
   void setApplicationDescription();
-//   void addCommandArgument();
   void addGetSharedLibrariesTargetDependsOnCommand();
-  void addCopySharedLibrariesTargetDependsOnCommand();
   void addDeployApplicationCommand();
   CommandLineParserResult processGetSharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
-  CommandLineParserResult processCopySharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
+  void processCopySharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
   CommandLineParserResult processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
 
+  CommandLineCommand mCommand = CommandLineCommand::Unknown;
+  Mdt::DeployUtils::CopySharedLibrariesTargetDependsOnRequest mCopySharedLibrariesTargetDependsOnRequest;
   Mdt::CommandLineParser::ParserDefinition mParserDefinition;
+  CopySharedLibrariesTargetDependsOnCommandLineParserDefinition mCopySharedLibrariesTargetDependsOnDefinition;
   Mdt::CommandLineParser::ParserDefinitionCommand mGetSharedLibrariesTargetDependsOnCommand;
-  Mdt::CommandLineParser::ParserDefinitionCommand mCopySharedLibrariesTargetDependsOnCommand;
   Mdt::CommandLineParser::ParserDefinitionCommand mDeployApplicationCommand;
-//   QCommandLineParser mParser;
 };
 
 #endif // #ifndef MDT_COMMAND_LINE_PARSER_H
