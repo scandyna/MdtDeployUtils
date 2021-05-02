@@ -98,18 +98,16 @@ void CommandLineParser::process(const QStringList & arguments)
   throw CommandLineParseError(message);
 }
 
-CommandLineParserResult CommandLineParser::processGetSharedLibrariesTargetDependsOn(const ParserResultCommand & resultCommand)
+void CommandLineParser::processGetSharedLibrariesTargetDependsOn(const ParserResultCommand & resultCommand)
 {
   if( resultCommand.isHelpOptionSet() ){
     showMessage( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
-    return CommandLineParserResult{};
+    return;
   }
 
 //   GetSharedLibrariesTargetDependsOnCommandLineParser parser;
 // 
 //   parser.process(arguments);
-
-  return CommandLineParserResult{};
 }
 
 void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserResultCommand & resultCommand)
@@ -163,14 +161,12 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
   mCopySharedLibrariesTargetDependsOnRequest.destinationDirectoryPath = resultCommand.positionalArgumentAt(1);
 }
 
-CommandLineParserResult CommandLineParser::processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand& resultCommand)
+void CommandLineParser::processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand& resultCommand)
 {
   if( resultCommand.isHelpOptionSet() ){
     showMessage( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
-    return CommandLineParserResult{};
+    return;
   }
-
-  return CommandLineParserResult{};
 }
 
 void CommandLineParser::setApplicationDescription()

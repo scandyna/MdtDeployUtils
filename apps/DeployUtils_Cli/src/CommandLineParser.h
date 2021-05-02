@@ -32,12 +32,6 @@
 #include <QStringList>
 #include <cassert>
 
-/*! \brief \todo document
- */
-struct CommandLineParserResult
-{
-};
-
 /*! \brief Command line parser for mdtdeployutils
  */
 class CommandLineParser : public QObject
@@ -86,9 +80,9 @@ class CommandLineParser : public QObject
   void setApplicationDescription();
   void addGetSharedLibrariesTargetDependsOnCommand();
   void addDeployApplicationCommand();
-  CommandLineParserResult processGetSharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
+  void processGetSharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
   void processCopySharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
-  CommandLineParserResult processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
+  void processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
 
   CommandLineCommand mCommand = CommandLineCommand::Unknown;
   Mdt::DeployUtils::CopySharedLibrariesTargetDependsOnRequest mCopySharedLibrariesTargetDependsOnRequest;
