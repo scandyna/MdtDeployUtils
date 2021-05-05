@@ -35,7 +35,7 @@ enum class CommandLineCommand
 
 /*! \brief Get command name for \a command
  */
-QString commandName( CommandLineCommand command);
+QString commandName(CommandLineCommand command);
 
 /*! \brief Get a command from \a command string
  */
