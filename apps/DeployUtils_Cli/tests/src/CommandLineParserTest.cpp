@@ -28,6 +28,28 @@
 
 using namespace Mdt::DeployUtils;
 
+TEST_CASE("Logger backend")
+{
+  CommandLineParser parser;
+  QStringList arguments = qStringListFromUtf8Strings({"mdtdeployutils"});
+  const QStringList subCommandArguments = qStringListFromUtf8Strings({"copy-shared-libraries-target-depends-on","/tmp/lib.so","/tmp"});
+
+  SECTION("default backend")
+  {
+    arguments << subCommandArguments;
+    parser.process(arguments);
+    REQUIRE( parser.messageLoggerBackend() == MessageLoggerBackend::Console );
+  }
+
+  SECTION("CMake backend")
+  {
+    arguments << qStringListFromUtf8Strings({"--logger-backend","cmake"});
+    arguments << subCommandArguments;
+    parser.process(arguments);
+    REQUIRE( parser.messageLoggerBackend() == MessageLoggerBackend::CMake );
+  }
+}
+
 TEST_CASE("CopySharedLibrariesTargetDependsOn")
 {
   MessageLogger messageLogger;

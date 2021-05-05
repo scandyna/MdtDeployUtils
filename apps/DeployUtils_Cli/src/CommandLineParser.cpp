@@ -42,6 +42,17 @@ CommandLineParser::CommandLineParser(QObject *parent)
 
   mParserDefinition.addHelpOption();
 
+  const QString loggerBackendDescription = tr(
+    "Message logger backend to use.\n"
+    "Available backends:\n"
+    "- console (the default): messages are printed to stdout and errors to stderr\n"
+    "- cmake: like console, but imitates the CMake style messaging."
+  );
+  ParserDefinitionOption loggerBackendOption( QLatin1String("logger-backend"), loggerBackendDescription );
+  loggerBackendOption.setValueName( QLatin1String("backend") );
+  loggerBackendOption.setPossibleValues({QLatin1String("console"),QLatin1String("cmake")});
+  mParserDefinition.addOption(loggerBackendOption);
+
   addGetSharedLibrariesTargetDependsOnCommand();
 
   mCopySharedLibrariesTargetDependsOnDefinition.setApplicationName( mParserDefinition.applicationName() );
@@ -68,7 +79,24 @@ void CommandLineParser::process(const QStringList & arguments)
 
   if( parserResult.isHelpOptionSet() ){
     showInfo( mParserDefinition.getHelpText() );
-    return;
+    std::exit(0);
+  }
+
+  const QStringList loggerBackendOptionValues = parserResult.getValues( loggerBackendOption() );
+  if( !loggerBackendOptionValues.isEmpty() ){
+    if( loggerBackendOptionValues.count() > 1 ){
+      const QString message = tr("logger-backend option given more than once");
+      throw CommandLineParseError(message);
+    }
+    const QString backend = loggerBackendOptionValues.at(0);
+    if( backend == QLatin1String("console") ){
+      mMessageLoggerBackend = MessageLoggerBackend::Console;
+    }else if( backend == QLatin1String("cmake") ){
+      mMessageLoggerBackend = MessageLoggerBackend::CMake;
+    }else{
+      const QString message = tr("given backend '%1' is not supported").arg(backend);
+      throw CommandLineParseError(message);
+    }
   }
 
   const CommandLineCommand command = commandFromString( parserResult.subCommand().name() );

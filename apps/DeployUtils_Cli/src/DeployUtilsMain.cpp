@@ -52,7 +52,9 @@ int DeployUtilsMain::runMain()
     return 1;
   }
 
-  ///MessageLogger::setBackend<CMakeStyleMessageLogger>();
+  if( commandLineParser.messageLoggerBackend() == MessageLoggerBackend::CMake ){
+    MessageLogger::setBackend<CMakeStyleMessageLogger>();
+  }
 
 //   assert( commandLineParser.processedCommand() != CommandLineCommand::Unknown );
 

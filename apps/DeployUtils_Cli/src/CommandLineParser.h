@@ -25,12 +25,23 @@
 #include "CommandLineParseError.h"
 #include "CopySharedLibrariesTargetDependsOnCommandLineParserDefinition.h"
 #include "Mdt/CommandLineParser/ParserDefinition.h"
+#include "Mdt/CommandLineParser/ParserDefinitionOption.h"
 #include "Mdt/CommandLineParser/ParserDefinitionCommand.h"
 #include "Mdt/CommandLineParser/ParserResultCommand.h"
 #include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.h"
 #include <QObject>
 #include <QStringList>
 #include <cassert>
+
+/*! \brief Message logger backend
+ *
+ * \todo Move to its own file
+ */
+enum class MessageLoggerBackend
+{
+  Console,  /*!< Use the ConsoleMessageLogger backend */
+  CMake     /*!< Use the CMakeStyleMessageLogger backend */
+};
 
 /*! \brief Command line parser for mdtdeployutils
  */
@@ -55,6 +66,13 @@ class CommandLineParser : public QObject
   CommandLineCommand processedCommand() const noexcept
   {
     return mCommand;
+  }
+
+  /*! \brief Get the choosen message logger backend
+   */
+  MessageLoggerBackend messageLoggerBackend() const noexcept
+  {
+    return mMessageLoggerBackend;
   }
 
   /*! \brief Get the DTO to copy shared libraries a target depends on
@@ -84,7 +102,13 @@ class CommandLineParser : public QObject
   void processCopySharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
   void processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
 
+  const Mdt::CommandLineParser::ParserDefinitionOption & loggerBackendOption() const noexcept
+  {
+    return mParserDefinition.optionAt(1);
+  }
+
   CommandLineCommand mCommand = CommandLineCommand::Unknown;
+  MessageLoggerBackend mMessageLoggerBackend = MessageLoggerBackend::Console;
   Mdt::DeployUtils::CopySharedLibrariesTargetDependsOnRequest mCopySharedLibrariesTargetDependsOnRequest;
   Mdt::CommandLineParser::ParserDefinition mParserDefinition;
   CopySharedLibrariesTargetDependsOnCommandLineParserDefinition mCopySharedLibrariesTargetDependsOnDefinition;

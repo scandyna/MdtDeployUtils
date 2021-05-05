@@ -39,6 +39,20 @@ TEST_CASE("MainCommand")
   }
 }
 
+TEST_CASE("Logger backend")
+{
+  CommandLineParser parser;
+  QStringList arguments = qStringListFromUtf8Strings({"mdtdeployutils"});
+  const QStringList subCommandArguments = qStringListFromUtf8Strings({"copy-shared-libraries-target-depends-on","/tmp/lib.so","/tmp"});
+
+  SECTION("unknown backend")
+  {
+    arguments << qStringListFromUtf8Strings({"--logger-backend","unknown"});
+    arguments << subCommandArguments;
+    REQUIRE_THROWS_AS( parser.process(arguments), CommandLineParseError );
+  }
+}
+
 TEST_CASE("CopySharedLibrariesTargetDependsOn")
 {
   CommandLineParser parser;
