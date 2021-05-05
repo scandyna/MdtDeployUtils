@@ -13,3 +13,27 @@ mdt_add_test(
   SOURCE_FILES
     src/AlgorithmTest.cpp
 )
+
+mdt_add_test(
+  NAME MessageLoggerTest
+  TARGET messageLoggerTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/MessageLoggerTest.cpp
+)
+
+mdt_add_test(
+  NAME CopySharedLibrariesTargetDependsOnTest
+  TARGET copySharedLibrariesTargetDependsOnTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/CopySharedLibrariesTargetDependsOnTest.cpp
+)
+
+mdt_add_test(
+  NAME CopySharedLibrariesTargetDependsOnErrorTest
+  TARGET copySharedLibrariesTargetDependsOnErrorTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/CopySharedLibrariesTargetDependsOnErrorTest.cpp
+)

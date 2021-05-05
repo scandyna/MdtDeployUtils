@@ -8,7 +8,14 @@ include(GenerateExportHeader)
 include(MdtInstallLibrary)
 
 add_library(Mdt_DeployUtils
+  Mdt/DeployUtils/QRuntimeError.cpp
+  Mdt/DeployUtils/AbstractMessageLoggerBackend.cpp
+  Mdt/DeployUtils/MessageLogger.cpp
+  Mdt/DeployUtils/ConsoleMessageLogger.cpp
+  Mdt/DeployUtils/CMakeStyleMessageLogger.cpp
   Mdt/DeployUtils/Algorithm.cpp
+  Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.cpp
+  Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.cpp
 )
 add_library(Mdt::DeployUtils ALIAS Mdt_DeployUtils)
 
@@ -24,6 +31,11 @@ target_include_directories(Mdt_DeployUtils
   PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+)
+
+target_link_libraries(Mdt_DeployUtils
+  PUBLIC
+    Qt5::Core
 )
 
 generate_export_header(Mdt_DeployUtils)
