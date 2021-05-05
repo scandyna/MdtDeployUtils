@@ -23,12 +23,14 @@
 #include "TestUtils.h"
 #include "CommandLineParser.h"
 #include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.h"
+#include "Mdt/DeployUtils/MessageLogger.h"
 #include <QStringList>
 
 using namespace Mdt::DeployUtils;
 
 TEST_CASE("CopySharedLibrariesTargetDependsOn")
 {
+  MessageLogger messageLogger;
   CommandLineParser parser;
   QStringList arguments = qStringListFromUtf8Strings({"mdtdeployutils","copy-shared-libraries-target-depends-on"});
   CopySharedLibrariesTargetDependsOnRequest request;

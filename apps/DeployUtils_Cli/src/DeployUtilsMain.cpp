@@ -40,8 +40,6 @@ DeployUtilsMain::DeployUtilsMain(QObject* parent)
 int DeployUtilsMain::runMain()
 {
   MessageLogger messageLogger;
-  ///MessageLogger::setBackend<CMakeStyleMessageLogger>();
-
   CommandLineParser commandLineParser;
 
   try{
@@ -53,6 +51,8 @@ int DeployUtilsMain::runMain()
     showError(error);
     return 1;
   }
+
+  ///MessageLogger::setBackend<CMakeStyleMessageLogger>();
 
 //   assert( commandLineParser.processedCommand() != CommandLineCommand::Unknown );
 

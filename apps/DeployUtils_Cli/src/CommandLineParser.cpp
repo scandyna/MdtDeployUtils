@@ -29,6 +29,7 @@
 #include <QLatin1String>
 #include <QChar>
 #include <cassert>
+#include <cstdlib>
 
 using namespace Mdt::CommandLineParser;
 using namespace Mdt::DeployUtils;
@@ -102,7 +103,7 @@ void CommandLineParser::processGetSharedLibrariesTargetDependsOn(const ParserRes
 {
   if( resultCommand.isHelpOptionSet() ){
     showInfo( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
-    return;
+    std::exit(0);
   }
 
 //   GetSharedLibrariesTargetDependsOnCommandLineParser parser;
@@ -116,7 +117,7 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
 
   if( resultCommand.isHelpOptionSet() ){
     showInfo( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
-    return;
+    std::exit(0);
   }
 
   const QStringList overwriteBehaviorValues = resultCommand.getValues( mCopySharedLibrariesTargetDependsOnDefinition.overwriteBehaviorOption() );
@@ -165,7 +166,7 @@ void CommandLineParser::processDeployApplicationCommand(const Mdt::CommandLinePa
 {
   if( resultCommand.isHelpOptionSet() ){
     showInfo( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
-    return;
+    std::exit(0);
   }
 }
 
