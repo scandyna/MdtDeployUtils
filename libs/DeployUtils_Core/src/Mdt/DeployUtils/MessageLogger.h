@@ -172,6 +172,7 @@ namespace Mdt{ namespace DeployUtils{
    *
    * \sa MessageLogger
    */
+  inline
   void showInfo(const QString & message)
   {
     MessageLogger::info(message);
@@ -181,6 +182,7 @@ namespace Mdt{ namespace DeployUtils{
    *
    * \sa MessageLogger
    */
+  inline
   void showError(const QString & message)
   {
     MessageLogger::error(message);
@@ -190,6 +192,7 @@ namespace Mdt{ namespace DeployUtils{
    *
    * \sa MessageLogger
    */
+  inline
   void showError(const std::exception & error)
   {
     MessageLogger::error(error);
