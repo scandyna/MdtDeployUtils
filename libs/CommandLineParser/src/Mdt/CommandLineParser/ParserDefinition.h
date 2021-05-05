@@ -152,6 +152,25 @@ namespace Mdt{ namespace CommandLineParser{
       return mMainCommand.hasOptions();
     }
 
+    /*! \brief Get the count of options of this parser definition
+     */
+    int optionCount() const noexcept
+    {
+      return mMainCommand.optionCount();
+    }
+
+    /*! \brief Get the option at \a index
+     *
+     * \pre \a index must be in valid range ( 0 <= \a index < optionCount() )
+     */
+    const ParserDefinitionOption & optionAt(int index) const noexcept
+    {
+      assert( index >= 0 );
+      assert( index < optionCount() );
+
+      return mMainCommand.optionAt(index);
+    }
+
     /*! \brief Add a positional argument
      *
      * \pre \a name must not be empty
