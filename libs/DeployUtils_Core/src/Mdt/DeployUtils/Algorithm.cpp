@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** MdtDeployUtils - A C++ library to help deploy C++ compiler binaries
+ ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
  ** Copyright (C) 2020-2021 Philippe Steinmann.
  **
