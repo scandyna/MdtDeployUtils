@@ -19,8 +19,8 @@
  **
  ****************************************************************************/
 #include "CommandLineParser.h"
-#include "MessageLogger.h"
 #include "CommandLineCommand.h"
+#include "Mdt/DeployUtils/MessageLogger.h"
 #include "Mdt/DeployUtils/OverwriteBehavior.h"
 #include "Mdt/CommandLineParser/Parser.h"
 #include "Mdt/CommandLineParser/ParserResult.h"
@@ -66,7 +66,7 @@ void CommandLineParser::process(const QStringList & arguments)
   const ParserResult parserResult = parser.toParserResult();
 
   if( parserResult.isHelpOptionSet() ){
-    showMessage( mParserDefinition.getHelpText() );
+    showInfo( mParserDefinition.getHelpText() );
     return;
   }
 
@@ -101,7 +101,7 @@ void CommandLineParser::process(const QStringList & arguments)
 void CommandLineParser::processGetSharedLibrariesTargetDependsOn(const ParserResultCommand & resultCommand)
 {
   if( resultCommand.isHelpOptionSet() ){
-    showMessage( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
+    showInfo( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
     return;
   }
 
@@ -115,7 +115,7 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
   mCommand = CommandLineCommand::CopySharedLibrariesTargetDependsOn;
 
   if( resultCommand.isHelpOptionSet() ){
-    showMessage( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
+    showInfo( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
     return;
   }
 
@@ -164,7 +164,7 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
 void CommandLineParser::processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand& resultCommand)
 {
   if( resultCommand.isHelpOptionSet() ){
-    showMessage( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
+    showInfo( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
     return;
   }
 }

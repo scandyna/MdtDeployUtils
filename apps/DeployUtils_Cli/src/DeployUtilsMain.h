@@ -21,6 +21,7 @@
 #ifndef MDT_DEPLOY_UTILS_MAIN_H
 #define MDT_DEPLOY_UTILS_MAIN_H
 
+#include "CommandLineParser.h"
 #include <Mdt/AbstractConsoleApplicationMainFunction>
 
 /*! \brief Main function of mdtdeployutils
@@ -38,6 +39,7 @@ class DeployUtilsMain : public Mdt::AbstractConsoleApplicationMainFunction
  private:
 
   int runMain() override;
+  void copySharedLibrariesTargetDependsOn(const CommandLineParser & commandLineParser);
 };
 
 #endif // #ifndef MDT_DEPLOY_UTILS_MAIN_H

@@ -19,11 +19,16 @@
  **
  ****************************************************************************/
 #include "DeployUtilsMain.h"
-#include "CommandLineParser.h"
+#include "Mdt/DeployUtils/MessageLogger.h"
+#include "Mdt/DeployUtils/CMakeStyleMessageLogger.h"
+#include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.h"
+#include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.h"
 #include <QLatin1String>
+#include <QCoreApplication>
+#include <QObject>
+#include <cassert>
 
-#include <QDebug>
-
+using namespace Mdt::DeployUtils;
 
 DeployUtilsMain::DeployUtilsMain(QObject* parent)
  : AbstractConsoleApplicationMainFunction(parent)
@@ -34,11 +39,42 @@ DeployUtilsMain::DeployUtilsMain(QObject* parent)
 
 int DeployUtilsMain::runMain()
 {
+  MessageLogger messageLogger;
+  ///MessageLogger::setBackend<CMakeStyleMessageLogger>();
+
   CommandLineParser commandLineParser;
-  commandLineParser.process();
 
+  try{
+    commandLineParser.process( QCoreApplication::arguments() );
+  }catch(const CommandLineParseError & error){
+    showError(error);
+    return 1;
+  }catch(const std::exception & error){
+    showError(error);
+    return 1;
+  }
 
-//   qDebug() << "Main END";
+//   assert( commandLineParser.processedCommand() != CommandLineCommand::Unknown );
+
+  switch( commandLineParser.processedCommand() ){
+    case CommandLineCommand::CopySharedLibrariesTargetDependsOn:
+      copySharedLibrariesTargetDependsOn(commandLineParser);
+      break;
+    case CommandLineCommand::Unknown:
+      // Maybe just Bash completion
+      return 0;
+  }
 
   return 0;
+}
+
+void DeployUtilsMain::copySharedLibrariesTargetDependsOn(const CommandLineParser & commandLineParser)
+{
+  assert( commandLineParser.processedCommand() == CommandLineCommand::CopySharedLibrariesTargetDependsOn );
+
+  const auto request = commandLineParser.copySharedLibrariesTargetDependsOnRequest();
+
+  CopySharedLibrariesTargetDependsOn csltdo;
+  QObject::connect(&csltdo, &CopySharedLibrariesTargetDependsOn::message, MessageLogger::info);
+  csltdo.execute(request);
 }

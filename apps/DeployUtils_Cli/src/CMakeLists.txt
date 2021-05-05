@@ -8,7 +8,6 @@ add_library(Mdt_DeployUtils_Cli STATIC
   CopySharedLibrariesTargetDependsOnCommandLineParserDefinition.cpp
   CommandLineParser.cpp
   CommandLineCommand.cpp
-  MessageLogger.cpp
 )
 add_library(Mdt::DeployUtils_Cli ALIAS Mdt_DeployUtils_Cli)
 
