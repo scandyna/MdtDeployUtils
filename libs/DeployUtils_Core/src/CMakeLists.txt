@@ -14,6 +14,14 @@ add_library(Mdt_DeployUtils
   Mdt/DeployUtils/ConsoleMessageLogger.cpp
   Mdt/DeployUtils/CMakeStyleMessageLogger.cpp
   Mdt/DeployUtils/Algorithm.cpp
+  Mdt/DeployUtils/PathList.cpp
+  Mdt/DeployUtils/SearchPathList.cpp
+  Mdt/DeployUtils/LibraryVersion.cpp
+  Mdt/DeployUtils/LibraryName.cpp
+  Mdt/DeployUtils/LibraryInfo.cpp
+  Mdt/DeployUtils/LibraryInfoList.cpp
+#   Mdt/DeployUtils/BinaryDependenciesImplementationInterface.cpp
+#   Mdt/DeployUtils/BinaryDependencies.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.cpp
 )

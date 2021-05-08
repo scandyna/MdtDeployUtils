@@ -23,6 +23,55 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME PathTest
+  TARGET pathTest
+  DEPENDENCIES Mdt::DeployUtils Qt5::Test
+  SOURCE_FILES
+    src/PathTest.cpp
+)
+
+mdt_add_test(
+  NAME LibraryVersionTest
+  TARGET libraryVersionTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/LibraryVersionTest.cpp
+)
+
+mdt_add_test(
+  NAME LibraryNameTest
+  TARGET libraryNameTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/LibraryNameTest.cpp
+)
+
+mdt_add_test(
+  NAME LibraryInfoTest
+  TARGET libraryInfoTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/LibraryInfoTest.cpp
+)
+
+mdt_add_test(
+  NAME LibraryInfoListTest
+  TARGET libraryInfoListTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/LibraryInfoListTest.cpp
+)
+
+# mdt_add_test(
+#   NAME BinaryDependenciesTest
+#   TARGET binaryDependenciesTest
+#   DEPENDENCIES Mdt::DeployUtils Qt5::Test
+#   SOURCE_FILES
+#     src/BinaryDependenciesTest.cpp
+# )
+# target_compile_definitions(binaryDependenciesTest PRIVATE PREFIX_PATH="${CMAKE_PREFIX_PATH}")
+
+mdt_add_test(
   NAME CopySharedLibrariesTargetDependsOnTest
   TARGET copySharedLibrariesTargetDependsOnTest
   DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
