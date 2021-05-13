@@ -17,6 +17,8 @@ add_library(Mdt_DeployUtils
   Mdt/DeployUtils/PathList.cpp
   Mdt/DeployUtils/SearchPathList.cpp
   Mdt/DeployUtils/LibraryVersion.cpp
+  Mdt/DeployUtils/LibraryNameExtension.cpp
+  Mdt/DeployUtils/Impl/LibraryNameImpl.cpp
   Mdt/DeployUtils/LibraryName.cpp
   Mdt/DeployUtils/LibraryInfo.cpp
   Mdt/DeployUtils/LibraryInfoList.cpp

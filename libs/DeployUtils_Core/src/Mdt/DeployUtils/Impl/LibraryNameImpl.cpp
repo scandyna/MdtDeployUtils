@@ -18,14 +18,4 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "LibraryName.h"
-#include "Impl/LibraryNameImpl.h"
-
-namespace Mdt{ namespace DeployUtils{
-
-LibraryName::LibraryName(const QString & fullName)
-{
-  mData = Impl::LibraryNameImpl::fromFullName(fullName);
-}
-
-}} // namespace Mdt{ namespace DeployUtils{
+#include "LibraryNameImpl.h"

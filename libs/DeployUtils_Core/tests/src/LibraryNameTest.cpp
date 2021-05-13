@@ -20,11 +20,291 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "Mdt/DeployUtils/Impl/LibraryNameData.h"
+#include "Mdt/DeployUtils/Impl/LibraryNameImpl.h"
 #include "Mdt/DeployUtils/LibraryName.h"
 #include <QLatin1String>
 #include <QString>
 
 using namespace Mdt::DeployUtils;
+using Mdt::DeployUtils::Impl::LibraryNameData;
+using Mdt::DeployUtils::Impl::LibraryNameImpl;
+
+TEST_CASE("extractPrefix")
+{
+  SECTION("empty")
+  {
+    REQUIRE( LibraryNameImpl::extractPrefix( QLatin1String("") ).isEmpty() );
+  }
+
+  SECTION("Qt5Core")
+  {
+    REQUIRE( LibraryNameImpl::extractPrefix( QLatin1String("Qt5Core") ).isEmpty() );
+  }
+
+  SECTION("libQt5Core")
+  {
+    REQUIRE( LibraryNameImpl::extractPrefix( QLatin1String("libQt5Core") ) == QLatin1String("lib") );
+  }
+
+  SECTION("m")
+  {
+    REQUIRE( LibraryNameImpl::extractPrefix( QLatin1String("m") ).isEmpty() );
+  }
+
+  SECTION("libm")
+  {
+    REQUIRE( LibraryNameImpl::extractPrefix( QLatin1String("libm") ) == QLatin1String("lib") );
+  }
+}
+
+TEST_CASE("extractName")
+{
+  QString fullExtension;
+  const QString libPrefix = QLatin1String("lib");
+
+  SECTION("empty")
+  {
+    REQUIRE( LibraryNameImpl::extractName( QString(), QString(), &fullExtension ).isEmpty() );
+  }
+
+  SECTION("Qt5Core")
+  {
+    REQUIRE( LibraryNameImpl::extractName( QString(), QLatin1String("Qt5Core"), &fullExtension ) == QLatin1String("Qt5Core") );
+  }
+
+  SECTION("m")
+  {
+    REQUIRE( LibraryNameImpl::extractName( QString(), QLatin1String("m"), &fullExtension ) == QLatin1String("m") );
+  }
+
+  SECTION("libQt5Core")
+  {
+    REQUIRE( LibraryNameImpl::extractName( libPrefix, QLatin1String("libQt5Core"), &fullExtension ) == QLatin1String("Qt5Core") );
+  }
+
+  SECTION("libm")
+  {
+    REQUIRE( LibraryNameImpl::extractName( libPrefix, QLatin1String("libm"), &fullExtension ) == QLatin1String("m") );
+  }
+
+  SECTION("Qt5Core.dll")
+  {
+    fullExtension = QLatin1String(".dll");
+    REQUIRE( LibraryNameImpl::extractName( QString(), QLatin1String("Qt5Core.dll"), &fullExtension ) == QLatin1String("Qt5Core") );
+  }
+
+  SECTION("m.dll")
+  {
+    fullExtension = QLatin1String(".dll");
+    REQUIRE( LibraryNameImpl::extractName( QString(), QLatin1String("m.dll"), &fullExtension ) == QLatin1String("m") );
+  }
+}
+
+TEST_CASE("extractSharedLibraryExtensionAndVersion")
+{
+  QString fullExtension;
+  std::pair<LibraryNameExtension, LibraryVersion> extensionAndVersion;
+
+  SECTION(".so")
+  {
+    fullExtension = QLatin1String(".so");
+    extensionAndVersion = LibraryNameImpl::extractSharedLibraryExtensionAndVersion(&fullExtension);
+    REQUIRE( extensionAndVersion.first.name() == QLatin1String("so") );
+    REQUIRE( extensionAndVersion.second.isNull() );
+  }
+
+  SECTION(".dylib")
+  {
+    fullExtension = QLatin1String(".dylib");
+    extensionAndVersion = LibraryNameImpl::extractSharedLibraryExtensionAndVersion(&fullExtension);
+    REQUIRE( extensionAndVersion.first.name() == QLatin1String("dylib") );
+    REQUIRE( extensionAndVersion.second.isNull() );
+  }
+
+  SECTION(".dll")
+  {
+    fullExtension = QLatin1String(".dll");
+    extensionAndVersion = LibraryNameImpl::extractSharedLibraryExtensionAndVersion(&fullExtension);
+    REQUIRE( extensionAndVersion.first.name() == QLatin1String("dll") );
+    REQUIRE( extensionAndVersion.second.isNull() );
+  }
+
+  SECTION(".DLL")
+  {
+    fullExtension = QLatin1String(".DLL");
+    extensionAndVersion = LibraryNameImpl::extractSharedLibraryExtensionAndVersion(&fullExtension);
+    REQUIRE( extensionAndVersion.first.name() == QLatin1String("DLL") );
+    REQUIRE( extensionAndVersion.second.isNull() );
+  }
+
+  SECTION(".Dll")
+  {
+    fullExtension = QLatin1String(".Dll");
+    extensionAndVersion = LibraryNameImpl::extractSharedLibraryExtensionAndVersion(&fullExtension);
+    REQUIRE( extensionAndVersion.first.name() == QLatin1String("Dll") );
+    REQUIRE( extensionAndVersion.second.isNull() );
+  }
+
+  SECTION(".so.5")
+  {
+    fullExtension = QLatin1String(".so.5");
+    extensionAndVersion = LibraryNameImpl::extractSharedLibraryExtensionAndVersion(&fullExtension);
+    REQUIRE( extensionAndVersion.first.name() == QLatin1String("so") );
+    REQUIRE( extensionAndVersion.second.toString() == QLatin1String("5") );
+  }
+
+  SECTION(".so.5.9")
+  {
+    fullExtension = QLatin1String(".so.5.9");
+    extensionAndVersion = LibraryNameImpl::extractSharedLibraryExtensionAndVersion(&fullExtension);
+    REQUIRE( extensionAndVersion.first.name() == QLatin1String("so") );
+    REQUIRE( extensionAndVersion.second.toString() == QLatin1String("5.9") );
+  }
+
+  SECTION(".so.5.9.1")
+  {
+    fullExtension = QLatin1String(".so.5.9.1");
+    extensionAndVersion = LibraryNameImpl::extractSharedLibraryExtensionAndVersion(&fullExtension);
+    REQUIRE( extensionAndVersion.first.name() == QLatin1String("so") );
+    REQUIRE( extensionAndVersion.second.toString() == QLatin1String("5.9.1") );
+  }
+
+  SECTION(".so.123.456.7890")
+  {
+    fullExtension = QLatin1String(".so.123.456.7890");
+    extensionAndVersion = LibraryNameImpl::extractSharedLibraryExtensionAndVersion(&fullExtension);
+    REQUIRE( extensionAndVersion.first.name() == QLatin1String("so") );
+    REQUIRE( extensionAndVersion.second.toString() == QLatin1String("123.456.7890") );
+  }
+
+  SECTION(".5.dylib")
+  {
+    fullExtension = QLatin1String(".5.dylib");
+    extensionAndVersion = LibraryNameImpl::extractSharedLibraryExtensionAndVersion(&fullExtension);
+    REQUIRE( extensionAndVersion.first.name() == QLatin1String("dylib") );
+    REQUIRE( extensionAndVersion.second.toString() == QLatin1String("5") );
+  }
+
+  SECTION(".5.9.dylib")
+  {
+    fullExtension = QLatin1String(".5.9.dylib");
+    extensionAndVersion = LibraryNameImpl::extractSharedLibraryExtensionAndVersion(&fullExtension);
+    REQUIRE( extensionAndVersion.first.name() == QLatin1String("dylib") );
+    REQUIRE( extensionAndVersion.second.toString() == QLatin1String("5.9") );
+  }
+
+  SECTION(".5.9.1.dylib")
+  {
+    fullExtension = QLatin1String(".5.9.1.dylib");
+    extensionAndVersion = LibraryNameImpl::extractSharedLibraryExtensionAndVersion(&fullExtension);
+    REQUIRE( extensionAndVersion.first.name() == QLatin1String("dylib") );
+    REQUIRE( extensionAndVersion.second.toString() == QLatin1String("5.9.1") );
+  }
+
+  SECTION(".123.456.7890.dylib")
+  {
+    fullExtension = QLatin1String(".123.456.7890.dylib");
+    extensionAndVersion = LibraryNameImpl::extractSharedLibraryExtensionAndVersion(&fullExtension);
+    REQUIRE( extensionAndVersion.first.name() == QLatin1String("dylib") );
+    REQUIRE( extensionAndVersion.second.toString() == QLatin1String("123.456.7890") );
+  }
+}
+
+TEST_CASE("fromFullName")
+{
+  LibraryNameData data;
+
+  SECTION("empty")
+  {
+    data = LibraryNameImpl::fromFullName( QLatin1String("") );
+    REQUIRE( data.fullName.isEmpty() );
+    REQUIRE( data.prefix.isEmpty() );
+    REQUIRE( data.name.isEmpty() );
+    REQUIRE( data.extensionAndVersion.first.isNull() );
+    REQUIRE( data.extensionAndVersion.second.isNull() );
+  }
+
+  SECTION("Qt5Core")
+  {
+    data = LibraryNameImpl::fromFullName( QLatin1String("Qt5Core") );
+    REQUIRE( data.fullName == QLatin1String("Qt5Core") );
+    REQUIRE( data.prefix.isEmpty() );
+    REQUIRE( data.name == QLatin1String("Qt5Core") );
+    REQUIRE( data.extensionAndVersion.first.isNull() );
+    REQUIRE( data.extensionAndVersion.second.isNull() );
+  }
+
+  SECTION("m")
+  {
+    data = LibraryNameImpl::fromFullName( QLatin1String("m") );
+    REQUIRE( data.fullName == QLatin1String("m") );
+    REQUIRE( data.prefix.isEmpty() );
+    REQUIRE( data.name == QLatin1String("m") );
+    REQUIRE( data.extensionAndVersion.first.isNull() );
+    REQUIRE( data.extensionAndVersion.second.isNull() );
+  }
+
+  SECTION("libQt5Core")
+  {
+    data = LibraryNameImpl::fromFullName( QLatin1String("libQt5Core") );
+    REQUIRE( data.fullName == QLatin1String("libQt5Core") );
+    REQUIRE( data.prefix == QLatin1String("lib") );
+    REQUIRE( data.name == QLatin1String("Qt5Core") );
+    REQUIRE( data.extensionAndVersion.first.isNull() );
+    REQUIRE( data.extensionAndVersion.second.isNull() );
+  }
+
+  SECTION("libm")
+  {
+    data = LibraryNameImpl::fromFullName( QLatin1String("libm") );
+    REQUIRE( data.fullName == QLatin1String("libm") );
+    REQUIRE( data.prefix == QLatin1String("lib") );
+    REQUIRE( data.name == QLatin1String("m") );
+    REQUIRE( data.extensionAndVersion.first.isNull() );
+    REQUIRE( data.extensionAndVersion.second.isNull() );
+  }
+
+  SECTION("Qt5Core.dll")
+  {
+    data = LibraryNameImpl::fromFullName( QLatin1String("Qt5Core.dll") );
+    REQUIRE( data.fullName == QLatin1String("Qt5Core.dll") );
+    REQUIRE( data.prefix.isEmpty() );
+    REQUIRE( data.name == QLatin1String("Qt5Core") );
+    REQUIRE( data.extensionAndVersion.first.name() == QLatin1String("dll") );
+    REQUIRE( data.extensionAndVersion.second.isNull() );
+  }
+
+  SECTION("m.dll")
+  {
+    data = LibraryNameImpl::fromFullName( QLatin1String("m.dll") );
+    REQUIRE( data.fullName == QLatin1String("m.dll") );
+    REQUIRE( data.prefix.isEmpty() );
+    REQUIRE( data.name == QLatin1String("m") );
+    REQUIRE( data.extensionAndVersion.first.name() == QLatin1String("dll") );
+    REQUIRE( data.extensionAndVersion.second.isNull() );
+  }
+
+  SECTION("libm.so.123.456.7890")
+  {
+    data = LibraryNameImpl::fromFullName( QLatin1String("libm.so.123.456.7890") );
+    REQUIRE( data.fullName == QLatin1String("libm.so.123.456.7890") );
+    REQUIRE( data.prefix == QLatin1String("lib") );
+    REQUIRE( data.name == QLatin1String("m") );
+    REQUIRE( data.extensionAndVersion.first.name() == QLatin1String("so") );
+    REQUIRE( data.extensionAndVersion.second.toString() == QLatin1String("123.456.7890") );
+  }
+
+  SECTION("libm.123.456.7890.dylib")
+  {
+    data = LibraryNameImpl::fromFullName( QLatin1String("libm.123.456.7890.dylib") );
+    REQUIRE( data.fullName == QLatin1String("libm.123.456.7890.dylib") );
+    REQUIRE( data.prefix == QLatin1String("lib") );
+    REQUIRE( data.name == QLatin1String("m") );
+    REQUIRE( data.extensionAndVersion.first.name() == QLatin1String("dylib") );
+    REQUIRE( data.extensionAndVersion.second.toString() == QLatin1String("123.456.7890") );
+  }
+}
 
 TEST_CASE("FromString")
 {
@@ -37,7 +317,7 @@ TEST_CASE("FromString")
     REQUIRE( libraryName.fullName().isEmpty() );
     REQUIRE( libraryName.prefix().isEmpty() );
     REQUIRE( libraryName.name().isEmpty() );
-    REQUIRE( libraryName.extension().isEmpty() );
+    REQUIRE( libraryName.extension().isNull() );
     REQUIRE( libraryName.version().toString().isEmpty() );
   }
 
@@ -50,7 +330,7 @@ TEST_CASE("FromString")
     REQUIRE( libraryName.fullName() == inputName );
     REQUIRE( libraryName.prefix().isEmpty() );
     REQUIRE( libraryName.name() == QLatin1String("Qt5Core") );
-    REQUIRE( libraryName.extension().isEmpty() );
+    REQUIRE( libraryName.extension().isNull() );
     REQUIRE( libraryName.version().toString().isEmpty() );
   }
 
@@ -63,7 +343,7 @@ TEST_CASE("FromString")
     REQUIRE( libraryName.fullName() == inputName );
     REQUIRE( libraryName.prefix() == QLatin1String("lib") );
     REQUIRE( libraryName.name() == QLatin1String("Qt5Core") );
-    REQUIRE( libraryName.extension().isEmpty() );
+    REQUIRE( libraryName.extension().isNull() );
     REQUIRE( libraryName.version().toString().isEmpty() );
   }
 
@@ -76,7 +356,7 @@ TEST_CASE("FromString")
     REQUIRE( libraryName.fullName() == inputName );
     REQUIRE( libraryName.prefix() == QLatin1String("lib") );
     REQUIRE( libraryName.name() == QLatin1String("Qt5Core") );
-    REQUIRE( libraryName.extension() == QLatin1String("so") );
+    REQUIRE( libraryName.extension().isSo() );
     REQUIRE( libraryName.version().toString().isEmpty() );
   }
 
@@ -89,7 +369,7 @@ TEST_CASE("FromString")
     REQUIRE( libraryName.fullName() == inputName );
     REQUIRE( libraryName.prefix() == QLatin1String("lib") );
     REQUIRE( libraryName.name() == QLatin1String("Qt5Core") );
-    REQUIRE( libraryName.extension() == QLatin1String("so") );
+    REQUIRE( libraryName.extension().isSo() );
     REQUIRE( libraryName.version().toString() == QLatin1String("5") );
   }
 
@@ -102,7 +382,7 @@ TEST_CASE("FromString")
     REQUIRE( libraryName.fullName() == inputName );
     REQUIRE( libraryName.prefix() == QLatin1String("lib") );
     REQUIRE( libraryName.name() == QLatin1String("Qt5Core") );
-    REQUIRE( libraryName.extension() == QLatin1String("so") );
+    REQUIRE( libraryName.extension().isSo() );
     REQUIRE( libraryName.version().toString() == QLatin1String("5.6") );
   }
 
@@ -115,7 +395,7 @@ TEST_CASE("FromString")
     REQUIRE( libraryName.fullName() == inputName );
     REQUIRE( libraryName.prefix() == QLatin1String("lib") );
     REQUIRE( libraryName.name() == QLatin1String("Qt5Core") );
-    REQUIRE( libraryName.extension() == QLatin1String("so") );
+    REQUIRE( libraryName.extension().isSo() );
     REQUIRE( libraryName.version().toString() == QLatin1String("5.6.2") );
   }
 
@@ -128,7 +408,7 @@ TEST_CASE("FromString")
     REQUIRE( libraryName.fullName() == inputName );
     REQUIRE( libraryName.prefix().isEmpty() );
     REQUIRE( libraryName.name() == QLatin1String("Qt5Core") );
-    REQUIRE( libraryName.extension() == QLatin1String("dll") );
+    REQUIRE( libraryName.extension().isDll() );
     REQUIRE( libraryName.version().toString().isEmpty() );
   }
 
@@ -141,7 +421,7 @@ TEST_CASE("FromString")
     REQUIRE( libraryName.fullName() == inputName );
     REQUIRE( libraryName.prefix() == QLatin1String("lib") );
     REQUIRE( libraryName.name() == QLatin1String("png12") );
-    REQUIRE( libraryName.extension() == QLatin1String("so") );
+    REQUIRE( libraryName.extension().isSo() );
     REQUIRE( libraryName.version().toString().isEmpty() );
   }
 
@@ -154,7 +434,7 @@ TEST_CASE("FromString")
     REQUIRE( libraryName.fullName() == inputName );
     REQUIRE( libraryName.prefix() == QLatin1String("lib") );
     REQUIRE( libraryName.name() == QLatin1String("png12") );
-    REQUIRE( libraryName.extension() == QLatin1String("so") );
+    REQUIRE( libraryName.extension().isSo() );
     REQUIRE( libraryName.version().toString() == QLatin1String("0") );
   }
 
@@ -169,10 +449,9 @@ TEST_CASE("FromString")
       REQUIRE( libraryName.fullName() == inputName );
       REQUIRE( libraryName.prefix() == QLatin1String("lib") );
       REQUIRE( libraryName.name() == QLatin1String("Qt5Core") );
-      REQUIRE( libraryName.extension() == QLatin1String("dylib") );
+      REQUIRE( libraryName.extension().isDylib() );
       REQUIRE( libraryName.version().toString().isEmpty() );
     }
-
   }
 }
 
@@ -206,73 +485,5 @@ TEST_CASE("debugSuffix")
   {
     LibraryName libraryName( QLatin1String("libaD.dll") );
     REQUIRE( libraryName.hasNameDebugSuffix() );
-  }
-}
-
-TEST_CASE("toFullNameLinux")
-{
-  SECTION("No version")
-  {
-    LibraryName libraryName( QLatin1String("Qt5Core") );
-    REQUIRE( libraryName.toFullNameLinux() == QLatin1String("libQt5Core.so") );
-  }
-
-  SECTION("libQt5Core.so.1.2.3")
-  {
-    LibraryName libraryName( QLatin1String("libQt5Core.so.1.2.3") );
-    REQUIRE( libraryName.toFullNameLinux() == QLatin1String("libQt5Core.so.1.2.3") );
-  }
-}
-
-TEST_CASE("operatingSystemFromLibraryName")
-{
-  SECTION("empty")
-  {
-    REQUIRE( LibraryName::operatingSystem( QLatin1String("") ) == OperatingSystem::Unknown );
-  }
-
-  SECTION("A")
-  {
-    REQUIRE( LibraryName::operatingSystem( QLatin1String("A") ) == OperatingSystem::Unknown );
-  }
-
-  SECTION("A.so")
-  {
-    REQUIRE( LibraryName::operatingSystem( QLatin1String("A.so") ) == OperatingSystem::Linux );
-  }
-
-  SECTION("A.so.1")
-  {
-    REQUIRE( LibraryName::operatingSystem( QLatin1String("A.so.1") ) == OperatingSystem::Linux );
-  }
-
-  SECTION("A.so.1.2")
-  {
-    REQUIRE( LibraryName::operatingSystem( QLatin1String("A.so.1.2") ) == OperatingSystem::Linux );
-  }
-
-  SECTION("A.so.1.2.3")
-  {
-    REQUIRE( LibraryName::operatingSystem( QLatin1String("A.so.1.2.3") ) == OperatingSystem::Linux );
-  }
-
-  SECTION("A.dll")
-  {
-    REQUIRE( LibraryName::operatingSystem( QLatin1String("A.dll") ) == OperatingSystem::Windows );
-  }
-
-  SECTION("A.DLL")
-  {
-    REQUIRE( LibraryName::operatingSystem( QLatin1String("A.DLL") ) == OperatingSystem::Windows );
-  }
-
-  SECTION("A.Dll")
-  {
-    REQUIRE( LibraryName::operatingSystem( QLatin1String("A.Dll") ) == OperatingSystem::Windows );
-  }
-
-  SECTION("OSX")
-  {
-    REQUIRE(false);
   }
 }

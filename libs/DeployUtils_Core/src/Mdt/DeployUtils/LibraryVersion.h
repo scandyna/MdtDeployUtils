@@ -110,13 +110,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     QString toString() const;
 
-//     /*! \brief Set library version
-//      *
-//      * \pre versionMajor must be >= 0
-//      * \pre if versionPatch is >=0 , versionMinor must also be >= 0
-//      */
-//     void setVersion(int versionMajor, int versionMinor = -1, int versionPatch = -1);
-
    private:
 
     int mVersionMajor = -1;

@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2021 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -18,14 +18,26 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "LibraryName.h"
-#include "Impl/LibraryNameImpl.h"
+#ifndef MDT_DEPLOY_UTILS_IMPL_LIBRARY_NAME_DATA_H
+#define MDT_DEPLOY_UTILS_IMPL_LIBRARY_NAME_DATA_H
 
-namespace Mdt{ namespace DeployUtils{
+#include "../LibraryNameExtension.h"
+#include "../LibraryVersion.h"
+#include <QString>
+#include <utility>
 
-LibraryName::LibraryName(const QString & fullName)
-{
-  mData = Impl::LibraryNameImpl::fromFullName(fullName);
-}
+namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
-}} // namespace Mdt{ namespace DeployUtils{
+  /*! \internal
+   */
+  struct LibraryNameData
+  {
+    QString fullName;
+    QString prefix;
+    QString name;
+    std::pair<LibraryNameExtension, LibraryVersion> extensionAndVersion;
+  };
+
+}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{
+
+#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_LIBRARY_NAME_DATA_H

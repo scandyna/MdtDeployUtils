@@ -39,6 +39,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME LibraryNameExtensionTest
+  TARGET libraryNameExtensionTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/LibraryNameExtensionTest.cpp
+)
+
+mdt_add_test(
   NAME LibraryNameTest
   TARGET libraryNameTest
   DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt

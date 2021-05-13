@@ -22,20 +22,46 @@
 #define MDT_DEPLOY_UTILS_LIBRARY_NAME_H
 
 #include "LibraryVersion.h"
-#include "OperatingSystem.h"
+#include "LibraryNameExtension.h"
+#include "Impl/LibraryNameData.h"
 #include "mdt_deployutils_export.h"
+#include <QChar>
+#include <QLatin1Char>
 #include <QString>
 #include <QStringRef>
-
-// class QStringRef;
 
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Representation of a shared library name
+   *
+   * A shared library can be composed of several parts:
+   * - A basename (ex: Qt5Core)
+   * - A prefix (ex: lib)
+   * - A version
+   * - A extension (so, dll, dylib)
+   *
+   * On Windows, the full name will be composed with the basename with the dll extension.
+   * Example: Qt5Core.dll .
+   *
+   * On Linux, the full name will commonly be composed, at least,
+   * with the \a lib prefix, the basename and the so extension.
+   * Example: libQt5Core.so .
+   *
+   * On Apple OS-X, the full name will commonly be composed, at least,
+   * with the \a lib prefix, the basename and the dylib extension.
+   * Example: libQt5Core.dylib .
+   *
+   * Here is a example for Qt5Core shared library:
+   * |   OS    | Full name        | Versionned full name   |
+   * |:-------:|:-----------------|:-----------------------|
+   * | Linux   | libQt5Core.so    | libQt5Core.so.5.9.3    |
+   * | OS-X    | libQt5Core.dylib | libQt5Core.5.9.3.dylib |
+   * | Windows | Qt5Core.dll      | n/a                    |
+   *
    */
   class MDT_DEPLOYUTILS_EXPORT LibraryName
   {
-  public:
+   public:
 
     /*! \brief Construct a null library name
      */
@@ -70,18 +96,18 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Check is this library name is null
      */
-    bool isNull() const
+    bool isNull() const noexcept
     {
-      return mFullName.isEmpty();
+      return mData.fullName.isEmpty();
     }
 
     /*! \brief Get library name prefix
      *
      * Returns the library name prefix if it was set.
      */
-    QString prefix() const
+    QString prefix() const noexcept
     {
-      return mPrefix;
+      return mData.prefix;
     }
 
     /*! \brief Get library name
@@ -90,9 +116,9 @@ namespace Mdt{ namespace DeployUtils{
      *  For example, if this library name was constructed with libQt5Core.so.5.5.1
      *  this method returns Qt5Core
      */
-    QString name() const
+    const QString & name() const noexcept
     {
-      return mName;
+      return mData.name;
     }
 
     /*! \brief Check a debug suffix is present in the name
@@ -105,58 +131,42 @@ namespace Mdt{ namespace DeployUtils{
      *  - Qt5Core.dll : not debug, this method returns false
      *  - Qt5Cored.dll: debug, this method returns true
      */
-    bool hasNameDebugSuffix() const;
+    bool hasNameDebugSuffix() const noexcept
+    {
+      if( name().isEmpty() ){
+        return false;
+      }
+      const QChar nameSuffix = name().at(name().size() - 1);
+
+      return ( (nameSuffix == QLatin1Char('d')) || (nameSuffix == QLatin1Char('D')) );
+    }
 
     /*! \brief Get library name extension
-     *
-     * Returns the extension if it was set.
-     *  For versionned so names, only 'so' is returned.
      */
-    QString extension() const
+    const LibraryNameExtension & extension() const noexcept
     {
-      return mExtension;
+      return mData.extensionAndVersion.first;
     }
 
     /*! \brief Get library version
      */
-    LibraryVersion version() const
+    const LibraryVersion & version() const noexcept
     {
-      return mVersion;
+      return mData.extensionAndVersion.second;
     }
 
     /*! \brief Get library full name
      *
      * Returns the library name as it was set.
      */
-    QString fullName() const
+    QString fullName() const noexcept
     {
-      return mFullName;
+      return mData.fullName;
     }
 
-    /*! \brief Get the full library name for Linux platform
-     *
-     * Returns the lib prefix, name, .so extension,
-     *  and the version if available
-     */
-    QString toFullNameLinux() const;
+   private:
 
-    /*! \brief Deduce the operating system of a library from its file name
-     *
-     * Will use the file extension of \a fullName to deduce
-     *  the library operating system.
-     */
-    static OperatingSystem operatingSystem(const QString & fullName);
-
-  private:
-
-    static LibraryVersion parseExtension(const QString & fullName, QStringRef & extension);
-    static bool compareExtension(const QStringRef & extension, const char * const s);
-
-    QString mFullName;
-    QString mPrefix;
-    QString mName;
-    QString mExtension;
-    LibraryVersion mVersion;
+    Impl::LibraryNameData mData;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
