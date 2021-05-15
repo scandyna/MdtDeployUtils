@@ -33,7 +33,7 @@ MessageLogger::MessageLogger()
   instance = this;
 }
 
-MessageLogger::~MessageLogger()
+MessageLogger::~MessageLogger() noexcept
 {
   instance = nullptr;
 }
