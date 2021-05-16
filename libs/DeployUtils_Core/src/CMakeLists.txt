@@ -22,6 +22,12 @@ add_library(Mdt_DeployUtils
   Mdt/DeployUtils/LibraryName.cpp
   Mdt/DeployUtils/LibraryInfo.cpp
   Mdt/DeployUtils/LibraryInfoList.cpp
+  Mdt/DeployUtils/ExecutableFileReadError.cpp
+  Mdt/DeployUtils/Impl/Elf/Header.cpp
+  Mdt/DeployUtils/Impl/Elf/ElfFile.cpp
+  Mdt/DeployUtils/Impl/Elf/ElfFileReader.cpp
+  Mdt/DeployUtils/Impl/Elf/Debug.cpp
+  Mdt/DeployUtils/ElfFileReader.cpp
 #   Mdt/DeployUtils/BinaryDependenciesImplementationInterface.cpp
 #   Mdt/DeployUtils/BinaryDependencies.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.cpp

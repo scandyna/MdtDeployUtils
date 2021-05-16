@@ -70,6 +70,47 @@ mdt_add_test(
     src/LibraryInfoListTest.cpp
 )
 
+mdt_add_test(
+  NAME ElfFileReaderTest
+  TARGET elfFileReaderTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfFileReaderTest.cpp
+)
+
+# Create a shared library to make some tests
+# Force this library to be a shared library
+if( UNIX AND (NOT APPLE) )
+
+  add_library(
+    testSharedLibrary SHARED
+    src/TestLibrary.cpp
+  )
+
+  # Make the test depend on the test shared library,
+  # so it will be builded first
+  mdt_add_test(
+    NAME ElfFileReaderTest_Unix
+    TARGET elfFileReaderTest_Unix
+    DEPENDENCIES Mdt::DeployUtils testSharedLibrary Mdt::Catch2Main Mdt::Catch2Qt
+    SOURCE_FILES
+      src/ElfFileReaderTest_Unix.cpp
+  )
+
+  target_compile_definitions(elfFileReaderTest_Unix PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+
+endif()
+
+
+
+mdt_add_test(
+  NAME ElfFileReaderErrorTest
+  TARGET elfFileReaderErrorTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfFileReaderErrorTest.cpp
+)
+
 # mdt_add_test(
 #   NAME BinaryDependenciesTest
 #   TARGET binaryDependenciesTest
