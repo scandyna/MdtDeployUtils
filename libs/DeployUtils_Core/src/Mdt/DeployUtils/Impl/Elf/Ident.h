@@ -18,8 +18,8 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_IMPL_ELF_HEADER_H
-#define MDT_DEPLOY_UTILS_IMPL_ELF_HEADER_H
+#ifndef MDT_DEPLOY_UTILS_IMPL_ELF_IDENT_H
+#define MDT_DEPLOY_UTILS_IMPL_ELF_IDENT_H
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
@@ -107,18 +107,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     }
   };
 
-  /*! \internal e_type from the header
-   */
-  enum class ObjectFileType
-  {
-    None = 0x00,            /*!< An unknown type */
-    RelocatableFile = 0x01, /*!< A relocatable file */
-    ExecutableFile = 0x02,  /*!< An executable file */
-    SharedObject = 0x03,    /*!< A shared object */
-    CoreFile = 0x04,        /*!< A core file */
-    Unknown = 0x1000        /*!< Not from the standard */
-  };
-
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
-#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_HEADER_H
+#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_IDENT_H

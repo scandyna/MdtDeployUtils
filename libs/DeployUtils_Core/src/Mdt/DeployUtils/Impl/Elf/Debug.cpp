@@ -42,9 +42,9 @@ QString toDebugString(DataFormat dataFormat)
 {
   switch(dataFormat){
     case DataFormat::Data2LSB:
-      return QLatin1String("little-endian");
+      return QLatin1String("Two's complement, little-endian");
     case DataFormat::Data2MSB:
-      return QLatin1String("big-endian");
+      return QLatin1String("Two's complement, big-endian");
     case DataFormat::DataNone:
       return QLatin1String("unknown");
   }
@@ -80,7 +80,7 @@ QString toDebugString(const Ident & ident)
   }
 
   str += QLatin1String("class: ") + toDebugString(ident._class);
-  str += QLatin1String("\nData format (endianness): ") + toDebugString(ident.dataFormat);
+  str += QLatin1String("\nData format: ") + toDebugString(ident.dataFormat);
   str += QLatin1String("\nELF version: ") + QString::number(ident.version);
   str += QLatin1String("\nOS ABI: ") + QString::number(ident.osabi)
          + QLatin1String(" (") + toDebugString( ident.osAbiType() ) + QLatin1String(")");
@@ -107,6 +107,35 @@ QString toDebugString(ObjectFileType type)
   }
 
   return QString();
+}
+
+QString toDebugString(Machine machine)
+{
+  switch(machine){
+    case Machine::None:
+      return QLatin1String("None");
+    case Machine::X86:
+      return QLatin1String("x86");
+    case Machine::X86_64:
+      return QLatin1String("AMD x86-64");
+    case Machine::Unknown:
+      return QLatin1String("Unknown");
+  }
+
+  return QString();
+}
+
+QString toDebugString(const FileHeader & header)
+{
+  QString str = toDebugString(header.ident);
+
+  str += QLatin1String("\nObject file type: ") + toDebugString(header.type);
+  str += QLatin1String("\nMachine: ") + toDebugString(header.machine);
+  str += QLatin1String("\nVersion: ") + QString::number(header.version);
+  str += QLatin1String("\nEntry point: 0x") + QString::number(header.entry, 16);
+  str += QLatin1String("\nProgram header offset: ") + QString::number(header.phoff);
+
+  return str;
 }
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{

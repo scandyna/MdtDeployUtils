@@ -18,50 +18,48 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_IMPL_ELF_DEBUG_H
-#define MDT_DEPLOY_UTILS_IMPL_ELF_DEBUG_H
+#ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_HEADER_H
+#define MDT_DEPLOY_UTILS_IMPL_ELF_FILE_HEADER_H
 
-#include "FileHeader.h"
-#include "mdt_deployutils_export.h"
-#include <QString>
+#include "Ident.h"
+#include <cstdint>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
-  /*! \internal
+  /*! \internal e_type from the header
    */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(Class c);
+  enum class ObjectFileType
+  {
+    None = 0x00,            /*!< An unknown type */
+    RelocatableFile = 0x01, /*!< A relocatable file */
+    ExecutableFile = 0x02,  /*!< An executable file */
+    SharedObject = 0x03,    /*!< A shared object */
+    CoreFile = 0x04,        /*!< A core file */
+    Unknown = 0x1000        /*!< Not from the standard */
+  };
+
+  /*! \internal e_machine from the header
+   */
+  enum class Machine
+  {
+    None = 0x00,      /*!< No specific instruction set  */
+    X86 = 0x03,       /*!< x86  */
+    X86_64 = 0x3E,    /*!< AMD x86-64  */
+    Unknown = 0xFFFF  /*!< Not from the standard */
+  };
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(DataFormat dataFormat);
-
-  /*! \internal
-   */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(OsAbiType osAbiType);
-
-  /*! \internal
-   */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(const Ident & ident);
-
-  /*! \internal
-   */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(ObjectFileType type);
-
-  /*! \internal
-   */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(Machine machine);
-
-  /*! \internal
-   */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(const FileHeader & header);
+  struct FileHeader
+  {
+    Ident ident;
+    ObjectFileType type;
+    Machine machine;
+    uint32_t version;
+    uint64_t entry;
+    uint64_t phoff;
+  };
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
-#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_DEBUG_H
+#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_HEADER_H

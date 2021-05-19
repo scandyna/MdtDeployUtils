@@ -21,7 +21,7 @@
 #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_ELF_FILE_READER_H
 #define MDT_DEPLOY_UTILS_IMPL_ELF_ELF_FILE_READER_H
 
-#include "Header.h"
+#include "FileHeader.h"
 #include "Mdt/DeployUtils/ExecutableFileReadError.h"
 #include <QFile>
 #include <QFileInfo>
@@ -47,7 +47,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    *
    * \pre \a dataFormat must be valid
    * \pre \a s must not be a nullptr
-   * \pre \a the array referenced by \a a must ba at least 2 bytes long
+   * \pre \a the array referenced by \a s must ba at least 2 bytes long
    */
   inline
   uint16_t getHalfWord(const unsigned char * const s, DataFormat dataFormat) noexcept
@@ -64,6 +64,70 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     }
 
     return value;
+  }
+
+  /*! \internal
+   *
+   * \pre \a dataFormat must be valid
+   * \pre \a s must not be a nullptr
+   * \pre \a the array referenced by \a s must ba at least 4 bytes long
+   */
+  inline
+  uint32_t getWord(const unsigned char * const s, DataFormat dataFormat) noexcept
+  {
+    assert( dataFormat != DataFormat::DataNone );
+    assert( s != nullptr );
+
+    uint32_t value;
+
+    if( dataFormat == DataFormat::Data2MSB ){
+      value = qFromBigEndian<uint32_t>(s);
+    }else{
+      value = qFromLittleEndian<uint32_t>(s);
+    }
+
+    return value;
+  }
+
+  /*! \internal
+   *
+   * \pre \a s must not be a nullptr
+   * \pre \a the array referenced by \a s must ba at least
+   *         4 bytes long for 32-bit file, 8 bytes long 64-bit file
+   * \pre \a ident must be valid
+   */
+  inline
+  uint64_t getAddress(const unsigned char * const s, const Ident & ident) noexcept
+  {
+    assert( s != nullptr );
+    assert( ident.isValid() );
+
+    if( ident._class == Class::Class32 ){
+      return getWord(s, ident.dataFormat);
+    }
+
+    assert( ident._class == Class::Class64 );
+
+    /*
+     * using qFromBigEndian<usint64_t>(s);
+     * or qFromLittleEndian<usint64_t>(s);
+     * does not work (linker error),
+     * so use Qt defined quint64
+     */
+    if( ident.dataFormat == DataFormat::Data2MSB ){
+      return qFromBigEndian<quint64>(s);
+    }
+
+    assert( ident.dataFormat == DataFormat::Data2LSB );
+
+    return qFromLittleEndian<quint64>(s);
+  }
+
+  /*! \internal Get the next position after a address have been read
+   */
+  inline
+  const unsigned char * nextPositionAfterAddress(const unsigned char * const s, Class _class) noexcept
+  {
   }
 
   /*! \internal
@@ -171,9 +235,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
   /*! \internal
    *
-   * \a ident will be used,
-   * to know the endianness of the file.
-   *
    * \pre \a valueArray must not be a nullptr
    * \pre the array referenced by \a valueArray must have at least 2 bytes
    * \pre \a dataFormat must be valid
@@ -187,6 +248,97 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     const uint16_t value = getHalfWord(valueArray, dataFormat);
 
     return e_type_fromValue(value);
+  }
+
+  /*! \internal
+   */
+  inline
+  Machine e_machine_fromValue(uint16_t value) noexcept
+  {
+    switch(value){
+      case 0x00:
+        return Machine::None;
+      case 0x03:
+        return Machine::X86;
+      case 0x3E:
+        return Machine::X86_64;
+    }
+
+    return Machine::Unknown;
+  }
+
+  /*! \internal
+   *
+   * \pre \a valueArray must not be a nullptr
+   * \pre the array referenced by \a valueArray must have at least 2 bytes
+   * \pre \a dataFormat must be valid
+   */
+  inline
+  Machine extract_e_machine(const uchar * const valueArray, DataFormat dataFormat) noexcept
+  {
+    assert( valueArray != nullptr );
+    assert( dataFormat != DataFormat::DataNone );
+
+    const uint16_t value = getHalfWord(valueArray, dataFormat);
+
+    return e_machine_fromValue(value);
+  }
+
+  /*! \internal
+   *
+   * \pre \a valueArray must not be a nullptr
+   * \pre the array referenced by \a valueArray must have at least 4 bytes
+   * \pre \a dataFormat must be valid
+   */
+  inline
+  uint32_t extract_e_version(const uchar * const valueArray, DataFormat dataFormat) noexcept
+  {
+    assert( valueArray != nullptr );
+    assert( dataFormat != DataFormat::DataNone );
+
+    return getWord(valueArray, dataFormat);
+  }
+
+  /*! \internal
+   *
+   * \pre \a valueArray must not be a nullptr
+   * \pre the array referenced by \a valueArray must have at least
+   *      4 bytes for 32-bit file, 8 bytes for 64-bit file
+   * \pre \a ident must be valid
+   */
+  inline
+  uint64_t extract_e_entry(const uchar * const valueArray, const Ident & ident) noexcept
+  {
+    assert( valueArray != nullptr );
+    assert( ident.isValid() );
+
+    return getAddress(valueArray, ident);
+  }
+
+  /*! \internal
+   *
+   * \pre \a map must not be a nullptr
+   * \pre the array referenced by \a map must have at least
+   *       52 bytes for 32-bit file, 64 bytes for 64-bit file
+   */
+  inline
+  FileHeader extractFileHeader(const uchar * const map) noexcept
+  {
+    assert( map != nullptr );
+
+    FileHeader header;
+    const unsigned char *it = map;
+
+    header.ident = extractIdent(map);
+    if( !header.ident.isValid() ){
+      return header;
+    }
+    header.type = extract_e_type(map + 0x10, header.ident.dataFormat);
+    header.machine = extract_e_machine(map + 0x12, header.ident.dataFormat);
+    header.version = extract_e_version(map + 0x14, header.ident.dataFormat);
+    header.entry = extract_e_entry(map + 0x18, header.ident);
+
+    return header;
   }
 
   /*! \internal
@@ -251,23 +403,28 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     {
       assert( mFile.isOpen() );
       
-      if( mFile.size() < 0x40 ){
+      if( mFile.size() < 0x41 ){
         return;
       }
 
-      const uchar* map = mFile.map(0, 0x40);
+      const uchar* map = mFile.map(0, 0x41);
       if( map == nullptr ){
         qDebug() << "map failed";
         return;
       }
 
-      const Ident ident = extractIdent(map);
+      const FileHeader header = extractFileHeader(map);
       
-      const ObjectFileType objectFileType = extract_e_type(map + 0x10, ident.dataFormat);
+      std::cout << toDebugString(header).toStdString() << std::endl;
       
-      std::cout << toDebugString(ident).toStdString() << std::endl;
-      std::cout << "Object file type: " << toDebugString(objectFileType).toStdString() << std::endl;
-
+//       const Ident ident = extractIdent(map);
+//       
+//       const ObjectFileType objectFileType = extract_e_type(map + 0x10, ident.dataFormat);
+//       const Machine machine = extract_e_machine(map + 0x12, ident.dataFormat);
+//       
+//       std::cout << toDebugString(ident).toStdString() << std::endl;
+//       std::cout << "Object file type: " << toDebugString(objectFileType).toStdString() << std::endl;
+//       std::cout << "Machine: " << toDebugString(machine).toStdString() << std::endl;
     }
 
    private:
