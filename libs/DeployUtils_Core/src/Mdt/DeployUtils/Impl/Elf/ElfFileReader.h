@@ -124,10 +124,22 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   }
 
   /*! \internal Get the next position after a address have been read
+   *
+   * \pre \a it must not be a nullptr
+   * \pre \a ident must be valid
    */
   inline
-  const unsigned char * nextPositionAfterAddress(const unsigned char * const s, Class _class) noexcept
+  const unsigned char * nextPositionAfterAddress(const unsigned char * const it, const Ident & ident) noexcept
   {
+    assert( it != nullptr );
+    assert( ident.isValid() );
+
+    if( ident._class == Class::Class32 ){
+      return it + 4;
+    }
+    assert( ident._class == Class::Class64 );
+
+    return it + 8;
   }
 
   /*! \internal
@@ -290,6 +302,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    * \pre the array referenced by \a valueArray must have at least 4 bytes
    * \pre \a dataFormat must be valid
    */
+  [[deprecated]]
   inline
   uint32_t extract_e_version(const uchar * const valueArray, DataFormat dataFormat) noexcept
   {
@@ -306,6 +319,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    *      4 bytes for 32-bit file, 8 bytes for 64-bit file
    * \pre \a ident must be valid
    */
+  [[deprecated]]
   inline
   uint64_t extract_e_entry(const uchar * const valueArray, const Ident & ident) noexcept
   {
@@ -329,14 +343,51 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     FileHeader header;
     const unsigned char *it = map;
 
-    header.ident = extractIdent(map);
+    header.ident = extractIdent(it);
     if( !header.ident.isValid() ){
       return header;
     }
-    header.type = extract_e_type(map + 0x10, header.ident.dataFormat);
-    header.machine = extract_e_machine(map + 0x12, header.ident.dataFormat);
-    header.version = extract_e_version(map + 0x14, header.ident.dataFormat);
-    header.entry = extract_e_entry(map + 0x18, header.ident);
+    it += 0x10;
+
+    header.type = extract_e_type(it, header.ident.dataFormat);
+    it += 2;
+
+    header.machine = extract_e_machine(it, header.ident.dataFormat);
+    it += 2;
+
+    header.version = getWord(it, header.ident.dataFormat);
+///     header.version = extract_e_version(it, header.ident.dataFormat);
+    it += 4;
+
+    header.entry = getAddress(it, header.ident);
+///     header.entry = extract_e_entry(it, header.ident);
+    it = nextPositionAfterAddress(it, header.ident);
+
+    header.phoff = getAddress(it, header.ident);
+    it = nextPositionAfterAddress(it, header.ident);
+
+    header.shoff = getAddress(it, header.ident);
+    it = nextPositionAfterAddress(it, header.ident);
+
+    header.flags = getWord(it, header.ident.dataFormat);
+    it += 4;
+
+    header.ehsize = getHalfWord(it, header.ident.dataFormat);
+    it += 2;
+
+    header.phentsize = getHalfWord(it, header.ident.dataFormat);
+    it += 2;
+
+    header.phnum = getHalfWord(it, header.ident.dataFormat);
+    it += 2;
+
+    header.shentsize = getHalfWord(it, header.ident.dataFormat);
+    it += 2;
+
+    header.shnum = getHalfWord(it, header.ident.dataFormat);
+    it += 2;
+
+    header.shstrndx = getHalfWord(it, header.ident.dataFormat);
 
     return header;
   }

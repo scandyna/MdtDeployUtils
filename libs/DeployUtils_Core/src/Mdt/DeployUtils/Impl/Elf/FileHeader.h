@@ -42,9 +42,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    */
   enum class Machine
   {
-    None = 0x00,      /*!< No specific instruction set  */
-    X86 = 0x03,       /*!< x86  */
-    X86_64 = 0x3E,    /*!< AMD x86-64  */
+    None = 0x00,      /*!< No specific instruction set */
+    X86 = 0x03,       /*!< x86 */
+    X86_64 = 0x3E,    /*!< AMD x86-64 */
     Unknown = 0xFFFF  /*!< Not from the standard */
   };
 
@@ -58,6 +58,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     uint32_t version;
     uint64_t entry;
     uint64_t phoff;
+    uint64_t shoff;
+    uint32_t flags;
+    uint16_t ehsize;
+    uint16_t phentsize;
+    uint16_t phnum;
+    uint16_t shentsize;
+    uint16_t shnum;
+    uint16_t shstrndx;
   };
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{

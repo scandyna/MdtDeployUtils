@@ -124,6 +124,30 @@ TEST_CASE("getAddress")
   }
 }
 
+TEST_CASE("nextPositionAfterAddress")
+{
+  using Impl::Elf::nextPositionAfterAddress;
+  using Impl::Elf::Ident;
+
+  const unsigned char map[8] = {};
+  const unsigned char * it;
+  Ident ident;
+
+  SECTION("32-bit")
+  {
+    ident = make32BitBigEndianIdent();
+    it = nextPositionAfterAddress(map, ident);
+    REQUIRE( it == map + 4 );
+  }
+
+  SECTION("32-bit")
+  {
+    ident = make64BitLittleEndianIdent();
+    it = nextPositionAfterAddress(map, ident);
+    REQUIRE( it == map + 8 );
+  }
+}
+
 TEST_CASE("Ident")
 {
   using Impl::Elf::Class;
@@ -464,9 +488,9 @@ TEST_CASE("extractFileHeader")
       // e_phoff
       0,0,0,0x34, // 0x34
       // e_shoff
-      0,0,0,0, // ???
+      0x12,0x34,0x56,0x78, // 0x12345678
       // e_flags
-      0,0,0,0, // No flags
+      0,0,0,0x12, // Some flags
       // e_ehsize
       0,52, // 52 bytes
       // e_phentsize
@@ -493,6 +517,14 @@ TEST_CASE("extractFileHeader")
     REQUIRE( header.version == 1 );
     REQUIRE( header.entry == 0x3210 );
     REQUIRE( header.phoff == 0x34 );
+    REQUIRE( header.shoff == 0x12345678 );
+    REQUIRE( header.flags == 0x12 );
+    REQUIRE( header.ehsize == 52 );
+    REQUIRE( header.phentsize == 56 );
+    REQUIRE( header.phnum == 7 );
+    REQUIRE( header.shentsize == 32 );
+    REQUIRE( header.shnum == 35 );
+    REQUIRE( header.shstrndx == 34 );
   }
 
   SECTION("64-bit little-endian")
@@ -524,9 +556,9 @@ TEST_CASE("extractFileHeader")
       // e_phoff
       0x40,0,0,0,0,0,0,0, // 0x40
       // e_shoff
-      0,0,0,0,0,0,0,0, // ???
+      0x90,0x78,0x56,0x34,0x12,0,0,0, // 0x1234567890
       // e_flags
-      0,0,0,0, // No flags
+      0x12,0,0,0, // Some flags
       // e_ehsize
       64,0, // 64 bytes
       // e_phentsize
@@ -553,6 +585,14 @@ TEST_CASE("extractFileHeader")
     REQUIRE( header.version == 1 );
     REQUIRE( header.entry == 0x3210 );
     REQUIRE( header.phoff == 0x40 );
+    REQUIRE( header.shoff == 0x1234567890 );
+    REQUIRE( header.flags == 0x12 );
+    REQUIRE( header.ehsize == 64 );
+    REQUIRE( header.phentsize == 56 );
+    REQUIRE( header.phnum == 7 );
+    REQUIRE( header.shentsize == 32 );
+    REQUIRE( header.shnum == 35 );
+    REQUIRE( header.shstrndx == 34 );
   }
 }
 

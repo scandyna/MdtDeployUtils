@@ -133,7 +133,15 @@ QString toDebugString(const FileHeader & header)
   str += QLatin1String("\nMachine: ") + toDebugString(header.machine);
   str += QLatin1String("\nVersion: ") + QString::number(header.version);
   str += QLatin1String("\nEntry point: 0x") + QString::number(header.entry, 16);
-  str += QLatin1String("\nProgram header offset: ") + QString::number(header.phoff);
+  str += QLatin1String("\nProgram header offset: ") + QString::number(header.phoff) + QLatin1String(" (bytes in the file)");
+  str += QLatin1String("\nSection header offset: ") + QString::number(header.shoff) + QLatin1String(" (bytes in the file)");
+  str += QLatin1String("\nFlags: 0x") + QString::number(header.flags, 16);
+  str += QLatin1String("\nFile header size: ") + QString::number(header.ehsize) + QLatin1String(" bytes");
+  str += QLatin1String("\nProgram header table entry size: ") + QString::number(header.phentsize) + QLatin1String(" bytes");
+  str += QLatin1String("\nProgram header table entries: ") + QString::number(header.phnum);
+  str += QLatin1String("\nSection header table entry size: ") + QString::number(header.shentsize) + QLatin1String(" bytes");
+  str += QLatin1String("\nSection header table entries: ") + QString::number(header.shnum);
+  str += QLatin1String("\nIndex of section header table entry that contains section names: ") + QString::number(header.shstrndx);
 
   return str;
 }
