@@ -86,6 +86,10 @@ if( UNIX AND (NOT APPLE) )
     testSharedLibrary SHARED
     src/TestLibrary.cpp
   )
+  target_link_libraries(testSharedLibrary
+    PRIVATE
+      Qt5::Core
+  )
 
   # Make the test depend on the test shared library,
   # so it will be builded first

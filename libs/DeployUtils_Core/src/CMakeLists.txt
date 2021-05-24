@@ -24,6 +24,7 @@ add_library(Mdt_DeployUtils
   Mdt/DeployUtils/LibraryInfoList.cpp
   Mdt/DeployUtils/ExecutableFileReadError.cpp
   Mdt/DeployUtils/Impl/Elf/Ident.cpp
+  Mdt/DeployUtils/Impl/Elf/SectionHeader.cpp
   Mdt/DeployUtils/Impl/Elf/FileHeader.cpp
   Mdt/DeployUtils/Impl/Elf/ElfFile.cpp
   Mdt/DeployUtils/Impl/Elf/ElfFileReader.cpp

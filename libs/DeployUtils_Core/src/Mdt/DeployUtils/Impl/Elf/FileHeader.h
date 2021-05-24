@@ -66,6 +66,15 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     uint16_t shentsize;
     uint16_t shnum;
     uint16_t shstrndx;
+    
+    /*! \brief Return true if this file has a section name string table
+     *
+     * \sa https://manpages.debian.org/stretch/manpages/elf.5.en.html
+     */
+    constexpr
+    bool hasSectionNameStringTable() const noexcept
+    {
+    }
   };
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{

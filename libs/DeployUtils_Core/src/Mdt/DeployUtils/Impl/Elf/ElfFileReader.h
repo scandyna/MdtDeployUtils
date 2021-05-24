@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_IMPL_ELF_ELF_FILE_READER_H
 
 #include "FileHeader.h"
+#include "SectionHeader.h"
 #include "Mdt/DeployUtils/ExecutableFileReadError.h"
 #include <QFile>
 #include <QFileInfo>
@@ -33,6 +34,8 @@
 
 // #include <iterator>
 
+#include <string>
+#include <vector>
 #include <algorithm>
 #include <cassert>
 
@@ -42,6 +45,13 @@
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
+  /*! \internal
+   */
+  struct ByteArraySpan
+  {
+    const unsigned char *data = nullptr;
+    uint64_t size = 0;
+  };
 
   /*! \internal
    *
@@ -89,6 +99,49 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return value;
   }
 
+  /*! \internal Get a (unsigned) word out from \a array
+   *
+   * Depending on the machine (32-bit or 64-bit), defined in \a ident ,
+   * the value will be decoded as a uint32_t
+   * or a uint64_t.
+   *
+   * The endianness, also defined in \a ident ,
+   * is also taken into account for the decoding.
+   *
+   * \pre \a array must not be a nullptr
+   * \pre \a array must be of a size that can hold the value
+   *  (at least 4 bytes for a 32-bit file, at least 8 bytes for a 64-bit file)
+   * \pre \a ident must be valid
+   *
+   * \sa https://manpages.debian.org/stretch/manpages/elf.5.en.html
+   */
+  inline
+  int64_t getNWord(const unsigned char * const array, const Ident & ident) noexcept
+  {
+    assert( array != nullptr );
+    assert( ident.isValid() );
+
+    if( ident._class == Class::Class32 ){
+      return getWord(array, ident.dataFormat);
+    }
+
+    assert( ident._class == Class::Class64 );
+
+    /*
+     * using qFromBigEndian<usint64_t>(s);
+     * or qFromLittleEndian<usint64_t>(s);
+     * does not work (linker error),
+     * so use Qt defined quint64
+     */
+    if( ident.dataFormat == DataFormat::Data2MSB ){
+      return qFromBigEndian<quint64>(array);
+    }
+
+    assert( ident.dataFormat == DataFormat::Data2LSB );
+
+    return qFromLittleEndian<quint64>(array);
+  }
+
   /*! \internal
    *
    * \pre \a s must not be a nullptr
@@ -102,25 +155,85 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( s != nullptr );
     assert( ident.isValid() );
 
+    return getNWord(s, ident);
+
+//     if( ident._class == Class::Class32 ){
+//       return getWord(s, ident.dataFormat);
+//     }
+// 
+//     assert( ident._class == Class::Class64 );
+// 
+//     /*
+//      * using qFromBigEndian<usint64_t>(s);
+//      * or qFromLittleEndian<usint64_t>(s);
+//      * does not work (linker error),
+//      * so use Qt defined quint64
+//      */
+//     if( ident.dataFormat == DataFormat::Data2MSB ){
+//       return qFromBigEndian<quint64>(s);
+//     }
+// 
+//     assert( ident.dataFormat == DataFormat::Data2LSB );
+// 
+//     return qFromLittleEndian<quint64>(s);
+  }
+
+  /*! \internal
+   *
+   * \pre \a s must not be a nullptr
+   * \pre \a the array referenced by \a s must ba at least
+   *         4 bytes long for 32-bit file, 8 bytes long 64-bit file
+   * \pre \a ident must be valid
+   */
+  inline
+  uint64_t getOffset(const unsigned char * const s, const Ident & ident) noexcept
+  {
+    assert( s != nullptr );
+    assert( ident.isValid() );
+
+    return getAddress(s, ident);
+  }
+
+  /*! \internal Get a signed word out from \a array
+   *
+   * Depending on the machine (32-bit or 64-bit), defined in \a ident ,
+   * the value will be decoded as a Elf32_Sword (int32_t)
+   * or a Elf64_Sxword (int64_t).
+   *
+   * The endianness, also defined in \a ident ,
+   * is also taken into account for the decoding.
+   *
+   * \pre \a array must not be a nullptr
+   * \pre \a array must be of a size that can hold the value
+   *  (at least 4 bytes for a 32-bit file, at least 8 bytes for a 64-bit file)
+   * \pre \a ident must be valid
+   *
+   * \sa https://manpages.debian.org/stretch/manpages/elf.5.en.html
+   */
+  inline
+  int64_t getSignedNWord(const unsigned char * const array, const Ident & ident) noexcept
+  {
+    assert( array != nullptr );
+    assert( ident.isValid() );
+
     if( ident._class == Class::Class32 ){
-      return getWord(s, ident.dataFormat);
+      if( ident.dataFormat == DataFormat::Data2MSB ){
+        return qFromBigEndian<int32_t>(array);
+      }
+      assert( ident.dataFormat == DataFormat::Data2LSB );
+
+      return qFromLittleEndian<int32_t>(array);
     }
 
     assert( ident._class == Class::Class64 );
 
-    /*
-     * using qFromBigEndian<usint64_t>(s);
-     * or qFromLittleEndian<usint64_t>(s);
-     * does not work (linker error),
-     * so use Qt defined quint64
-     */
     if( ident.dataFormat == DataFormat::Data2MSB ){
-      return qFromBigEndian<quint64>(s);
+      return qFromBigEndian<qint64>(array);
     }
 
     assert( ident.dataFormat == DataFormat::Data2LSB );
 
-    return qFromLittleEndian<quint64>(s);
+    return qFromLittleEndian<qint64>(array);
   }
 
   /*! \internal Get the next position after a address have been read
@@ -140,6 +253,17 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( ident._class == Class::Class64 );
 
     return it + 8;
+  }
+
+  /*! \internal Advance \a it for 4 or 8 bytes depending on file class (32-bit or 64-bit file)
+   */
+  inline
+  void advance4or8bytes(const unsigned char * & it, const Ident & ident) noexcept
+  {
+    assert( it != nullptr );
+    assert( ident.isValid() );
+
+    it = nextPositionAfterAddress(it, ident);
   }
 
   /*! \internal
@@ -298,39 +422,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
   /*! \internal
    *
-   * \pre \a valueArray must not be a nullptr
-   * \pre the array referenced by \a valueArray must have at least 4 bytes
-   * \pre \a dataFormat must be valid
-   */
-  [[deprecated]]
-  inline
-  uint32_t extract_e_version(const uchar * const valueArray, DataFormat dataFormat) noexcept
-  {
-    assert( valueArray != nullptr );
-    assert( dataFormat != DataFormat::DataNone );
-
-    return getWord(valueArray, dataFormat);
-  }
-
-  /*! \internal
-   *
-   * \pre \a valueArray must not be a nullptr
-   * \pre the array referenced by \a valueArray must have at least
-   *      4 bytes for 32-bit file, 8 bytes for 64-bit file
-   * \pre \a ident must be valid
-   */
-  [[deprecated]]
-  inline
-  uint64_t extract_e_entry(const uchar * const valueArray, const Ident & ident) noexcept
-  {
-    assert( valueArray != nullptr );
-    assert( ident.isValid() );
-
-    return getAddress(valueArray, ident);
-  }
-
-  /*! \internal
-   *
    * \pre \a map must not be a nullptr
    * \pre the array referenced by \a map must have at least
    *       52 bytes for 32-bit file, 64 bytes for 64-bit file
@@ -356,18 +447,16 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     it += 2;
 
     header.version = getWord(it, header.ident.dataFormat);
-///     header.version = extract_e_version(it, header.ident.dataFormat);
     it += 4;
 
     header.entry = getAddress(it, header.ident);
-///     header.entry = extract_e_entry(it, header.ident);
     it = nextPositionAfterAddress(it, header.ident);
 
-    header.phoff = getAddress(it, header.ident);
-    it = nextPositionAfterAddress(it, header.ident);
+    header.phoff = getOffset(it, header.ident);
+    advance4or8bytes(it, header.ident);
 
-    header.shoff = getAddress(it, header.ident);
-    it = nextPositionAfterAddress(it, header.ident);
+    header.shoff = getOffset(it, header.ident);
+    advance4or8bytes(it, header.ident);
 
     header.flags = getWord(it, header.ident.dataFormat);
     it += 4;
@@ -390,6 +479,212 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     header.shstrndx = getHalfWord(it, header.ident.dataFormat);
 
     return header;
+  }
+
+  /*! \internal Get a string from a array of unsigned characters
+   *
+   * Will get the characters from \a charArray until
+   * a null char is encountered, or maxLength has been reached.
+   *
+   * Each character will be casted to a (signed) char,
+   * meaning that values > 127 are invalid.
+   *
+   * \todo document what to do with invalid chars
+   * \todo see PE format, maybe this will go to some algorithm header later
+   *
+   * \pre \a charArray must not be a nullptr
+   * \pre \a charArray must be at least \a maxLength long
+   * \pre \a maxLength must be > 0 (\todo should accept 0 length, and adapt tests)
+   */
+  inline
+  std::string stringFromUnsignedCharArray(const unsigned char * const charArray, int maxLength) noexcept
+  {
+    assert( charArray != nullptr );
+    assert( maxLength > 0 );
+
+//     qDebug() << "char array: " << (char)charArray[0] << (char)charArray[1];
+//     qDebug() << "char array casted: " << reinterpret_cast<const char*>(charArray);
+//     std::cout << "str: " << std::string( reinterpret_cast<const char*>(charArray) ) << std::endl;
+    
+    return std::string( reinterpret_cast<const char*>(charArray) );
+  }
+
+  /*! \internal
+   *
+   * \pre \a stringTableSectionHeader must be the string table section header
+   */
+  inline
+  void setSectionHeaderName(const unsigned char * const map, const SectionHeader & stringTableSectionHeader,
+                            SectionHeader & sectionHeader) noexcept
+  {
+    assert( stringTableSectionHeader.sectionType() == SectionType::StringTable );
+//     assert( sectionHeader.sectionType() != SectionType::StringTable );
+    
+    const unsigned char *it = map + stringTableSectionHeader.offset + sectionHeader.nameIndex;
+    
+    qDebug() << "set name, string table offset: " << stringTableSectionHeader.offset
+             << ", name index: " << sectionHeader.nameIndex
+             << " offset: " << stringTableSectionHeader.offset + sectionHeader.nameIndex
+             << ", name: " << (char)it[0] << (char)it[1];
+
+    sectionHeader.name = stringFromUnsignedCharArray(map + stringTableSectionHeader.offset + sectionHeader.nameIndex, 100);
+//     sectionHeader.name = std::string( reinterpret_cast<const char*>(map + stringTableSectionHeader.offset + sectionHeader.nameIndex) );
+  }
+
+  /*! \internal
+   *
+   * \pre \a stringTableSectionHeader must be the string table section header
+   */
+  inline
+  void setSectionHeadersName(const unsigned char * const map, const SectionHeader & stringTableSectionHeader,
+                             std::vector<SectionHeader> & sectionHeaders) noexcept
+  {
+    assert( stringTableSectionHeader.sectionType() == SectionType::StringTable );
+
+    for(auto & sectionHeader : sectionHeaders){
+      setSectionHeaderName(map, stringTableSectionHeader, sectionHeader);
+    }
+  }
+  /*! \internal
+   *
+   * \pre \a array must not be a nullptr
+   * \pre the array referenced by \a array must have at least
+   *     40 bytes for 32-bit files, 64 bytes for 64-bit files
+   * \pre \a ident must be valid
+   * \note this function will not set the section header name
+   * \sa setSectionHeaderName()
+   */
+  inline
+  SectionHeader sectionHeaderFromArray(const unsigned char * const array, const Ident & ident) noexcept
+  {
+    assert( array != nullptr );
+    assert( ident.isValid() );
+
+    SectionHeader sectionHeader;
+    const unsigned char *it = array;
+
+    sectionHeader.nameIndex = getWord(it, ident.dataFormat);
+    it += 4;
+
+    sectionHeader.type = getWord(it, ident.dataFormat);
+    it += 4;
+
+    // sh_flags
+    advance4or8bytes(it, ident);
+
+    // sh_addr
+    advance4or8bytes(it, ident);
+
+    sectionHeader.offset = getOffset(it, ident);
+    advance4or8bytes(it, ident);
+
+    sectionHeader.size = getOffset(it, ident);
+
+    return sectionHeader;
+  }
+
+  /*! \internal
+   *
+   * \note this function will not set the section header name
+   * \sa setSectionHeaderName()
+   */
+  inline
+  SectionHeader extractSectionHeaderAt(const unsigned char * const map, const FileHeader & fileHeader, uint16_t index) noexcept
+  {
+    const unsigned char *it = map + fileHeader.shoff + index * fileHeader.shentsize;
+    
+//     qDebug() << "extract at, shoff: " << fileHeader.shoff << ", index: " << index << ", shentsize: " << fileHeader.shentsize << ", map address: " << (quint64)it;
+
+    return sectionHeaderFromArray(it, fileHeader.ident);
+  }
+
+  /*! \internal
+   */
+  inline
+  SectionHeader extractSectionNameStringTableHeader(const unsigned char * const map, const FileHeader & fileHeader) noexcept
+  {
+    return extractSectionHeaderAt(map, fileHeader, fileHeader.shstrndx);
+  }
+
+  /*! \internal
+   */
+  inline
+  std::vector<SectionHeader> extractAllSectionHeaders(const unsigned char * const map, const FileHeader & fileHeader) noexcept
+  {
+    std::vector<SectionHeader> sectionHeaders;
+
+//     const unsigned char *it = map + fileHeader.shoff;
+    const uint16_t sectionHeaderCount = fileHeader.shnum;
+//     const uint16_t sectionHeaderSize = fileHeader.shentsize;
+
+    for(uint16_t i = 0; i < sectionHeaderCount; ++i){
+      sectionHeaders.emplace_back( extractSectionHeaderAt(map, fileHeader, i) );
+//       it += sectionHeaderSize;
+    }
+
+    const SectionHeader stringTableSectionHeader = extractSectionNameStringTableHeader(map, fileHeader);
+    setSectionHeadersName(map, stringTableSectionHeader, sectionHeaders);
+
+    return sectionHeaders;
+  }
+
+  /*! \internal
+   *
+   * \pre \a map must not be a nullptr
+   * \pre \a ident must be valid
+   * \pre \a dynamicSectionHeader must be a Dynamic section type and be named ".dynamic"
+   * \pre \a dynamicStringTableSectionHeader must be a string table header and be named ".dynstr"
+   */
+  inline
+  std::vector<DynamicStruct> extractDynamicSection(const unsigned char * const map, const Ident & ident,
+                                                   const SectionHeader & dynamicSectionHeader,
+                                                   const SectionHeader & dynamicStringTableSectionHeader) noexcept
+  {
+    assert( map != nullptr );
+    assert( ident.isValid() );
+    assert( dynamicSectionHeader.sectionType() == SectionType::Dynamic );
+    assert( dynamicSectionHeader.name == ".dynamic" );
+    assert( dynamicStringTableSectionHeader.sectionType() == SectionType::StringTable );
+    assert( dynamicStringTableSectionHeader.name == ".dynstr" );
+
+    std::vector<DynamicStruct> dynamicSection;
+
+    const unsigned char * first = map + dynamicSectionHeader.offset;
+    const unsigned char * const last = first + dynamicSectionHeader.size;
+
+//     qDebug() << "offset: 0x" << QString::number(dynamicSectionHeader.offset, 16);
+
+    while(first < last){
+      DynamicStruct sectionStruct;
+      
+//       qDebug() << "first: " << first << " , offset: 0x" << QString::number(first - dynamicSection.offset);
+
+      sectionStruct.tag = getSignedNWord(first, ident);
+      advance4or8bytes(first, ident);
+
+      sectionStruct.val_or_ptr = getNWord(first, ident);
+      advance4or8bytes(first, ident);
+      
+      if( sectionStruct.tagType() == DynamicSectionTagType::Needed ){
+        std::cout << "name: " << stringFromUnsignedCharArray(map + dynamicStringTableSectionHeader.offset + sectionStruct.val_or_ptr, 50) << std::endl;
+      }
+
+      if( sectionStruct.tagType() == DynamicSectionTagType::SoName ){
+        std::cout << "so name: " << stringFromUnsignedCharArray(map + dynamicStringTableSectionHeader.offset + sectionStruct.val_or_ptr, 50) << std::endl;
+      }
+
+      if( sectionStruct.tagType() == DynamicSectionTagType::RPath ){
+        std::cout << "RPATH: " << stringFromUnsignedCharArray(map + dynamicStringTableSectionHeader.offset + sectionStruct.val_or_ptr, 50) << std::endl;
+      }
+
+      if( sectionStruct.tagType() == DynamicSectionTagType::Runpath ){
+        std::cout << "RUNPATH: " << stringFromUnsignedCharArray(map + dynamicStringTableSectionHeader.offset + sectionStruct.val_or_ptr, 500) << std::endl;
+      }
+
+      dynamicSection.push_back(sectionStruct);
+    }
+
+    return dynamicSection;
   }
 
   /*! \internal
@@ -454,19 +749,43 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     {
       assert( mFile.isOpen() );
       
-      if( mFile.size() < 0x41 ){
-        return;
-      }
+//       if( mFile.size() < 64 ){
+//         return;
+//       }
+//       if( mFile.size() < 200 ){
+//         return;
+//       }
 
-      const uchar* map = mFile.map(0, 0x41);
+//       const uchar* map = mFile.map(0, 64);
+      const uchar* map = mFile.map(0, mFile.size());
       if( map == nullptr ){
         qDebug() << "map failed";
         return;
       }
 
-      const FileHeader header = extractFileHeader(map);
+      const FileHeader fileHeader = extractFileHeader(map);
       
-      std::cout << toDebugString(header).toStdString() << std::endl;
+      std::cout << toDebugString(fileHeader).toStdString() << std::endl;
+      
+      const auto sectionHeaders = extractAllSectionHeaders(map, fileHeader);
+      
+      std::cout << toDebugString(sectionHeaders).toStdString() << std::endl;
+
+      SectionHeader dynamicSectionHeader;
+      SectionHeader dynamicStringTableSectionHeader;
+      
+      for(const auto & sectionHeader : sectionHeaders){
+        if( (sectionHeader.sectionType() == SectionType::Dynamic) && (sectionHeader.name == ".dynamic") ){
+          dynamicSectionHeader = sectionHeader;
+        }
+        if( (sectionHeader.sectionType() == SectionType::StringTable) && (sectionHeader.name == ".dynstr") ){
+          dynamicStringTableSectionHeader = sectionHeader;
+        }
+      }
+      
+      const auto dynamicSections = extractDynamicSection(map, fileHeader.ident, dynamicSectionHeader, dynamicStringTableSectionHeader);
+      
+      std::cout << toDebugString(dynamicSections).toStdString() << std::endl;
       
 //       const Ident ident = extractIdent(map);
 //       

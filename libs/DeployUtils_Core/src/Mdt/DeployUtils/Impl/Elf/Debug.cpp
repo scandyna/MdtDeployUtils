@@ -146,4 +146,104 @@ QString toDebugString(const FileHeader & header)
   return str;
 }
 
+QString toDebugString(SectionType type)
+{
+  switch(type){
+    case SectionType::Null:
+      return QLatin1String("Null");
+    case SectionType::ProgramData:
+      return QLatin1String("program data");
+    case SectionType::SymbolTable:
+      return QLatin1String("symbol table");
+    case SectionType::StringTable:
+      return QLatin1String("string table");
+    case SectionType::Rela:
+      return QLatin1String("relocation entries with addends");
+    case SectionType::Dynamic:
+      return QLatin1String("dynamic linking information");
+    case SectionType::Note:
+      return QLatin1String("notes");
+    case SectionType::NoBits:
+      return QLatin1String("program space with no data (bss)");
+    case SectionType::DynSym:
+      return QLatin1String("dynamic linker symbol table");
+    case SectionType::InitArray:
+      return QLatin1String("array of constructors");
+    case SectionType::FiniArray:
+      return QLatin1String("array of destructors");
+    case SectionType::OsSpecific:
+      return QLatin1String("OS specific");
+  }
+
+  return QString();
+}
+
+QString toDebugString(const SectionHeader & header)
+{
+  QString str;
+
+  str = QLatin1String("section ") + QString::fromStdString(header.name);
+  str += QLatin1String("\n name index: ") + QString::number(header.nameIndex);
+  str += QLatin1String("\n type: 0x") + QString::number(header.type, 16) + QLatin1String(" (") + toDebugString( header.sectionType() ) + QLatin1String(")");
+  str += QLatin1String("\n offset in file: ") + QString::number(header.offset) + QLatin1String(" (0x") + QString::number(header.offset, 16) + QLatin1String(")");
+  str += QLatin1String("\n size in the file: ") + QString::number(header.size);
+
+  return str;
+}
+
+QString toDebugString(const std::vector<SectionHeader> & headers)
+{
+  QString str;
+
+  for(const auto & header : headers){
+    str += QLatin1String("\n") + toDebugString(header);
+  }
+
+  return str;
+}
+
+QString toDebugString(DynamicSectionTagType type)
+{
+  switch(type){
+    case DynamicSectionTagType::Null:
+      return QLatin1String("end of the _DYNAMIC array");
+    case DynamicSectionTagType::Needed:
+      return QLatin1String("string table offset to get the needed library name");
+    case DynamicSectionTagType::StringTable:
+      return QLatin1String("address to the string table");
+    case DynamicSectionTagType::SoName:
+      return QLatin1String("string table offset to get the shared object name");
+    case DynamicSectionTagType::RPath:
+      return QLatin1String("string table offset to get the search path");
+    case DynamicSectionTagType::Runpath:
+      return QLatin1String("string table offset to get the search path");
+    case DynamicSectionTagType::Unknown:
+      return QLatin1String("unknown");
+  }
+
+  return QString();
+}
+
+QString toDebugString(const DynamicStruct & section, const QString & leftPad)
+{
+  QString str;
+
+  str += leftPad + QLatin1String("dynamic section, tag: ")
+      + QString::number(section.tag) + QLatin1String(" (") + toDebugString( section.tagType() ) + QLatin1String(")")
+      + QLatin1Char('\n') + leftPad + QLatin1String(" val or ptr: ") + QString::number(section.val_or_ptr);
+
+  return str;
+}
+
+QString toDebugString(const std::vector<DynamicStruct> & sections, const QString & leftPad)
+{
+  QString str;
+
+  for(const auto & section : sections){
+    str += QLatin1String("\n") + toDebugString(section, leftPad);
+  }
+
+  return str;
+}
+
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{

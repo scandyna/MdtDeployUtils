@@ -124,6 +124,42 @@ TEST_CASE("getAddress")
   }
 }
 
+TEST_CASE("getSignedNWord")
+{
+  using Impl::Elf::getSignedNWord;
+  using Impl::Elf::Ident;
+
+  Ident ident;
+
+  SECTION("32-bit little-endian")
+  {
+    ident = make32BitLittleEndianIdent();
+    uchar valueArray[4] = {0x78,0x56,0x34,0x12};
+    REQUIRE( getSignedNWord(valueArray, ident) == 0x12345678 );
+  }
+
+  SECTION("32-bit big-endian")
+  {
+    ident = make32BitBigEndianIdent();
+    uchar valueArray[4] = {0x12,0x34,0x56,0x78};
+    REQUIRE( getSignedNWord(valueArray, ident) == 0x12345678 );
+  }
+
+  SECTION("64-bit little-endian")
+  {
+    ident = make64BitLittleEndianIdent();
+    uchar valueArray[8] = {0xF0,0xDE,0xBC,0x9A,0x78,0x56,0x34,0x12};
+    REQUIRE( getSignedNWord(valueArray, ident) == 0x123456789ABCDEF0 );
+  }
+
+  SECTION("64-bit big-endian")
+  {
+    ident = make64BitBigEndianIdent();
+    uchar valueArray[8] = {0x12,0x34,0x56,0x78,0x9A,0xBC,0xDE,0xF0};
+    REQUIRE( getSignedNWord(valueArray, ident) == 0x123456789ABCDEF0 );
+  }
+}
+
 TEST_CASE("nextPositionAfterAddress")
 {
   using Impl::Elf::nextPositionAfterAddress;
@@ -144,6 +180,30 @@ TEST_CASE("nextPositionAfterAddress")
   {
     ident = make64BitLittleEndianIdent();
     it = nextPositionAfterAddress(map, ident);
+    REQUIRE( it == map + 8 );
+  }
+}
+
+TEST_CASE("advance4or8bytes")
+{
+  using Impl::Elf::advance4or8bytes;
+  using Impl::Elf::Ident;
+
+  const unsigned char map[8] = {};
+  const unsigned char * it = map;
+  Ident ident;
+
+  SECTION("32-bit")
+  {
+    ident = make32BitBigEndianIdent();
+    advance4or8bytes(it, ident);
+    REQUIRE( it == map + 4 );
+  }
+
+  SECTION("32-bit")
+  {
+    ident = make64BitLittleEndianIdent();
+    advance4or8bytes(it, ident);
     REQUIRE( it == map + 8 );
   }
 }
@@ -408,46 +468,6 @@ TEST_CASE("extract_e_machine")
   }
 }
 
-TEST_CASE("extract_e_version")
-{
-  using Impl::Elf::extract_e_version;
-  using Impl::Elf::DataFormat;
-
-  SECTION("1 little-endian")
-  {
-    uchar valueArray[4] = {1,0,0,0};
-    REQUIRE( extract_e_version(valueArray,DataFormat::Data2LSB) == 1 );
-  }
-
-  SECTION("1 big-endian")
-  {
-    uchar valueArray[4] = {0,0,0,1};
-    REQUIRE( extract_e_version(valueArray,DataFormat::Data2MSB) == 1 );
-  }
-}
-
-TEST_CASE("extract_e_entry")
-{
-  using Impl::Elf::extract_e_entry;
-  using Impl::Elf::Ident;
-
-  Ident ident;
-
-  SECTION("32-bit big-endian")
-  {
-    ident = make32BitBigEndianIdent();
-    uchar valueArray[4] = {0x12,0x34,0x56,0x78};
-    REQUIRE( extract_e_entry(valueArray, ident) == 0x12345678 );
-  }
-
-  SECTION("64-bit little-endian")
-  {
-    ident = make64BitLittleEndianIdent();
-    uchar valueArray[8] = {0x30,0x7E,0x07,0,0,0,0,0};
-    REQUIRE( extract_e_entry(valueArray, ident) == 0x77e30 );
-  }
-}
-
 TEST_CASE("extractFileHeader")
 {
   using Impl::Elf::extractFileHeader;
@@ -593,6 +613,113 @@ TEST_CASE("extractFileHeader")
     REQUIRE( header.shentsize == 32 );
     REQUIRE( header.shnum == 35 );
     REQUIRE( header.shstrndx == 34 );
+  }
+}
+
+TEST_CASE("stringFromUnsignedCharArray")
+{
+  using Impl::Elf::stringFromUnsignedCharArray;
+
+  SECTION("A")
+  {
+    const unsigned char array[2] = {'A','\0'};
+    REQUIRE( stringFromUnsignedCharArray(array, 10) == "A" );
+  }
+}
+
+TEST_CASE("SectionHeaderType")
+{
+  using Impl::Elf::SectionHeader;
+  using Impl::Elf::SectionType;
+
+  SectionHeader header;
+
+  SECTION("Null")
+  {
+    header.type = 0;
+    REQUIRE( header.sectionType() == SectionType::Null );
+  }
+
+  SECTION("StringTable")
+  {
+    header.type = 3;
+    REQUIRE( header.sectionType() == SectionType::StringTable );
+  }
+}
+
+TEST_CASE("sectionHeaderFromArray")
+{
+  using Impl::Elf::sectionHeaderFromArray;
+  using Impl::Elf::SectionHeader;
+  using Impl::Elf::Ident;
+
+  SectionHeader sectionHeader;
+  Ident ident;
+
+  SECTION("32-bit big-endian")
+  {
+    const uchar sectionHeaderArray[40] = {
+      // sh_name
+      0,0,0x12,0x34, // 0x1234
+      // sh_type
+      0,0,0,0x03, // String table
+      // sh_flags
+      0,0,0,0x20, // Contains null-terminated strings
+      // sh_addr
+      0x12,0x34,0x56,0x78, // 0x12345678
+      // sh_offset
+      0,0,0x91,0x23, // 0x9123
+      // sh_size
+      0,0,0x12,0x34, // 0x1234
+      // sh_link
+      0,0,0,0x56, // 0x56
+      // sh_info
+      0,0,0,0x12, // 0x12
+      // sh_addralign
+      0,0,0,0x34, // 0x34
+      // sh_entsize
+      0,0,0,0x78  // 0x78
+    };
+
+    ident = make32BitBigEndianIdent();
+    sectionHeader = sectionHeaderFromArray(sectionHeaderArray, ident);
+    REQUIRE( sectionHeader.nameIndex == 0x1234 );
+    REQUIRE( sectionHeader.type == 0x03 );
+    REQUIRE( sectionHeader.offset == 0x9123 );
+    REQUIRE( sectionHeader.size == 0x1234 );
+  }
+
+  SECTION("64-bit little-endian")
+  {
+    const uchar sectionHeaderArray[64] = {
+      // sh_name
+      0x34,0x12,0,0, // 0x1234
+      // sh_type
+      0x03,0,0,0, // String table
+      // sh_flags
+      0x20,0,0,0,0,0,0,0, // Contains null-terminated strings
+      // sh_addr
+      0x78,0x56,0x34,0x12,0,0,0,0, // 0x12345678
+      // sh_offset
+      0x23,0x91,0,0,0,0,0,0, // 0x9123
+      // sh_size
+      0x34,0x12,0,0,0,0,0,0, // 0x1234
+      // sh_link
+      0x56,0,0,0, // 0x56
+      // sh_info
+      0x12,0,0,0, // 0x12
+      // sh_addralign
+      0x34,0,0,0,0,0,0,0, // 0x34
+      // sh_entsize
+      0x78,0,0,0,0,0,0,0  // 0x78
+    };
+
+    ident = make64BitLittleEndianIdent();
+    sectionHeader = sectionHeaderFromArray(sectionHeaderArray, ident);
+    REQUIRE( sectionHeader.nameIndex == 0x1234 );
+    REQUIRE( sectionHeader.type == 0x03 );
+    REQUIRE( sectionHeader.offset == 0x9123 );
+    REQUIRE( sectionHeader.size == 0x1234 );
   }
 }
 

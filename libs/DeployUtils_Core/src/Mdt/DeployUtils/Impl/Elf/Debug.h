@@ -22,8 +22,11 @@
 #define MDT_DEPLOY_UTILS_IMPL_ELF_DEBUG_H
 
 #include "FileHeader.h"
+#include "SectionHeader.h"
 #include "mdt_deployutils_export.h"
 #include <QString>
+#include <QLatin1String>
+#include <vector>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
@@ -61,6 +64,36 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    */
   MDT_DEPLOYUTILS_EXPORT
   QString toDebugString(const FileHeader & header);
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILS_EXPORT
+  QString toDebugString(SectionType type);
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILS_EXPORT
+  QString toDebugString(const SectionHeader & header);
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILS_EXPORT
+  QString toDebugString(const std::vector<SectionHeader> & headers);
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILS_EXPORT
+  QString toDebugString(DynamicSectionTagType type);
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILS_EXPORT
+  QString toDebugString(const DynamicStruct & section, const QString & leftPad = QLatin1String("  "));
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILS_EXPORT
+  QString toDebugString(const std::vector<DynamicStruct> & sections, const QString & leftPad = QLatin1String("  "));
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
