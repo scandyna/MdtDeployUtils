@@ -27,13 +27,12 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QString>
+#include <QStringList>
 #include <QObject>
 #include <QtEndian>
+#include <QCoreApplication>
 #include <initializer_list>
 #include <cstdint>
-
-// #include <iterator>
-
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -47,10 +46,25 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
   /*! \internal
    */
+  inline
+  QString tr(const char *sourceText) noexcept
+  {
+    assert( sourceText != nullptr );
+
+    return QCoreApplication::translate("Mdt::DeployUtils::Impl::Elf::FileReader", sourceText);
+  }
+
+  /*! \internal
+   */
   struct ByteArraySpan
   {
     const unsigned char *data = nullptr;
-    uint64_t size = 0;
+    int64_t size = 0;
+
+    bool isNull() const noexcept
+    {
+      return data == nullptr;
+    }
   };
 
   /*! \internal
@@ -156,26 +170,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( ident.isValid() );
 
     return getNWord(s, ident);
-
-//     if( ident._class == Class::Class32 ){
-//       return getWord(s, ident.dataFormat);
-//     }
-// 
-//     assert( ident._class == Class::Class64 );
-// 
-//     /*
-//      * using qFromBigEndian<usint64_t>(s);
-//      * or qFromLittleEndian<usint64_t>(s);
-//      * does not work (linker error),
-//      * so use Qt defined quint64
-//      */
-//     if( ident.dataFormat == DataFormat::Data2MSB ){
-//       return qFromBigEndian<quint64>(s);
-//     }
-// 
-//     assert( ident.dataFormat == DataFormat::Data2LSB );
-// 
-//     return qFromLittleEndian<quint64>(s);
   }
 
   /*! \internal
@@ -481,63 +475,99 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return header;
   }
 
-  /*! \internal Get a string from a array of unsigned characters
+  /*! \internal Check if \a charArray contains the end of string
    *
-   * Will get the characters from \a charArray until
-   * a null char is encountered, or maxLength has been reached.
-   *
-   * Each character will be casted to a (signed) char,
-   * meaning that values > 127 are invalid.
-   *
-   * \todo document what to do with invalid chars
-   * \todo see PE format, maybe this will go to some algorithm header later
-   *
-   * \pre \a charArray must not be a nullptr
-   * \pre \a charArray must be at least \a maxLength long
-   * \pre \a maxLength must be > 0 (\todo should accept 0 length, and adapt tests)
+   * \pre \a charArray must not be null
    */
   inline
-  std::string stringFromUnsignedCharArray(const unsigned char * const charArray, int maxLength) noexcept
+  bool containsEndOfString(const ByteArraySpan & charArray) noexcept
   {
-    assert( charArray != nullptr );
-    assert( maxLength > 0 );
+    assert( !charArray.isNull() );
 
-//     qDebug() << "char array: " << (char)charArray[0] << (char)charArray[1];
-//     qDebug() << "char array casted: " << reinterpret_cast<const char*>(charArray);
-//     std::cout << "str: " << std::string( reinterpret_cast<const char*>(charArray) ) << std::endl;
-    
-    return std::string( reinterpret_cast<const char*>(charArray) );
+    const auto first = charArray.data;
+    const auto last = charArray.data + charArray.size;
+
+    return std::find(first, last, 0) != last;
+  }
+
+  /*! \internal Get a string from a array of unsigned characters
+   *
+   * Each character will be interpreded as a (signed) char,
+   * meaning that values > 127 are invalid.
+   *
+   * If \a charArray could contain UTF-8,
+   * use qStringFromUft8UnsignedCharArray()
+   *
+   * \todo see PE format, maybe this will go to some algorithm header later
+   *
+   * \pre \a charArray must not be null
+   * \exception ExecutableFileReadError
+   */
+  inline
+  std::string stringFromUnsignedCharArray(const ByteArraySpan & charArray)
+  {
+    assert( !charArray.isNull() );
+
+    if( !containsEndOfString(charArray) ){
+      const QString message = tr("failed to extract a string from a region (end of string not found)");
+      throw ExecutableFileReadError(message);
+    }
+
+    return std::string( reinterpret_cast<const char*>(charArray.data) );
+  }
+
+  /*! \internal Get a string from a array of unsigned characters
+   *
+   * \todo see PE format, maybe this will go to some algorithm header later
+   *
+   * The ELF specification seems not to say anything about unicode encoding.
+   * Because ELF is Unix centric, it is assumed that \a charArray
+   * represents a UTF-8 string.
+   * (note: using platform specific encoding can be problematic
+   *        for cross-compilation)
+   *
+   * \pre \a charArray must not be null
+   * \exception ExecutableFileReadError
+   */
+  inline
+  QString qStringFromUft8UnsignedCharArray(const ByteArraySpan & charArray)
+  {
+    assert( !charArray.isNull() );
+
+    if( !containsEndOfString(charArray) ){
+      const QString message = tr("failed to extract a string from a region (end of string not found)");
+      throw ExecutableFileReadError(message);
+    }
+
+    return QString::fromUtf8( reinterpret_cast<const char*>(charArray.data) );
   }
 
   /*! \internal
    *
    * \pre \a stringTableSectionHeader must be the string table section header
+   * \exception ExecutableFileReadError
    */
   inline
   void setSectionHeaderName(const unsigned char * const map, const SectionHeader & stringTableSectionHeader,
-                            SectionHeader & sectionHeader) noexcept
+                            SectionHeader & sectionHeader)
   {
     assert( stringTableSectionHeader.sectionType() == SectionType::StringTable );
-//     assert( sectionHeader.sectionType() != SectionType::StringTable );
-    
-    const unsigned char *it = map + stringTableSectionHeader.offset + sectionHeader.nameIndex;
-    
-    qDebug() << "set name, string table offset: " << stringTableSectionHeader.offset
-             << ", name index: " << sectionHeader.nameIndex
-             << " offset: " << stringTableSectionHeader.offset + sectionHeader.nameIndex
-             << ", name: " << (char)it[0] << (char)it[1];
 
-    sectionHeader.name = stringFromUnsignedCharArray(map + stringTableSectionHeader.offset + sectionHeader.nameIndex, 100);
-//     sectionHeader.name = std::string( reinterpret_cast<const char*>(map + stringTableSectionHeader.offset + sectionHeader.nameIndex) );
+    ByteArraySpan charArray;
+    charArray.data = map + stringTableSectionHeader.offset + sectionHeader.nameIndex;
+    charArray.size = stringTableSectionHeader.size - sectionHeader.nameIndex;
+
+    sectionHeader.name = stringFromUnsignedCharArray(charArray);
   }
 
   /*! \internal
    *
    * \pre \a stringTableSectionHeader must be the string table section header
+   * \exception ExecutableFileReadError
    */
   inline
   void setSectionHeadersName(const unsigned char * const map, const SectionHeader & stringTableSectionHeader,
-                             std::vector<SectionHeader> & sectionHeaders) noexcept
+                             std::vector<SectionHeader> & sectionHeaders)
   {
     assert( stringTableSectionHeader.sectionType() == SectionType::StringTable );
 
@@ -545,9 +575,30 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       setSectionHeaderName(map, stringTableSectionHeader, sectionHeader);
     }
   }
+
   /*! \internal
    *
-   * \pre \a array must not be a nullptr
+   * \pre \a array must not be null
+   * \pre \a ident must be valid
+   * \sa sectionHeaderFromArray()
+   */
+  inline
+  bool sectionHeaderArraySizeIsBigEnough(const ByteArraySpan & array, const Ident & ident) noexcept
+  {
+    assert( !array.isNull() );
+    assert( ident.isValid() );
+
+    if( ident._class == Class::Class32 ){
+      return array.size >= 40;
+    }
+    assert( ident._class == Class::Class64 );
+
+    return array.size >= 64;
+  }
+
+  /*! \internal
+   *
+   * \pre \a array must not be null
    * \pre the array referenced by \a array must have at least
    *     40 bytes for 32-bit files, 64 bytes for 64-bit files
    * \pre \a ident must be valid
@@ -555,13 +606,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    * \sa setSectionHeaderName()
    */
   inline
-  SectionHeader sectionHeaderFromArray(const unsigned char * const array, const Ident & ident) noexcept
+  SectionHeader sectionHeaderFromArray(const ByteArraySpan & array, const Ident & ident) noexcept
   {
-    assert( array != nullptr );
+    assert( !array.isNull() );
     assert( ident.isValid() );
+    assert( sectionHeaderArraySizeIsBigEnough(array, ident) );
 
     SectionHeader sectionHeader;
-    const unsigned char *it = array;
+    const unsigned char *it = array.data;
 
     sectionHeader.nameIndex = getWord(it, ident.dataFormat);
     it += 4;
@@ -579,6 +631,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     advance4or8bytes(it, ident);
 
     sectionHeader.size = getOffset(it, ident);
+    advance4or8bytes(it, ident);
+
+    sectionHeader.link = getWord(it, ident.dataFormat);
 
     return sectionHeader;
   }
@@ -586,105 +641,260 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   /*! \internal
    *
    * \note this function will not set the section header name
+   * \pre \a map must not be null
+   * \pre \a index must be < file header's section headers count
    * \sa setSectionHeaderName()
    */
   inline
-  SectionHeader extractSectionHeaderAt(const unsigned char * const map, const FileHeader & fileHeader, uint16_t index) noexcept
+  SectionHeader extractSectionHeaderAt(const ByteArraySpan & map, const FileHeader & fileHeader, uint16_t index) noexcept
   {
-    const unsigned char *it = map + fileHeader.shoff + index * fileHeader.shentsize;
-    
-//     qDebug() << "extract at, shoff: " << fileHeader.shoff << ", index: " << index << ", shentsize: " << fileHeader.shentsize << ", map address: " << (quint64)it;
+    assert( !map.isNull() );
+    assert( index < fileHeader.shnum );
 
-    return sectionHeaderFromArray(it, fileHeader.ident);
-  }
+    ByteArraySpan sectionArray;
+    sectionArray.data = map.data + fileHeader.shoff + index * fileHeader.shentsize;
+    sectionArray.size = fileHeader.shentsize;
 
-  /*! \internal
-   */
-  inline
-  SectionHeader extractSectionNameStringTableHeader(const unsigned char * const map, const FileHeader & fileHeader) noexcept
-  {
-    return extractSectionHeaderAt(map, fileHeader, fileHeader.shstrndx);
-  }
-
-  /*! \internal
-   */
-  inline
-  std::vector<SectionHeader> extractAllSectionHeaders(const unsigned char * const map, const FileHeader & fileHeader) noexcept
-  {
-    std::vector<SectionHeader> sectionHeaders;
-
-//     const unsigned char *it = map + fileHeader.shoff;
-    const uint16_t sectionHeaderCount = fileHeader.shnum;
-//     const uint16_t sectionHeaderSize = fileHeader.shentsize;
-
-    for(uint16_t i = 0; i < sectionHeaderCount; ++i){
-      sectionHeaders.emplace_back( extractSectionHeaderAt(map, fileHeader, i) );
-//       it += sectionHeaderSize;
-    }
-
-    const SectionHeader stringTableSectionHeader = extractSectionNameStringTableHeader(map, fileHeader);
-    setSectionHeadersName(map, stringTableSectionHeader, sectionHeaders);
-
-    return sectionHeaders;
+    return sectionHeaderFromArray(sectionArray, fileHeader.ident);
   }
 
   /*! \internal
    *
-   * \pre \a map must not be a nullptr
-   * \pre \a ident must be valid
-   * \pre \a dynamicSectionHeader must be a Dynamic section type and be named ".dynamic"
-   * \pre \a dynamicStringTableSectionHeader must be a string table header and be named ".dynstr"
+   * \pre \a map must not be null
    */
   inline
-  std::vector<DynamicStruct> extractDynamicSection(const unsigned char * const map, const Ident & ident,
-                                                   const SectionHeader & dynamicSectionHeader,
-                                                   const SectionHeader & dynamicStringTableSectionHeader) noexcept
+  SectionHeader extractSectionNameStringTableHeader(const ByteArraySpan & map, const FileHeader & fileHeader) noexcept
   {
-    assert( map != nullptr );
+    assert( !map.isNull() );
+
+    return extractSectionHeaderAt(map, fileHeader, fileHeader.shstrndx);
+  }
+
+  /*! \internal
+   *
+   * \pre \a map must not be null
+   * \pre \a map must be big enough to read all section headers
+   * \exception ExecutableFileReadError
+   */
+  inline
+  std::vector<SectionHeader> extractAllSectionHeaders(const ByteArraySpan & map, const FileHeader & fileHeader)
+  {
+    assert( !map.isNull() );
+    assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
+
+    std::vector<SectionHeader> sectionHeaders;
+
+    const uint16_t sectionHeaderCount = fileHeader.shnum;
+
+    for(uint16_t i = 0; i < sectionHeaderCount; ++i){
+      sectionHeaders.emplace_back( extractSectionHeaderAt(map, fileHeader, i) );
+    }
+
+    const SectionHeader stringTableSectionHeader = extractSectionNameStringTableHeader(map, fileHeader);
+    setSectionHeadersName(map.data, stringTableSectionHeader, sectionHeaders);
+
+    return sectionHeaders;
+  }
+
+  /*! \internal Find a section header by a type and a name
+   *
+   * If requested section header does not exist,
+   * a Null section header is returned.
+   *
+   * \pre \a map must not be null
+   * \pre \a fileHeader must be valid
+   * \pre \a map must be big enough to read all section headers
+   * \pre \a sectionNamesStringTableSectionHeader must be the section header names string table
+   * \pre \a type must not be Null
+   * \pre \a name must not be empty
+   * \exception ExecutableFileReadError
+   */
+  inline
+  SectionHeader findSectionHeader(const ByteArraySpan & map, const FileHeader & fileHeader,
+                                  const SectionHeader & sectionNamesStringTableSectionHeader,
+                                  SectionType type, const std::string & name)
+  {
+    assert( !map.isNull() );
+    ///assert( fileHeader.isValid() );
+    assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
+    assert( sectionNamesStringTableSectionHeader.sectionType() == SectionType::StringTable );
+    assert( type != SectionType::Null );
+    assert( !name.empty() );
+
+    SectionHeader sectionHeader;
+    const uint16_t sectionHeaderCount = fileHeader.shnum;
+
+    for(uint16_t i = 0; i < sectionHeaderCount; ++i){
+      sectionHeader = extractSectionHeaderAt(map, fileHeader, i);
+      if( sectionHeader.sectionType() == type ){
+        setSectionHeaderName(map.data, sectionNamesStringTableSectionHeader, sectionHeader);
+        if( sectionHeader.name == name ){
+          return sectionHeader;
+        }
+      }
+    }
+
+    sectionHeader.type = 0;
+
+    return sectionHeader;
+  }
+
+  /*! \internal Extract a dynamic section for given tag
+   *
+   * \pre \a map must not be null
+   * \pre \a ident must be valid
+   * \pre \a dynamicSectionHeader must be a Dynamic section type and be named ".dynamic"
+   * \pre \a map must be big enough to read the section referenced by \a dynamicSectionHeader
+   */
+  inline
+  std::vector<DynamicStruct> extractDynamicSectionForTag(const ByteArraySpan & map, const Ident & ident,
+                                                         const SectionHeader & dynamicSectionHeader,
+                                                         DynamicSectionTagType tagType) noexcept
+  {
+    assert( !map.isNull() );
     assert( ident.isValid() );
     assert( dynamicSectionHeader.sectionType() == SectionType::Dynamic );
     assert( dynamicSectionHeader.name == ".dynamic" );
-    assert( dynamicStringTableSectionHeader.sectionType() == SectionType::StringTable );
-    assert( dynamicStringTableSectionHeader.name == ".dynstr" );
+    assert( map.size >= dynamicSectionHeader.minimumSizeToReadSection() );
 
     std::vector<DynamicStruct> dynamicSection;
 
-    const unsigned char * first = map + dynamicSectionHeader.offset;
+    const unsigned char * first = map.data + dynamicSectionHeader.offset;
     const unsigned char * const last = first + dynamicSectionHeader.size;
-
-//     qDebug() << "offset: 0x" << QString::number(dynamicSectionHeader.offset, 16);
 
     while(first < last){
       DynamicStruct sectionStruct;
-      
-//       qDebug() << "first: " << first << " , offset: 0x" << QString::number(first - dynamicSection.offset);
 
       sectionStruct.tag = getSignedNWord(first, ident);
       advance4or8bytes(first, ident);
 
       sectionStruct.val_or_ptr = getNWord(first, ident);
       advance4or8bytes(first, ident);
-      
-      if( sectionStruct.tagType() == DynamicSectionTagType::Needed ){
-        std::cout << "name: " << stringFromUnsignedCharArray(map + dynamicStringTableSectionHeader.offset + sectionStruct.val_or_ptr, 50) << std::endl;
-      }
 
-      if( sectionStruct.tagType() == DynamicSectionTagType::SoName ){
-        std::cout << "so name: " << stringFromUnsignedCharArray(map + dynamicStringTableSectionHeader.offset + sectionStruct.val_or_ptr, 50) << std::endl;
+      if( sectionStruct.tagType() == tagType ){
+        dynamicSection.push_back(sectionStruct);
       }
-
-      if( sectionStruct.tagType() == DynamicSectionTagType::RPath ){
-        std::cout << "RPATH: " << stringFromUnsignedCharArray(map + dynamicStringTableSectionHeader.offset + sectionStruct.val_or_ptr, 50) << std::endl;
-      }
-
-      if( sectionStruct.tagType() == DynamicSectionTagType::Runpath ){
-        std::cout << "RUNPATH: " << stringFromUnsignedCharArray(map + dynamicStringTableSectionHeader.offset + sectionStruct.val_or_ptr, 500) << std::endl;
-      }
-
-      dynamicSection.push_back(sectionStruct);
     }
 
     return dynamicSection;
+  }
+
+  /*! \internal Get a char array from \a dynamicStruct pointing to \a dynamicStringTableSectionHeader
+   *
+   * \pre \a map must not be null
+   * \pre \a dynamicStringTableSectionHeader must be a string table header and be named ".dynstr"
+   * \pre \a map must be big enough to read the section referenced by \a dynamicStringTableSectionHeader
+   * \exception ExecutableFileReadError
+   */
+  inline
+  ByteArraySpan charArrayFromDynamicStringTable(const ByteArraySpan & map,
+                                                const SectionHeader & dynamicStringTableSectionHeader, const DynamicStruct & dynamicStruct)
+  {
+    assert( !map.isNull() );
+    assert( dynamicStringTableSectionHeader.sectionType() == SectionType::StringTable );
+    ///assert( dynamicStringTableSectionHeader.name == ".dynstr" );
+    assert( map.size >= dynamicStringTableSectionHeader.minimumSizeToReadSection() );
+
+    if( dynamicStruct.val_or_ptr > dynamicStringTableSectionHeader.size ){
+      const QString message = tr("got a invalid index to a dynamic section string table");
+      throw ExecutableFileReadError(message);
+    }
+
+    ByteArraySpan charArray;
+    charArray.data = map.data + dynamicStringTableSectionHeader.offset + dynamicStruct.val_or_ptr;
+    charArray.size = dynamicStringTableSectionHeader.size - dynamicStruct.val_or_ptr;
+
+    return charArray;
+  }
+
+  /*! \internal Check if \a dynamicSectionHeader has a valid index to a dynamic string table
+   *
+   * \pre \a fileHeader must be valid
+   * \pre \a dynamicSectionHeader must be a Dynamic section type and be named ".dynamic"
+   */
+  inline
+  bool sectionHeaderHasValidIndexToDynamicStringTable(const FileHeader & fileHeader, const SectionHeader & dynamicSectionHeader) noexcept
+  {
+    assert( fileHeader.ident.isValid() );
+    assert( dynamicSectionHeader.sectionType() == SectionType::Dynamic );
+    assert( dynamicSectionHeader.name == ".dynamic" );
+
+    const uint16_t index = static_cast<uint16_t>(dynamicSectionHeader.link);
+    if( index == 0 ){
+      // SHN_UNDEF
+      return false;
+    }
+    if( index >= fileHeader.shnum ){
+      return false;
+    }
+
+    return true;
+  }
+
+  /*! \internal Extract the needed shared libraries (DT_NEEDED)
+   *
+   * \pre \a map must not be null
+   * \pre \a fileHeader must be valid
+   * \pre \a dynamicSectionHeader must be a Dynamic section type and be named ".dynamic"
+   * \pre \a dynamicSectionHeader must have a valid index to a dynamic string table
+   * \pre \a map must be big enough to read the section referenced by \a dynamicSectionHeader
+   * \exception ExecutableFileReadError
+   */
+  inline
+  QStringList extractNeededSharedLibraries(const ByteArraySpan & map, const FileHeader & fileHeader, const SectionHeader & dynamicSectionHeader)
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.ident.isValid() );
+    assert( dynamicSectionHeader.sectionType() == SectionType::Dynamic );
+    assert( dynamicSectionHeader.name == ".dynamic" );
+    assert( sectionHeaderHasValidIndexToDynamicStringTable(fileHeader, dynamicSectionHeader) );
+    assert( map.size >= dynamicSectionHeader.minimumSizeToReadSection() );
+
+    QStringList libraries;
+    const SectionHeader dynamicStringTableSectionHeader = extractSectionHeaderAt( map, fileHeader, static_cast<uint16_t>(dynamicSectionHeader.link) );
+    const std::vector<DynamicStruct> dynamicSection = extractDynamicSectionForTag(map, fileHeader.ident, dynamicSectionHeader, DynamicSectionTagType::Needed);
+
+    for(const auto & dynamicStruct : dynamicSection){
+      const ByteArraySpan charArray = charArrayFromDynamicStringTable(map, dynamicStringTableSectionHeader, dynamicStruct);
+      libraries.append( qStringFromUft8UnsignedCharArray(charArray) );
+    }
+
+    return libraries;
+  }
+
+  /*! \internal Extract the runtime path (DT_RUNPATH)
+   *
+   * \pre \a map must not be null
+   * \pre \a fileHeader must be valid
+   * \pre \a dynamicSectionHeader must be a Dynamic section type and be named ".dynamic"
+   * \pre \a dynamicSectionHeader must have a valid index to a dynamic string table
+   * \pre \a map must be big enough to read the section referenced by \a dynamicSectionHeader
+   * \exception ExecutableFileReadError
+   */
+  inline
+  QString extractRunPath(const ByteArraySpan & map, const FileHeader & fileHeader, const SectionHeader & dynamicSectionHeader)
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.ident.isValid() );
+    assert( dynamicSectionHeader.sectionType() == SectionType::Dynamic );
+    assert( dynamicSectionHeader.name == ".dynamic" );
+    assert( sectionHeaderHasValidIndexToDynamicStringTable(fileHeader, dynamicSectionHeader) );
+    assert( map.size >= dynamicSectionHeader.minimumSizeToReadSection() );
+
+    const SectionHeader dynamicStringTableSectionHeader = extractSectionHeaderAt( map, fileHeader, static_cast<uint16_t>(dynamicSectionHeader.link) );
+    const std::vector<DynamicStruct> dynamicSection = extractDynamicSectionForTag(map, fileHeader.ident, dynamicSectionHeader, DynamicSectionTagType::Runpath);
+
+    if( dynamicSection.empty() ){
+      return QString();
+    }
+    if( dynamicSection.size() != 1 ){
+      /// \todo Error
+      return QString();
+    }
+
+    const ByteArraySpan charArray = charArrayFromDynamicStringTable(map, dynamicStringTableSectionHeader, dynamicSection[0]);
+
+    return qStringFromUft8UnsignedCharArray(charArray);
   }
 
   /*! \internal
@@ -757,13 +967,17 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 //       }
 
 //       const uchar* map = mFile.map(0, 64);
-      const uchar* map = mFile.map(0, mFile.size());
-      if( map == nullptr ){
+//       const uchar* map = mFile.map(0, mFile.size());
+      const ByteArraySpan map{mFile.map(0, mFile.size()), mFile.size()};
+//       if( map == nullptr ){
+      if( map.isNull() ){
         qDebug() << "map failed";
         return;
       }
 
-      const FileHeader fileHeader = extractFileHeader(map);
+      /// \todo Check e_type (only support executables)
+      
+      const FileHeader fileHeader = extractFileHeader(map.data);
       
       std::cout << toDebugString(fileHeader).toStdString() << std::endl;
       
@@ -771,21 +985,51 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       
       std::cout << toDebugString(sectionHeaders).toStdString() << std::endl;
 
-      SectionHeader dynamicSectionHeader;
-      SectionHeader dynamicStringTableSectionHeader;
-      
-      for(const auto & sectionHeader : sectionHeaders){
-        if( (sectionHeader.sectionType() == SectionType::Dynamic) && (sectionHeader.name == ".dynamic") ){
-          dynamicSectionHeader = sectionHeader;
-        }
-        if( (sectionHeader.sectionType() == SectionType::StringTable) && (sectionHeader.name == ".dynstr") ){
-          dynamicStringTableSectionHeader = sectionHeader;
-        }
+      const SectionHeader sectionNamesStringTableSectionHeader = extractSectionNameStringTableHeader(map, fileHeader);
+      if( sectionNamesStringTableSectionHeader.sectionType() == SectionType::Null ){
+        qDebug() << "could not find the section names string table section header";
+        return;
       }
       
-      const auto dynamicSections = extractDynamicSection(map, fileHeader.ident, dynamicSectionHeader, dynamicStringTableSectionHeader);
+      const SectionHeader dynamicSectionHeader
+        = findSectionHeader(map, fileHeader, sectionNamesStringTableSectionHeader, SectionType::Dynamic, ".dynamic");
+      if( dynamicSectionHeader.sectionType() == SectionType::Null ){
+        qDebug() << "could not find the .dynamic section";
+        return;
+      }
       
-      std::cout << toDebugString(dynamicSections).toStdString() << std::endl;
+      const QStringList libraries = extractNeededSharedLibraries(map, fileHeader, dynamicSectionHeader);
+      std::cout << "Libraries: " << libraries.join(QLatin1String(" ")).toStdString() << std::endl;
+      
+      const QString runPath = extractRunPath(map, fileHeader, dynamicSectionHeader);
+      const QStringList runPathPaths = runPath.split(QLatin1Char(':'));
+      std::cout << "RUNPATH: " << runPathPaths.join(QLatin1String("\n")).toStdString() << std::endl;
+      
+      const SectionHeader dynamicStringTableSectionHeader
+        = findSectionHeader(map, fileHeader, sectionNamesStringTableSectionHeader, SectionType::StringTable, ".dynstr");
+      if( dynamicStringTableSectionHeader.sectionType() == SectionType::Null ){
+        qDebug() << "could not find the .dynstr section";
+        return;
+      }
+      
+//       for(const auto & sectionHeader : sectionHeaders){
+//         if( (sectionHeader.sectionType() == SectionType::Dynamic) && (sectionHeader.name == ".dynamic") ){
+// //           dynamicSectionHeader = sectionHeader;
+//         }
+//         if( (sectionHeader.sectionType() == SectionType::StringTable) && (sectionHeader.name == ".dynstr") ){
+//           dynamicStringTableSectionHeader = sectionHeader;
+//         }
+//       }
+      
+//       std::cout << "All of the dynamic section:\n";
+//       const auto dynamicSection = extractDynamicSection(map.data, fileHeader.ident, dynamicSectionHeader, dynamicStringTableSectionHeader);
+      
+//       std::cout << toDebugString(dynamicSection).toStdString() << std::endl;
+      
+//       const auto neededDynamicSection = extractDynamicSectionForTag(map, fileHeader.ident, dynamicSectionHeader, DynamicSectionTagType::Needed);
+//       ///if()
+//       std::cout << "NEEDED section:\n";
+//       std::cout << toDebugString(neededDynamicSection).toStdString() << std::endl;
       
 //       const Ident ident = extractIdent(map);
 //       

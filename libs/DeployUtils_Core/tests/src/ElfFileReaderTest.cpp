@@ -21,6 +21,7 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "TestFileUtils.h"
+#include "ElfFileReaderTestUtils.h"
 #include "Mdt/DeployUtils/ElfFileReader.h"
 #include "Mdt/DeployUtils/Impl/Elf/ElfFileReader.h"
 #include <QString>
@@ -31,54 +32,6 @@
 #include <QDebug>
 
 using namespace Mdt::DeployUtils;
-
-Impl::Elf::Ident makeValidIdent(Impl::Elf::Class _class, Impl::Elf::DataFormat dataFormat)
-{
-  Impl::Elf::Ident ident;
-
-  ident.hasValidElfMagicNumber = true;
-  ident._class = _class;
-  ident.dataFormat = dataFormat;
-  ident.version = 1;
-  ident.osabi = 0;
-  ident.abiversion = 0;
-
-  assert( ident.isValid() );
-
-  return ident;
-}
-
-Impl::Elf::Ident make32BitLittleEndianIdent()
-{
-  using Impl::Elf::Class;
-  using Impl::Elf::DataFormat;
-
-  return makeValidIdent(Class::Class32, DataFormat::Data2LSB);
-}
-
-Impl::Elf::Ident make32BitBigEndianIdent()
-{
-  using Impl::Elf::Class;
-  using Impl::Elf::DataFormat;
-
-  return makeValidIdent(Class::Class32, DataFormat::Data2MSB);
-}
-
-Impl::Elf::Ident make64BitLittleEndianIdent()
-{
-  using Impl::Elf::Class;
-  using Impl::Elf::DataFormat;
-
-  return makeValidIdent(Class::Class64, DataFormat::Data2LSB);
-}
-
-Impl::Elf::Ident make64BitBigEndianIdent()
-{
-  using Impl::Elf::Class;
-  using Impl::Elf::DataFormat;
-
-  return makeValidIdent(Class::Class64, DataFormat::Data2MSB);
-}
 
 
 TEST_CASE("Sandbox")
@@ -468,6 +421,19 @@ TEST_CASE("extract_e_machine")
   }
 }
 
+TEST_CASE("fileHeader_minimumSizeToReadAllSectionHeaders()")
+{
+  using Impl::Elf::FileHeader;
+
+  FileHeader fileHeader = make64BitLittleEndianFileHeader();
+  fileHeader.shoff = 1000;
+  fileHeader.shentsize = 64;
+  fileHeader.shnum = 10;
+
+  const qint64 expectedSize = 1000 + 10*64;
+  REQUIRE( fileHeader.minimumSizeToReadAllSectionHeaders() == expectedSize );
+}
+
 TEST_CASE("extractFileHeader")
 {
   using Impl::Elf::extractFileHeader;
@@ -616,14 +582,73 @@ TEST_CASE("extractFileHeader")
   }
 }
 
+TEST_CASE("containsEndOfString")
+{
+  using Impl::Elf::containsEndOfString;
+  using Impl::Elf::ByteArraySpan;
+
+  ByteArraySpan span;
+
+  SECTION("empty")
+  {
+    const unsigned char array[0] = {};
+    span.data = array;
+
+    SECTION("size: 0")
+    {
+      span.size = 0;
+      REQUIRE( !containsEndOfString(span) );
+    }
+  }
+
+  SECTION("ABC")
+  {
+    const unsigned char array[4] = {'A','B','C','\0'};
+    span.data = array;
+
+    SECTION("size: 3")
+    {
+      span.size = 3;
+      REQUIRE( !containsEndOfString(span) );
+    }
+
+    SECTION("size: 4")
+    {
+      span.size = 4;
+      REQUIRE( containsEndOfString(span) );
+    }
+  }
+}
+
 TEST_CASE("stringFromUnsignedCharArray")
 {
   using Impl::Elf::stringFromUnsignedCharArray;
+  using Impl::Elf::ByteArraySpan;
+
+  ByteArraySpan span;
 
   SECTION("A")
   {
     const unsigned char array[2] = {'A','\0'};
-    REQUIRE( stringFromUnsignedCharArray(array, 10) == "A" );
+    span.data = array;
+    span.size = 2;
+    REQUIRE( stringFromUnsignedCharArray(span) == "A" );
+  }
+}
+
+TEST_CASE("qStringFromUft8UnsignedCharArray")
+{
+  using Impl::Elf::qStringFromUft8UnsignedCharArray;
+  using Impl::Elf::ByteArraySpan;
+
+  ByteArraySpan span;
+
+  SECTION("A")
+  {
+    const unsigned char array[2] = {'A','\0'};
+    span.data = array;
+    span.size = 2;
+    REQUIRE( qStringFromUft8UnsignedCharArray(span) == QLatin1String("A") );
   }
 }
 
@@ -647,14 +672,64 @@ TEST_CASE("SectionHeaderType")
   }
 }
 
+TEST_CASE("sectionHeaderArraySizeIsBigEnough")
+{
+  using Impl::Elf::sectionHeaderArraySizeIsBigEnough;
+  using Impl::Elf::SectionHeader;
+  using Impl::Elf::Ident;
+  using Impl::Elf::ByteArraySpan;
+
+  Ident ident;
+
+  ByteArraySpan array;
+  const unsigned char arrayData[1] = {}; // data is not important here
+  array.data = arrayData;
+
+  SECTION("32-bit")
+  {
+    ident = make32BitLittleEndianIdent();
+
+    SECTION("to small (39 bytes)")
+    {
+      array.size = 39;
+      REQUIRE( !sectionHeaderArraySizeIsBigEnough(array, ident) );
+    }
+
+    SECTION("ok (40 bytes)")
+    {
+      array.size = 40;
+      REQUIRE( sectionHeaderArraySizeIsBigEnough(array, ident) );
+    }
+  }
+
+  SECTION("64-bit")
+  {
+    ident = make64BitLittleEndianIdent();
+
+    SECTION("to small (63 bytes)")
+    {
+      array.size = 63;
+      REQUIRE( !sectionHeaderArraySizeIsBigEnough(array, ident) );
+    }
+
+    SECTION("ok (64 bytes)")
+    {
+      array.size = 64;
+      REQUIRE( sectionHeaderArraySizeIsBigEnough(array, ident) );
+    }
+  }
+}
+
 TEST_CASE("sectionHeaderFromArray")
 {
   using Impl::Elf::sectionHeaderFromArray;
   using Impl::Elf::SectionHeader;
   using Impl::Elf::Ident;
+  using Impl::Elf::ByteArraySpan;
 
   SectionHeader sectionHeader;
   Ident ident;
+  ByteArraySpan array;
 
   SECTION("32-bit big-endian")
   {
@@ -682,7 +757,9 @@ TEST_CASE("sectionHeaderFromArray")
     };
 
     ident = make32BitBigEndianIdent();
-    sectionHeader = sectionHeaderFromArray(sectionHeaderArray, ident);
+    array.data = sectionHeaderArray;
+    array.size = sizeof(sectionHeaderArray);
+    sectionHeader = sectionHeaderFromArray(array, ident);
     REQUIRE( sectionHeader.nameIndex == 0x1234 );
     REQUIRE( sectionHeader.type == 0x03 );
     REQUIRE( sectionHeader.offset == 0x9123 );
@@ -715,7 +792,9 @@ TEST_CASE("sectionHeaderFromArray")
     };
 
     ident = make64BitLittleEndianIdent();
-    sectionHeader = sectionHeaderFromArray(sectionHeaderArray, ident);
+    array.data = sectionHeaderArray;
+    array.size = sizeof(sectionHeaderArray);
+    sectionHeader = sectionHeaderFromArray(array, ident);
     REQUIRE( sectionHeader.nameIndex == 0x1234 );
     REQUIRE( sectionHeader.type == 0x03 );
     REQUIRE( sectionHeader.offset == 0x9123 );

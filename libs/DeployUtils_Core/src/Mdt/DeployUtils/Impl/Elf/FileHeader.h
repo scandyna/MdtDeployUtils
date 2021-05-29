@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_IMPL_ELF_FILE_HEADER_H
 
 #include "Ident.h"
+#include <QtGlobal>
 #include <cstdint>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
@@ -66,7 +67,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     uint16_t shentsize;
     uint16_t shnum;
     uint16_t shstrndx;
-    
+
     /*! \brief Return true if this file has a section name string table
      *
      * \sa https://manpages.debian.org/stretch/manpages/elf.5.en.html
@@ -74,6 +75,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     constexpr
     bool hasSectionNameStringTable() const noexcept
     {
+    }
+
+    /*! \brief Get the minimum size to read all section headers
+     */
+    constexpr
+    qint64 minimumSizeToReadAllSectionHeaders() const noexcept
+    {
+      return shoff + shnum * shentsize;
     }
   };
 

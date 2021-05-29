@@ -187,6 +187,7 @@ QString toDebugString(const SectionHeader & header)
   str += QLatin1String("\n type: 0x") + QString::number(header.type, 16) + QLatin1String(" (") + toDebugString( header.sectionType() ) + QLatin1String(")");
   str += QLatin1String("\n offset in file: ") + QString::number(header.offset) + QLatin1String(" (0x") + QString::number(header.offset, 16) + QLatin1String(")");
   str += QLatin1String("\n size in the file: ") + QString::number(header.size);
+  str += QLatin1String("\n link: ") + QString::number(header.link);
 
   return str;
 }
@@ -211,6 +212,8 @@ QString toDebugString(DynamicSectionTagType type)
       return QLatin1String("string table offset to get the needed library name");
     case DynamicSectionTagType::StringTable:
       return QLatin1String("address to the string table");
+    case DynamicSectionTagType::StringTableSize:
+      return QLatin1String("size of the string table (in bytes)");
     case DynamicSectionTagType::SoName:
       return QLatin1String("string table offset to get the shared object name");
     case DynamicSectionTagType::RPath:

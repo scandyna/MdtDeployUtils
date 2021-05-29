@@ -21,6 +21,7 @@
 #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_SECTION_HEADER_H
 #define MDT_DEPLOY_UTILS_IMPL_ELF_SECTION_HEADER_H
 
+#include <QtGlobal>
 #include <cstdint>
 #include <string>
 
@@ -53,6 +54,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     uint32_t type;
     uint64_t offset;
     uint64_t size;
+    uint32_t link;
 
     SectionType sectionType() const noexcept
     {
@@ -84,6 +86,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       return SectionType::Null;
     }
+
+    /*! \brief Get the minimum size to read the section this header references
+     */
+    constexpr
+    qint64 minimumSizeToReadSection() const noexcept
+    {
+      return offset + size;
+    }
   };
 
   /*! \internal
@@ -92,13 +102,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    */
   enum class DynamicSectionTagType
   {
-    Null = 0,         /*!< Marks the end of the _DYNAMIC array */
-    Needed = 1,       /*!< This element holds the string table offset to get the needed library name */
-    StringTable = 5,  /*!< This element holds the address to the string table */
-    SoName = 14,      /*!< This element holds the string table offset to get the sahred object name */
-    RPath = 15,       /*!< This element holds the string table offset to get the search path (deprecated) */
-    Runpath = 29,     /*!< This element holds the string table offset to get the search path */
-    Unknown = 100     /*!< Unknown element (not from the standard) */
+    Null = 0,             /*!< Marks the end of the _DYNAMIC array */
+    Needed = 1,           /*!< This element holds the string table offset to get the needed library name */
+    StringTable = 5,      /*!< This element holds the address to the string table */
+    StringTableSize = 10, /*!< This element holds the size, in bytes, of the string table */
+    SoName = 14,          /*!< This element holds the string table offset to get the sahred object name */
+    RPath = 15,           /*!< This element holds the string table offset to get the search path (deprecated) */
+    Runpath = 29,         /*!< This element holds the string table offset to get the search path */
+    Unknown = 100         /*!< Unknown element (not from the standard) */
   };
 
   /*! \internal
@@ -186,6 +197,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
           return DynamicSectionTagType::Needed;
         case 5:
           return DynamicSectionTagType::StringTable;
+        case 10:
+          return DynamicSectionTagType::StringTableSize;
         case 14:
           return DynamicSectionTagType::SoName;
         case 15:

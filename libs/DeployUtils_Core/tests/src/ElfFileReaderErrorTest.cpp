@@ -20,8 +20,56 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "ElfFileReaderTestUtils.h"
 #include "Mdt/DeployUtils/ElfFileReader.h"
 #include "Mdt/DeployUtils/Impl/Elf/ElfFileReader.h"
 
 using namespace Mdt::DeployUtils;
 
+TEST_CASE("stringFromUnsignedCharArray")
+{
+  using Impl::Elf::stringFromUnsignedCharArray;
+  using Impl::Elf::ByteArraySpan;
+
+
+  ByteArraySpan span;
+
+  SECTION("A (no end of string)")
+  {
+    const unsigned char array[1] = {'A'};
+    span.data = array;
+    span.size = 1;
+    REQUIRE_THROWS_AS( stringFromUnsignedCharArray(span), ExecutableFileReadError );
+  }
+}
+
+TEST_CASE("qStringFromUft8UnsignedCharArray")
+{
+  using Impl::Elf::qStringFromUft8UnsignedCharArray;
+  using Impl::Elf::ByteArraySpan;
+
+  ByteArraySpan span;
+
+  SECTION("A (no end of string)")
+  {
+    const unsigned char array[1] = {'A'};
+    span.data = array;
+    span.size = 1;
+    REQUIRE_THROWS_AS( qStringFromUft8UnsignedCharArray(span), ExecutableFileReadError );
+  }
+}
+
+TEST_CASE("emptyFile")
+{
+  REQUIRE(false);
+}
+
+TEST_CASE("textFile")
+{
+  REQUIRE(false);
+}
+
+TEST_CASE("staticallyLinkedLibrary")
+{
+  REQUIRE(false);
+}
