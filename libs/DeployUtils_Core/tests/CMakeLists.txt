@@ -78,6 +78,14 @@ mdt_add_test(
     src/ElfFileReaderTest.cpp
 )
 
+mdt_add_test(
+  NAME ElfFileReaderImplTest
+  TARGET elfFileReaderImplTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfFileReaderImplTest.cpp
+)
+
 # Create a shared library to make some tests
 # Force this library to be a shared library
 if( UNIX AND (NOT APPLE) )

@@ -41,3 +41,7 @@ TEST_CASE("isElfFile")
 {
   REQUIRE( ElfFileReader::isElfFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) ) );
 }
+
+/** \todo Check that at least QtCore and DeployUtils are found,
+ * or at least that returned list is not empty
+ */
