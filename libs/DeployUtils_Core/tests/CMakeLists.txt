@@ -71,6 +71,22 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME ByteArraySpanTest
+  TARGET byteArraySpanTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ByteArraySpanTest.cpp
+)
+
+mdt_add_test(
+  NAME FileMapperTest
+  TARGET fileMapperTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/FileMapperTest.cpp
+)
+
+mdt_add_test(
   NAME ElfFileReaderTest
   TARGET elfFileReaderTest
   DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
@@ -86,8 +102,8 @@ mdt_add_test(
     src/ElfFileReaderImplTest.cpp
 )
 
-# Create a shared library to make some tests
-# Force this library to be a shared library
+# Create a library to make some tests
+# Force this library to be a shared/static library
 if( UNIX AND (NOT APPLE) )
 
   add_library(
@@ -99,17 +115,50 @@ if( UNIX AND (NOT APPLE) )
       Qt5::Core
   )
 
-  # Make the test depend on the test shared library,
-  # so it will be builded first
+  add_library(
+    testStaticLibrary STATIC
+    src/TestLibrary.cpp
+  )
+  target_link_libraries(testStaticLibrary
+    PRIVATE
+      Qt5::Core
+  )
+
+  add_executable(
+    testExecutableDynamic
+    src/TestExecutableDynamic.cpp
+  )
+
+  # -static cannot be used with some sanitizers
+  # requires some work to make this somewhat clean
+#   add_executable(
+#     testExecutableStatic
+#     src/TestExecutableStatic.cpp
+#   )
+#   set_target_properties(testExecutableStatic
+#     PROPERTIES LINK_FLAGS "-static"
+#   )
+
   mdt_add_test(
     NAME ElfFileReaderTest_Unix
     TARGET elfFileReaderTest_Unix
-    DEPENDENCIES Mdt::DeployUtils testSharedLibrary Mdt::Catch2Main Mdt::Catch2Qt
+    DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
     SOURCE_FILES
       src/ElfFileReaderTest_Unix.cpp
   )
 
+  # Make shure that the test libraries will be built before the test
+  add_dependencies(elfFileReaderTest_Unix
+    testSharedLibrary
+    testStaticLibrary
+    testExecutableDynamic
+#     testExecutableStatic
+  )
+
   target_compile_definitions(elfFileReaderTest_Unix PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+  target_compile_definitions(elfFileReaderTest_Unix PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+  target_compile_definitions(elfFileReaderTest_Unix PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
+  target_compile_definitions(elfFileReaderTest_Unix PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
 endif()
 

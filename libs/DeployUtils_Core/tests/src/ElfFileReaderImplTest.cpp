@@ -22,7 +22,7 @@
 #include "Catch2QString.h"
 #include "TestFileUtils.h"
 #include "ElfFileReaderTestUtils.h"
-#include "Mdt/DeployUtils/Impl/Elf/ElfFileReader.h"
+#include "Mdt/DeployUtils/Impl/Elf/FileReader.h"
 #include <QString>
 #include <QLatin1String>
 #include <QTemporaryFile>
@@ -31,6 +31,17 @@
 #include <QDebug>
 
 using namespace Mdt::DeployUtils;
+
+Impl::ByteArraySpan arraySpanFromArray(const unsigned char * const array, qint64 size)
+{
+  assert(size > 0);
+
+  Impl::ByteArraySpan span;
+  span.data = array;
+  span.size = size;
+
+  return span;
+}
 
 TEST_CASE("getAddress")
 {
@@ -159,6 +170,11 @@ TEST_CASE("Ident")
 
   Impl::Elf::Ident ident;
 
+  SECTION("default constructed")
+  {
+    REQUIRE( !ident.isValid() );
+  }
+
   SECTION("Valid")
   {
     ident.hasValidElfMagicNumber = true;
@@ -215,6 +231,12 @@ TEST_CASE("Ident")
         ident.osabi = 63;
         REQUIRE( !ident.isValid() );
       }
+    }
+
+    SECTION("clear")
+    {
+      ident.clear();
+      REQUIRE( !ident.isValid() );
     }
   }
 }
@@ -276,6 +298,7 @@ TEST_CASE("extractIdent")
   using Impl::Elf::extractIdent;
   using Impl::Elf::Class;
   using Impl::Elf::DataFormat;
+  using Impl::ByteArraySpan;
 
   Impl::Elf::Ident ident;
 
@@ -297,7 +320,8 @@ TEST_CASE("extractIdent")
       // Padding
       0,0,0,0,0,0,0
     };
-    ident = extractIdent(map);
+    ByteArraySpan mapSpan = arraySpanFromArray( map, sizeof(map) );
+    ident = extractIdent(mapSpan);
     REQUIRE( ident.hasValidElfMagicNumber );
     REQUIRE( ident._class == Class::Class32 );
     REQUIRE( ident.dataFormat == DataFormat::Data2MSB );
@@ -412,6 +436,56 @@ TEST_CASE("extract_e_machine")
   }
 }
 
+TEST_CASE("fileHeader_seemsValid")
+{
+  using Impl::Elf::FileHeader;
+  using Impl::Elf::ObjectFileType;
+  using Impl::Elf::Machine;
+
+  FileHeader fileHeader;
+  fileHeader.ident = make64BitLittleEndianIdent();
+  fileHeader.type = ObjectFileType::SharedObject;
+  fileHeader.machine = Machine::X86_64;
+  fileHeader.version = 1;
+  REQUIRE( fileHeader.seemsValid() );
+
+  SECTION("default constructed")
+  {
+    FileHeader defaultFileHeader;
+    REQUIRE( !defaultFileHeader.seemsValid() );
+  }
+
+  SECTION("e_type: ET_NONE")
+  {
+    fileHeader.type = ObjectFileType::None;
+    REQUIRE( !fileHeader.seemsValid() );
+  }
+
+  SECTION("e_machine: ET_NONE")
+  {
+    fileHeader.machine = Machine::None;
+    REQUIRE( !fileHeader.seemsValid() );
+  }
+
+  SECTION("e_machine: Unknown")
+  {
+    fileHeader.machine = Machine::Unknown;
+    REQUIRE( !fileHeader.seemsValid() );
+  }
+
+  SECTION("e_version: EV_NONE")
+  {
+    fileHeader.version = 0;
+    REQUIRE( !fileHeader.seemsValid() );
+  }
+
+  SECTION("clear")
+  {
+    fileHeader.clear();
+    REQUIRE( !fileHeader.seemsValid() );
+  }
+}
+
 TEST_CASE("fileHeader_minimumSizeToReadAllSectionHeaders()")
 {
   using Impl::Elf::FileHeader;
@@ -425,6 +499,26 @@ TEST_CASE("fileHeader_minimumSizeToReadAllSectionHeaders()")
   REQUIRE( fileHeader.minimumSizeToReadAllSectionHeaders() == expectedSize );
 }
 
+TEST_CASE("minimumSizeToReadFileHeader")
+{
+  using Impl::Elf::minimumSizeToReadFileHeader;
+  using Impl::Elf::Ident;
+
+  Ident ident;
+
+  SECTION("32-bit")
+  {
+    ident = make32BitBigEndianIdent();
+    REQUIRE( minimumSizeToReadFileHeader(ident) == 52 );
+  }
+
+  SECTION("64-bit")
+  {
+    ident = make64BitLittleEndianIdent();
+    REQUIRE( minimumSizeToReadFileHeader(ident) == 64 );
+  }
+}
+
 TEST_CASE("extractFileHeader")
 {
   using Impl::Elf::extractFileHeader;
@@ -433,6 +527,7 @@ TEST_CASE("extractFileHeader")
   using Impl::Elf::DataFormat;
   using Impl::Elf::ObjectFileType;
   using Impl::Elf::Machine;
+  using Impl::ByteArraySpan;
 
   FileHeader header;
 
@@ -482,7 +577,8 @@ TEST_CASE("extractFileHeader")
       0,34
     };
 
-    header = extractFileHeader(map);
+    ByteArraySpan mapSpan = arraySpanFromArray( map, sizeof(map) );
+    header = extractFileHeader(mapSpan);
     REQUIRE( header.ident.hasValidElfMagicNumber );
     REQUIRE( header.ident._class == Class::Class32 );
     REQUIRE( header.ident.dataFormat == DataFormat::Data2MSB );
@@ -550,7 +646,8 @@ TEST_CASE("extractFileHeader")
       34,0
     };
 
-    header = extractFileHeader(map);
+    ByteArraySpan mapSpan = arraySpanFromArray( map, sizeof(map) );
+    header = extractFileHeader(mapSpan);
     REQUIRE( header.ident.hasValidElfMagicNumber );
     REQUIRE( header.ident._class == Class::Class64 );
     REQUIRE( header.ident.dataFormat == DataFormat::Data2LSB );
@@ -576,13 +673,13 @@ TEST_CASE("extractFileHeader")
 TEST_CASE("containsEndOfString")
 {
   using Impl::Elf::containsEndOfString;
-  using Impl::Elf::ByteArraySpan;
+  using Impl::ByteArraySpan;
 
   ByteArraySpan span;
 
   SECTION("empty")
   {
-    const unsigned char array[0] = {};
+    const unsigned char array[1] = {};
     span.data = array;
 
     SECTION("size: 0")
@@ -614,7 +711,7 @@ TEST_CASE("containsEndOfString")
 TEST_CASE("stringFromUnsignedCharArray")
 {
   using Impl::Elf::stringFromUnsignedCharArray;
-  using Impl::Elf::ByteArraySpan;
+  using Impl::ByteArraySpan;
 
   ByteArraySpan span;
 
@@ -630,7 +727,7 @@ TEST_CASE("stringFromUnsignedCharArray")
 TEST_CASE("qStringFromUft8UnsignedCharArray")
 {
   using Impl::Elf::qStringFromUft8UnsignedCharArray;
-  using Impl::Elf::ByteArraySpan;
+  using Impl::ByteArraySpan;
 
   ByteArraySpan span;
 
@@ -668,7 +765,7 @@ TEST_CASE("sectionHeaderArraySizeIsBigEnough")
   using Impl::Elf::sectionHeaderArraySizeIsBigEnough;
   using Impl::Elf::SectionHeader;
   using Impl::Elf::Ident;
-  using Impl::Elf::ByteArraySpan;
+  using Impl::ByteArraySpan;
 
   Ident ident;
 
@@ -716,7 +813,7 @@ TEST_CASE("sectionHeaderFromArray")
   using Impl::Elf::sectionHeaderFromArray;
   using Impl::Elf::SectionHeader;
   using Impl::Elf::Ident;
-  using Impl::Elf::ByteArraySpan;
+  using Impl::ByteArraySpan;
 
   SectionHeader sectionHeader;
   Ident ident;

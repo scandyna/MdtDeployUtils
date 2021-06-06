@@ -27,16 +27,23 @@
 #include <QTemporaryFile>
 #include <cassert>
 
-#include <QDebug>
-
 using namespace Mdt::DeployUtils;
 
-
-TEST_CASE("Sandbox")
+TEST_CASE("open_close")
 {
-  const QString filePath = QLatin1String("/home/philippe/dev/build/MdtDeployUtils/gccInstrumented/libs/DeployUtils_Core/src/libMdt0DeployUtils.so");
-  qDebug() << "Is ELF " << filePath << ": " << ElfFileReader::isElfFile(filePath);
+  QTemporaryFile file;
+  REQUIRE( file.open() );
 
+  ElfFileReader reader;
+  REQUIRE( !reader.isOpen() );
+
+  SECTION("empty file")
+  {
+    reader.openFile( file.fileName() );
+    REQUIRE( reader.isOpen() );
+    reader.close();
+    REQUIRE( !reader.isOpen() );
+  }
 }
 
 TEST_CASE("isElfFile")
@@ -46,6 +53,7 @@ TEST_CASE("isElfFile")
 
   SECTION("empty file")
   {
+    file.close();
     REQUIRE( !ElfFileReader::isElfFile( file.fileName() ) );
   }
 
@@ -69,5 +77,56 @@ TEST_CASE("isElfFile")
     file.close();
     REQUIRE( !ElfFileReader::isElfFile( file.fileName() ) );
   }
+}
 
+TEST_CASE("isDynamicLinkedExecutableOrLibrary")
+{
+  QTemporaryFile file;
+  REQUIRE( file.open() );
+
+  ElfFileReader reader;
+
+  SECTION("empty file")
+  {
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isDynamicLinkedExecutableOrLibrary() );
+    reader.close();
+  }
+
+  SECTION("text file - 3 chars")
+  {
+    REQUIRE( writeTextFileUtf8( file, QLatin1String("ABC") ) );
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isDynamicLinkedExecutableOrLibrary() );
+    reader.close();
+  }
+
+  SECTION("text file - 4 chars")
+  {
+    REQUIRE( writeTextFileUtf8( file, QLatin1String("ABCD") ) );
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isDynamicLinkedExecutableOrLibrary() );
+    reader.close();
+  }
+
+  SECTION("text file - 64 chars")
+  {
+    const QString text = QLatin1String(
+      "0123456789"
+      "0123456789"
+      "0123456789"
+      "0123456789"
+      "0123456789"
+      "0123456789"
+      "1234"
+    );
+    REQUIRE( writeTextFileUtf8( file, text ) );
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isDynamicLinkedExecutableOrLibrary() );
+    reader.close();
+  }
 }

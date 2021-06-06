@@ -21,7 +21,7 @@
 #ifndef ELF_FILE_READER_TEST_UTILS_H
 #define ELF_FILE_READER_TEST_UTILS_H
 
-#include "Mdt/DeployUtils/Impl/Elf/ElfFileReader.h"
+#include "Mdt/DeployUtils/Impl/Elf/FileReader.h"
 
 using namespace Mdt::DeployUtils;
 

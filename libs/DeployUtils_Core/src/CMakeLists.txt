@@ -9,6 +9,7 @@ include(MdtInstallLibrary)
 
 add_library(Mdt_DeployUtils
   Mdt/DeployUtils/QRuntimeError.cpp
+  Mdt/DeployUtils/FileOpenError.cpp
   Mdt/DeployUtils/AbstractMessageLoggerBackend.cpp
   Mdt/DeployUtils/MessageLogger.cpp
   Mdt/DeployUtils/ConsoleMessageLogger.cpp
@@ -23,11 +24,13 @@ add_library(Mdt_DeployUtils
   Mdt/DeployUtils/LibraryInfo.cpp
   Mdt/DeployUtils/LibraryInfoList.cpp
   Mdt/DeployUtils/ExecutableFileReadError.cpp
+  Mdt/DeployUtils/Impl/ByteArraySpan.cpp
+  Mdt/DeployUtils/Impl/FileMapper.cpp
   Mdt/DeployUtils/Impl/Elf/Ident.cpp
   Mdt/DeployUtils/Impl/Elf/SectionHeader.cpp
   Mdt/DeployUtils/Impl/Elf/FileHeader.cpp
-  Mdt/DeployUtils/Impl/Elf/ElfFile.cpp
-  Mdt/DeployUtils/Impl/Elf/ElfFileReader.cpp
+  Mdt/DeployUtils/Impl/Elf/DynamicSection.cpp
+  Mdt/DeployUtils/Impl/Elf/FileReader.cpp
   Mdt/DeployUtils/Impl/Elf/Debug.cpp
   Mdt/DeployUtils/ElfFileReader.cpp
 #   Mdt/DeployUtils/BinaryDependenciesImplementationInterface.cpp

@@ -57,10 +57,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    */
   struct Ident
   {
-    bool hasValidElfMagicNumber;
-    Class _class;
-    DataFormat dataFormat;
-    unsigned char version;
+    bool hasValidElfMagicNumber = false;
+    Class _class = Class::ClassNone;
+    DataFormat dataFormat = DataFormat::DataNone;
+    unsigned char version = 0;
     unsigned char osabi;
     unsigned char abiversion;
 
@@ -104,6 +104,16 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       }
 
       return true;
+    }
+
+    /*! \brief Clear this ident
+     */
+    constexpr
+    void clear() noexcept
+    {
+      hasValidElfMagicNumber = false;
+      _class = Class::ClassNone;
+      dataFormat = DataFormat::DataNone;
     }
   };
 

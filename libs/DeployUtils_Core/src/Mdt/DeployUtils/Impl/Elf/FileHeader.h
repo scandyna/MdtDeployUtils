@@ -68,6 +68,40 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     uint16_t shnum;
     uint16_t shstrndx;
 
+    /*! \brief Return true if this file header seems valid
+     */
+    constexpr
+    bool seemsValid() const noexcept
+    {
+      if( !ident.isValid() ){
+        return false;
+      }
+      if( type == ObjectFileType::None ){
+        return false;
+      }
+      if( machine == Machine::None ){
+        return false;
+      }
+      if( machine == Machine::Unknown ){
+        return false;
+      }
+      if( version != 1 ){
+        return false;
+      }
+
+      return true;
+    }
+
+    /*! \brief Clear this file header
+     */
+    constexpr
+    void clear() noexcept
+    {
+      ident.clear();
+      type = ObjectFileType::None;
+      machine = Machine::None;
+    }
+
     /*! \brief Return true if this file has a section name string table
      *
      * \sa https://manpages.debian.org/stretch/manpages/elf.5.en.html

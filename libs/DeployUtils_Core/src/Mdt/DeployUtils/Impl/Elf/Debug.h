@@ -23,6 +23,7 @@
 
 #include "FileHeader.h"
 #include "SectionHeader.h"
+#include "DynamicSection.h"
 #include "mdt_deployutils_export.h"
 #include <QString>
 #include <QLatin1String>

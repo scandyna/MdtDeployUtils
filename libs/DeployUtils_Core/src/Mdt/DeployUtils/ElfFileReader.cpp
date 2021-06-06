@@ -19,16 +19,149 @@
  **
  ****************************************************************************/
 #include "ElfFileReader.h"
-#include "Mdt/DeployUtils/Impl/Elf/ElfFileReader.h"
+#include "Mdt/DeployUtils/Impl/Elf/FileReader.h"
+#include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
+
+ElfFileReader::ElfFileReader(QObject *parent)
+  : QObject(parent),
+    mImpl( std::make_unique<Impl::Elf::FileReader>() )
+{
+}
+
+ElfFileReader::~ElfFileReader() noexcept
+{
+}
+
+void ElfFileReader::openFile(const QFileInfo & fileInfo)
+{
+  assert( !fileInfo.filePath().isEmpty() );
+  assert( !isOpen() );
+
+  if( !fileInfo.exists() ){
+    const QString message = tr("file '%1' does not exist")
+                            .arg( fileInfo.absoluteFilePath() );
+    throw FileOpenError(message);
+  }
+
+  mFile.setFileName( fileInfo.absoluteFilePath() );
+  if( !mFile.open(QIODevice::ReadOnly) ){
+    const QString message = tr("could not open file '%1': %2")
+                            .arg( fileInfo.absoluteFilePath(), mFile.errorString() );
+    throw FileOpenError(message);
+  }
+
+  mImpl->setFileName( mFile.fileName() );
+}
+
+void ElfFileReader::close()
+{
+  mFileMapper.unmap(mFile);
+  mFile.close();
+  mImpl->clear();
+}
+
+bool ElfFileReader::isElfFile()
+{
+  using Impl::ByteArraySpan;
+  using Impl::Elf::Ident;
+  using Impl::Elf::extractIdent;
+
+  assert( isOpen() );
+
+  const qint64 size = 16;
+
+  if( mFile.size() < size ){
+    return false;
+  }
+
+  const ByteArraySpan map = mFileMapper.mapIfRequired(mFile, 0, size);
+
+  const Ident ident = extractIdent(map);
+
+  return ident.isValid();
+}
+
+bool ElfFileReader::isDynamicLinkedExecutableOrLibrary()
+{
+  using Impl::ByteArraySpan;
+  using Impl::Elf::FileHeader;
+  using Impl::Elf::ObjectFileType;
+  using Impl::Elf::extractFileHeader;
+
+  assert( isOpen() );
+
+  const qint64 size = 64;
+
+  if( mFile.size() < size ){
+    return false;
+  }
+
+  const ByteArraySpan map = mFileMapper.mapIfRequired(mFile, 0, size);
+
+  const FileHeader fileHeader = extractFileHeader(map);
+
+  if( !fileHeader.seemsValid() ){
+    return false;
+  }
+
+  return fileHeader.type == ObjectFileType::SharedObject;
+}
+
+QString ElfFileReader::getSoName()
+{
+  using Impl::ByteArraySpan;
+
+  assert( isOpen() );
+
+  const qint64 size = mFile.size();
+
+  mImpl->checkFileSizeToReadSectionHeaders(size);
+
+  const ByteArraySpan map = mFileMapper.mapIfRequired(mFile, 0, size);
+
+  return mImpl->getSoName(map);
+}
+
+QStringList ElfFileReader::getNeededSharedLibraries()
+{
+  using Impl::ByteArraySpan;
+
+  assert( isOpen() );
+  assert( isDynamicLinkedExecutableOrLibrary() );
+
+  const qint64 size = mFile.size();
+
+  mImpl->checkFileSizeToReadSectionHeaders(size);
+
+  const ByteArraySpan map = mFileMapper.mapIfRequired(mFile, 0, size);
+
+  return mImpl->getNeededSharedLibraries(map);
+}
+
+QStringList ElfFileReader::getRunPath()
+{
+  using Impl::ByteArraySpan;
+
+  assert( isOpen() );
+  assert( isDynamicLinkedExecutableOrLibrary() );
+
+  const qint64 size = mFile.size();
+
+  mImpl->checkFileSizeToReadSectionHeaders(size);
+
+  const ByteArraySpan map = mFileMapper.mapIfRequired(mFile, 0, size);
+
+  return mImpl->getRunPath(map);
+}
 
 bool ElfFileReader::isElfFile(const QString & filePath)
 {
   assert( !filePath.trimmed().isEmpty() );
 
-  Impl::Elf::ElfFileReaderImpl reader;
+  ElfFileReader reader;
 
   reader.openFile(filePath);
 
@@ -39,7 +172,7 @@ void ElfFileReader::sandbox(const QString & filePath)
 {
   assert( !filePath.trimmed().isEmpty() );
 
-  Impl::Elf::ElfFileReaderImpl reader;
+  Impl::Elf::FileReader reader;
 
   reader.openFile(filePath);
   reader.sandbox();

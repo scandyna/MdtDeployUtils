@@ -18,17 +18,8 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_IMPL_ELF_ELF_FILE_H
-#define MDT_DEPLOY_UTILS_IMPL_ELF_ELF_FILE_H
+#include "catch2/catch.hpp"
+#include "Catch2QString.h"
+#include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 
-namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
-
-  /*! \internal
-   */
-  class ElfFile
-  {
-  };
-
-}}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
-
-#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_ELF_FILE_H
+using namespace Mdt::DeployUtils;
