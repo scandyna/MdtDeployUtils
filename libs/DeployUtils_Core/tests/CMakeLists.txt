@@ -87,58 +87,39 @@ mdt_add_test(
     src/FileMapperTest.cpp
 )
 
-mdt_add_test(
-  NAME ElfFileReaderTest
-  TARGET elfFileReaderTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfFileReaderTest.cpp
+# Create a libraries to make some tests
+# Force those libraries to be a shared/static library
+add_library(
+  testSharedLibrary SHARED
+  src/TestSharedLibrary.cpp
+)
+generate_export_header(testSharedLibrary)
+target_include_directories(testSharedLibrary
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+)
+target_link_libraries(testSharedLibrary
+  PRIVATE
+    Qt5::Core
 )
 
-mdt_add_test(
-  NAME ElfFileReaderImplTest
-  TARGET elfFileReaderImplTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfFileReaderImplTest.cpp
+add_library(
+  testStaticLibrary STATIC
+  src/TestStaticLibrary.cpp
+)
+target_link_libraries(testStaticLibrary
+  PRIVATE
+    Qt5::Core
 )
 
-# Create a library to make some tests
-# Force this library to be a shared/static library
-if( UNIX AND (NOT APPLE) )
-
-  add_library(
-    testSharedLibrary SHARED
-    src/TestSharedLibrary.cpp
-  )
-  generate_export_header(testSharedLibrary)
-  target_include_directories(testSharedLibrary
-    PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-  )
-  target_link_libraries(testSharedLibrary
-    PRIVATE
-      Qt5::Core
-  )
-
-
-  add_library(
-    testStaticLibrary STATIC
-    src/TestStaticLibrary.cpp
-  )
-  target_link_libraries(testStaticLibrary
-    PRIVATE
-      Qt5::Core
-  )
-
-  add_executable(
-    testExecutableDynamic
-    src/TestExecutableDynamic.cpp
-  )
-  target_link_libraries(testExecutableDynamic
-    PRIVATE
-      testSharedLibrary
-  )
+add_executable(
+  testExecutableDynamic
+  src/TestExecutableDynamic.cpp
+)
+target_link_libraries(testExecutableDynamic
+  PRIVATE
+    testSharedLibrary
+)
 
   # -static cannot be used with some sanitizers
   # requires some work to make this somewhat clean
@@ -149,6 +130,25 @@ if( UNIX AND (NOT APPLE) )
 #   set_target_properties(testExecutableStatic
 #     PROPERTIES LINK_FLAGS "-static"
 #   )
+
+
+mdt_add_test(
+  NAME ElfFileReaderImplTest
+  TARGET elfFileReaderImplTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfFileReaderImplTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfFileReaderTest
+  TARGET elfFileReaderTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfFileReaderTest.cpp
+)
+
+if( UNIX AND (NOT APPLE) )
 
   mdt_add_test(
     NAME ElfFileReaderTest_Unix
@@ -173,14 +173,62 @@ if( UNIX AND (NOT APPLE) )
 
 endif()
 
-
-
 mdt_add_test(
   NAME ElfFileReaderErrorTest
   TARGET elfFileReaderErrorTest
   DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ElfFileReaderErrorTest.cpp
+)
+
+
+mdt_add_test(
+  NAME PeFileReaderImplTest
+  TARGET peFileReaderImplTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/PeFileReaderImplTest.cpp
+)
+
+mdt_add_test(
+  NAME PeFileReaderTest
+  TARGET peFileReaderTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/PeFileReaderTest.cpp
+)
+
+if(WIN32)
+
+  mdt_add_test(
+    NAME PeFileReaderTest_Windows
+    TARGET peFileReaderTest_Windows
+    DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+    SOURCE_FILES
+      src/PeFileReaderTest_Windows.cpp
+  )
+
+  # Make shure that the test libraries will be built before the test
+  add_dependencies(peFileReaderTest_Windows
+    testSharedLibrary
+    testStaticLibrary
+    testExecutableDynamic
+#     testExecutableStatic
+  )
+
+  target_compile_definitions(peFileReaderTest_Windows PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+  target_compile_definitions(peFileReaderTest_Windows PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+  target_compile_definitions(peFileReaderTest_Windows PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
+  target_compile_definitions(peFileReaderTest_Windows PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+
+endif()
+
+mdt_add_test(
+  NAME PeFileReaderErrorTest
+  TARGET peFileReaderErrorTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/PeFileReaderErrorTest.cpp
 )
 
 # mdt_add_test(
