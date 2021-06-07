@@ -21,15 +21,13 @@
 #ifndef MDT_DEPLOY_UTILS_ELF_FILE_READER_H
 #define MDT_DEPLOY_UTILS_ELF_FILE_READER_H
 
+#include "AbstractExecutableFileReaderEngine.h"
 #include "FileOpenError.h"
 #include "ExecutableFileReadError.h"
-#include "Mdt/DeployUtils/Impl/FileMapper.h"
 #include "mdt_deployutils_export.h"
 #include <QObject>
 #include <QString>
 #include <QStringList>
-#include <QFileInfo>
-#include <QFile>
 #include <memory>
 
 namespace Mdt{ namespace DeployUtils{
@@ -65,7 +63,7 @@ namespace Mdt{ namespace DeployUtils{
    * }
    * \endcode
    */
-  class MDT_DEPLOYUTILS_EXPORT ElfFileReader : public QObject
+  class MDT_DEPLOYUTILS_EXPORT ElfFileReader : public AbstractExecutableFileReaderEngine
   {
     Q_OBJECT
 
@@ -77,51 +75,6 @@ namespace Mdt{ namespace DeployUtils{
 
     ~ElfFileReader() noexcept;
 
-    /*! \brief Open a file
-     *
-     * This method does not check if \a fileInfo refers to a ELF file.
-     *
-     * \pre \a fileInfo must have a file path set
-     * \pre this reader must not allready have a file open
-     * \sa isOpen()
-     * \sa close()
-     * \exception FileOpenError
-     */
-    void openFile(const QFileInfo & fileInfo);
-
-    /*! \brief Check if this reader has a open file
-     *
-     * \sa openFile()
-     * \sa close()
-     */
-    bool isOpen() const noexcept
-    {
-      return mFile.isOpen();
-    }
-
-    /*! \brief Close the file that was maybe open
-     */
-    void close();
-
-    /*! \brief Check if this reader refers to a ELF file
-     *
-     * \pre this reader must have a open file
-     * \sa isOpen()
-     * \exception ExecutableFileReadError
-     * \note static library archive (libSomeLib.a) are not supported
-     */
-    bool isElfFile();
-
-    /*! \brief Check if this reader refers to a executable or a shared library
-     *
-     * This method will only read the first 64 bytes of the file.
-     *
-     * \pre this reader must have a open file
-     * \sa isOpen()
-     * \exception ExecutableFileReadError
-     */
-    bool isExecutableOrSharedLibrary();
-
     /*! \brief Get the shared object name (SONAME) of the file this reader refers to
      *
      * \pre this reader must have a open file which is a executable or a shared library
@@ -131,47 +84,16 @@ namespace Mdt{ namespace DeployUtils{
      */
     QString getSoName();
 
-    /*! \brief Get a list of needed shared libraries the file this reader refers to
-     *
-     * \pre this reader must have a open file which is a executable or a shared library
-     * \sa isOpen()
-     * \sa isExecutableOrSharedLibrary()
-     * \exception ExecutableFileReadError
-     */
-    QStringList getNeededSharedLibraries();
-
-    /*! \brief Get the run path for the file this reader refers to
-     *
-     * \pre this reader must have a open file which is a executable or a shared library
-     * \sa isOpen()
-     * \sa isExecutableOrSharedLibrary()
-     * \exception ExecutableFileReadError
-     */
-    QStringList getRunPath();
-
-    /*! \brief Check if \a filePath refers to a ELF file
-     *
-     * This helper method is similar to:
-     * \code
-     * ElfFileReader reader;
-     *
-     * reader.openFile(filePath);
-     * bool isElf = reader.isElfFile();
-     * reader.close();
-     * \endcode
-     *
-     * \pre \a filePath must not be empty
-     * \exception ExecutableFileReadError
-     * \sa isElfFile()
-     */
-    static
-    bool isElfFile(const QString & filePath);
-
    private:
 
+    void newFileOpen(const QString & fileName) override;
+    void fileClosed() override;
+    bool doIsElfFile() override;
+    bool doIsExecutableOrSharedLibrary() override;
+    QStringList doGetNeededSharedLibraries() override;
+    QStringList doGetRunPath() override;
+
     std::unique_ptr<Impl::Elf::FileReader> mImpl;
-    Impl::FileMapper mFileMapper;
-    QFile mFile;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

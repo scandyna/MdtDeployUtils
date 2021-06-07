@@ -51,31 +51,37 @@ TEST_CASE("isElfFile")
   QTemporaryFile file;
   REQUIRE( file.open() );
 
+  ElfFileReader reader;
+
   SECTION("empty file")
   {
     file.close();
-    REQUIRE( !ElfFileReader::isElfFile( file.fileName() ) );
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isElfFile() );
   }
 
   SECTION("text file - 3 chars")
   {
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABC") ) );
     file.close();
-    REQUIRE( !ElfFileReader::isElfFile( file.fileName() ) );
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isElfFile() );
   }
 
   SECTION("text file - 4 chars")
   {
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABCD") ) );
     file.close();
-    REQUIRE( !ElfFileReader::isElfFile( file.fileName() ) );
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isElfFile() );
   }
 
   SECTION("text file")
   {
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABCDEFGHIJKLMNOPQRSTUWXYZ") ) );
     file.close();
-    REQUIRE( !ElfFileReader::isElfFile( file.fileName() ) );
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isElfFile() );
   }
 }
 

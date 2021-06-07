@@ -42,9 +42,12 @@ bool containsQt5Core(const QStringList & libraries)
 
 TEST_CASE("isElfFile")
 {
+  ElfFileReader reader;
+
   SECTION("shared library")
   {
-    REQUIRE( ElfFileReader::isElfFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) ) );
+    reader.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    REQUIRE( reader.isElfFile() );
   }
 
   /*
@@ -58,7 +61,8 @@ TEST_CASE("isElfFile")
 
   SECTION("dynamic linked executable")
   {
-    REQUIRE( ElfFileReader::isElfFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) ) );
+    reader.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+    REQUIRE( reader.isElfFile() );
   }
 }
 

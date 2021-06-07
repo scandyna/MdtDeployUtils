@@ -18,8 +18,8 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_IMPL_ELF_ELF_FILE_READER_H
-#define MDT_DEPLOY_UTILS_IMPL_ELF_ELF_FILE_READER_H
+#ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_READER_H
+#define MDT_DEPLOY_UTILS_IMPL_ELF_FILE_READER_H
 
 #include "FileHeader.h"
 #include "SectionHeader.h"
@@ -1138,4 +1138,4 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
-#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_ELF_FILE_READER_H
+#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_READER_H
