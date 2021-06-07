@@ -112,7 +112,7 @@ namespace Mdt{ namespace DeployUtils{
      */
     bool isElfFile();
 
-    /*! \brief Check if this reader refers to a dynamic linked executable or library
+    /*! \brief Check if this reader refers to a executable or a shared library
      *
      * This method will only read the first 64 bytes of the file.
      *
@@ -120,30 +120,31 @@ namespace Mdt{ namespace DeployUtils{
      * \sa isOpen()
      * \exception ExecutableFileReadError
      */
-    bool isDynamicLinkedExecutableOrLibrary();
+    bool isExecutableOrSharedLibrary();
 
     /*! \brief Get the shared object name (SONAME) of the file this reader refers to
      *
-     * \pre this reader must have a open file which is a dynamic linked executable or library
+     * \pre this reader must have a open file which is a executable or a shared library
      * \sa isOpen()
+     * \sa isExecutableOrSharedLibrary()
      * \exception ExecutableFileReadError
      */
     QString getSoName();
 
     /*! \brief Get a list of needed shared libraries the file this reader refers to
      *
-     * \pre this reader must have a open file which is a dynamic linked executable or library
+     * \pre this reader must have a open file which is a executable or a shared library
      * \sa isOpen()
-     * \sa isDynamicLinkedExecutableOrLibrary()
+     * \sa isExecutableOrSharedLibrary()
      * \exception ExecutableFileReadError
      */
     QStringList getNeededSharedLibraries();
 
     /*! \brief Get the run path for the file this reader refers to
      *
-     * \pre this reader must have a open file which is a dynamic linked executable or library
+     * \pre this reader must have a open file which is a executable or a shared library
      * \sa isOpen()
-     * \sa isDynamicLinkedExecutableOrLibrary()
+     * \sa isExecutableOrSharedLibrary()
      * \exception ExecutableFileReadError
      */
     QStringList getRunPath();
@@ -165,13 +166,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     static
     bool isElfFile(const QString & filePath);
-    
-    /*! \internal
-     *
-     * \todo REMOVE !
-     */
-    static
-    void sandbox(const QString & filePath);
 
    private:
 

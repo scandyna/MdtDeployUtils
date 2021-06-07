@@ -23,4 +23,6 @@
 
 void sayHello();
 
+int process();
+
 #endif // #ifndef TEST_LIBRARY_H

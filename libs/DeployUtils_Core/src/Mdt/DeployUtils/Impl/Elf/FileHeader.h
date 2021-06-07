@@ -102,21 +102,12 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       machine = Machine::None;
     }
 
-    /*! \brief Return true if this file has a section name string table
-     *
-     * \sa https://manpages.debian.org/stretch/manpages/elf.5.en.html
-     */
-    constexpr
-    bool hasSectionNameStringTable() const noexcept
-    {
-    }
-
     /*! \brief Get the minimum size to read all section headers
      */
     constexpr
     qint64 minimumSizeToReadAllSectionHeaders() const noexcept
     {
-      return shoff + shnum * shentsize;
+      return static_cast<qint64>(shoff) + static_cast<qint64>(shnum) * static_cast<qint64>(shentsize);
     }
   };
 

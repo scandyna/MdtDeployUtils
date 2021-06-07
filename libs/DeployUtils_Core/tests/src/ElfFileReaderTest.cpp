@@ -79,7 +79,7 @@ TEST_CASE("isElfFile")
   }
 }
 
-TEST_CASE("isDynamicLinkedExecutableOrLibrary")
+TEST_CASE("isExecutableOrSharedLibrary")
 {
   QTemporaryFile file;
   REQUIRE( file.open() );
@@ -90,7 +90,7 @@ TEST_CASE("isDynamicLinkedExecutableOrLibrary")
   {
     file.close();
     reader.openFile( file.fileName() );
-    REQUIRE( !reader.isDynamicLinkedExecutableOrLibrary() );
+    REQUIRE( !reader.isExecutableOrSharedLibrary() );
     reader.close();
   }
 
@@ -99,7 +99,7 @@ TEST_CASE("isDynamicLinkedExecutableOrLibrary")
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABC") ) );
     file.close();
     reader.openFile( file.fileName() );
-    REQUIRE( !reader.isDynamicLinkedExecutableOrLibrary() );
+    REQUIRE( !reader.isExecutableOrSharedLibrary() );
     reader.close();
   }
 
@@ -108,7 +108,7 @@ TEST_CASE("isDynamicLinkedExecutableOrLibrary")
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABCD") ) );
     file.close();
     reader.openFile( file.fileName() );
-    REQUIRE( !reader.isDynamicLinkedExecutableOrLibrary() );
+    REQUIRE( !reader.isExecutableOrSharedLibrary() );
     reader.close();
   }
 
@@ -126,7 +126,7 @@ TEST_CASE("isDynamicLinkedExecutableOrLibrary")
     REQUIRE( writeTextFileUtf8( file, text ) );
     file.close();
     reader.openFile( file.fileName() );
-    REQUIRE( !reader.isDynamicLinkedExecutableOrLibrary() );
+    REQUIRE( !reader.isExecutableOrSharedLibrary() );
     reader.close();
   }
 }

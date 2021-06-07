@@ -84,7 +84,7 @@ bool ElfFileReader::isElfFile()
   return ident.isValid();
 }
 
-bool ElfFileReader::isDynamicLinkedExecutableOrLibrary()
+bool ElfFileReader::isExecutableOrSharedLibrary()
 {
   using Impl::ByteArraySpan;
   using Impl::Elf::FileHeader;
@@ -107,7 +107,14 @@ bool ElfFileReader::isDynamicLinkedExecutableOrLibrary()
     return false;
   }
 
-  return fileHeader.type == ObjectFileType::SharedObject;
+  if(fileHeader.type == ObjectFileType::ExecutableFile){
+    return true;
+  }
+  if(fileHeader.type == ObjectFileType::SharedObject){
+    return true;
+  }
+
+  return false;
 }
 
 QString ElfFileReader::getSoName()
@@ -115,10 +122,9 @@ QString ElfFileReader::getSoName()
   using Impl::ByteArraySpan;
 
   assert( isOpen() );
+  assert( isExecutableOrSharedLibrary() );
 
   const qint64 size = mFile.size();
-
-  mImpl->checkFileSizeToReadSectionHeaders(size);
 
   const ByteArraySpan map = mFileMapper.mapIfRequired(mFile, 0, size);
 
@@ -130,11 +136,9 @@ QStringList ElfFileReader::getNeededSharedLibraries()
   using Impl::ByteArraySpan;
 
   assert( isOpen() );
-  assert( isDynamicLinkedExecutableOrLibrary() );
+  assert( isExecutableOrSharedLibrary() );
 
   const qint64 size = mFile.size();
-
-  mImpl->checkFileSizeToReadSectionHeaders(size);
 
   const ByteArraySpan map = mFileMapper.mapIfRequired(mFile, 0, size);
 
@@ -146,11 +150,9 @@ QStringList ElfFileReader::getRunPath()
   using Impl::ByteArraySpan;
 
   assert( isOpen() );
-  assert( isDynamicLinkedExecutableOrLibrary() );
+  assert( isExecutableOrSharedLibrary() );
 
   const qint64 size = mFile.size();
-
-  mImpl->checkFileSizeToReadSectionHeaders(size);
 
   const ByteArraySpan map = mFileMapper.mapIfRequired(mFile, 0, size);
 
@@ -166,16 +168,6 @@ bool ElfFileReader::isElfFile(const QString & filePath)
   reader.openFile(filePath);
 
   return reader.isElfFile();
-}
-
-void ElfFileReader::sandbox(const QString & filePath)
-{
-  assert( !filePath.trimmed().isEmpty() );
-
-  Impl::Elf::FileReader reader;
-
-  reader.openFile(filePath);
-  reader.sandbox();
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

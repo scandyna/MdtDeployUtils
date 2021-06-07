@@ -98,7 +98,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     constexpr
     qint64 minimumSizeToReadSection() const noexcept
     {
-      return offset + size;
+      return static_cast<qint64>(offset) + static_cast<qint64>(size);
     }
   };
 

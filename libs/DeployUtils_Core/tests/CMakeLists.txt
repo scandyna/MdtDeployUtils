@@ -5,6 +5,7 @@
 #  https://www.boost.org/LICENSE_1_0.txt)
 ##############################################################
 include(MdtAddTest)
+include(GenerateExportHeader)
 
 mdt_add_test(
   NAME AlgorithmTest
@@ -108,16 +109,22 @@ if( UNIX AND (NOT APPLE) )
 
   add_library(
     testSharedLibrary SHARED
-    src/TestLibrary.cpp
+    src/TestSharedLibrary.cpp
+  )
+  generate_export_header(testSharedLibrary)
+  target_include_directories(testSharedLibrary
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   )
   target_link_libraries(testSharedLibrary
     PRIVATE
       Qt5::Core
   )
 
+
   add_library(
     testStaticLibrary STATIC
-    src/TestLibrary.cpp
+    src/TestStaticLibrary.cpp
   )
   target_link_libraries(testStaticLibrary
     PRIVATE
@@ -127,6 +134,10 @@ if( UNIX AND (NOT APPLE) )
   add_executable(
     testExecutableDynamic
     src/TestExecutableDynamic.cpp
+  )
+  target_link_libraries(testExecutableDynamic
+    PRIVATE
+      testSharedLibrary
   )
 
   # -static cannot be used with some sanitizers

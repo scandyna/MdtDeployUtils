@@ -18,11 +18,14 @@
  ** along with MdtApplication.  If not, see <http://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "TestLibrary.h"
-#include <QDebug>
+#ifndef TEST_LIBRARY_H
+#define TEST_LIBRARY_H
 
-void sayHello()
-{
-//   std::cout << "Hello" << std::endl;
-  qDebug() << "Hello";
-}
+#include "testsharedlibrary_export.h"
+
+void sayHello();
+
+TESTSHAREDLIBRARY_EXPORT
+int process();
+
+#endif // #ifndef TEST_LIBRARY_H

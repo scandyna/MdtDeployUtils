@@ -62,28 +62,28 @@ TEST_CASE("isElfFile")
   }
 }
 
-TEST_CASE("isDynamicLinkedExecutableOrLibrary")
+TEST_CASE("isExecutableOrSharedLibrary")
 {
   ElfFileReader reader;
 
   SECTION("shared library")
   {
     reader.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
-    REQUIRE( reader.isDynamicLinkedExecutableOrLibrary() );
+    REQUIRE( reader.isExecutableOrSharedLibrary() );
     reader.close();
   }
 
   SECTION("static library")
   {
     reader.openFile( QString::fromLocal8Bit(TEST_STATIC_LIBRARY_FILE_PATH) );
-    REQUIRE( !reader.isDynamicLinkedExecutableOrLibrary() );
+    REQUIRE( !reader.isExecutableOrSharedLibrary() );
     reader.close();
   }
 
   SECTION("dynamic linked executable")
   {
     reader.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
-    REQUIRE( reader.isDynamicLinkedExecutableOrLibrary() );
+    REQUIRE( reader.isExecutableOrSharedLibrary() );
     reader.close();
   }
 }
@@ -163,7 +163,7 @@ TEST_CASE("call_many_members_one_1_instance")
   ElfFileReader reader;
 
   reader.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
-  REQUIRE( reader.isDynamicLinkedExecutableOrLibrary() );
+  REQUIRE( reader.isExecutableOrSharedLibrary() );
   REQUIRE( reader.getSoName() == QLatin1String("libtestSharedLibrary.so") );
   REQUIRE( !reader.getNeededSharedLibraries().isEmpty() );
   REQUIRE( !reader.getRunPath().isEmpty() );
