@@ -23,3 +23,46 @@
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 
 using namespace Mdt::DeployUtils;
+using Impl::ByteArraySpan;
+
+
+ByteArraySpan spanFromArray(const unsigned char * const data, uint64_t size)
+{
+  ByteArraySpan span;
+
+  span.data = data;
+  span.size = size;
+
+  return span;
+}
+
+TEST_CASE("Construct")
+{
+  SECTION("default constructed")
+  {
+    ByteArraySpan span;
+    REQUIRE( span.isNull() );
+  }
+}
+
+TEST_CASE("subSpan")
+{
+  unsigned char array[4] = {1,2,3,4};
+  const ByteArraySpan span = spanFromArray( array, sizeof(array) );
+
+  SECTION("offset 0, size 1")
+  {
+    const ByteArraySpan subSpan = span.subSpan(0, 1);
+    REQUIRE( subSpan.size == 1 );
+    REQUIRE( subSpan.data[0] == 1 );
+  }
+
+  SECTION("offset 1, size 3")
+  {
+    const ByteArraySpan subSpan = span.subSpan(1, 3);
+    REQUIRE( subSpan.size == 3 );
+    REQUIRE( subSpan.data[0] == 2 );
+    REQUIRE( subSpan.data[1] == 3 );
+    REQUIRE( subSpan.data[2] == 4 );
+  }
+}

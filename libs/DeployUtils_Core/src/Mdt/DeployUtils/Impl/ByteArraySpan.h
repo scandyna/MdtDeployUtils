@@ -21,7 +21,8 @@
 #ifndef MDT_DEPLOY_UTILS_IMPL_BYTE_ARRAY_SPAN_H
 #define MDT_DEPLOY_UTILS_IMPL_BYTE_ARRAY_SPAN_H
 
-#include <QtGlobal>
+#include <cstdint>
+#include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
@@ -32,9 +33,33 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     const unsigned char *data = nullptr;
     int64_t size = 0;
 
+    constexpr
     bool isNull() const noexcept
     {
       return data == nullptr;
+    }
+
+    /*! \brief Get a span that is a view over the \a count elements of this span starting at \a offset
+     *
+     * \pre this span must not be null
+     * \pre \a offset must be >= 0
+     * \pre \a count must be > 0
+     * \pre \a offset + \a count must be <= the size of this span
+     */
+    constexpr
+    ByteArraySpan subSpan(int64_t offset, int64_t count) const noexcept
+    {
+      assert( !isNull() );
+      assert( offset >= 0 );
+      assert( count > 0 );
+      assert( (offset + count) <= size );
+
+      ByteArraySpan span;
+
+      span.data = data + offset;
+      span.size = count;
+
+      return span;
     }
   };
 
