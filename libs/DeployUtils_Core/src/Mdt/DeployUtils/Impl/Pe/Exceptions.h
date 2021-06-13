@@ -18,46 +18,30 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_PE_FILE_READER_H
-#define MDT_DEPLOY_UTILS_PE_FILE_READER_H
+#ifndef MDT_DEPLOY_UTILS_IMPL_PE_EXCEPTIONS_H
+#define MDT_DEPLOY_UTILS_IMPL_PE_EXCEPTIONS_H
 
-#include "AbstractExecutableFileReaderEngine.h"
+#include "Mdt/DeployUtils/QRuntimeError.h"
 #include "mdt_deployutils_export.h"
+#include <QString>
 
-namespace Mdt{ namespace DeployUtils{
+namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
-  /*! \brief Minimal PE file reader
-   *
-   * This PE reader can just read a minimal set of informations
-   * required for deployemnt of applications.
-   *
-   * For other purposes, other tools
-   * like objdump or readpe should be considered.
+  /*! \internal
    */
-  class MDT_DEPLOYUTILS_EXPORT PeFileReader : public AbstractExecutableFileReaderEngine
+  class MDT_DEPLOYUTILS_EXPORT InvalidMagicType : public QRuntimeError
   {
-    Q_OBJECT
-
    public:
 
-    /*! \brief Construct a file reader
+    /*! \brief Constructor
      */
-    explicit PeFileReader(QObject *parent = nullptr);
+    explicit InvalidMagicType(const QString & what)
+      : QRuntimeError(what)
+    {
+    }
 
-    ~PeFileReader() noexcept;
-
-    /// \todo remove
-    void sandbox();
-    
-  private:
-
-    void newFileOpen(const QString & fileName) override;
-    void fileClosed() override;
-    bool doIsPeFile() override;
-    bool doIsExecutableOrSharedLibrary() override;
-    QStringList doGetNeededSharedLibraries() override;
   };
 
-}} // namespace Mdt{ namespace DeployUtils{
+}}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
-#endif // #ifndef MDT_DEPLOY_UTILS_PE_FILE_READER_H
+#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_PE_EXCEPTIONS_H

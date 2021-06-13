@@ -18,47 +18,40 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "PeFileReader.h"
-#include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
-#include "Mdt/DeployUtils/Impl/Pe/FileReader.h"
+#ifndef MDT_DEPLOY_UTILS_IMPL_PE_DEBUG_H
+#define MDT_DEPLOY_UTILS_IMPL_PE_DEBUG_H
 
-namespace Mdt{ namespace DeployUtils{
+#include "FileHeader.h"
+#include "mdt_deployutils_export.h"
+#include <QString>
 
-PeFileReader::PeFileReader(QObject *parent)
-  : AbstractExecutableFileReaderEngine(parent)
-{
-}
+namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
-PeFileReader::~PeFileReader() noexcept
-{
-}
+  /*! \internal
+   */
+  MDT_DEPLOYUTILS_EXPORT
+  QString toDebugString(const DosHeader & header);
 
-void PeFileReader::sandbox()
-{
-  using Impl::ByteArraySpan;
+  /*! \internal
+   */
+  MDT_DEPLOYUTILS_EXPORT
+  QString toDebugString(MachineType type);
 
-  const ByteArraySpan map = mapIfRequired( 0, fileSize() );
-  Impl::Pe::sandbox(map);
-}
+  /*! \internal
+   */
+  MDT_DEPLOYUTILS_EXPORT
+  QString toDebugString(const CoffHeader & header);
 
-void PeFileReader::newFileOpen(const QString & fileName)
-{
-}
+  /*! \internal
+   */
+  MDT_DEPLOYUTILS_EXPORT
+  QString toDebugString(MagicType type);
 
-void PeFileReader::fileClosed()
-{
-}
+  /*! \internal
+   */
+  MDT_DEPLOYUTILS_EXPORT
+  QString toDebugString(const OptionalHeader & header);
 
-bool PeFileReader::doIsPeFile()
-{
-}
+}}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
-bool PeFileReader::doIsExecutableOrSharedLibrary()
-{
-}
-
-QStringList PeFileReader::doGetNeededSharedLibraries()
-{
-}
-
-}} // namespace Mdt{ namespace DeployUtils{
+#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_PE_DEBUG_H

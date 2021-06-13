@@ -26,28 +26,7 @@
 #include <QLatin1String>
 #include <QTemporaryFile>
 
-#include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
-#include "Mdt/DeployUtils/Impl/FileMapper.h"
-#include <QFile>
-#include <QDebug>
-
 using namespace Mdt::DeployUtils;
-
-TEST_CASE("sandbox")
-{
-  using Impl::ByteArraySpan;
-  using Impl::FileMapper;
-
-  QFile file;
-  file.setFileName( QLatin1String("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Cored.dll") );
-  REQUIRE( file.open(QIODevice::ReadOnly) );
-
-  FileMapper mapper;
-  const ByteArraySpan map = mapper.mapIfRequired( file, 0, file.size() );
-  
-  qDebug() << "file size: " << map.size;
-  
-}
 
 TEST_CASE("open_close")
 {
@@ -66,3 +45,42 @@ TEST_CASE("open_close")
   }
 }
 
+/// \todo adjust various sizes
+TEST_CASE("isPeFile")
+{
+  QTemporaryFile file;
+  REQUIRE( file.open() );
+
+  PeFileReader reader;
+
+  SECTION("empty file")
+  {
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isPeFile() );
+  }
+
+  SECTION("text file - 3 chars")
+  {
+    REQUIRE( writeTextFileUtf8( file, QLatin1String("ABC") ) );
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isPeFile() );
+  }
+
+  SECTION("text file - 4 chars")
+  {
+    REQUIRE( writeTextFileUtf8( file, QLatin1String("ABCD") ) );
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isPeFile() );
+  }
+
+  SECTION("text file")
+  {
+    REQUIRE( writeTextFileUtf8( file, QLatin1String("ABCDEFGHIJKLMNOPQRSTUWXYZ") ) );
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isPeFile() );
+  }
+}

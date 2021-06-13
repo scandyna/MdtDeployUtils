@@ -26,6 +26,7 @@
 #include "DynamicSection.h"
 #include "Mdt/DeployUtils/ExecutableFileReadError.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
+#include "Mdt/DeployUtils/Impl/ExecutableFileReaderUtils.h"
 #include <QChar>
 #include <QString>
 #include <QStringList>
@@ -126,8 +127,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( ident._class == Class::Class64 );
 
     /*
-     * using qFromBigEndian<usint64_t>(s);
-     * or qFromLittleEndian<usint64_t>(s);
+     * using qFromBigEndian<uint64_t>(s);
+     * or qFromLittleEndian<uint64_t>(s);
      * does not work (linker error),
      * so use Qt defined quint64
      */
@@ -242,23 +243,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( ident.isValid() );
 
     it = nextPositionAfterAddress(it, ident);
-  }
-
-  /*! \internal
-   *
-   * \pre \a start must not be a nullptr
-   * \pre \a count must be >= 0
-   */
-  inline
-  bool arraysAreEqual(const uchar * const start, qint64 count, std::initializer_list<uchar> reference) noexcept
-  {
-    assert( start != nullptr );
-    assert( count >= 0 );
-
-    const auto first = start;
-    const auto last = start + count;
-
-    return std::equal( first, last, reference.begin(), reference.end() );
   }
 
   /*! \internal Check if the array referenced by \a start starts with the ELF magic number

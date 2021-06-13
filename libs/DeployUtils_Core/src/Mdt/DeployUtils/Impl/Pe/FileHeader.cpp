@@ -18,47 +18,4 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "PeFileReader.h"
-#include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
-#include "Mdt/DeployUtils/Impl/Pe/FileReader.h"
-
-namespace Mdt{ namespace DeployUtils{
-
-PeFileReader::PeFileReader(QObject *parent)
-  : AbstractExecutableFileReaderEngine(parent)
-{
-}
-
-PeFileReader::~PeFileReader() noexcept
-{
-}
-
-void PeFileReader::sandbox()
-{
-  using Impl::ByteArraySpan;
-
-  const ByteArraySpan map = mapIfRequired( 0, fileSize() );
-  Impl::Pe::sandbox(map);
-}
-
-void PeFileReader::newFileOpen(const QString & fileName)
-{
-}
-
-void PeFileReader::fileClosed()
-{
-}
-
-bool PeFileReader::doIsPeFile()
-{
-}
-
-bool PeFileReader::doIsExecutableOrSharedLibrary()
-{
-}
-
-QStringList PeFileReader::doGetNeededSharedLibraries()
-{
-}
-
-}} // namespace Mdt{ namespace DeployUtils{
+#include "FileHeader.h"

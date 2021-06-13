@@ -87,6 +87,14 @@ mdt_add_test(
     src/FileMapperTest.cpp
 )
 
+mdt_add_test(
+  NAME ExecutableFileReaderUtilsImplTest
+  TARGET executableFileReaderUtilsImplTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ExecutableFileReaderUtilsImplTest.cpp
+)
+
 # Create a libraries to make some tests
 # Force those libraries to be a shared/static library
 add_library(
@@ -198,7 +206,8 @@ mdt_add_test(
     src/PeFileReaderTest.cpp
 )
 
-if(WIN32)
+# TODO re-enable if(WIN32)
+# if(WIN32)
 
   mdt_add_test(
     NAME PeFileReaderTest_Windows
@@ -221,7 +230,7 @@ if(WIN32)
   target_compile_definitions(peFileReaderTest_Windows PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
   target_compile_definitions(peFileReaderTest_Windows PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
-endif()
+# endif()
 
 mdt_add_test(
   NAME PeFileReaderErrorTest
