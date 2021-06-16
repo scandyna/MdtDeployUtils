@@ -25,6 +25,7 @@ add_library(Mdt_DeployUtils
   Mdt/DeployUtils/LibraryInfoList.cpp
   Mdt/DeployUtils/ExecutableFileReadError.cpp
   Mdt/DeployUtils/AbstractExecutableFileReaderEngine.cpp
+  Mdt/DeployUtils/Impl/NotNullTerminatedStringError.cpp
   Mdt/DeployUtils/Impl/ExecutableFileReaderUtils.cpp
   Mdt/DeployUtils/Impl/ByteArraySpan.cpp
   Mdt/DeployUtils/Impl/FileMapper.cpp
@@ -36,6 +37,8 @@ add_library(Mdt_DeployUtils
   Mdt/DeployUtils/Impl/Elf/Debug.cpp
   Mdt/DeployUtils/ElfFileReader.cpp
   Mdt/DeployUtils/Impl/Pe/Exceptions.cpp
+  Mdt/DeployUtils/Impl/Pe/SectionHeader.cpp
+  Mdt/DeployUtils/Impl/Pe/ImportDirectory.cpp
   Mdt/DeployUtils/Impl/Pe/FileHeader.cpp
   Mdt/DeployUtils/Impl/Pe/FileReader.cpp
   Mdt/DeployUtils/Impl/Pe/Debug.cpp

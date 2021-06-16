@@ -20,11 +20,14 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "TestUtils.h"
 #include "TestFileUtils.h"
 #include "Mdt/DeployUtils/PeFileReader.h"
 #include <QString>
 #include <QLatin1String>
 #include <QTemporaryFile>
+
+#include <QDebug>
 
 using namespace Mdt::DeployUtils;
 
@@ -45,8 +48,7 @@ TEST_CASE("open_close")
   }
 }
 
-/// \todo adjust various sizes
-TEST_CASE("isPeFile")
+TEST_CASE("isPeImageFile")
 {
   QTemporaryFile file;
   REQUIRE( file.open() );
@@ -57,7 +59,7 @@ TEST_CASE("isPeFile")
   {
     file.close();
     reader.openFile( file.fileName() );
-    REQUIRE( !reader.isPeFile() );
+    REQUIRE( !reader.isPeImageFile() );
   }
 
   SECTION("text file - 3 chars")
@@ -65,7 +67,48 @@ TEST_CASE("isPeFile")
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABC") ) );
     file.close();
     reader.openFile( file.fileName() );
-    REQUIRE( !reader.isPeFile() );
+    REQUIRE( !reader.isPeImageFile() );
+  }
+
+  SECTION("text file - 60 chars (0x3C)")
+  {
+    REQUIRE( writeTextFileUtf8( file, generateStringWithNChars(0x3c) ) );
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isPeImageFile() );
+  }
+
+  SECTION("text file")
+  {
+    REQUIRE( writeTextFileUtf8( file, generateStringWithNChars(300) ) );
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isPeImageFile() );
+  }
+}
+
+TEST_CASE("isExecutableOrSharedLibrary")
+{
+  QTemporaryFile file;
+  REQUIRE( file.open() );
+
+  PeFileReader reader;
+
+  SECTION("empty file")
+  {
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isExecutableOrSharedLibrary() );
+    reader.close();
+  }
+
+  SECTION("text file - 3 chars")
+  {
+    REQUIRE( writeTextFileUtf8( file, QLatin1String("ABC") ) );
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isExecutableOrSharedLibrary() );
+    reader.close();
   }
 
   SECTION("text file - 4 chars")
@@ -73,14 +116,16 @@ TEST_CASE("isPeFile")
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABCD") ) );
     file.close();
     reader.openFile( file.fileName() );
-    REQUIRE( !reader.isPeFile() );
+    REQUIRE( !reader.isExecutableOrSharedLibrary() );
+    reader.close();
   }
 
-  SECTION("text file")
+  SECTION("text file - 64 chars")
   {
-    REQUIRE( writeTextFileUtf8( file, QLatin1String("ABCDEFGHIJKLMNOPQRSTUWXYZ") ) );
+    REQUIRE( writeTextFileUtf8( file, generateStringWithNChars(64) ) );
     file.close();
     reader.openFile( file.fileName() );
-    REQUIRE( !reader.isPeFile() );
+    REQUIRE( !reader.isExecutableOrSharedLibrary() );
+    reader.close();
   }
 }

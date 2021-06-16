@@ -18,56 +18,30 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "catch2/catch.hpp"
-#include "Catch2QString.h"
-#include "Mdt/DeployUtils/Impl/ExecutableFileReaderUtils.h"
+#ifndef MDT_DEPLOY_UTILS_IMPL_NOT_NULL_TERMINATED_STRING_ERROR_H
+#define MDT_DEPLOY_UTILS_IMPL_NOT_NULL_TERMINATED_STRING_ERROR_H
 
-using namespace Mdt::DeployUtils::Impl;
+#include "Mdt/DeployUtils/QRuntimeError.h"
+#include "mdt_deployutils_export.h"
+#include <QString>
 
-TEST_CASE("containsEndOfString")
-{
-  ByteArraySpan span;
+namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
-  SECTION("empty")
+  /*! \internal
+   */
+  class MDT_DEPLOYUTILS_EXPORT NotNullTerminatedStringError : public QRuntimeError
   {
-    const unsigned char array[1] = {};
-    span.data = array;
+   public:
 
-    SECTION("size: 0")
+    /*! \brief Constructor
+     */
+    explicit NotNullTerminatedStringError(const QString & what)
+      : QRuntimeError(what)
     {
-      span.size = 0;
-      REQUIRE( !containsEndOfString(span) );
-    }
-  }
-
-  SECTION("ABC")
-  {
-    const unsigned char array[4] = {'A','B','C','\0'};
-    span.data = array;
-
-    SECTION("size: 3")
-    {
-      span.size = 3;
-      REQUIRE( !containsEndOfString(span) );
     }
 
-    SECTION("size: 4")
-    {
-      span.size = 4;
-      REQUIRE( containsEndOfString(span) );
-    }
-  }
-}
+  };
 
-TEST_CASE("qStringFromUft8UnsignedCharArray")
-{
-  ByteArraySpan span;
+}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
-  SECTION("A")
-  {
-    const unsigned char array[2] = {'A','\0'};
-    span.data = array;
-    span.size = 2;
-    REQUIRE( qStringFromUft8UnsignedCharArray(span) == QLatin1String("A") );
-  }
-}
+#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_NOT_NULL_TERMINATED_STRING_ERROR_H

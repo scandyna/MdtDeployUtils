@@ -18,57 +18,60 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_IMPL_PE_DEBUG_H
-#define MDT_DEPLOY_UTILS_IMPL_PE_DEBUG_H
+#ifndef MDT_DEPLOY_UTILS_IMPL_PE_IMPORT_DIRECTORY_H
+#define MDT_DEPLOY_UTILS_IMPL_PE_IMPORT_DIRECTORY_H
 
-#include "FileHeader.h"
-#include "SectionHeader.h"
-#include "ImportDirectory.h"
-#include "mdt_deployutils_export.h"
-#include <QString>
+#include <QLatin1String>
+#include <cstdint>
+#include <vector>
+#include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(const DosHeader & header);
+  struct ImportDirectory
+  {
+    uint32_t nameRVA = 0;
+
+    /*! \brief Check if this directory is null
+     *
+     * This directory is null if all values are 0
+     *
+     * \sa https://docs.microsoft.com/en-us/windows/win32/debug/pe-format#the-idata-section
+     */
+    bool isNull() const noexcept
+    {
+      return nameRVA == 0;
+    }
+  };
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(MachineType type);
+  using ImportDirectoryTable = std::vector<ImportDirectory>;
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(const CoffHeader & header);
+  struct DelayLoadDirectory
+  {
+    uint32_t nameRVA = 0;
+
+    /*! \brief Check if this directory is null
+     *
+     * This directory is null if all values are 0
+     *
+     * \sa https://docs.microsoft.com/en-us/windows/win32/debug/pe-format#the-idata-section
+     */
+    bool isNull() const noexcept
+    {
+      return nameRVA == 0;
+    }
+  };
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(MagicType type);
-
-  /*! \internal
-   */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(const OptionalHeader & header);
-
-  /*! \internal
-   */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(const SectionHeader & header);
-
-  /*! \internal
-   */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(const ImportDirectory & directory, const QString & leftPad = QLatin1String("  "));
-
-  /*! \internal
-   */
-  MDT_DEPLOYUTILS_EXPORT
-  QString toDebugString(const ImportDirectoryTable & directoryTable);
+  using DelayLoadTable = std::vector<DelayLoadDirectory>;
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
-#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_PE_DEBUG_H
+#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_PE_IMPORT_DIRECTORY_H

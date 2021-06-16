@@ -21,11 +21,13 @@
 #include "PeFileReader.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include "Mdt/DeployUtils/Impl/Pe/FileReader.h"
+#include <cstdint>
 
 namespace Mdt{ namespace DeployUtils{
 
 PeFileReader::PeFileReader(QObject *parent)
-  : AbstractExecutableFileReaderEngine(parent)
+  : AbstractExecutableFileReaderEngine(parent),
+    mImpl( std::make_unique<Impl::Pe::FileReader>() )
 {
 }
 
@@ -33,32 +35,87 @@ PeFileReader::~PeFileReader() noexcept
 {
 }
 
-void PeFileReader::sandbox()
-{
-  using Impl::ByteArraySpan;
-
-  const ByteArraySpan map = mapIfRequired( 0, fileSize() );
-  Impl::Pe::sandbox(map);
-}
-
 void PeFileReader::newFileOpen(const QString & fileName)
 {
+  mImpl->setFileName(fileName);
 }
 
 void PeFileReader::fileClosed()
 {
+  mImpl->clear();
 }
 
-bool PeFileReader::doIsPeFile()
+bool PeFileReader::doIsPeImageFile()
 {
+  return tryExtractDosCoffAndOptionalHeader();
 }
 
 bool PeFileReader::doIsExecutableOrSharedLibrary()
 {
+  if( !tryExtractDosCoffAndOptionalHeader() ){
+    return false;
+  }
+  if( !mImpl->mCoffHeader.isValidExecutableImage() ){
+    return false;
+  }
+
+  return true;
 }
 
 QStringList PeFileReader::doGetNeededSharedLibraries()
 {
+  using Impl::ByteArraySpan;
+
+  const qint64 size = fileSize();
+
+  const ByteArraySpan map = mapIfRequired(0, size);
+
+  return mImpl->getNeededSharedLibraries(map);
+}
+
+bool PeFileReader::tryExtractDosCoffAndOptionalHeader()
+{
+  using Impl::ByteArraySpan;
+  using Impl::Pe::extractDosHeader;
+  using Impl::Pe::minimumSizeToExtractCoffHeader;
+  using Impl::Pe::extractCoffHeader;
+  using Impl::Pe::minimumSizeToExtractOptionalHeader;
+  using Impl::Pe::extractOptionalHeader;
+
+  int64_t size = 64;
+  if( fileSize() < size ){
+    return false;
+  }
+
+  ByteArraySpan map = mapIfRequired(0, size);
+  mImpl->mDosHeader = extractDosHeader(map);
+  if( !mImpl->mDosHeader.seemsValid() ){
+    return false;
+  }
+
+  size = minimumSizeToExtractCoffHeader(mImpl->mDosHeader);
+  if( fileSize() < size ){
+    return false;
+  }
+
+  map = mapIfRequired(0, size);
+  mImpl->mCoffHeader = extractCoffHeader(map, mImpl->mDosHeader);
+  if( !mImpl->mCoffHeader.seemsValid() ){
+    return false;
+  }
+
+  size = minimumSizeToExtractOptionalHeader(mImpl->mCoffHeader, mImpl->mDosHeader);
+  if( fileSize() < size ){
+    return false;
+  }
+
+  map = mapIfRequired(0, size);
+  mImpl->mOptionalHeader = extractOptionalHeader(map, mImpl->mCoffHeader, mImpl->mDosHeader);
+  if( !mImpl->mOptionalHeader.seemsValid() ){
+    return false;
+  }
+
+  return true;
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

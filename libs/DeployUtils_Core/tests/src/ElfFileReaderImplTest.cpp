@@ -670,44 +670,6 @@ TEST_CASE("extractFileHeader")
   }
 }
 
-TEST_CASE("containsEndOfString")
-{
-  using Impl::Elf::containsEndOfString;
-  using Impl::ByteArraySpan;
-
-  ByteArraySpan span;
-
-  SECTION("empty")
-  {
-    const unsigned char array[1] = {};
-    span.data = array;
-
-    SECTION("size: 0")
-    {
-      span.size = 0;
-      REQUIRE( !containsEndOfString(span) );
-    }
-  }
-
-  SECTION("ABC")
-  {
-    const unsigned char array[4] = {'A','B','C','\0'};
-    span.data = array;
-
-    SECTION("size: 3")
-    {
-      span.size = 3;
-      REQUIRE( !containsEndOfString(span) );
-    }
-
-    SECTION("size: 4")
-    {
-      span.size = 4;
-      REQUIRE( containsEndOfString(span) );
-    }
-  }
-}
-
 TEST_CASE("stringFromUnsignedCharArray")
 {
   using Impl::Elf::stringFromUnsignedCharArray;
@@ -721,22 +683,6 @@ TEST_CASE("stringFromUnsignedCharArray")
     span.data = array;
     span.size = 2;
     REQUIRE( stringFromUnsignedCharArray(span) == "A" );
-  }
-}
-
-TEST_CASE("qStringFromUft8UnsignedCharArray")
-{
-  using Impl::Elf::qStringFromUft8UnsignedCharArray;
-  using Impl::ByteArraySpan;
-
-  ByteArraySpan span;
-
-  SECTION("A")
-  {
-    const unsigned char array[2] = {'A','\0'};
-    span.data = array;
-    span.size = 2;
-    REQUIRE( qStringFromUft8UnsignedCharArray(span) == QLatin1String("A") );
   }
 }
 

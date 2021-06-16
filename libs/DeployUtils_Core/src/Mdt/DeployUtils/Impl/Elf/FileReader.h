@@ -463,21 +463,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return header;
   }
 
-  /*! \internal Check if \a charArray contains the end of string
-   *
-   * \pre \a charArray must not be null
-   */
-  inline
-  bool containsEndOfString(const ByteArraySpan & charArray) noexcept
-  {
-    assert( !charArray.isNull() );
-
-    const auto first = charArray.data;
-    const auto last = charArray.data + charArray.size;
-
-    return std::find(first, last, 0) != last;
-  }
-
   /*! \internal Get a string from a array of unsigned characters
    *
    * Each character will be interpreded as a (signed) char,
@@ -489,7 +474,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    * \todo see PE format, maybe this will go to some algorithm header later
    *
    * \pre \a charArray must not be null
-   * \exception ExecutableFileReadError
+   * \exception NotNullTerminatedStringError
    */
   inline
   std::string stringFromUnsignedCharArray(const ByteArraySpan & charArray)
@@ -498,15 +483,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     if( !containsEndOfString(charArray) ){
       const QString message = tr("failed to extract a string from a region (end of string not found)");
-      throw ExecutableFileReadError(message);
+      throw NotNullTerminatedStringError(message);
     }
 
     return std::string( reinterpret_cast<const char*>(charArray.data) );
   }
 
   /*! \internal Get a string from a array of unsigned characters
-   *
-   * \todo see PE format, maybe this will go to some algorithm header later
    *
    * The ELF specification seems not to say anything about unicode encoding.
    * Because ELF is Unix centric, it is assumed that \a charArray
@@ -515,25 +498,20 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    *        for cross-compilation)
    *
    * \pre \a charArray must not be null
-   * \exception ExecutableFileReadError
+   * \exception NotNullTerminatedStringError
    */
   inline
-  QString qStringFromUft8UnsignedCharArray(const ByteArraySpan & charArray)
+  QString qStringFromUft8ByteArraySpan(const ByteArraySpan & charArray)
   {
     assert( !charArray.isNull() );
 
-    if( !containsEndOfString(charArray) ){
-      const QString message = tr("failed to extract a string from a region (end of string not found)");
-      throw ExecutableFileReadError(message);
-    }
-
-    return QString::fromUtf8( reinterpret_cast<const char*>(charArray.data) );
+    return qStringFromUft8UnsignedCharArray(charArray);
   }
 
   /*! \internal
    *
    * \pre \a stringTableSectionHeader must be the string table section header
-   * \exception ExecutableFileReadError
+   * \exception NotNullTerminatedStringError
    */
   inline
   void setSectionHeaderName(const unsigned char * const map, const SectionHeader & stringTableSectionHeader,
@@ -551,7 +529,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   /*! \internal
    *
    * \pre \a stringTableSectionHeader must be the string table section header
-   * \exception ExecutableFileReadError
+   * \exception NotNullTerminatedStringError
    */
   inline
   void setSectionHeadersName(const unsigned char * const map, const SectionHeader & stringTableSectionHeader,
@@ -662,7 +640,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    *
    * \pre \a map must not be null
    * \pre \a map must be big enough to read all section headers
-   * \exception ExecutableFileReadError
+   * \exception NotNullTerminatedStringError
    */
   inline
   std::vector<SectionHeader> extractAllSectionHeaders(const ByteArraySpan & map, const FileHeader & fileHeader)
@@ -695,7 +673,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    * \pre \a sectionNamesStringTableSectionHeader must be the section header names string table
    * \pre \a type must not be Null
    * \pre \a name must not be empty
-   * \exception ExecutableFileReadError
+   * \exception NotNullTerminatedStringError
    */
   inline
   SectionHeader findSectionHeader(const ByteArraySpan & map, const FileHeader & fileHeader,
@@ -872,7 +850,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     const ByteArraySpan charArray = charArrayFromDynamicStringTable(map, dynamicStringTableSectionHeader, dynamicSection[0]);
 
-    return qStringFromUft8UnsignedCharArray(charArray);
+    return qStringFromUft8ByteArraySpan(charArray);
   }
 
   /*! \internal Extract the needed shared libraries (DT_NEEDED)
@@ -899,7 +877,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     for(const auto & dynamicStruct : dynamicSection){
       const ByteArraySpan charArray = charArrayFromDynamicStringTable(map, dynamicStringTableSectionHeader, dynamicStruct);
-      libraries.append( qStringFromUft8UnsignedCharArray(charArray) );
+      libraries.append( qStringFromUft8ByteArraySpan(charArray) );
     }
 
     return libraries;
@@ -936,7 +914,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     const ByteArraySpan charArray = charArrayFromDynamicStringTable(map, dynamicStringTableSectionHeader, dynamicSection[0]);
 
-    return qStringFromUft8UnsignedCharArray(charArray);
+    return qStringFromUft8ByteArraySpan(charArray);
   }
 
   /*! \internal
@@ -979,7 +957,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       readDynamicSectionHeaderIfNull(map);
       checkFileSizeToReadDynamicSection(map);
 
-      return extractSoName(map, mFileHeader, mDynamicSectionHeader);
+      try{
+        return extractSoName(map, mFileHeader, mDynamicSectionHeader);
+      }catch(const NotNullTerminatedStringError & error){
+        const QString message = tr("file '%1': encountered a not null terminated string (file is maybe corrupted or of a unsupported format)")
+                                .arg(mFileName);
+        throw ExecutableFileReadError(message);
+      }
     }
 
     /*! \brief
@@ -997,7 +981,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       readDynamicSectionHeaderIfNull(map);
       checkFileSizeToReadDynamicSection(map);
 
-      return extractNeededSharedLibraries(map, mFileHeader, mDynamicSectionHeader);
+      try{
+        return extractNeededSharedLibraries(map, mFileHeader, mDynamicSectionHeader);
+      }catch(const NotNullTerminatedStringError & error){
+        const QString message = tr("file '%1': encountered a not null terminated string (file is maybe corrupted or of a unsupported format)")
+                                .arg(mFileName);
+        throw ExecutableFileReadError(message);
+      }
     }
 
     /*! \brief
@@ -1015,7 +1005,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       readDynamicSectionHeaderIfNull(map);
       checkFileSizeToReadDynamicSection(map);
 
-      return extractRunPath(map, mFileHeader, mDynamicSectionHeader).split(QChar::fromLatin1(':'), QString::SkipEmptyParts);
+      try{
+        return extractRunPath(map, mFileHeader, mDynamicSectionHeader).split(QChar::fromLatin1(':'), QString::SkipEmptyParts);
+      }catch(const NotNullTerminatedStringError & error){
+        const QString message = tr("file '%1': encountered a not null terminated string (file is maybe corrupted or of a unsupported format)")
+                                .arg(mFileName);
+        throw ExecutableFileReadError(message);
+      }
     }
 
    private:

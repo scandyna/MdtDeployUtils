@@ -301,8 +301,8 @@ TEST_CASE("ImageDataDirectory")
   SECTION("fromUint64")
   {
     directory = ImageDataDirectory::fromUint64(0x1234567887654321);
-    REQUIRE( directory.virtualAddress == 0x12345678 );
-    REQUIRE( directory.size == 0x87654321 );
+    REQUIRE( directory.virtualAddress == 0x87654321 );
+    REQUIRE( directory.size == 0x12345678 );
   }
 }
 
@@ -341,6 +341,48 @@ TEST_CASE("OptionalHeader")
       REQUIRE( header.magicType() == MagicType::Unknown );
     }
   }
+
+  SECTION("import table")
+  {
+    SECTION("default constructed")
+    {
+      REQUIRE( !header.containsImportTable() );
+    }
+
+    SECTION("no import table")
+    {
+      header.numberOfRvaAndSizes = 1;
+      REQUIRE( !header.containsImportTable() );
+    }
+
+    SECTION("has import table")
+    {
+      header.numberOfRvaAndSizes = 2;
+      header.importTable = 125;
+      REQUIRE( header.containsImportTable() );
+    }
+  }
+
+  SECTION("delay import table")
+  {
+    SECTION("default constructed")
+    {
+      REQUIRE( !header.containsDelayImportTable() );
+    }
+
+    SECTION("no delay import table")
+    {
+      header.numberOfRvaAndSizes = 13;
+      REQUIRE( !header.containsDelayImportTable() );
+    }
+
+    SECTION("has delay import table")
+    {
+      header.numberOfRvaAndSizes = 14;
+      header.delayImportTable = 126;
+      REQUIRE( header.containsDelayImportTable() );
+    }
+  }
 }
 
 TEST_CASE("optionalHeaderFromArray")
@@ -355,9 +397,9 @@ TEST_CASE("optionalHeaderFromArray")
   SECTION("32-bit image file")
   {
     coffHeader = makeValid32BitDllCoffHeader();
-    coffHeader.sizeOfOptionalHeader = 112;
+    coffHeader.sizeOfOptionalHeader = 208;
 
-    unsigned char array[112] = {};
+    unsigned char array[208] = {};
     // Magic: 0x010B, PE32
     array[0] = 0x0B;
     array[1] = 0x01;
@@ -375,20 +417,30 @@ TEST_CASE("optionalHeaderFromArray")
     array[109] = 0x56;
     array[110] = 0x34;
     array[111] = 0x12;
+    // Delay import table: 0x3456789012345678
+    array[200] = 0x78;
+    array[201] = 0x56;
+    array[202] = 0x34;
+    array[203] = 0x12;
+    array[204] = 0x90;
+    array[205] = 0x78;
+    array[206] = 0x56;
+    array[207] = 0x34;
 
     ByteArraySpan arraySpan = arraySpanFromArray( array, sizeof(array) );
     header = optionalHeaderFromArray(arraySpan, coffHeader);
     REQUIRE( header.magic == 0x10B );
     REQUIRE( header.numberOfRvaAndSizes == 0x12345678 );
     REQUIRE( header.importTable == 0x1234567812345678 );
+    REQUIRE( header.delayImportTable == 0x3456789012345678 );
   }
 
   SECTION("64-bit image file")
   {
     coffHeader = makeValid64BitDllCoffHeader();
-    coffHeader.sizeOfOptionalHeader = 128;
+    coffHeader.sizeOfOptionalHeader = 224;
 
-    unsigned char array[128] = {};
+    unsigned char array[224] = {};
     // Magic: 0x020B, PE32+
     array[0] = 0x0B;
     array[1] = 0x02;
@@ -406,12 +458,219 @@ TEST_CASE("optionalHeaderFromArray")
     array[125] = 0x56;
     array[126] = 0x34;
     array[127] = 0x12;
+    // Delay import table: 0x3456789012345678
+    array[216] = 0x78;
+    array[217] = 0x56;
+    array[218] = 0x34;
+    array[219] = 0x12;
+    array[220] = 0x90;
+    array[221] = 0x78;
+    array[222] = 0x56;
+    array[223] = 0x34;
 
     ByteArraySpan arraySpan = arraySpanFromArray( array, sizeof(array) );
     header = optionalHeaderFromArray(arraySpan, coffHeader);
     REQUIRE( header.magic == 0x20B );
     REQUIRE( header.numberOfRvaAndSizes == 0x12345678 );
     REQUIRE( header.importTable == 0x1234567812345678 );
+    REQUIRE( header.delayImportTable == 0x3456789012345678 );
+  }
+}
+
+TEST_CASE("qStringFromUft8UnsignedCharArray")
+{
+  using Impl::Pe::qStringFromUft8BoundedUnsignedCharArray;
+
+  ByteArraySpan arraySpan;
+
+  SECTION("Section table format")
+  {
+    SECTION(".idata")
+    {
+      unsigned char array[8] = {
+        '.','i','d','a','t','a',0,0
+      };
+      arraySpan = arraySpanFromArray( array, sizeof(array) );
+      REQUIRE( qStringFromUft8BoundedUnsignedCharArray(arraySpan) == QLatin1String(".idata") );
+    }
+
+    SECTION("abcdefgh (no string terminating null)")
+    {
+      unsigned char array[8] = {
+        'a','b','c','d','e','f','g','h'
+      };
+      arraySpan = arraySpanFromArray( array, sizeof(array) );
+      REQUIRE( qStringFromUft8BoundedUnsignedCharArray(arraySpan) == QLatin1String("abcdefgh") );
+    }
+  }
+}
+
+TEST_CASE("SectionHeader")
+{
+  using Impl::Pe::SectionHeader;
+
+  SectionHeader header;
+
+  SECTION("default constructed")
+  {
+    REQUIRE( !header.seemsValid() );
   }
 
+  SECTION("validity")
+  {
+    header.name = QLatin1String(".idata");
+    header.virtualSize = 10;
+    header.virtualAddress = 10000;
+    header.sizeOfRawData = 100;
+    header.pointerToRawData = 1000;
+    REQUIRE( header.seemsValid() );
+
+    SECTION("name with / (not valid for executable image)")
+    {
+      header.name = QLatin1String("/1234");
+      REQUIRE( !header.seemsValid() );
+    }
+
+    SECTION("virtualAddress and pointerToRawData")
+    {
+      SECTION("valid: virtualAddress > pointerToRawData")
+      {
+        header.virtualAddress = 1000;
+        header.pointerToRawData = 100;
+        REQUIRE( header.seemsValid() );
+      }
+
+      SECTION("valid (limit): virtualAddress == pointerToRawData")
+      {
+        header.virtualAddress = 1000;
+        header.pointerToRawData = 1000;
+        REQUIRE( header.seemsValid() );
+      }
+
+      SECTION("invalid: virtualAddress < pointerToRawData")
+      {
+        header.virtualAddress = 100;
+        header.pointerToRawData = 1000;
+        REQUIRE( !header.seemsValid() );
+      }
+    }
+  }
+
+  SECTION("RVA and file offset")
+  {
+    header.name = QLatin1String(".idata");
+    header.virtualSize = 10;
+    header.virtualAddress = 10000;
+    header.sizeOfRawData = 100;
+    header.pointerToRawData = 1000;
+    REQUIRE( header.seemsValid() );
+
+    SECTION("valid RVA")
+    {
+      REQUIRE( header.rvaIsValid(9500) );
+      REQUIRE( header.rvaToFileOffset(9500) == 500 );
+    }
+
+    SECTION("valid RVA (limit case)")
+    {
+      REQUIRE( header.rvaIsValid(9000) );
+      REQUIRE( header.rvaToFileOffset(9000) == 0 );
+    }
+
+    SECTION("invalid RVA")
+    {
+      REQUIRE( !header.rvaIsValid(8000) );
+    }
+  }
+}
+
+TEST_CASE("sectionHeaderFromArray")
+{
+  using Impl::Pe::sectionHeaderFromArray;
+  using Impl::Pe::SectionHeader;
+
+  unsigned char array[40] = {};
+  ByteArraySpan arraySpan;
+  SectionHeader header;
+
+  SECTION(".idata")
+  {
+    // Name
+    array[0] = '.';
+    array[1] = 'i';
+    array[2] = 'd';
+    array[3] = 'a';
+    array[4] = 't';
+    array[5] = 'a';
+    array[6] = 0;
+    array[7] = 0;
+    // VirtualSize: 0x12345678
+    array[8] = 0x78;
+    array[9] = 0x56;
+    array[10] = 0x34;
+    array[11] = 0x12;
+    // VirtualAddress: 0x34567890
+    array[12] = 0x90;
+    array[13] = 0x78;
+    array[14] = 0x56;
+    array[15] = 0x34;
+    // SizeOfRawData: 0x12345678
+    array[16] = 0x78;
+    array[17] = 0x56;
+    array[18] = 0x34;
+    array[19] = 0x12;
+    // PointerToRawData: 0x87654321
+    array[20] = 0x21;
+    array[21] = 0x43;
+    array[22] = 0x65;
+    array[23] = 0x87;
+
+    arraySpan = arraySpanFromArray( array, sizeof(array) );
+    header = sectionHeaderFromArray(arraySpan);
+    REQUIRE( header.name == QLatin1String(".idata") );
+    REQUIRE( header.virtualSize == 0x12345678 );
+    REQUIRE( header.virtualAddress == 0x34567890 );
+    REQUIRE( header.sizeOfRawData == 0x12345678 );
+    REQUIRE( header.pointerToRawData == 0x87654321 );
+  }
+}
+
+TEST_CASE("importDirectoryFromArray")
+{
+  using Impl::Pe::importDirectoryFromArray;
+  using Impl::Pe::ImportDirectory;
+
+  unsigned char array[20] = {};
+  ByteArraySpan arraySpan;
+  ImportDirectory directory;
+
+  // Name RVA: 0x12345678
+  array[12] = 0x78;
+  array[13] = 0x56;
+  array[14] = 0x34;
+  array[15] = 0x12;
+
+  arraySpan = arraySpanFromArray( array, sizeof(array) );
+  directory = importDirectoryFromArray(arraySpan);
+  REQUIRE( directory.nameRVA == 0x12345678 );
+}
+
+TEST_CASE("delayLoadDirectoryFromArray")
+{
+  using Impl::Pe::delayLoadDirectoryFromArray;
+  using Impl::Pe::DelayLoadDirectory;
+
+  unsigned char array[32] = {};
+  ByteArraySpan arraySpan;
+  DelayLoadDirectory directory;
+
+  // Name RVA: 0x12345678
+  array[4] = 0x78;
+  array[5] = 0x56;
+  array[6] = 0x34;
+  array[7] = 0x12;
+
+  arraySpan = arraySpanFromArray( array, sizeof(array) );
+  directory = delayLoadDirectoryFromArray(arraySpan);
+  REQUIRE( directory.nameRVA == 0x12345678 );
 }

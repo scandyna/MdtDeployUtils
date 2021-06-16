@@ -22,13 +22,59 @@
 #define MDT_DEPLOY_UTILS_IMPL_EXECUTABLE_FILE_READER_UTILS_H
 
 #include "ByteArraySpan.h"
+#include "NotNullTerminatedStringError.h"
 #include <QtEndian>
+#include <QString>
+#include <QCoreApplication>
 #include <initializer_list>
 #include <cstdint>
 #include <algorithm>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{
+
+  /*! \internal
+   */
+  inline
+  QString tr(const char *sourceText) noexcept
+  {
+    assert( sourceText != nullptr );
+
+    return QCoreApplication::translate("Mdt::DeployUtils::Impl::ExecutableFileReaderUtils", sourceText);
+  }
+
+  /*! \internal Check if \a charArray contains the end of string
+   *
+   * \pre \a charArray must not be null
+   */
+  inline
+  bool containsEndOfString(const ByteArraySpan & charArray) noexcept
+  {
+    assert( !charArray.isNull() );
+
+    const auto first = charArray.data;
+    const auto last = charArray.data + charArray.size;
+
+    return std::find(first, last, 0) != last;
+  }
+
+  /*! \internal Get a string from a array of unsigned characters
+   *
+   * \pre \a charArray must not be null
+   * \exception NotNullTerminatedStringError
+   */
+  inline
+  QString qStringFromUft8UnsignedCharArray(const ByteArraySpan & charArray)
+  {
+    assert( !charArray.isNull() );
+
+    if( !containsEndOfString(charArray) ){
+      const QString message = tr("failed to extract a string from a region (end of string not found)");
+      throw NotNullTerminatedStringError(message);
+    }
+
+    return QString::fromUtf8( reinterpret_cast<const char*>(charArray.data) );
+  }
 
   /*! \internal
    *

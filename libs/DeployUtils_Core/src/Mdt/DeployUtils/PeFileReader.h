@@ -23,8 +23,15 @@
 
 #include "AbstractExecutableFileReaderEngine.h"
 #include "mdt_deployutils_export.h"
+#include <memory>
 
 namespace Mdt{ namespace DeployUtils{
+
+  namespace Impl{ namespace Pe{
+
+    class FileReader;
+
+  }} // namespace Impl{ namespace Pe{
 
   /*! \brief Minimal PE file reader
    *
@@ -46,16 +53,17 @@ namespace Mdt{ namespace DeployUtils{
 
     ~PeFileReader() noexcept;
 
-    /// \todo remove
-    void sandbox();
-    
   private:
 
     void newFileOpen(const QString & fileName) override;
     void fileClosed() override;
-    bool doIsPeFile() override;
+    bool doIsPeImageFile() override;
     bool doIsExecutableOrSharedLibrary() override;
     QStringList doGetNeededSharedLibraries() override;
+
+    bool tryExtractDosCoffAndOptionalHeader();
+
+    std::unique_ptr<Impl::Pe::FileReader> mImpl;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

@@ -63,11 +63,11 @@ bool AbstractExecutableFileReaderEngine::isElfFile()
   return doIsElfFile();
 }
 
-bool AbstractExecutableFileReaderEngine::isPeFile()
+bool AbstractExecutableFileReaderEngine::isPeImageFile()
 {
   assert( isOpen() );
 
-  return doIsPeFile();
+  return doIsPeImageFile();
 }
 
 bool AbstractExecutableFileReaderEngine::isExecutableOrSharedLibrary()

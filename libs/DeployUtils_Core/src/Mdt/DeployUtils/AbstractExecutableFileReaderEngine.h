@@ -80,14 +80,14 @@ namespace Mdt{ namespace DeployUtils{
      */
     bool isElfFile();
 
-    /*! \brief Check if this reader refers to a PE file (Windows)
+    /*! \brief Check if this reader refers to a PE image file (Windows)
      *
      * \pre this reader must have a open file
      * \sa isOpen()
      * \exception ExecutableFileReadError
      * \note static library archive (libSomeLib.a) are not supported
      */
-    bool isPeFile();
+    bool isPeImageFile();
 
     /*! \brief Check if this reader refers to a executable or a shared library
      *
@@ -147,7 +147,7 @@ namespace Mdt{ namespace DeployUtils{
       return false;
     }
 
-    virtual bool doIsPeFile()
+    virtual bool doIsPeImageFile()
     {
       return false;
     }

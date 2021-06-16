@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_IMPL_PE_FILE_HEADER_H
 
 #include <cstdint>
+#include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
@@ -41,6 +42,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
     bool seemsValid() const noexcept
     {
       return !isNull();
+    }
+
+    void clear() noexcept
+    {
+      peSignatureOffset = 0;
     }
   };
 
@@ -82,12 +88,19 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
   struct CoffHeader
   {
     uint16_t machine = static_cast<uint16_t>(MachineType::Null);
-    uint16_t numberOfSections;
+    uint16_t numberOfSections = 0;
     uint32_t timeDateStamp;
     uint32_t pointerToSymbolTable;
     uint32_t numberOfSymbols;
     uint16_t sizeOfOptionalHeader = 0;
     uint16_t characteristics;
+
+    void clear() noexcept
+    {
+      machine = static_cast<uint16_t>(MachineType::Null);
+      numberOfSections = 0;
+      sizeOfOptionalHeader = 0;
+    }
 
     MachineType machineType() const noexcept
     {
@@ -169,16 +182,28 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
    */
   struct ImageDataDirectory
   {
-    uint32_t virtualAddress;
-    uint32_t size;
+    uint32_t virtualAddress = 0;
+    uint32_t size = 0;
+
+    bool isNull() const noexcept
+    {
+      if(virtualAddress == 0){
+        return true;
+      }
+      if(size == 0){
+        return true;
+      }
+
+      return false;
+    }
 
     static
     ImageDataDirectory fromUint64(uint64_t value) noexcept
     {
       ImageDataDirectory directory;
 
-      directory.virtualAddress = static_cast<uint32_t>(value >> 32);
-      directory.size = static_cast<uint32_t>(value & 0x00000000FFFFFFFF);
+      directory.virtualAddress = static_cast<uint32_t>(value & 0x00000000FFFFFFFF);
+      directory.size = static_cast<uint32_t>(value >> 32);
 
       return directory;
     }
@@ -190,7 +215,28 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
   {
     uint16_t magic = 0;
     uint32_t numberOfRvaAndSizes = 0;
-    uint64_t importTable;
+    uint64_t importTable = 0;
+    uint64_t delayImportTable = 0;
+
+    void clear() noexcept
+    {
+      magic = 0;
+      numberOfRvaAndSizes = 0;
+      importTable = 0;
+      delayImportTable = 0;
+    }
+
+    bool seemsValid() const noexcept
+    {
+      if( magicType() == MagicType::Unknown ){
+        return false;
+      }
+      if( numberOfRvaAndSizes == 0 ){
+        return false;
+      }
+
+      return true;
+    }
 
     MagicType magicType() const noexcept
     {
@@ -206,10 +252,52 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       return MagicType::Unknown;
     }
 
+    /*! \brief Check if this header contains the import table
+     */
+    bool containsImportTable() const noexcept
+    {
+      if( numberOfRvaAndSizes < 2 ){
+        return false;
+      }
+      if( importTable == 0 ){
+        return false;
+      }
+
+      return true;
+    }
+
+    /*! \brief Get the directory to the import table
+     */
     ImageDataDirectory importTableDirectory() const noexcept
     {
+      assert( containsImportTable() );
+
       return ImageDataDirectory::fromUint64(importTable);
     }
+
+    /*! \brief Check if this header contains the delay import table
+     */
+    bool containsDelayImportTable() const noexcept
+    {
+      if( numberOfRvaAndSizes < 14 ){
+        return false;
+      }
+      if( delayImportTable == 0 ){
+        return false;
+      }
+
+      return true;
+    }
+
+    /*! \brief Get the directory to the delay import table
+     */
+    ImageDataDirectory delayImportTableDirectory() const noexcept
+    {
+      assert( containsDelayImportTable() );
+
+      return ImageDataDirectory::fromUint64(delayImportTable);
+    }
+
   };
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{

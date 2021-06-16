@@ -21,10 +21,12 @@
 #ifndef TEST_UTILS_H
 #define TEST_UTILS_H
 
+#include "Mdt/DeployUtils/LibraryName.h"
 #include <QString>
 #include <QStringList>
 #include <vector>
 #include <string>
+#include <cassert>
 
 QStringList qStringListFromUtf8Strings(const std::vector<std::string> & args)
 {
@@ -35,6 +37,32 @@ QStringList qStringListFromUtf8Strings(const std::vector<std::string> & args)
   }
 
   return arguments;
+}
+
+QString generateStringWithNChars(int n)
+{
+  assert( n > 0 );
+
+  QString str;
+
+  for(int i=0; i<n; ++i){
+    str += QString::number(i%10);
+  }
+  assert( str.length() == n );
+
+  return str;
+}
+
+bool containsQt5Core(const QStringList & libraries)
+{
+  for(const QString & library : libraries){
+    const Mdt::DeployUtils::LibraryName libraryName(library);
+    if( libraryName.name() == QLatin1String("Qt5Core") ){
+      return true;
+    }
+  }
+
+  return false;
 }
 
 #endif // #ifndef TEST_UTILS_H

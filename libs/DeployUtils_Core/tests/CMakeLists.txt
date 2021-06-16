@@ -95,6 +95,17 @@ mdt_add_test(
     src/ExecutableFileReaderUtilsImplTest.cpp
 )
 
+mdt_add_test(
+  NAME ExecutableFileReaderUtilsImplErrorTest
+  TARGET executableFileReaderUtilsImplErrorTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ExecutableFileReaderUtilsImplErrorTest.cpp
+)
+
+# TODO also build test libs with delay load DLL (probably only supported by MSVC ??)
+# see https://gitlab.kitware.com/cmake/cmake/-/issues/12372
+
 # Create a libraries to make some tests
 # Force those libraries to be a shared/static library
 add_library(

@@ -95,8 +95,47 @@ QString toDebugString(const OptionalHeader & header)
   QString str = QLatin1String("magic: ") + toDebugString( header.magicType() );
 
   str += QLatin1String("\nnumber of RVA and sizes: ") + QString::number(header.numberOfRvaAndSizes);
-  str += QLatin1String("\nimport table: address: 0x") + QString::number(header.importTableDirectory().virtualAddress, 16)
-      +  QLatin1String(", size: ") + QString::number(header.importTableDirectory().size);
+  if( header.containsImportTable() ){
+    const ImageDataDirectory directory = header.importTableDirectory();
+    str += QLatin1String("\ncontains the import table: address: 0x") + QString::number(directory.virtualAddress, 16)
+        +  QLatin1String(", size: ") + QString::number(directory.size);
+  }
+  if( header.containsDelayImportTable() ){
+    const ImageDataDirectory directory = header.delayImportTableDirectory();
+    str += QLatin1String("\ncontains the delay import table: address: 0x") + QString::number(directory.virtualAddress, 16)
+        +  QLatin1String(", size: ") + QString::number(directory.size);
+  }else{
+    str += QLatin1String("\ndoes not contain a delay import table");
+  }
+
+  return str;
+}
+
+QString toDebugString(const SectionHeader & header)
+{
+  QString str = QLatin1String("section header ") + header.name;
+  str += QLatin1String("\n virtual size: ") + QString::number(header.virtualSize);
+  str += QLatin1String("\n virtual address: 0x") + QString::number(header.virtualAddress, 16);
+  str += QLatin1String("\n file pointer to raw data: 0x") + QString::number(header.pointerToRawData, 16);
+  str += QLatin1String("\n size: ") + QString::number(header.sizeOfRawData);
+
+  return str;
+}
+
+QString toDebugString(const ImportDirectory & directory, const QString & leftPad)
+{
+  QString str = leftPad + QLatin1String("DLL name RVA: 0x") + QString::number(directory.nameRVA, 16);
+
+  return str;
+}
+
+QString toDebugString(const ImportDirectoryTable & directoryTable)
+{
+  QString str = QLatin1String("import directory table:");
+
+  for(const auto & directory : directoryTable){
+    str += QLatin1String("\n") + toDebugString(directory, QLatin1String("  "));
+  }
 
   return str;
 }

@@ -30,6 +30,8 @@
 #include "Mdt/DeployUtils/ExecutableFileReadError.h"
 #include <QCoreApplication>
 #include <QString>
+#include <QStringList>
+#include <QObject>
 #include <string>
 #include <cassert>
 
@@ -156,6 +158,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
   int64_t minimumSizeToExtractOptionalHeader(const CoffHeader & coffHeader, const DosHeader & dosHeader) noexcept
   {
     assert( coffHeader.seemsValid() );
+    assert( dosHeader.seemsValid() );
 
     return minimumSizeToExtractCoffHeader(dosHeader) + coffHeader.sizeOfOptionalHeader;
   }
@@ -335,35 +338,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
   }
 
   /*! \internal
-   *
-   * \pre \a map must not be null
-   * \pre \a name must not be empty
-   * \pre \a coffHeader must be valid
-   * \pre \a dosHeader must be valid
-   * \pre \a map size must be big enouth to extract the the section table
-   */
-  inline
-  SectionHeader findSectionHeader(const ByteArraySpan & map, const QString & name, const CoffHeader & coffHeader, const DosHeader & dosHeader) noexcept
-  {
-    assert( !map.isNull() );
-    assert( !name.isEmpty() );
-    assert( coffHeader.seemsValid() );
-    assert( dosHeader.seemsValid() );
-    assert( map.size >= minimumSizeToExtractSectionTable(coffHeader, dosHeader) );
-
-    int64_t offset = sectionTableOffset(coffHeader, dosHeader);
-    for(uint16_t i = 1; i < coffHeader.numberOfSections; ++i){
-      SectionHeader sectionHeader = sectionHeaderFromArray( map.subSpan(offset, 40) );
-      if( sectionHeader.name == name ){
-        return sectionHeader;
-      }
-      offset += 40;
-    }
-
-    return SectionHeader();
-  }
-
-  /*! \internal
    */
   inline
   bool rvaIsInSection(uint32_t rva, const SectionHeader & sectionHeader) noexcept
@@ -374,18 +348,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
     const uint32_t end = start + sectionHeader.virtualSize;
 
     return (rva >= start) && (rva < end);
-  }
-
-  /*! \internal
-   */
-  inline
-  int64_t rvaToFileOffset(uint32_t rva, const SectionHeader & sectionHeader) noexcept
-  {
-    assert( rva > 0 );
-    assert( sectionHeader.seemsValid() );
-    assert( rvaIsInSection(rva, sectionHeader) );
-
-    return sectionHeader.rvaToFileOffset(rva);
   }
 
   /*! \internal Find a section header from a optional header data directory
@@ -405,37 +367,27 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
     assert( dosHeader.seemsValid() );
     assert( map.size >= minimumSizeToExtractSectionTable(coffHeader, dosHeader) );
 
-    std::cout << "searching section header for address 0x" << QString::number(directory.virtualAddress, 16).toStdString() << std::endl;
-    
     int64_t offset = sectionTableOffset(coffHeader, dosHeader);
     for(uint16_t i = 1; i < coffHeader.numberOfSections; ++i){
       const SectionHeader sectionHeader = sectionHeaderFromArray( map.subSpan(offset, 40) );
-      
-//       std::cout << " candidat section header, name: " << sectionHeader.name.toStdString()
-//       << ", virtual address: 0x" << QString::number(sectionHeader.virtualAddress, 16).toStdString() << std::endl;
-      
-//       std::cout << " candidate section header: " << toDebugString(sectionHeader).toStdString() << std::endl;
-      
       if( sectionHeader.seemsValid() && rvaIsInSection(directory.virtualAddress, sectionHeader) ){
         return sectionHeader;
       }
-      
-//       const uint32_t start = sectionHeader.virtualAddress;
-//       const uint32_t end = start + sectionHeader.virtualSize;
-//       const uint32_t rva = directory.virtualAddress;
-//       
-//       if( (rva >= start) && (rva <= end) ){
-//         return sectionHeader;
-//       }
-      
-      
-//       if( sectionHeader.virtualAddress == directory.virtualAddress ){
-//         return sectionHeader;
-//       }
       offset += 40;
     }
 
     return SectionHeader();
+  }
+
+  /*! \internal
+   */
+  inline int64_t minimumSizeToExtractSection(const SectionHeader & sectionHeader, const ImageDataDirectory & directory) noexcept
+  {
+    assert( sectionHeader.seemsValid() );
+    assert( !directory.isNull() );
+    assert( sectionHeader.rvaIsValid(directory.virtualAddress) );
+
+    return sectionHeader.rvaToFileOffset(directory.virtualAddress) + directory.size;
   }
 
   /*! \internal
@@ -457,21 +409,15 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
   }
 
   /*! \internal
-   *
-   * \pre \a map must not be null
-   * 
    */
   inline
   ImportDirectoryTable importDirectoryTableFromArray(const ByteArraySpan & map) noexcept
   {
     assert( !map.isNull() );
+    assert( map.size >= 20 );
 
     ImportDirectoryTable table;
 
-    /// \todo check map size first
-    
-    std::cout << "get import directory table ...\n";
-    
     /*
      * We must not extract the whole section,
      * but only the import directory table.
@@ -481,13 +427,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
      */
     const int64_t lastOffset = map.size - 20;
     for( int64_t offset = 0; offset <= lastOffset; offset += 20 ){
-      
-//       std::cout << " search at offset " << offset;
-      
       const ImportDirectory directory = importDirectoryFromArray( map.subSpan(offset, 20) );
-      
-//       std::cout << " , directory dll RVA: " << directory.nameRVA << std::endl;
-      
       if( directory.isNull() ){
         return table;
       }
@@ -498,48 +438,21 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
   }
 
   /*! \internal
-   *
-   * \pre \a map must not be null
-   * 
-   * \pre \a sectionHeader must be the .idata section header \todo maybe not
-   * 
-   * \todo min size to read it
    */
   inline
   ImportDirectoryTable extractImportDirectoryTable(const ByteArraySpan & map, const SectionHeader & sectionHeader, const ImageDataDirectory & directory) noexcept
   {
     assert( !map.isNull() );
-    /// \todo min size to read it
     assert( sectionHeader.seemsValid() );
-//     assert( sectionHeader.name == QLatin1String(".idata") );
-    /// \todo assert on dir if..
-    
-//     const int64_t offset = sectionHeader.pointerToRawData;
-//     const int64_t size = sectionHeader.sizeOfRawData;
-    
-    const int64_t offset = rvaToFileOffset( directory.virtualAddress, sectionHeader );
+    assert( !directory.isNull() );
+    assert( sectionHeader.rvaIsValid(directory.virtualAddress) );
+    assert( map.size >= minimumSizeToExtractSection(sectionHeader, directory) );
+
+    const int64_t offset = sectionHeader.rvaToFileOffset(directory.virtualAddress);
     const int64_t size = directory.size;
 
     return importDirectoryTableFromArray( map.subSpan(offset, size) );
-
-//     return importDirectoryTableFromArray( map.subSpan( sectionHeader.pointerToRawData, sectionHeader.sizeOfRawData ) );
   }
-
-  /*! \internal
-   *
-   * \pre \a map must not be null
-   * \pre \a sectionHeader must be the .idata section header
-   * 
-   * \todo min size to read it
-   */
-//   inline
-//   ImportDirectoryTable extractImportDirectoryTable(const ByteArraySpan & map, const ImageDataDirectory & directory) noexcept
-//   {
-//     assert( !map.isNull() );
-//     /// \todo min size to read it
-// 
-//     return importDirectoryTableFromArray( map.subSpan( directory.virtualAddress, directory.size ) );
-//   }
 
   /*! \internal
    *
@@ -568,10 +481,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
   DelayLoadTable delayLoadTableFromArray(const ByteArraySpan & map) noexcept
   {
     assert( !map.isNull() );
+    assert( map.size >= 32 );
 
     DelayLoadTable table;
-
-    /// \todo check map size first
 
     /*
      * We must not extract the whole section,
@@ -593,25 +505,40 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
   }
 
   /*! \internal
-   *
-   * \pre \a map must not be null
-   * 
-   * \pre \a sectionHeader must be the  \todo what is it
-   * 
-   * \todo min size to read it
    */
   inline
   DelayLoadTable extractDelayLoadTable(const ByteArraySpan & map, const SectionHeader & sectionHeader, const ImageDataDirectory & directory) noexcept
   {
     assert( !map.isNull() );
-    /// \todo min size to read it
     assert( sectionHeader.seemsValid() );
     assert( !directory.isNull() );
+    assert( sectionHeader.rvaIsValid(directory.virtualAddress) );
+    assert( map.size >= minimumSizeToExtractSection(sectionHeader, directory) );
 
-    const int64_t offset = rvaToFileOffset( directory.virtualAddress, sectionHeader );
+    const int64_t offset = sectionHeader.rvaToFileOffset(directory.virtualAddress);
     const int64_t size = directory.size;
 
     return delayLoadTableFromArray( map.subSpan(offset, size) );
+  }
+
+  /*! \internal
+   *
+   * \exception NotNullTerminatedStringError
+   */
+  inline
+  QString extractDllName(const ByteArraySpan & map, const SectionHeader & sectionHeader, const ImportDirectory & directory)
+  {
+    assert( !map.isNull() );
+    assert( sectionHeader.seemsValid() );
+    assert( !directory.isNull() );
+    assert( sectionHeader.rvaIsValid(directory.nameRVA) );
+
+    /// \todo map size
+    /// \todo address/offset validity
+
+    const int64_t offset = sectionHeader.rvaToFileOffset(directory.nameRVA);
+
+    return qStringFromUft8ByteArraySpan( map.subSpan(offset, 200) );
   }
 
   /*! \internal
@@ -624,79 +551,178 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
     assert( !map.isNull() );
     assert( sectionHeader.seemsValid() );
     assert( !directory.isNull() );
+    assert( sectionHeader.rvaIsValid(directory.nameRVA) );
 
     /// \todo map size
     /// \todo address/offset validity
-    
+
     const int64_t offset = sectionHeader.rvaToFileOffset(directory.nameRVA);
-    
+
     return qStringFromUft8ByteArraySpan( map.subSpan(offset, 200) );
   }
 
-  static std::string hexNumberString(uint64_t n)
+  /*! \internal
+   */
+  class FileReader : public QObject
   {
-    return "0x" + QString::number(n, 16).toStdString();
-  }
-  
-  static
-  void sandbox(const ByteArraySpan & map)
-  {
-    assert( !map.isNull() );
+    Q_OBJECT
 
-    const DosHeader dosHeader = extractDosHeader(map);
-    std::cout << toDebugString(dosHeader).toStdString() << std::endl;
+   public:
 
-    std::cout << "Contains PE signature: " << containsPeSignature(map, dosHeader) << std::endl;
+    DosHeader mDosHeader;
+    CoffHeader mCoffHeader;
+    OptionalHeader mOptionalHeader;
 
-    const CoffHeader coffHeader = extractCoffHeader(map, dosHeader);
-    std::cout << toDebugString(coffHeader).toStdString() << std::endl;
-
-    const OptionalHeader optionalHeader = extractOptionalHeader(map, coffHeader, dosHeader);
-    std::cout << toDebugString(optionalHeader).toStdString() << std::endl;
-
-//     const SectionHeader idataSectionHeader = findSectionHeader(map, QLatin1String(".idata"), coffHeader, dosHeader);
-    const SectionHeader idataSectionHeader = findSectionHeader(map, optionalHeader.importTableDirectory(), coffHeader, dosHeader);
-    if( !idataSectionHeader.seemsValid() ){
-      //std::cerr << "could not find the .idata section header" << std::endl;
-      std::cerr << "could not find the import table section header" << std::endl;
-      return;
+    /*! \brief Set the file name
+     */
+    void setFileName(const QString & name) noexcept
+    {
+      mFileName = name;
     }
-    std::cout << toDebugString(idataSectionHeader).toStdString() << std::endl;
-    
-    std::cout << "import section header pointerToRawData: " << hexNumberString(idataSectionHeader.pointerToRawData) << std::endl;
-    std::cout << "import image data directory, virtualAddress: "
-              << hexNumberString(optionalHeader.importTableDirectory().virtualAddress)
-              << ", file offset: " << hexNumberString( rvaToFileOffset(optionalHeader.importTableDirectory().virtualAddress, idataSectionHeader) )
-              << std::endl;
-    
-    
-    const ImportDirectoryTable importTable = extractImportDirectoryTable(map, idataSectionHeader, optionalHeader.importTableDirectory());
-//     std::cout << toDebugString(importTable).toStdString() << std::endl;
-    
-//     const ImportDirectoryTable importTable = extractImportDirectoryTable( map, optionalHeader.importTableDirectory() );
-//     std::cout << toDebugString(importTable).toStdString() << std::endl;
 
-    
-    for(const auto & directory : importTable){
-      std::cout << " dll name file offset: 0x" << QString::number( directory.dllStringFileOffset(idataSectionHeader) , 16).toStdString();
-      std::cout << ", name: " << qStringFromUft8ByteArraySpan( map.subSpan( directory.dllStringFileOffset(idataSectionHeader), 200 ) ).toStdString()  << std::endl;
+    /*! \brief Clear
+     */
+    void clear() noexcept
+    {
+      mFileName.clear();
+      mDosHeader.clear();
+      mCoffHeader.clear();
+      mOptionalHeader.clear();
     }
-    
-    if( optionalHeader.containsDelayImportTable() ){
-      const ImageDataDirectory directoryDescriptor = optionalHeader.delayImportTableDirectory();
-      const SectionHeader delayLoadSectionHeader = findSectionHeader(map, directoryDescriptor, coffHeader, dosHeader);
-      if( !delayLoadSectionHeader.seemsValid() ){
-        std::cerr << "could not find the section header for the delay load table" << std::endl;
+
+    QStringList getNeededSharedLibraries(const ByteArraySpan & map)
+    {
+      assert( !map.isNull() );
+
+      QStringList dlls;
+
+      extractDosHeaderIfNull(map);
+      extractCoffHeaderIfNull(map);
+      extractOptionalHeaderIfNull(map);
+
+      if( mOptionalHeader.containsImportTable() ){
+        const ImageDataDirectory directoryDescriptor = mOptionalHeader.importTableDirectory();
+        const SectionHeader sectionHeader = findSectionHeader(map, directoryDescriptor, mCoffHeader, mDosHeader);
+        if( !sectionHeader.seemsValid() ){
+          const QString message = tr("file '%1' declares to have a import table, but related section could not be found")
+                                  .arg(mFileName);
+          throw ExecutableFileReadError(message);
+        }
+
+        if( !sectionHeader.rvaIsValid(directoryDescriptor.virtualAddress) ){
+          const QString message = tr("file '%1' the import directory descriptor contains a invalid address to its section")
+                                  .arg(mFileName);
+          throw ExecutableFileReadError(message);
+        }
+        const ImportDirectoryTable importTable = extractImportDirectoryTable(map, sectionHeader, directoryDescriptor);
+        for(const auto & directory : importTable){
+          if( !sectionHeader.rvaIsValid(directory.nameRVA) ){
+            const QString message = tr("file '%1' the import directory contains a invalid address to a DLL name")
+                                    .arg(mFileName);
+            throw ExecutableFileReadError(message);
+          }
+          dlls.push_back( extractDllName(map, sectionHeader, directory) );
+        }
+      }
+
+      if( mOptionalHeader.containsDelayImportTable() ){
+        const ImageDataDirectory directoryDescriptor = mOptionalHeader.delayImportTableDirectory();
+        const SectionHeader sectionHeader = findSectionHeader(map, directoryDescriptor, mCoffHeader, mDosHeader);
+        if( !sectionHeader.seemsValid() ){
+          const QString message = tr("file '%1' declares to have delay load table, but related section could not be found")
+                                  .arg(mFileName);
+          throw ExecutableFileReadError(message);
+        }
+
+        if( !sectionHeader.rvaIsValid(directoryDescriptor.virtualAddress) ){
+          const QString message = tr("file '%1' the delay load directory descriptor contains a invalid address to its section")
+                                  .arg(mFileName);
+          throw ExecutableFileReadError(message);
+        }
+        const DelayLoadTable delayLoadTable = extractDelayLoadTable(map, sectionHeader, directoryDescriptor);
+        for(const auto & directory : delayLoadTable){
+          if( !sectionHeader.rvaIsValid(directory.nameRVA) ){
+            const QString message = tr("file '%1' the import directory contains a invalid address to a DLL name")
+                                    .arg(mFileName);
+            throw ExecutableFileReadError(message);
+          }
+          dlls.push_back( extractDllName(map, sectionHeader, directory) );
+        }
+      }
+
+      return dlls;
+    }
+
+   private:
+
+    void extractDosHeaderIfNull(const ByteArraySpan & map)
+    {
+      assert( !map.isNull() );
+
+      if( map.size < 64 ){
+        const QString message = tr("file '%1' is to small to be a PE file")
+                                .arg(mFileName);
+        throw ExecutableFileReadError(message);
+      }
+
+      if( mDosHeader.seemsValid() ){
+        return ;
+      }
+      mDosHeader = extractDosHeader(map);
+      if( !mDosHeader.seemsValid() ){
+        const QString message = tr("file '%1' does not contain the DOS header (no access to PE signature)")
+                                .arg(mFileName);
+        throw ExecutableFileReadError(message);
+      }
+    }
+
+    void extractCoffHeaderIfNull(const ByteArraySpan & map)
+    {
+      assert( !map.isNull() );
+      assert( mDosHeader.seemsValid() );
+
+      if( mCoffHeader.seemsValid() ){
         return;
       }
-      const DelayLoadTable delayLoadTable = extractDelayLoadTable(map, delayLoadSectionHeader, directoryDescriptor);
-      
-      for(const auto & directory : delayLoadTable){
-        std::cout << extractDllName(map, delayLoadSectionHeader, directory).toStdString() << std::endl;
+
+      if( map.size < minimumSizeToExtractCoffHeader(mDosHeader) ){
+        const QString message = tr("file '%1' is to small to extract the COFF header")
+                                .arg(mFileName);
+        throw ExecutableFileReadError(message);
       }
-      
+      mCoffHeader = extractCoffHeader(map, mDosHeader);
+      if( !mCoffHeader.seemsValid() ){
+        const QString message = tr("file '%1' does not contain the COFF header")
+                                .arg(mFileName);
+        throw ExecutableFileReadError(message);
+      }
     }
-  }
+
+    void extractOptionalHeaderIfNull(const ByteArraySpan & map)
+    {
+      assert( !map.isNull() );
+      assert( mDosHeader.seemsValid() );
+      assert( mCoffHeader.seemsValid() );
+
+      if( mOptionalHeader.seemsValid() ){
+        return;
+      }
+
+      if( map.size < minimumSizeToExtractOptionalHeader(mCoffHeader, mDosHeader) ){
+        const QString message = tr("file '%1' is to small to extract the Optional header")
+                                .arg(mFileName);
+        throw ExecutableFileReadError(message);
+      }
+      mOptionalHeader = extractOptionalHeader(map, mCoffHeader, mDosHeader);
+      if( mOptionalHeader.seemsValid() ){
+        const QString message = tr("file '%1' does not contain the Optional header")
+                                .arg(mFileName);
+        throw ExecutableFileReadError(message);
+      }
+    }
+
+    QString mFileName;
+  };
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 

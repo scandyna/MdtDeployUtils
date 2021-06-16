@@ -20,25 +20,13 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "TestUtils.h"
 #include "TestFileUtils.h"
 #include "Mdt/DeployUtils/ElfFileReader.h"
-#include "Mdt/DeployUtils/LibraryName.h"
 #include <QString>
 #include <QLatin1String>
 
 using namespace Mdt::DeployUtils;
-
-bool containsQt5Core(const QStringList & libraries)
-{
-  for(const QString & library : libraries){
-    const LibraryName libraryName(library);
-    if( libraryName.name() == QLatin1String("Qt5Core") ){
-      return true;
-    }
-  }
-
-  return false;
-}
 
 TEST_CASE("isElfFile")
 {

@@ -54,23 +54,7 @@ TEST_CASE("stringFromUnsignedCharArray")
     const unsigned char array[1] = {'A'};
     span.data = array;
     span.size = 1;
-    REQUIRE_THROWS_AS( stringFromUnsignedCharArray(span), ExecutableFileReadError );
-  }
-}
-
-TEST_CASE("qStringFromUft8UnsignedCharArray")
-{
-  using Impl::Elf::qStringFromUft8UnsignedCharArray;
-  using Impl::ByteArraySpan;
-
-  ByteArraySpan span;
-
-  SECTION("A (no end of string)")
-  {
-    const unsigned char array[1] = {'A'};
-    span.data = array;
-    span.size = 1;
-    REQUIRE_THROWS_AS( qStringFromUft8UnsignedCharArray(span), ExecutableFileReadError );
+    REQUIRE_THROWS_AS( stringFromUnsignedCharArray(span), Impl::NotNullTerminatedStringError );
   }
 }
 

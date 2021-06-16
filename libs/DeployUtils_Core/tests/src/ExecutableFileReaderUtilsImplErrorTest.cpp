@@ -24,50 +24,15 @@
 
 using namespace Mdt::DeployUtils::Impl;
 
-TEST_CASE("containsEndOfString")
-{
-  ByteArraySpan span;
-
-  SECTION("empty")
-  {
-    const unsigned char array[1] = {};
-    span.data = array;
-
-    SECTION("size: 0")
-    {
-      span.size = 0;
-      REQUIRE( !containsEndOfString(span) );
-    }
-  }
-
-  SECTION("ABC")
-  {
-    const unsigned char array[4] = {'A','B','C','\0'};
-    span.data = array;
-
-    SECTION("size: 3")
-    {
-      span.size = 3;
-      REQUIRE( !containsEndOfString(span) );
-    }
-
-    SECTION("size: 4")
-    {
-      span.size = 4;
-      REQUIRE( containsEndOfString(span) );
-    }
-  }
-}
-
 TEST_CASE("qStringFromUft8UnsignedCharArray")
 {
   ByteArraySpan span;
 
-  SECTION("A")
+  SECTION("A (no end of string)")
   {
-    const unsigned char array[2] = {'A','\0'};
+    const unsigned char array[1] = {'A'};
     span.data = array;
-    span.size = 2;
-    REQUIRE( qStringFromUft8UnsignedCharArray(span) == QLatin1String("A") );
+    span.size = 1;
+    REQUIRE_THROWS_AS( qStringFromUft8UnsignedCharArray(span), NotNullTerminatedStringError );
   }
 }
