@@ -44,7 +44,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Get absolute file path
      */
-    QString absoluteFilePath() const
+    QString absoluteFilePath() const noexcept
     {
       return mAbsoluteFilePath;
     }
@@ -66,7 +66,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Get library name
      */
-    LibraryName libraryName() const
+    const LibraryName & libraryName() const noexcept
     {
       return mLibraryName;
     }
@@ -100,34 +100,6 @@ namespace Mdt{ namespace DeployUtils{
       return !(a == b);
     }
 
-    /*! \brief Check if \a extension refers to a shared library
-     *
-     * \a extension can also be a versionned shared library,
-     * like so.1.2.3
-     *
-     * \pre \a extension must not begin with a dot ('.').
-     *
-     * \sa LibraryName::extension()
-     * \sa QFileInfo::suffix()
-     */
-    static
-    bool isSharedLibraryExtension(const QString & extension) noexcept
-    {
-      assert( !extension.startsWith( QChar::fromLatin1('.') ) );
-
-      if( extension.startsWith( QLatin1String("so") ) ){
-        return true;
-      }
-      if( QString::compare( extension, QLatin1String("dll"), Qt::CaseInsensitive ) == 0 ){
-        return true;
-      }
-      if( QString::compare( extension, QLatin1String("dylib"), Qt::CaseSensitive ) == 0 ){
-        return true;
-      }
-
-      return false;
-    }
-
     /*! \brief Check if \a filePath refers to a shared library file
      *
      * Returns true if \a filePath refers to a shared library.
@@ -140,14 +112,12 @@ namespace Mdt{ namespace DeployUtils{
      *
      * /opt/libQt5Core.so is also a valid shared library,
      * so true is returned.
+     *
+     * \sa LibraryNameExtension
      */
     static
     bool isSharedLibraryFile(const QString & filePath) noexcept;
 
-    /*! \brief Get the library name from \a filePath
-     */
-    static
-    LibraryName libraryNameFromFile(const QString & filePath) noexcept;
 
     /*! \brief Get a library info from a file
      *
@@ -155,9 +125,16 @@ namespace Mdt{ namespace DeployUtils{
      * \sa isSharedLibraryFile()
      */
     static
-    LibraryInfo fromFile(const QString & filePath) noexcept;
+    LibraryInfo fromFile(const QString & filePath) noexcept
+    {
+    }
 
    private:
+
+    /*! \brief Get the library name from \a filePath
+     */
+    static
+    LibraryName libraryNameFromFile(const QString & filePath) noexcept;
 
     LibraryName mLibraryName;
     QString mAbsoluteFilePath;

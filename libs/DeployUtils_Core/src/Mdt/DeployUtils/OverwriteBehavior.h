@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2021 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -18,41 +18,20 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "catch2/catch.hpp"
-#include "Catch2QString.h"
-#include "Mdt/DeployUtils/LibraryInfo.h"
-#include <QLatin1String>
+#ifndef MDT_DEPLOY_UTILS_OVERWRITE_BEHAVIOUR_H
+#define MDT_DEPLOY_UTILS_OVERWRITE_BEHAVIOUR_H
 
-using namespace Mdt::DeployUtils;
+namespace Mdt{ namespace DeployUtils{
 
-TEST_CASE("Construct")
-{
-  SECTION("default constructed")
+  /*! \brief Overwrite behaviour while copy a file
+   */
+  enum class OverwriteBehavior
   {
-    LibraryInfo libraryInfo;
-    REQUIRE( libraryInfo.isNull() );
-  }
-}
+    Keep,       /*!< The destination file will not be changed at all */
+    Overwrite,  /*!< The destination file will be replaced */
+    Fail        /*!< A error occurs if the destination file allready exists */
+  };
 
-TEST_CASE("fromFile")
-{
-  LibraryInfo libraryInfo;
+}} // namespace Mdt{ namespace DeployUtils{
 
-  SECTION("libQt5Core.so")
-  {
-    libraryInfo = LibraryInfo::fromFile( QLatin1String("libQt5Core.so") );
-    
-  }
-
-  REQUIRE(false);
-}
-
-TEST_CASE("isSharedLibraryFile")
-{
-  REQUIRE(false);
-}
-
-// TEST_CASE("libraryNameFromFile")
-// {
-//   REQUIRE(false);
-// }
+#endif // #ifndef MDT_DEPLOY_UTILS_OVERWRITE_BEHAVIOUR_H

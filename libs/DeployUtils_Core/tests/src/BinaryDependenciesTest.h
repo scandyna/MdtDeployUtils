@@ -18,41 +18,23 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "catch2/catch.hpp"
-#include "Catch2QString.h"
-#include "Mdt/DeployUtils/LibraryInfo.h"
-#include <QLatin1String>
+#ifndef BINARY_DEPENDENCIES_TEST_H
+#define BINARY_DEPENDENCIES_TEST_H
 
-using namespace Mdt::DeployUtils;
+#include <QObject>
+#include <QtTest/QTest>
 
-TEST_CASE("Construct")
+class BinaryDependenciesTest : public QObject
 {
-  SECTION("default constructed")
-  {
-    LibraryInfo libraryInfo;
-    REQUIRE( libraryInfo.isNull() );
-  }
-}
+ Q_OBJECT
 
-TEST_CASE("fromFile")
-{
-  LibraryInfo libraryInfo;
+ private slots:
 
-  SECTION("libQt5Core.so")
-  {
-    libraryInfo = LibraryInfo::fromFile( QLatin1String("libQt5Core.so") );
-    
-  }
+  void initTestCase();
+  void cleanupTestCase();
 
-  REQUIRE(false);
-}
+  void implementationInterfaceTest();
+  void runTest();
+};
 
-TEST_CASE("isSharedLibraryFile")
-{
-  REQUIRE(false);
-}
-
-// TEST_CASE("libraryNameFromFile")
-// {
-//   REQUIRE(false);
-// }
+#endif // #ifndef BINARY_DEPENDENCIES_TEST_H

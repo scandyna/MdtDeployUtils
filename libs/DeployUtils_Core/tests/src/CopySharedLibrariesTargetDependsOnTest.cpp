@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2021 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -20,39 +20,9 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
-#include "Mdt/DeployUtils/LibraryInfo.h"
-#include <QLatin1String>
+#include "TestUtils.h"
+#include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.h"
 
 using namespace Mdt::DeployUtils;
 
-TEST_CASE("Construct")
-{
-  SECTION("default constructed")
-  {
-    LibraryInfo libraryInfo;
-    REQUIRE( libraryInfo.isNull() );
-  }
-}
 
-TEST_CASE("fromFile")
-{
-  LibraryInfo libraryInfo;
-
-  SECTION("libQt5Core.so")
-  {
-    libraryInfo = LibraryInfo::fromFile( QLatin1String("libQt5Core.so") );
-    
-  }
-
-  REQUIRE(false);
-}
-
-TEST_CASE("isSharedLibraryFile")
-{
-  REQUIRE(false);
-}
-
-// TEST_CASE("libraryNameFromFile")
-// {
-//   REQUIRE(false);
-// }

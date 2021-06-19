@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2021 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -18,41 +18,27 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "catch2/catch.hpp"
-#include "Catch2QString.h"
-#include "Mdt/DeployUtils/LibraryInfo.h"
-#include <QLatin1String>
+#ifndef MDT_DEPLOY_UTILS_COPY_SHARED_LIBRARIES_TARGET_DEPENDS_ON_REQUEST_H
+#define MDT_DEPLOY_UTILS_COPY_SHARED_LIBRARIES_TARGET_DEPENDS_ON_REQUEST_H
 
-using namespace Mdt::DeployUtils;
+#include "OverwriteBehavior.h"
+#include "mdt_deployutils_export.h"
+#include <QStringList>
+#include <QString>
 
-TEST_CASE("Construct")
-{
-  SECTION("default constructed")
+namespace Mdt{ namespace DeployUtils{
+
+  /*! \brief DTO for CopySharedLibrariesTargetDependsOn
+   */
+  struct MDT_DEPLOYUTILS_EXPORT CopySharedLibrariesTargetDependsOnRequest
   {
-    LibraryInfo libraryInfo;
-    REQUIRE( libraryInfo.isNull() );
-  }
-}
+    OverwriteBehavior overwriteBehavior = OverwriteBehavior::Fail;
+    bool removeRpath = false;
+    QStringList searchPrefixPathList;
+    QString targetFilePath;
+    QString destinationDirectoryPath;
+  };
 
-TEST_CASE("fromFile")
-{
-  LibraryInfo libraryInfo;
+}} // namespace Mdt{ namespace DeployUtils{
 
-  SECTION("libQt5Core.so")
-  {
-    libraryInfo = LibraryInfo::fromFile( QLatin1String("libQt5Core.so") );
-    
-  }
-
-  REQUIRE(false);
-}
-
-TEST_CASE("isSharedLibraryFile")
-{
-  REQUIRE(false);
-}
-
-// TEST_CASE("libraryNameFromFile")
-// {
-//   REQUIRE(false);
-// }
+#endif // #ifndef MDT_DEPLOY_UTILS_COPY_SHARED_LIBRARIES_TARGET_DEPENDS_ON_REQUEST_H

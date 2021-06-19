@@ -138,6 +138,7 @@ add_executable(
 target_link_libraries(testExecutableDynamic
   PRIVATE
     testSharedLibrary
+    Qt5::Core
 )
 
   # -static cannot be used with some sanitizers
