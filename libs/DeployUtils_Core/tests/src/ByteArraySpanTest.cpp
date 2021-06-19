@@ -26,7 +26,7 @@ using namespace Mdt::DeployUtils;
 using Impl::ByteArraySpan;
 
 
-ByteArraySpan spanFromArray(const unsigned char * const data, uint64_t size)
+ByteArraySpan spanFromArray(const unsigned char * const data, int64_t size)
 {
   ByteArraySpan span;
 
