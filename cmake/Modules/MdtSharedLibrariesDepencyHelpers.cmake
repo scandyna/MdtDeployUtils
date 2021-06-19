@@ -299,51 +299,6 @@ function(mdt_install_shared_libraries_target_depends_on)
     TARGET ${ARG_TARGET}
   )
 
-#   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_MDT_DEPLOY_UTILS_COMMAND_FILE "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsCommand.txt")
-#   file(GENERATE
-#     OUTPUT "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_MDT_DEPLOY_UTILS_COMMAND_FILE}"
-#     CONTENT "$<TARGET_FILE:mdtdeployutils>"
-#   )
-
-#   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE  "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsTarget-${config}.txt")
-#   file(GENERATE
-#     OUTPUT "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE}"
-#     CONTENT "$<TARGET_FILE:${ARG_TARGET}>"
-#   )
-
-#   set(installScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript-$<CONFIG>.cmake")
-#   configure_file("${PROJECT_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in" "${installScript}" @ONLY)
-
-#   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE  "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsTarget-${config}.txt")
-#   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET "$<TARGET_FILE:${ARG_TARGET}>")
-#   file(GENERATE
-#     OUTPUT "${installScript}"
-#     INPUT "${PROJECT_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in"
-#     TARGET ${ARG_TARGET}
-#   )
-
   install(SCRIPT "${installScript}" COMPONENT Runtime)
-
-#   set(CONFIGURATION_TYPES)
-#   if(CMAKE_CONFIGURATION_TYPES)
-#     set(CONFIGURATION_TYPES ${CMAKE_CONFIGURATION_TYPES})
-#   else()
-#     set(CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE})
-#   endif()
-# 
-#   foreach(config ${CONFIGURATION_TYPES})
-# 
-#     set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE  "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsTarget-${config}.txt")
-#     file(GENERATE
-#       OUTPUT "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE}"
-#       CONTENT "$<TARGET_FILE:${ARG_TARGET}>"
-#     )
-# 
-#     set(installScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript-${config}.cmake")
-#     configure_file("${PROJECT_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in" "${installScript}" @ONLY)
-# 
-#     install(SCRIPT "${installScript}" COMPONENT Runtime)
-# 
-#   endforeach()
 
 endfunction()
