@@ -97,7 +97,10 @@ TEST_CASE("getNeededSharedLibraries")
   SECTION("dynamic linked executable")
   {
     reader.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
-    REQUIRE( !reader.getNeededSharedLibraries().isEmpty() );
+    libraries = reader.getNeededSharedLibraries();
+    REQUIRE( !libraries.isEmpty() );
+    REQUIRE( containsTestSharedLibrary(libraries) );
+    REQUIRE( containsQt5Core(libraries) );
     reader.close();
   }
 }

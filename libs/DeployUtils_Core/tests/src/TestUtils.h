@@ -53,16 +53,28 @@ QString generateStringWithNChars(int n)
   return str;
 }
 
-bool containsQt5Core(const QStringList & libraries)
+bool containsLibrary(const QStringList & libraries, const QString & libraryName)
 {
+  const Mdt::DeployUtils::LibraryName searchedLibraryName(libraryName);
+
   for(const QString & library : libraries){
-    const Mdt::DeployUtils::LibraryName libraryName(library);
-    if( libraryName.name() == QLatin1String("Qt5Core") ){
+    const Mdt::DeployUtils::LibraryName currentLibraryName(library);
+    if( currentLibraryName.nameWithoutDebugSuffix() == searchedLibraryName.nameWithoutDebugSuffix() ){
       return true;
     }
   }
 
   return false;
+}
+
+bool containsQt5Core(const QStringList & libraries)
+{
+  return containsLibrary(libraries, QLatin1String("Qt5Core"));
+}
+
+bool containsTestSharedLibrary(const QStringList & libraries)
+{
+  return containsLibrary( libraries, QLatin1String("testSharedLibrary") );
 }
 
 #endif // #ifndef TEST_UTILS_H
