@@ -135,20 +135,15 @@ add_executable(
   testExecutableDynamic
   src/TestExecutableDynamic.cpp
 )
+target_link_libraries(testExecutableDynamic
+  PRIVATE
+    testSharedLibrary
+    Qt5::Core
+)
 # On MSVC, also check that deley load libraries also works
 if(MSVC)
-  target_link_libraries(testExecutableDynamic
-    PRIVATE
-      testSharedLibrary
-  )
   target_link_options(testExecutableDynamic
     PRIVATE "/DELAYLOAD:$<TARGET_FILE_NAME:Qt5::Core>"
-  )
-else()
-  target_link_libraries(testExecutableDynamic
-    PRIVATE
-      testSharedLibrary
-      Qt5::Core
   )
 endif()
 
