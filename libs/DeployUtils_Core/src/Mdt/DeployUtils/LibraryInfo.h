@@ -127,6 +127,7 @@ namespace Mdt{ namespace DeployUtils{
     static
     LibraryInfo fromFile(const QString & filePath) noexcept
     {
+      return LibraryInfo();
     }
 
    private:
