@@ -24,7 +24,7 @@
 
 int main()
 {
-  std::cout << "Hello dynamic" << std::endl;
+  qDebug() << "Hello dynamic";
 
   return (process() != 0);
 }

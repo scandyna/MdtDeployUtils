@@ -621,7 +621,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
                                     .arg(mFileName);
             throw ExecutableFileReadError(message);
           }
-          dlls.push_back( extractDllName(map, sectionHeader, directory) );
+          try{
+            dlls.push_back( extractDllName(map, sectionHeader, directory) );
+          }catch(const NotNullTerminatedStringError & error){
+            const QString message = tr("file '%1' failed to extract a DLL name from the import directory (no end of string found)")
+                                    .arg(mFileName);
+            throw ExecutableFileReadError(message);
+          }
         }
       }
 
@@ -642,11 +648,17 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
         const DelayLoadTable delayLoadTable = extractDelayLoadTable(map, sectionHeader, directoryDescriptor);
         for(const auto & directory : delayLoadTable){
           if( !sectionHeader.rvaIsValid(directory.nameRVA) ){
-            const QString message = tr("file '%1' the import directory contains a invalid address to a DLL name")
+            const QString message = tr("file '%1' the delay load directory contains a invalid address to a DLL name")
                                     .arg(mFileName);
             throw ExecutableFileReadError(message);
           }
-          dlls.push_back( extractDllName(map, sectionHeader, directory) );
+          try{
+            dlls.push_back( extractDllName(map, sectionHeader, directory) );
+          }catch(const NotNullTerminatedStringError & error){
+            const QString message = tr("file '%1' failed to extract a DLL name from the delay load directory (no end of string found)")
+                                    .arg(mFileName);
+            throw ExecutableFileReadError(message);
+          }
         }
       }
 
