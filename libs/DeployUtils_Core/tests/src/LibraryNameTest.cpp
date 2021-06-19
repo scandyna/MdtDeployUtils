@@ -487,3 +487,43 @@ TEST_CASE("debugSuffix")
     REQUIRE( libraryName.hasNameDebugSuffix() );
   }
 }
+
+TEST_CASE("nameWithoutDebugSuffix")
+{
+  SECTION("empty")
+  {
+    LibraryName libraryName( QLatin1String("") );
+    REQUIRE( libraryName.nameWithoutDebugSuffix().isEmpty() );
+  }
+
+  SECTION("Qt5Core.dll")
+  {
+    LibraryName libraryName( QLatin1String("Qt5Core.dll") );
+    REQUIRE( libraryName.nameWithoutDebugSuffix() == QLatin1String("Qt5Core") );
+  }
+
+  SECTION("Qt5Cored.dll")
+  {
+    LibraryName libraryName( QLatin1String("Qt5Cored.dll") );
+    REQUIRE( libraryName.nameWithoutDebugSuffix() == QLatin1String("Qt5Core") );
+  }
+
+  SECTION("m.dll")
+  {
+    LibraryName libraryName( QLatin1String("m.dll") );
+    REQUIRE( libraryName.nameWithoutDebugSuffix() == QLatin1String("m") );
+  }
+
+  SECTION("md.dll")
+  {
+    LibraryName libraryName( QLatin1String("md.dll") );
+    REQUIRE( libraryName.nameWithoutDebugSuffix() == QLatin1String("m") );
+  }
+
+  SECTION("mD.dll")
+  {
+    LibraryName libraryName( QLatin1String("mD.dll") );
+    REQUIRE( libraryName.nameWithoutDebugSuffix() == QLatin1String("m") );
+  }
+}
+

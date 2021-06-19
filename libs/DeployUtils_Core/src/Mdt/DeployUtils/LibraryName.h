@@ -121,6 +121,18 @@ namespace Mdt{ namespace DeployUtils{
       return mData.name;
     }
 
+    /*! \brief Get the library name without the debug suffix
+     *
+     * \sa hasNameDebugSuffix()
+     */
+    QString nameWithoutDebugSuffix() const noexcept
+    {
+      if( !hasNameDebugSuffix() ){
+        return name();
+      }
+      return mData.name.left(mData.name.length()-1);
+    }
+
     /*! \brief Check a debug suffix is present in the name
      *
      * This has only sense for dll (Windows),
