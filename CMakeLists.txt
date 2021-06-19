@@ -140,6 +140,7 @@ find_package(Boost REQUIRED)
 
 if(BUILD_TESTS)
   find_package(Catch2 REQUIRED)
+  find_package(Qt5 COMPONENTS Test REQUIRED)
 endif()
 
 if(BUILD_BENCHMARKS)
@@ -249,6 +250,7 @@ add_subdirectory(libs/DeployUtils_Core)
 add_subdirectory(libs/CommandLineParser)
 
 add_subdirectory(apps/DeployUtils_Cli)
+add_subdirectory(cmake)
 
 if(UNIX)
   add_subdirectory(apps/DeployUtils_Cli_BashCompletion)

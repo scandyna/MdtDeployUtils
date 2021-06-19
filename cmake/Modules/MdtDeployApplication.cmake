@@ -82,11 +82,12 @@
 #
 
 include(MdtInstallExecutable)
+include(MdtSharedLibrariesDepencyHelpers)
 
 function(mdt_deploy_application)
 
   set(options)
-  set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT)
+  set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT MDT_DEPLOY_UTILS_EXECUTABLE LDD_EXECUTABLE OBJDUMP_EXECUTABLE)
   set(multiValueArgs)
   cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -106,7 +107,35 @@ function(mdt_deploy_application)
     message(FATAL_ERROR "mdt_deploy_application(): unknown arguments passed: ${ARG_UNPARSED_ARGUMENTS}")
   endif()
 
+  if(ARG_MDT_DEPLOY_UTILS_EXECUTABLE)
+    set(mdtdeployutilsPath "${ARG_MDT_DEPLOY_UTILS_EXECUTABLE}")
+  else()
+    if(NOT TARGET mdtdeployutils)
+      message(FATAL_ERROR "mdt_deploy_application(): missing the required target mdtdeployutils."
+                          "Either use mdt_find_deploy_utils_tools(), "
+                          "or pass the path to mdtdeployutils using the MDT_DEPLOY_UTILS_EXECUTABLE argument.")
+    endif()
+#     get_target_property(mdtdeployutilsPath mdtdeployutils LOCATION)
+    set(mdtdeployutilsPath "$<TARGET_FILE:mdtdeployutils>")
+  endif()
+  if(NOT mdtdeployutilsPath)
+    message(FATAL_ERROR "mdt_deploy_application(): could not get path to mdtdeployutils")
+  endif()
+  
+  # TODO: also handle LDD_EXECUTABLE and OBJDUMP_EXECUTABLE
+  # Maybe add a helper function in MdtFindDeployUtilsTools
+  
+  message("mdtdeployutilsPath: ${mdtdeployutilsPath}")
+
   mdt_install_executable(
+    TARGET ${ARG_TARGET}
+    RUNTIME_DESTINATION ${ARG_RUNTIME_DESTINATION}
+    LIBRARY_DESTINATION ${ARG_LIBRARY_DESTINATION}
+    INSTALL_IS_UNIX_SYSTEM_WIDE ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE}
+    COMPONENT ${ARG_COMPONENT}
+  )
+
+  mdt_install_shared_libraries_target_depends_on(
     TARGET ${ARG_TARGET}
     RUNTIME_DESTINATION ${ARG_RUNTIME_DESTINATION}
     LIBRARY_DESTINATION ${ARG_LIBRARY_DESTINATION}

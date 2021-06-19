@@ -50,6 +50,42 @@
 #   )
 #
 
-
-
 # TODO : if subdir not 1 level, document to set RPATH manually
+
+function(mdt_install_executable)
+
+  set(options)
+  set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT)
+  set(multiValueArgs)
+  cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if(NOT ARG_TARGET)
+    message(FATAL_ERROR "mdt_install_executable(): no target provided")
+  endif()
+  if(NOT TARGET ${ARG_TARGET})
+    message(FATAL_ERROR "mdt_install_executable(): ${ARG_TARGET} is not a valid target")
+  endif()
+  if(NOT ARG_RUNTIME_DESTINATION)
+    message(FATAL_ERROR "mdt_install_executable(): mandatory argument RUNTIME_DESTINATION missing")
+  endif()
+  if(NOT ARG_LIBRARY_DESTINATION)
+    message(FATAL_ERROR "mdt_install_executable(): mandatory argument LIBRARY_DESTINATION missing")
+  endif()
+  if(ARG_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "mdt_install_executable(): unknown arguments passed: ${ARG_UNPARSED_ARGUMENTS}")
+  endif()
+
+  set(componentArguments)
+  if(ARG_COMPONENT)
+    set(componentArguments COMPONENT ${ARG_COMPONENT})
+  endif()
+
+  install(
+    TARGETS ${ARG_TARGET}
+    RUNTIME DESTINATION "${ARG_RUNTIME_DESTINATION}"
+    ${componentArguments}
+  )
+  
+  # TODO: finish implementation
+
+endfunction()

@@ -196,7 +196,7 @@ function(mdt_copy_shared_libraries_target_depends_on)
   add_custom_command(
     TARGET ${ARG_TARGET}
     POST_BUILD
-    COMMAND mdtdeployutils copy-shared-libraries-target-depends-on
+    COMMAND mdtdeployutils --logger-backend cmake copy-shared-libraries-target-depends-on
               --overwrite-behavior ${overwriteBehaviorOption}
               ${removeRpathOptionArgument}
               --search-prefix-path-list "${CMAKE_PREFIX_PATH}"
@@ -210,6 +210,7 @@ endfunction()
 # We need:
 # - get the shared libraries the target depend on
 # - install those shared libraries
+# - update the RPATH of those shared libraries
 # - support the DESTDIR environment variable, which is unknown at build system genration time
 #
 # A intuitive idea could be to define a install(FILES) rule
@@ -232,49 +233,15 @@ endfunction()
 # Other limitations to consider are available commands.
 # For example, install(), get_target_property(), add_custom_command() are not available.
 #
-# Also, to get the path to the target file:
+# Also, to get the path to a target file:
 # - get_target_property(targetFile target LOCATION) is not supported (CMake throws a error)
 # - $<TARGET_FILE:target> is not expanded (neither in this file, also not in the script)
+# By looking CMake cmake-generator-expressions documentation again,
+# a solution is to use file(GENERATE ...), then read the result in the script.
 #
-# As result, we have to split the work:
-# - get the list of shared libraries target depends on here (we have all required tools)
-# - install them from the script
-# In the script, file(INSTALL) is available, and seems to be a good solution.
-#
-# An other problem to solve is to exchange the list of shared libraries.
-# add_custom_command() does not support getting results out.
-# The solution is to write a result file,
-# which is easy to read from the script using file(STRINGS).
-# TODO: RPATH with file(INSTALL) ?
 function(mdt_install_shared_libraries_target_depends_on)
 
-# TODO provide MDT_DEPLOY_UTILS_EXECUTABLE etc.. + do checks - see mdt_deploy_applicastion()
-
-  # TODO: current solution is not relocatable with the DESTDIR !
-  #  see install(SCRIPT) or install(CODE)
-  #  Maybe: mdtdeployutils should generate a install script ??
-  #  See: https://stackoverflow.com/questions/41254902/cmake-run-script-for-install-target
-
-  # TODO: generate a install script using CMake configure_file(),
-  # see: https://stackoverflow.com/questions/20792802/why-variables-are-not-accessed-inside-script-in-cmake
-  # NOTE: what about generator expression $<TARGET_FILE:tgt> ?
-  
-  # TODO TODO first: maybe make it as done in MdtDeplyUtils !
-  # (copy shlibs to a location, then install(FILES) or install(DIRECTORY)
-  # Then document the choice
-  # (i.e. each attempt have a blocker !!
-  # f.ex: expand $<TARGET_FILE:tgt>, LOCATION property not works, getting output not possible with add_custom_command(), etc..  )
-
-  # Should NOT install(DIRECTORY), because could have libraries that are no longer needed.
-  # Try to generate a simple result file with a list a.so;b.so;...
-  # The read this file into a list (a simple file(READ) should do the work easaly !)
-  # Then, install(SCRIPT) to copy those files to the destination DESTDIR/CMAKE_INSTALL_PREFIX/xyz
-  # NOTE: install(FILES) or install(PROGRAMS) frome here Nok, because evaluated at generation time !
-  # See file(<COPY|INSTALL> <files>... DESTINATION <dir> ...)
-
-  # TODO TODO for RPATH:
-  # - The target must not be touched here, let the RPATH as is
-  # - For dependencies, update all after install (in the script)
+# TODO provide MDT_DEPLOY_UTILS_EXECUTABLE etc.. + do checks - see mdt_deploy_application()
 
   set(options)
   set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT)
@@ -302,33 +269,14 @@ function(mdt_install_shared_libraries_target_depends_on)
     set(componentArguments COMPONENT ${ARG_COMPONENT})
   endif()
 
-#   message("DESTDIR: $ENV{DESTDIR}")
-  
-  if(WIN32)
-    get_filename_component(librariesDestination "${CMAKE_INSTALL_PREFIX}/${ARG_RUNTIME_DESTINATION}" ABSOLUTE)
-  else()
-    get_filename_component(librariesDestination "${CMAKE_INSTALL_PREFIX}/${ARG_LIBRARY_DESTINATION}" ABSOLUTE)
-  endif()
-  message("librariesDestination: ${librariesDestination}")
-
   if(ARG_INSTALL_IS_UNIX_SYSTEM_WIDE)
     set(overwriteBehavior FAIL)
   else()
     set(overwriteBehavior OVERWRITE)
   endif()
 
-  mdt_copy_shared_libraries_target_depends_on(
-    TARGET ${ARG_TARGET}
-    DESTINATION "${librariesDestination}"
-    OVERWRITE_BEHAVIOR ${overwriteBehavior}
-    REMOVE_RPATH ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE}
-  )
-  
-#   set(TARGET_TO_INSTALL ${ARG_TARGET})
-#   set(TARGET_FILE_TO_INSTALL $<TARGET_FILE:${ARG_TARGET}>)
-  
   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_INSTALL_IS_UNIX_SYSTEM_WIDE ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE})
-  
+
   if(WIN32)
     set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_DESTINATION "${ARG_RUNTIME_DESTINATION}")
   else()
@@ -347,22 +295,9 @@ function(mdt_install_shared_libraries_target_depends_on)
     CONTENT "$<TARGET_FILE:${ARG_TARGET}>"
   )
 
-#   get_target_property(targetFile ${TARGET_TO_INSTALL} LOCATION)
-#   message("targetFile: ${targetFile}")
-
   set(installScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript.cmake")
   configure_file("${PROJECT_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in" "${installScript}" @ONLY)
-  
-  install(SCRIPT "${installScript}" COMPONENT Runtime)
 
-  # NOK, because evaluated at generation time !
-#   file(READ "${CMAKE_BINARY_DIR}/filesToInstall.txt" librariesToInstall)
-#   message("librariesToInstall: ${librariesToInstall}")
-#   install(FILES ${librariesToInstall} DESTINATION lib)
-#   add_custom_command(
-#     TARGET ${ARG_TARGET}
-#     POST_BUILD
-#     COMMAND mdtdeployutils get-shared-libraries-target-depends-on --help
-#   )
+  install(SCRIPT "${installScript}" COMPONENT Runtime)
 
 endfunction()

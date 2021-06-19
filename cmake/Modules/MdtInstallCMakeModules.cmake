@@ -25,10 +25,10 @@
 #     EXPORT_NAMESPACE <export-namespace>  TODO: not used
 #     INSTALL_NAMESPACE <install-namespace>
 #     [INSTALL_IS_UNIX_SYSTEM_WIDE [TRUE|FALSE]]
-#     [TOOLS executable1 [executable2 ...]]
-#     [LINUX_TOOLS executable1 [executable2 ...]]
-#     [WINDOWS_TOOLS executable1 [executable2 ...]]
-#     [APPLE_TOOLS executable1 [executable2 ...]]
+#     [TOOLS executable1 [executable2 ...]] TODO: remove
+#     [LINUX_TOOLS executable1 [executable2 ...]] TODO: remove
+#     [WINDOWS_TOOLS executable1 [executable2 ...]] TODO: remove
+#     [APPLE_TOOLS executable1 [executable2 ...]] TODO: remove
 #     [COMPONENT <component-name>]
 #     [NO_PACKAGE_CONFIG_FILES]
 #   )
@@ -43,6 +43,8 @@
 # If some modules requires tools, for example ``ldd``, it can be passed as ``TOOLS`` arguments.
 # Each argument is a executable name, without its ``.exe`` extension.
 # Internally, :command:`find_program()` will be used to find each tool.
+#
+# TODO: remove tools part
 #
 # The ``LINUX_TOOLS`` argument is the same as ``TOOLS``,
 # but is only used on Linux hosts. (i.e. ``CMAKE_HOST_UNIX`` is `true` and ``CMAKE_HOST_APPLE`` is `false`).
@@ -81,10 +83,10 @@
 #     EXPORT_NAMESPACE Mdt0::  TODO: not used
 #     INSTALL_NAMESPACE ${MDT_INSTALL_PACKAGE_NAME}
 #     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
-#     TOOLS myTool
-#     LINUX_TOOLS ldd
-#     WINDOWS_TOOLS objdump
-#     APPLE_TOOLS otool
+#     TOOLS myTool TODO: remove
+#     LINUX_TOOLS ldd TODO: remove
+#     WINDOWS_TOOLS objdump TODO: remove
+#     APPLE_TOOLS otool TODO: remove
 #                         NOTE: could be a target: DeployUtils (which contains tools)
 #     COMPONENT Runtime
 #   )
@@ -158,33 +160,6 @@
 #   )
 #
 #
-# Find MdtDeployUtils tools
-# ^^^^^^^^^^^^^^^^^^^^^^^^^
-#
-# TODO: should go to MdtFindDeployUtilsTools
-#
-# .. command:: mdt_find_deploy_utils_tools
-#
-# Find the tools required for MdtDeployUtils CMake modules::
-#
-#   mdt_find_deploy_utils_tools()
-#
-# For all host platforms, a IMPORTED target named ``mdtdeployutils`` will be created.
-#
-# On Linux host, a IMPORTED target named ``ldd`` will also be created.
-#
-# On Windows host, a IMPORTED target named ``objdump`` will also be created.
-#
-#
-# Example:
-#
-# .. code-block:: cmake
-#
-#   find_package(Mdt0DeployUtilsCMake REQUIRED)
-#   mdt_find_deploy_utils_tools()
-#
-#   mdt_deploy_application(...)
-#
 #
 # Subtitle
 # ^^^^^^^^
@@ -246,9 +221,7 @@
 #
 
 
-include(CMakePackageConfigHelpers)
-
-# TODO create helper to generate find_program() for tool
+# include(CMakePackageConfigHelpers)
 
 function(mdt_install_cmake_modules)
 
