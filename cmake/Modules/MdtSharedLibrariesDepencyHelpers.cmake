@@ -289,15 +289,26 @@ function(mdt_install_shared_libraries_target_depends_on)
     CONTENT "$<TARGET_FILE:mdtdeployutils>"
   )
 
-  set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE  "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsTarget.txt")
-  file(GENERATE
-    OUTPUT "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE}"
-    CONTENT "$<TARGET_FILE:${ARG_TARGET}>"
-  )
+  set(CONFIGURATION_TYPES)
+  if(CMAKE_CONFIGURATION_TYPES)
+    set(CONFIGURATION_TYPES ${CMAKE_CONFIGURATION_TYPES})
+  else()
+    set(CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE})
+  endif()
 
-  set(installScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript.cmake")
-  configure_file("${PROJECT_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in" "${installScript}" @ONLY)
+  foreach(config ${CONFIGURATION_TYPES})
 
-  install(SCRIPT "${installScript}" COMPONENT Runtime)
+    set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE  "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsTarget-${config}.txt")
+    file(GENERATE
+      OUTPUT "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE}"
+      CONTENT "$<TARGET_FILE:${ARG_TARGET}>"
+    )
+
+    set(installScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript-${config}.cmake")
+    configure_file("${PROJECT_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in" "${installScript}" @ONLY)
+
+    install(SCRIPT "${installScript}" COMPONENT Runtime)
+
+  endforeach()
 
 endfunction()

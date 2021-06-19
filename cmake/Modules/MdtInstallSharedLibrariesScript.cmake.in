@@ -29,8 +29,14 @@ file(STRINGS "@MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE@" targetFile)
 
 message("targetFile: ${targetFile}")
 
+# Prevent having //path if DESTIR is not used
+set(destDir "$ENV{DESTDIR}")
+if(destDir)
+  get_filename_component(librariesDestination "$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/${DESTINATION}" ABSOLUTE)
+else()
+  get_filename_component(librariesDestination "${CMAKE_INSTALL_PREFIX}/${DESTINATION}" ABSOLUTE)
+endif()
 
-get_filename_component(librariesDestination "$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/${DESTINATION}" ABSOLUTE)
 message("librariesDestination: ${librariesDestination}")
 
 set(INSTALL_IS_UNIX_SYSTEM_WIDE @MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_INSTALL_IS_UNIX_SYSTEM_WIDE@)
