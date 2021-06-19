@@ -283,32 +283,67 @@ function(mdt_install_shared_libraries_target_depends_on)
     set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_DESTINATION "${ARG_LIBRARY_DESTINATION}")
   endif()
 
-  set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_MDT_DEPLOY_UTILS_COMMAND_FILE "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsCommand.txt")
+  # configure_file() does not support generator expression
+  # file(GENERATE) supports generator expression, but not @ expension
+  # Result: the expression $<TARGET_FILE:${ARG_TARGET}> cannot be used in the input script,
+  # we have to give a valid target.
+  # So, to have both worlds, we have to generate a intermediate script
+
+  set(intermediateInstallScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript.cmake.intermediate")
+  configure_file("${PROJECT_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in" "${intermediateInstallScript}" @ONLY)
+
+  set(installScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript-$<CONFIG>.cmake")
   file(GENERATE
-    OUTPUT "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_MDT_DEPLOY_UTILS_COMMAND_FILE}"
-    CONTENT "$<TARGET_FILE:mdtdeployutils>"
+    OUTPUT "${installScript}"
+    INPUT "${intermediateInstallScript}"
+    TARGET ${ARG_TARGET}
   )
 
-  set(CONFIGURATION_TYPES)
-  if(CMAKE_CONFIGURATION_TYPES)
-    set(CONFIGURATION_TYPES ${CMAKE_CONFIGURATION_TYPES})
-  else()
-    set(CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE})
-  endif()
+#   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_MDT_DEPLOY_UTILS_COMMAND_FILE "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsCommand.txt")
+#   file(GENERATE
+#     OUTPUT "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_MDT_DEPLOY_UTILS_COMMAND_FILE}"
+#     CONTENT "$<TARGET_FILE:mdtdeployutils>"
+#   )
 
-  foreach(config ${CONFIGURATION_TYPES})
+#   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE  "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsTarget-${config}.txt")
+#   file(GENERATE
+#     OUTPUT "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE}"
+#     CONTENT "$<TARGET_FILE:${ARG_TARGET}>"
+#   )
 
-    set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE  "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsTarget-${config}.txt")
-    file(GENERATE
-      OUTPUT "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE}"
-      CONTENT "$<TARGET_FILE:${ARG_TARGET}>"
-    )
+#   set(installScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript-$<CONFIG>.cmake")
+#   configure_file("${PROJECT_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in" "${installScript}" @ONLY)
 
-    set(installScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript-${config}.cmake")
-    configure_file("${PROJECT_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in" "${installScript}" @ONLY)
+#   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE  "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsTarget-${config}.txt")
+#   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET "$<TARGET_FILE:${ARG_TARGET}>")
+#   file(GENERATE
+#     OUTPUT "${installScript}"
+#     INPUT "${PROJECT_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in"
+#     TARGET ${ARG_TARGET}
+#   )
 
-    install(SCRIPT "${installScript}" COMPONENT Runtime)
+  install(SCRIPT "${installScript}" COMPONENT Runtime)
 
-  endforeach()
+#   set(CONFIGURATION_TYPES)
+#   if(CMAKE_CONFIGURATION_TYPES)
+#     set(CONFIGURATION_TYPES ${CMAKE_CONFIGURATION_TYPES})
+#   else()
+#     set(CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE})
+#   endif()
+# 
+#   foreach(config ${CONFIGURATION_TYPES})
+# 
+#     set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE  "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsTarget-${config}.txt")
+#     file(GENERATE
+#       OUTPUT "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_TARGET_FILE}"
+#       CONTENT "$<TARGET_FILE:${ARG_TARGET}>"
+#     )
+# 
+#     set(installScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript-${config}.cmake")
+#     configure_file("${PROJECT_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in" "${installScript}" @ONLY)
+# 
+#     install(SCRIPT "${installScript}" COMPONENT Runtime)
+# 
+#   endforeach()
 
 endfunction()
