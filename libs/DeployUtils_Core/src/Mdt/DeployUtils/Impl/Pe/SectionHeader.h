@@ -62,6 +62,24 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       return true;
     }
 
+    /*! \brief Check if \a rva is in this section
+     *
+     * \pre this header must be valid
+     */
+    bool rvaIsInThisSection(uint32_t rva) const noexcept
+    {
+      assert( seemsValid() );
+
+      if( rva < virtualAddress ){
+        return false;
+      }
+      if( rva >= (virtualAddress+virtualSize) ){
+        return false;
+      }
+
+      return true;
+    }
+
     /*! \brief Check if \a rva is a valid address
      *
      * \pre this header must be valid
@@ -69,6 +87,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
     bool rvaIsValid(uint32_t rva) const noexcept
     {
       assert( seemsValid() );
+
+      if( !rvaIsInThisSection(rva) ){
+        return false;
+      }
 
       return rva >= virtualAddress_PointerToRawData_Offset();
     }

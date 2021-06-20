@@ -505,6 +505,45 @@ TEST_CASE("qStringFromUft8UnsignedCharArray")
   }
 }
 
+TEST_CASE("SectionHeader_rvaIsInThisSection")
+{
+  using Impl::Pe::SectionHeader;
+
+  SectionHeader header;
+
+  header.name = QLatin1String(".idata");
+  header.virtualSize = 10;
+  header.virtualAddress = 10000;
+  header.sizeOfRawData = 100;
+  header.pointerToRawData = 1000;
+  REQUIRE( header.seemsValid() );
+
+  SECTION("RVA is in section")
+  {
+    REQUIRE( header.rvaIsInThisSection(10005) );
+  }
+
+  SECTION("RVA is at the beginning of the section")
+  {
+    REQUIRE( header.rvaIsInThisSection(10000) );
+  }
+
+  SECTION("RVA is at the end of the section")
+  {
+    REQUIRE( header.rvaIsInThisSection(10009) );
+  }
+
+  SECTION("RVA is just before the section")
+  {
+    REQUIRE( !header.rvaIsInThisSection(9999) );
+  }
+
+  SECTION("RVA is just after the section")
+  {
+    REQUIRE( !header.rvaIsInThisSection(10010) );
+  }
+}
+
 TEST_CASE("SectionHeader")
 {
   using Impl::Pe::SectionHeader;
@@ -567,14 +606,14 @@ TEST_CASE("SectionHeader")
 
     SECTION("valid RVA")
     {
-      REQUIRE( header.rvaIsValid(9500) );
-      REQUIRE( header.rvaToFileOffset(9500) == 500 );
+      REQUIRE( header.rvaIsValid(10005) );
+      REQUIRE( header.rvaToFileOffset(10005) == 1005 );
     }
 
     SECTION("valid RVA (limit case)")
     {
-      REQUIRE( header.rvaIsValid(9000) );
-      REQUIRE( header.rvaToFileOffset(9000) == 0 );
+      REQUIRE( header.rvaIsValid(10000) );
+      REQUIRE( header.rvaToFileOffset(10000) == 1000 );
     }
 
     SECTION("invalid RVA")
@@ -664,6 +703,11 @@ TEST_CASE("delayLoadDirectoryFromArray")
   ByteArraySpan arraySpan;
   DelayLoadDirectory directory;
 
+  // Attributes: 0x34567890
+  array[0] = 0x90;
+  array[1] = 0x78;
+  array[2] = 0x56;
+  array[3] = 0x34;
   // Name RVA: 0x12345678
   array[4] = 0x78;
   array[5] = 0x56;
@@ -672,5 +716,6 @@ TEST_CASE("delayLoadDirectoryFromArray")
 
   arraySpan = arraySpanFromArray( array, sizeof(array) );
   directory = delayLoadDirectoryFromArray(arraySpan);
+  REQUIRE( directory.attributes == 0x34567890 );
   REQUIRE( directory.nameRVA == 0x12345678 );
 }

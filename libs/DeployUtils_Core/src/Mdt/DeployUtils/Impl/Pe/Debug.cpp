@@ -140,4 +140,23 @@ QString toDebugString(const ImportDirectoryTable & directoryTable)
   return str;
 }
 
+QString toDebugString(const DelayLoadDirectory & directory, const QString & leftPad)
+{
+  QString str = leftPad + QLatin1String("Attributes: 0x") + QString::number(directory.attributes, 16);
+  str += QLatin1Char('\n') + leftPad + QLatin1String("DLL name RVA: 0x") + QString::number(directory.nameRVA, 16);
+
+  return str;
+}
+
+QString toDebugString(const DelayLoadTable & table)
+{
+  QString str = QLatin1String("delay load table:");
+
+  for(const auto & directory : table){
+    str += QLatin1String("\n") + toDebugString(directory, QLatin1String("  "));
+  }
+
+  return str;
+}
+
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{

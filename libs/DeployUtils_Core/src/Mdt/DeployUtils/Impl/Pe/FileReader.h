@@ -36,8 +36,8 @@
 #include <string>
 #include <cassert>
 
-#include "Debug.h"
-#include <iostream>
+// #include "Debug.h"
+// #include <iostream>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
@@ -342,14 +342,23 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
   /*! \internal
    */
   inline
-  bool rvaIsInSection(uint32_t rva, const SectionHeader & sectionHeader) noexcept
+  SectionHeader findSectionHeaderByRva(const ByteArraySpan & map, uint32_t rva, const CoffHeader & coffHeader, const DosHeader & dosHeader) noexcept
   {
-    assert( sectionHeader.seemsValid() );
+    assert( !map.isNull() );
+    assert( coffHeader.seemsValid() );
+    assert( dosHeader.seemsValid() );
+    assert( map.size >= minimumSizeToExtractSectionTable(coffHeader, dosHeader) );
 
-    const uint32_t start = sectionHeader.virtualAddress;
-    const uint32_t end = start + sectionHeader.virtualSize;
+    int64_t offset = sectionTableOffset(coffHeader, dosHeader);
+    for(uint16_t i = 1; i < coffHeader.numberOfSections; ++i){
+      const SectionHeader sectionHeader = sectionHeaderFromArray( map.subSpan(offset, 40) );
+      if( sectionHeader.seemsValid() && sectionHeader.rvaIsInThisSection(rva) ){
+        return sectionHeader;
+      }
+      offset += 40;
+    }
 
-    return (rva >= start) && (rva < end);
+    return SectionHeader();
   }
 
   /*! \internal Find a section header from a optional header data directory
@@ -369,16 +378,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
     assert( dosHeader.seemsValid() );
     assert( map.size >= minimumSizeToExtractSectionTable(coffHeader, dosHeader) );
 
-    int64_t offset = sectionTableOffset(coffHeader, dosHeader);
-    for(uint16_t i = 1; i < coffHeader.numberOfSections; ++i){
-      const SectionHeader sectionHeader = sectionHeaderFromArray( map.subSpan(offset, 40) );
-      if( sectionHeader.seemsValid() && rvaIsInSection(directory.virtualAddress, sectionHeader) ){
-        return sectionHeader;
-      }
-      offset += 40;
-    }
-
-    return SectionHeader();
+    return findSectionHeaderByRva(map, directory.virtualAddress, coffHeader, dosHeader);
   }
 
   /*! \internal
@@ -469,6 +469,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
     DelayLoadDirectory directory;
 
+    directory.attributes = get32BitValueLE( map.subSpan(0, 4) );
     directory.nameRVA = get32BitValueLE( map.subSpan(4, 4) );
 
     return directory;
@@ -523,45 +524,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
     return delayLoadTableFromArray( map.subSpan(offset, size) );
   }
 
-  /*! \internal
-   *
-   * \exception NotNullTerminatedStringError
-   */
-  inline
-  QString extractDllName(const ByteArraySpan & map, const SectionHeader & sectionHeader, const ImportDirectory & directory)
-  {
-    assert( !map.isNull() );
-    assert( sectionHeader.seemsValid() );
-    assert( !directory.isNull() );
-    assert( sectionHeader.rvaIsValid(directory.nameRVA) );
-
-    /// \todo map size
-    /// \todo address/offset validity
-
-    const int64_t offset = sectionHeader.rvaToFileOffset(directory.nameRVA);
-
-    return qStringFromUft8ByteArraySpan( map.subSpan(offset, 200) );
-  }
-
-  /*! \internal
-   *
-   * \exception NotNullTerminatedStringError
-   */
-  inline
-  QString extractDllName(const ByteArraySpan & map, const SectionHeader & sectionHeader, const DelayLoadDirectory & directory)
-  {
-    assert( !map.isNull() );
-    assert( sectionHeader.seemsValid() );
-    assert( !directory.isNull() );
-    assert( sectionHeader.rvaIsValid(directory.nameRVA) );
-
-    /// \todo map size
-    /// \todo address/offset validity
-
-    const int64_t offset = sectionHeader.rvaToFileOffset(directory.nameRVA);
-
-    return qStringFromUft8ByteArraySpan( map.subSpan(offset, 200) );
-  }
 
   /*! \internal
    */
@@ -614,18 +576,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
         }
         const ImportDirectoryTable importTable = extractImportDirectoryTable(map, sectionHeader, directoryDescriptor);
         for(const auto & directory : importTable){
-          if( !sectionHeader.rvaIsValid(directory.nameRVA) ){
-            const QString message = tr("file '%1' the import directory contains a invalid address to a DLL name")
-                                    .arg(mFileName);
-            throw ExecutableFileReadError(message);
-          }
-          try{
-            dlls.push_back( extractDllName(map, sectionHeader, directory) );
-          }catch(const NotNullTerminatedStringError & error){
-            const QString message = tr("file '%1' failed to extract a DLL name from the import directory (no end of string found)")
-                                    .arg(mFileName);
-            throw ExecutableFileReadError(message);
-          }
+          dlls.push_back( extractDllName(map, sectionHeader, directory) );
         }
       }
 
@@ -637,26 +588,15 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
                                   .arg(mFileName);
           throw ExecutableFileReadError(message);
         }
-
         if( !sectionHeader.rvaIsValid(directoryDescriptor.virtualAddress) ){
           const QString message = tr("file '%1' the delay load directory descriptor contains a invalid address to its section")
                                   .arg(mFileName);
           throw ExecutableFileReadError(message);
         }
         const DelayLoadTable delayLoadTable = extractDelayLoadTable(map, sectionHeader, directoryDescriptor);
+
         for(const auto & directory : delayLoadTable){
-          if( !sectionHeader.rvaIsValid(directory.nameRVA) ){
-            const QString message = tr("file '%1' the delay load directory contains a invalid address to a DLL name")
-                                    .arg(mFileName);
-            throw ExecutableFileReadError(message);
-          }
-          try{
-            dlls.push_back( extractDllName(map, sectionHeader, directory) );
-          }catch(const NotNullTerminatedStringError & error){
-            const QString message = tr("file '%1' failed to extract a DLL name from the delay load directory (no end of string found)")
-                                    .arg(mFileName);
-            throw ExecutableFileReadError(message);
-          }
+          dlls.push_back( extractDllName(map, sectionHeader, directory) );
         }
       }
 
@@ -781,6 +721,65 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
                                 .arg(mFileName);
         throw ExecutableFileReadError(message);
       }
+    }
+
+    QString extractDllNameByRva(const ByteArraySpan & map, uint32_t rva, const SectionHeader & candidateSectionHeader)
+    {
+      assert( !map.isNull() );
+      assert( candidateSectionHeader.seemsValid() );
+      assert( mDosHeader.seemsValid() );
+      assert( mCoffHeader.seemsValid() );
+
+      SectionHeader sectionHeader;
+      if( candidateSectionHeader.rvaIsInThisSection(rva) ){
+        sectionHeader = candidateSectionHeader;
+      }else{
+        sectionHeader = findSectionHeaderByRva(map, rva, mCoffHeader, mDosHeader);
+      }
+      if( !sectionHeader.seemsValid() ){
+        const QString message = tr("file '%1': extracting DLL name failed, could not find a section header for RVA 0x%2")
+                                .arg( mFileName, QString::number(rva, 16) );
+        throw ExecutableFileReadError(message);
+      }
+      assert( sectionHeader.rvaIsInThisSection(rva) );
+
+      const int64_t offset = sectionHeader.rvaToFileOffset(rva);
+      if( map.size <= offset ){
+        const QString message = tr("file '%1' is to small to extract a DLL name from import or delay load directory")
+                                .arg(mFileName);
+        throw ExecutableFileReadError(message);
+      }
+      try{
+        return qStringFromUft8ByteArraySpan( map.subSpan(offset) );
+      }catch(const NotNullTerminatedStringError & error){
+        const QString message = tr("file '%1' failed to extract a DLL name from import or delay load directory (no end of string found)")
+                                .arg(mFileName);
+        throw ExecutableFileReadError(message);
+      }
+    }
+
+    /*! \internal
+     */
+    inline
+    QString extractDllName(const ByteArraySpan & map, const SectionHeader & candidateSectionHeader, const ImportDirectory & directory)
+    {
+      assert( !map.isNull() );
+      assert( candidateSectionHeader.seemsValid() );
+      assert( !directory.isNull() );
+
+      return extractDllNameByRva(map, directory.nameRVA, candidateSectionHeader);
+    }
+
+    /*! \internal
+     */
+    inline
+    QString extractDllName(const ByteArraySpan & map, const SectionHeader & candidateSectionHeader, const DelayLoadDirectory & directory)
+    {
+      assert( !map.isNull() );
+      assert( candidateSectionHeader.seemsValid() );
+      assert( !directory.isNull() );
+
+      return extractDllNameByRva(map, directory.nameRVA, candidateSectionHeader);
     }
 
     DosHeader mDosHeader;

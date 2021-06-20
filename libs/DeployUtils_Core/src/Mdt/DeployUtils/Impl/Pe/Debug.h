@@ -69,6 +69,16 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
   MDT_DEPLOYUTILS_EXPORT
   QString toDebugString(const ImportDirectoryTable & directoryTable);
 
+  /*! \internal
+   */
+  MDT_DEPLOYUTILS_EXPORT
+  QString toDebugString(const DelayLoadDirectory & directory, const QString & leftPad = QLatin1String("  "));
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILS_EXPORT
+  QString toDebugString(const DelayLoadTable & table);
+
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
 #endif // #ifndef MDT_DEPLOY_UTILS_IMPL_PE_DEBUG_H

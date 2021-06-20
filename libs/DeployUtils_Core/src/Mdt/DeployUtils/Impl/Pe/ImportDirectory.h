@@ -54,6 +54,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
    */
   struct DelayLoadDirectory
   {
+    uint32_t attributes = 0;
     uint32_t nameRVA = 0;
 
     /*! \brief Check if this directory is null
@@ -64,7 +65,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
      */
     bool isNull() const noexcept
     {
-      return nameRVA == 0;
+      if(attributes != 0){
+        return false;
+      }
+      if(nameRVA != 0){
+        return false;
+      }
+      return true;
     }
   };
 
