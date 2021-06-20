@@ -19,6 +19,7 @@
  **
  ****************************************************************************/
 #include "TestSharedLibrary.h"
+#include <QString>
 #include <QDebug>
 
 void sayHello()
@@ -27,7 +28,13 @@ void sayHello()
   qDebug() << "Hello";
 }
 
-int process()
+int process(const char *str)
 {
-  return 42;
+  const QString s = QString::fromLocal8Bit(str);
+
+  if( !s.isEmpty() ){
+    return 42;
+  }
+
+  return 76;
 }

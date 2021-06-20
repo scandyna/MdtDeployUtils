@@ -26,6 +26,6 @@
 void sayHello();
 
 TESTSHAREDLIBRARY_EXPORT
-int process();
+int process(const char *str);
 
 #endif // #ifndef TEST_LIBRARY_H

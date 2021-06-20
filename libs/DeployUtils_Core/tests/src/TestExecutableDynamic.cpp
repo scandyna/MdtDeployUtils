@@ -22,9 +22,13 @@
 #include <iostream>
 #include "TestSharedLibrary.h"
 
-int main()
+int main(int argc, char **argv)
 {
   qDebug() << "Hello dynamic";
 
-  return (process() != 0);
+  if(argc < 1){
+    return 1;
+  }
+
+  return (process(argv[0]) != 0);
 }
