@@ -61,6 +61,23 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
       return span;
     }
+
+    /*! \brief Get a span that is a view over the remainding elements of this span starting at \a offset
+     *
+     * \pre this span must not be null
+     * \pre \a offset must be >= 0
+     * \pre \a offset must be < the size of this span
+     */
+    constexpr
+    ByteArraySpan subSpan(int64_t offset) const noexcept
+    {
+      assert( !isNull() );
+      assert( offset >= 0 );
+      assert( offset < size );
+
+      return subSpan(offset, size-offset);
+    }
+
   };
 
 }}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{

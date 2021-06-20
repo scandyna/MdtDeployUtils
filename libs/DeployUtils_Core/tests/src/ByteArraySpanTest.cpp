@@ -65,4 +65,13 @@ TEST_CASE("subSpan")
     REQUIRE( subSpan.data[1] == 3 );
     REQUIRE( subSpan.data[2] == 4 );
   }
+
+  SECTION("get remaining from offset 1")
+  {
+    const ByteArraySpan subSpan = span.subSpan(1);
+    REQUIRE( subSpan.size == 3 );
+    REQUIRE( subSpan.data[0] == 2 );
+    REQUIRE( subSpan.data[1] == 3 );
+    REQUIRE( subSpan.data[2] == 4 );
+  }
 }
