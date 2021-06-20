@@ -28,14 +28,15 @@
 // #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 // #include "Mdt/DeployUtils/Impl/FileMapper.h"
 // #include <QFile>
-// #include <QDebug>
-// #include <iostream>
+#include <QDebug>
+#include <iostream>
 
 /// \todo must be defined by CMake
-// #define TEST_SHARED_LIBRARY_FILE_PATH "/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Widgets.dll"
-// #define QT5_CORE_FILE_PATH "/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Cored.dll"
-// #define TEST_STATIC_LIBRARY_FILE_PATH "/home/philippe/.wine/drive_c/TDM-GCC-32/lib/libaclui.a"
+#define TEST_SHARED_LIBRARY_FILE_PATH "/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Widgets.dll"
+#define QT5_CORE_FILE_PATH "/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Cored.dll"
+#define TEST_STATIC_LIBRARY_FILE_PATH "/home/philippe/.wine/drive_c/TDM-GCC-32/lib/libaclui.a"
 // #define TEST_DYNAMIC_EXECUTABLE_FILE_PATH "/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/moc.exe"
+#define TEST_DYNAMIC_EXECUTABLE_FILE_PATH "/home/philippe/dev/build/MdtDeployUtils/testExecutableDynamic_msvc_debug.exe"
 
 using namespace Mdt::DeployUtils;
 
@@ -135,7 +136,7 @@ TEST_CASE("open_2_consecutive_files_with_1_instance")
   reader.close();
 }
 
-TEST_CASE("call_many_members_one_1_instance")
+TEST_CASE("call_many_members_on_1_instance")
 {
   PeFileReader reader;
 
@@ -146,11 +147,11 @@ TEST_CASE("call_many_members_one_1_instance")
 }
 
 
-// TEST_CASE("sandbox")
-// {
-//   using Impl::ByteArraySpan;
-//   using Impl::FileMapper;
-// 
+TEST_CASE("sandbox")
+{
+  using Impl::ByteArraySpan;
+  using Impl::FileMapper;
+
 // //   qDebug() << "TEST_SHARED_LIBRARY_FILE_PATH: " << TEST_SHARED_LIBRARY_FILE_PATH;
 // // 
 // //   QFile file;
@@ -217,12 +218,23 @@ TEST_CASE("call_many_members_one_1_instance")
 //     std::cout << reader.getNeededSharedLibraries().join( QLatin1Char('\n') ).toStdString() << std::endl;
 //   }
 // 
-//   SECTION("Visual Studio (installer)")
-//   {
-//     qDebug() << "\nVisual Studio (installer)";
-// 
-//     PeFileReader reader;
-//     reader.openFile( QString::fromLocal8Bit("/home/philippe/Software/Windows/vs_community__1782162290.1623490489.exe") );
-//     std::cout << reader.getNeededSharedLibraries().join( QLatin1Char('\n') ).toStdString() << std::endl;
-//   }
-// }
+  SECTION("Visual Studio (installer)")
+  {
+    qDebug() << "\nVisual Studio (installer)";
+
+    PeFileReader reader;
+    reader.openFile( QString::fromLocal8Bit("/home/philippe/Software/Windows/vs_community__1782162290.1623490489.exe") );
+    std::cout << reader.getNeededSharedLibraries().join( QLatin1Char('\n') ).toStdString() << std::endl;
+  }
+  
+  
+  SECTION("testExecutableDynamic_msvc_release")
+  {
+    qDebug() << "\ntestExecutableDynamic_msvc_release";
+
+    PeFileReader reader;
+    reader.openFile( QString::fromLocal8Bit("/home/philippe/dev/build/MdtDeployUtils/testExecutableDynamic_msvc_release.exe") );
+    std::cout << reader.getNeededSharedLibraries().join( QLatin1Char('\n') ).toStdString() << std::endl;
+  }
+
+}
