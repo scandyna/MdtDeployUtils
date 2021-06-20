@@ -224,7 +224,8 @@ mdt_add_test(
     src/PeFileReaderTest.cpp
 )
 
-if(WIN32)
+# TODO re-enable if
+# if(WIN32)
 
   mdt_add_test(
     NAME PeFileReaderTest_Windows
@@ -247,7 +248,7 @@ if(WIN32)
   target_compile_definitions(peFileReaderTest_Windows PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
   target_compile_definitions(peFileReaderTest_Windows PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
-endif()
+# endif()
 
 mdt_add_test(
   NAME PeFileReaderErrorTest
