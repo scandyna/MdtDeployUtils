@@ -959,7 +959,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       try{
         return extractSoName(map, mFileHeader, mDynamicSectionHeader);
-      }catch(const NotNullTerminatedStringError & error){
+      }catch(const NotNullTerminatedStringError &){
         const QString message = tr("file '%1': encountered a not null terminated string (file is maybe corrupted or of a unsupported format)")
                                 .arg(mFileName);
         throw ExecutableFileReadError(message);
@@ -983,7 +983,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       try{
         return extractNeededSharedLibraries(map, mFileHeader, mDynamicSectionHeader);
-      }catch(const NotNullTerminatedStringError & error){
+      }catch(const NotNullTerminatedStringError &){
         const QString message = tr("file '%1': encountered a not null terminated string (file is maybe corrupted or of a unsupported format)")
                                 .arg(mFileName);
         throw ExecutableFileReadError(message);
@@ -1007,7 +1007,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       try{
         return extractRunPath(map, mFileHeader, mDynamicSectionHeader).split(QChar::fromLatin1(':'), QString::SkipEmptyParts);
-      }catch(const NotNullTerminatedStringError & error){
+      }catch(const NotNullTerminatedStringError &){
         const QString message = tr("file '%1': encountered a not null terminated string (file is maybe corrupted or of a unsupported format)")
                                 .arg(mFileName);
         throw ExecutableFileReadError(message);

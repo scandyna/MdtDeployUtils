@@ -751,7 +751,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       }
       try{
         return qStringFromUft8ByteArraySpan( map.subSpan(offset) );
-      }catch(const NotNullTerminatedStringError & error){
+      }catch(const NotNullTerminatedStringError &){
         const QString message = tr("file '%1' failed to extract a DLL name from import or delay load directory (no end of string found)")
                                 .arg(mFileName);
         throw ExecutableFileReadError(message);
