@@ -29,6 +29,7 @@
 #include "Mdt/DeployUtils/Impl/ExecutableFileReaderUtils.h"
 #include "Mdt/DeployUtils/ExecutableFileReadError.h"
 #include <QCoreApplication>
+#include <QtGlobal>
 #include <QString>
 #include <QStringList>
 #include <QObject>
@@ -188,6 +189,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
     assert( !map.isNull() );
     assert( coffHeader.seemsValid() );
     assert( map.size == static_cast<int64_t>(coffHeader.sizeOfOptionalHeader) );
+    Q_UNUSED(coffHeader);
 
     OptionalHeader header;
 
@@ -569,10 +571,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
    public:
 
-    DosHeader mDosHeader;
-    CoffHeader mCoffHeader;
-    OptionalHeader mOptionalHeader;
-
     /*! \brief Set the file name
      */
     void setFileName(const QString & name) noexcept
@@ -665,6 +663,61 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       return dlls;
     }
 
+    bool tryExtractDosHeader(const ByteArraySpan & map)
+    {
+      assert( !map.isNull() );
+      assert( map.size >= 64 );
+
+      mDosHeader = extractDosHeader(map);
+
+      return mDosHeader.seemsValid();
+    }
+
+    int64_t minimumSizeToExtractCoffHeader() const noexcept
+    {
+      assert( mDosHeader.seemsValid() );
+
+      return Mdt::DeployUtils::Impl::Pe::minimumSizeToExtractCoffHeader(mDosHeader);
+    }
+
+    bool tryExtractCoffHeader(const ByteArraySpan & map)
+    {
+      assert( !map.isNull() );
+      assert( mDosHeader.seemsValid() );
+      assert( map.size >= minimumSizeToExtractCoffHeader() );
+
+      mCoffHeader = extractCoffHeader(map, mDosHeader);
+
+      return mCoffHeader.seemsValid();
+    }
+
+    int64_t minimumSizeToExtractOptionalHeader() const noexcept
+    {
+      assert( mDosHeader.seemsValid() );
+      assert( mCoffHeader.seemsValid() );
+
+      return Mdt::DeployUtils::Impl::Pe::minimumSizeToExtractOptionalHeader(mCoffHeader, mDosHeader);
+    }
+
+    bool tryExtractOptionalHeader(const ByteArraySpan & map)
+    {
+      assert( !map.isNull() );
+      assert( mDosHeader.seemsValid() );
+      assert( mCoffHeader.seemsValid() );
+      assert( map.size >= minimumSizeToExtractOptionalHeader() );
+
+      mOptionalHeader = extractOptionalHeader(map, mCoffHeader, mDosHeader);
+
+      return mOptionalHeader.seemsValid();
+    }
+
+    bool isValidExecutableImage() const noexcept
+    {
+      assert( mCoffHeader.seemsValid() );
+
+      return mCoffHeader.isValidExecutableImage();
+    }
+
    private:
 
     void extractDosHeaderIfNull(const ByteArraySpan & map)
@@ -680,8 +733,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       if( mDosHeader.seemsValid() ){
         return ;
       }
-      mDosHeader = extractDosHeader(map);
-      if( !mDosHeader.seemsValid() ){
+      if( !tryExtractDosHeader(map) ){
         const QString message = tr("file '%1' does not contain the DOS header (no access to PE signature)")
                                 .arg(mFileName);
         throw ExecutableFileReadError(message);
@@ -697,13 +749,12 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
         return;
       }
 
-      if( map.size < minimumSizeToExtractCoffHeader(mDosHeader) ){
+      if( map.size < minimumSizeToExtractCoffHeader() ){
         const QString message = tr("file '%1' is to small to extract the COFF header")
                                 .arg(mFileName);
         throw ExecutableFileReadError(message);
       }
-      mCoffHeader = extractCoffHeader(map, mDosHeader);
-      if( !mCoffHeader.seemsValid() ){
+      if( !tryExtractCoffHeader(map) ){
         const QString message = tr("file '%1' does not contain the COFF header")
                                 .arg(mFileName);
         throw ExecutableFileReadError(message);
@@ -720,19 +771,21 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
         return;
       }
 
-      if( map.size < minimumSizeToExtractOptionalHeader(mCoffHeader, mDosHeader) ){
+      if( map.size < minimumSizeToExtractOptionalHeader() ){
         const QString message = tr("file '%1' is to small to extract the Optional header")
                                 .arg(mFileName);
         throw ExecutableFileReadError(message);
       }
-      mOptionalHeader = extractOptionalHeader(map, mCoffHeader, mDosHeader);
-      if( mOptionalHeader.seemsValid() ){
+      if( !tryExtractOptionalHeader(map) ){
         const QString message = tr("file '%1' does not contain the Optional header")
                                 .arg(mFileName);
         throw ExecutableFileReadError(message);
       }
     }
 
+    DosHeader mDosHeader;
+    CoffHeader mCoffHeader;
+    OptionalHeader mOptionalHeader;
     QString mFileName;
   };
 

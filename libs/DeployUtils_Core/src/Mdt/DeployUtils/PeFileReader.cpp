@@ -55,7 +55,7 @@ bool PeFileReader::doIsExecutableOrSharedLibrary()
   if( !tryExtractDosCoffAndOptionalHeader() ){
     return false;
   }
-  if( !mImpl->mCoffHeader.isValidExecutableImage() ){
+  if( !mImpl->isValidExecutableImage() ){
     return false;
   }
 
@@ -76,11 +76,6 @@ QStringList PeFileReader::doGetNeededSharedLibraries()
 bool PeFileReader::tryExtractDosCoffAndOptionalHeader()
 {
   using Impl::ByteArraySpan;
-  using Impl::Pe::extractDosHeader;
-  using Impl::Pe::minimumSizeToExtractCoffHeader;
-  using Impl::Pe::extractCoffHeader;
-  using Impl::Pe::minimumSizeToExtractOptionalHeader;
-  using Impl::Pe::extractOptionalHeader;
 
   int64_t size = 64;
   if( fileSize() < size ){
@@ -88,30 +83,27 @@ bool PeFileReader::tryExtractDosCoffAndOptionalHeader()
   }
 
   ByteArraySpan map = mapIfRequired(0, size);
-  mImpl->mDosHeader = extractDosHeader(map);
-  if( !mImpl->mDosHeader.seemsValid() ){
+  if( !mImpl->tryExtractDosHeader(map) ){
     return false;
   }
 
-  size = minimumSizeToExtractCoffHeader(mImpl->mDosHeader);
+  size = mImpl->minimumSizeToExtractCoffHeader();
   if( fileSize() < size ){
     return false;
   }
 
   map = mapIfRequired(0, size);
-  mImpl->mCoffHeader = extractCoffHeader(map, mImpl->mDosHeader);
-  if( !mImpl->mCoffHeader.seemsValid() ){
+  if( !mImpl->tryExtractCoffHeader(map) ){
     return false;
   }
 
-  size = minimumSizeToExtractOptionalHeader(mImpl->mCoffHeader, mImpl->mDosHeader);
+  size = mImpl->minimumSizeToExtractOptionalHeader();
   if( fileSize() < size ){
     return false;
   }
 
   map = mapIfRequired(0, size);
-  mImpl->mOptionalHeader = extractOptionalHeader(map, mImpl->mCoffHeader, mImpl->mDosHeader);
-  if( !mImpl->mOptionalHeader.seemsValid() ){
+  if( !mImpl->tryExtractOptionalHeader(map) ){
     return false;
   }
 
