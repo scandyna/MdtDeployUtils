@@ -88,7 +88,9 @@ namespace Mdt{ namespace DeployUtils{
 
     void newFileOpen(const QString & fileName) override;
     void fileClosed() override;
+    bool doSupportsPlatform(const Platform & platform) const noexcept override;
     bool doIsElfFile() override;
+    Platform doGetFilePlatform() override;
     bool doIsExecutableOrSharedLibrary() override;
     QStringList doGetNeededSharedLibraries() override;
     QStringList doGetRunPath() override;

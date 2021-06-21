@@ -10,6 +10,7 @@ include(MdtInstallLibrary)
 add_library(Mdt_DeployUtils
   Mdt/DeployUtils/QRuntimeError.cpp
   Mdt/DeployUtils/FileOpenError.cpp
+  Mdt/DeployUtils/Platform.cpp
   Mdt/DeployUtils/AbstractMessageLoggerBackend.cpp
   Mdt/DeployUtils/MessageLogger.cpp
   Mdt/DeployUtils/ConsoleMessageLogger.cpp
@@ -43,6 +44,7 @@ add_library(Mdt_DeployUtils
   Mdt/DeployUtils/Impl/Pe/FileReader.cpp
   Mdt/DeployUtils/Impl/Pe/Debug.cpp
   Mdt/DeployUtils/PeFileReader.cpp
+  Mdt/DeployUtils/ExecutableFileReader.cpp
 #   Mdt/DeployUtils/BinaryDependenciesImplementationInterface.cpp
 #   Mdt/DeployUtils/BinaryDependencies.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.cpp

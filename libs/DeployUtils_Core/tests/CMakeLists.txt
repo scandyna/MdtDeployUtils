@@ -24,6 +24,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME PlatformTest
+  TARGET platformTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/PlatformTest.cpp
+)
+
+mdt_add_test(
   NAME PathTest
   TARGET pathTest
   DEPENDENCIES Mdt::DeployUtils Qt5::Test
@@ -103,9 +111,6 @@ mdt_add_test(
     src/ExecutableFileReaderUtilsImplErrorTest.cpp
 )
 
-# TODO also build test libs with delay load DLL (probably only supported by MSVC ??)
-# see https://gitlab.kitware.com/cmake/cmake/-/issues/12372
-
 # Create a libraries to make some tests
 # Force those libraries to be a shared/static library
 add_library(
@@ -140,7 +145,7 @@ target_link_libraries(testExecutableDynamic
     testSharedLibrary
     Qt5::Core
 )
-# On MSVC, also check that deley load libraries also works
+# On MSVC, also check that deley load libraries works
 if(MSVC)
   target_link_options(testExecutableDynamic
     PRIVATE "/DELAYLOAD:$<TARGET_FILE_NAME:Qt5::Core>"
@@ -256,6 +261,45 @@ mdt_add_test(
   SOURCE_FILES
     src/PeFileReaderErrorTest.cpp
 )
+
+mdt_add_test(
+  NAME ExecutableFileReaderTest
+  TARGET executableFileReaderTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ExecutableFileReaderTest.cpp
+)
+target_compile_definitions(executableFileReaderTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+target_compile_definitions(executableFileReaderTest PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+target_compile_definitions(executableFileReaderTest PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
+target_compile_definitions(executableFileReaderTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+
+
+mdt_add_test(
+  NAME ExecutableFileReaderErrorTest
+  TARGET executableFileReaderErrorTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ExecutableFileReaderErrorTest.cpp
+)
+target_compile_definitions(executableFileReaderErrorTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+target_compile_definitions(executableFileReaderErrorTest PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+target_compile_definitions(executableFileReaderErrorTest PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
+target_compile_definitions(executableFileReaderErrorTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+
+if(UNIX)
+  mdt_add_test(
+    NAME ExecutableFileReaderTest_Unix
+    TARGET executableFileReaderTest_Unix
+    DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+    SOURCE_FILES
+      src/ExecutableFileReaderTest_Unix.cpp
+  )
+  target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+  target_compile_definitions(executableFileReaderTest_Unix PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+  target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
+  target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+endif()
 
 # mdt_add_test(
 #   NAME BinaryDependenciesTest

@@ -18,40 +18,64 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_ABSTRACT_EXECUTABLE_FILE_READER_ENGINE_H
-#define MDT_DEPLOY_UTILS_ABSTRACT_EXECUTABLE_FILE_READER_ENGINE_H
+#ifndef MDT_DEPLOY_UTILS_EXECUTABLE_FILE_READER_H
+#define MDT_DEPLOY_UTILS_EXECUTABLE_FILE_READER_H
 
 #include "FileOpenError.h"
 #include "ExecutableFileReadError.h"
 #include "Platform.h"
-#include "Mdt/DeployUtils/Impl/FileMapper.h"
 #include "mdt_deployutils_export.h"
 #include <QObject>
-#include <QFile>
 #include <QFileInfo>
-#include <QString>
 #include <QStringList>
+#include <memory>
 
 namespace Mdt{ namespace DeployUtils{
 
-  /*! \brief Interface to a minimal executable file reader
+  class AbstractExecutableFileReaderEngine;
+
+  /*! \brief Reader to extract some informations from a executable file
+   *
+   * Here is a simplified example of searching dependencies for a given tagert:
+   * \code
+   * ExecutableFileReader reader;
+   * Platform platform;
+   * LibrariesDepencies dependencies;
+   *
+   * reader.openFile(targetExecutable);
+   * platform = reader.getFilePlatform();
+   * if( !reader.isDynamicLinkedExecutableOrLibrary() ){
+   *   // error
+   * }
+   * dependencies.add( reader.getNeededSharedLibraries(), reader.getRunPath() );
+   * reader.close();
+   *
+   * for( const auto & file : dependencies.firstLevelDependencies() ){
+   *   reader.openFile(file, platform);
+   *   if( reader.isDynamicLinkedExecutableOrLibrary() ){
+   *     libraries.append( reader.getNeededSharedLibraries() );
+   *     dependencies.add( reader.getNeededSharedLibraries(), reader.getRunPath() );
+   *   }
+   *   reader.close();
+   * }
+   * \endcode
+   *
+   * Note that \a dependencies magicly gives the full path of its previously added libraries.
+   * This example is here incomplete, but the purpose is to show how ExecutableFileReader can be used.
    */
-  class MDT_DEPLOYUTILS_EXPORT AbstractExecutableFileReaderEngine : public QObject
+  class MDT_DEPLOYUTILS_EXPORT ExecutableFileReader : public QObject
   {
-    Q_OBJECT
+   Q_OBJECT
 
    public:
 
     /*! \brief Construct a file reader
      */
-    explicit AbstractExecutableFileReaderEngine(QObject *parent = nullptr);
+    explicit ExecutableFileReader(QObject *parent = nullptr);
 
-    /*! \brief Check if this reader supports given platform
+    /*! \brief Close this file reader and free resources
      */
-    bool supportsPlatform(const Platform & platform) const noexcept
-    {
-      return doSupportsPlatform(platform);
-    }
+    ~ExecutableFileReader() noexcept;
 
     /*! \brief Open a file
      *
@@ -65,37 +89,27 @@ namespace Mdt{ namespace DeployUtils{
      */
     void openFile(const QFileInfo & fileInfo);
 
+    /*! \brief Open a file for a expected platform
+     *
+     * \pre \a fileInfo must have a file path set
+     * \pre \a platform must be valid
+     * \pre this reader must not allready have a file open
+     * \sa isOpen()
+     * \sa close()
+     * \exception FileOpenError
+     */
+    void openFile(const QFileInfo & fileInfo, const Platform & platform);
+
     /*! \brief Check if this reader has a open file
      *
      * \sa openFile()
      * \sa close()
      */
-    bool isOpen() const noexcept
-    {
-      return mFile.isOpen();
-    }
+    bool isOpen() const noexcept;
 
     /*! \brief Close the file that was maybe open
      */
     void close();
-
-    /*! \brief Check if this reader refers to a ELF file (Linux)
-     *
-     * \pre this reader must have a open file
-     * \sa isOpen()
-     * \exception ExecutableFileReadError
-     * \note static library archive (libSomeLib.a) are not supported
-     */
-    bool isElfFile();
-
-    /*! \brief Check if this reader refers to a PE image file (Windows)
-     *
-     * \pre this reader must have a open file
-     * \sa isOpen()
-     * \exception ExecutableFileReadError
-     * \note static library archive (libSomeLib.a) are not supported
-     */
-    bool isPeImageFile();
 
     /*! \brief Get the platorm of the file this reader refers to
      *
@@ -133,56 +147,13 @@ namespace Mdt{ namespace DeployUtils{
      */
     QStringList getRunPath();
 
-   protected:
-
-    /*! \brief Get the size of the file
-     *
-     * \pre this reader must have a open file
-     * \sa isOpen()
-     */
-    qint64 fileSize() const noexcept;
-
-    /*! \brief Map the file into memory
-     *
-     * \pre this reader must have a open file
-     * \sa isOpen()
-     * \pre \a offset must be >= 0
-     * \pre \a size must be > 0
-     * \pre \a file size must be at least \a offset + \a size
-     * \exception FileOpenError
-     */
-    Impl::ByteArraySpan mapIfRequired(qint64 offset, qint64 size);
-
    private:
 
-    virtual void newFileOpen(const QString & fileName) = 0;
-    virtual void fileClosed() = 0;
+    void instanciateReader(const Platform & platform) noexcept;
 
-    virtual bool doSupportsPlatform(const Platform & platform) const noexcept = 0;
-
-    virtual bool doIsElfFile()
-    {
-      return false;
-    }
-
-    virtual bool doIsPeImageFile()
-    {
-      return false;
-    }
-
-    virtual Platform doGetFilePlatform() = 0;
-    virtual bool doIsExecutableOrSharedLibrary() = 0;
-    virtual QStringList doGetNeededSharedLibraries() = 0;
-
-    virtual QStringList doGetRunPath()
-    {
-      return QStringList();
-    }
-
-    Impl::FileMapper mFileMapper;
-    QFile mFile;
+    std::unique_ptr<AbstractExecutableFileReaderEngine> mReaderEngine;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
 
-#endif // #ifndef MDT_DEPLOY_UTILS_ABSTRACT_EXECUTABLE_FILE_READER_ENGINE_H
+#endif // #ifndef MDT_DEPLOY_UTILS_EXECUTABLE_FILE_READER_H

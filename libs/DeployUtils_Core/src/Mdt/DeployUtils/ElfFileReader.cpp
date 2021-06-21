@@ -59,6 +59,11 @@ void ElfFileReader::fileClosed()
   mImpl->clear();
 }
 
+bool ElfFileReader::doSupportsPlatform(const Platform & platform) const noexcept
+{
+  return platform.executableFileFormat() == ExecutableFileFormat::Elf;
+}
+
 bool ElfFileReader::doIsElfFile()
 {
   using Impl::ByteArraySpan;
@@ -76,6 +81,13 @@ bool ElfFileReader::doIsElfFile()
   const Ident ident = extractIdent(map);
 
   return ident.isValid();
+}
+
+Platform ElfFileReader::doGetFilePlatform()
+{
+  /// \todo implement
+  /// \todo should make a common function to get Ident ?
+  return Platform();
 }
 
 bool ElfFileReader::doIsExecutableOrSharedLibrary()

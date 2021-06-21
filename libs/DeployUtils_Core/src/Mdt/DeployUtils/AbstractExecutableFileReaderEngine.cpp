@@ -70,6 +70,13 @@ bool AbstractExecutableFileReaderEngine::isPeImageFile()
   return doIsPeImageFile();
 }
 
+Platform AbstractExecutableFileReaderEngine::getFilePlatform()
+{
+  assert( isOpen() );
+
+  return doGetFilePlatform();
+}
+
 bool AbstractExecutableFileReaderEngine::isExecutableOrSharedLibrary()
 {
   assert( isOpen() );

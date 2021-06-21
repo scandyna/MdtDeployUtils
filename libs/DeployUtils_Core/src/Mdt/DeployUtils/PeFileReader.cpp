@@ -45,9 +45,18 @@ void PeFileReader::fileClosed()
   mImpl->clear();
 }
 
+bool PeFileReader::doSupportsPlatform(const Platform & platform) const noexcept
+{
+  return platform.executableFileFormat() == ExecutableFileFormat::Pe;
+}
+
 bool PeFileReader::doIsPeImageFile()
 {
   return tryExtractDosCoffAndOptionalHeader();
+}
+
+Platform PeFileReader::doGetFilePlatform()
+{
 }
 
 bool PeFileReader::doIsExecutableOrSharedLibrary()

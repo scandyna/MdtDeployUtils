@@ -29,6 +29,23 @@
 
 using namespace Mdt::DeployUtils;
 
+TEST_CASE("supportsPlatform")
+{
+  ElfFileReader reader;
+
+  SECTION("ELF")
+  {
+    const Platform platform(OperatingSystem::Linux, ExecutableFileFormat::Elf, Compiler::Gcc, ProcessorISA::X86_64);
+    REQUIRE( reader.supportsPlatform(platform) );
+  }
+
+  SECTION("PE")
+  {
+    const Platform platform(OperatingSystem::Windows, ExecutableFileFormat::Pe, Compiler::Gcc, ProcessorISA::X86_64);
+    REQUIRE( !reader.supportsPlatform(platform) );
+  }
+}
+
 TEST_CASE("open_close")
 {
   QTemporaryFile file;
