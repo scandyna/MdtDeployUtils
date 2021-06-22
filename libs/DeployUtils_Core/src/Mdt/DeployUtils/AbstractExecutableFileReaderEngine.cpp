@@ -107,6 +107,13 @@ qint64 AbstractExecutableFileReaderEngine::fileSize() const noexcept
   return mFile.size();
 }
 
+QString AbstractExecutableFileReaderEngine::fileName() const noexcept
+{
+  assert( isOpen() );
+
+  return mFile.fileName();
+}
+
 Impl::ByteArraySpan AbstractExecutableFileReaderEngine::mapIfRequired(qint64 offset, qint64 size)
 {
   assert( isOpen() );

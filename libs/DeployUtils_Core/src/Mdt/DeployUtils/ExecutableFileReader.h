@@ -79,8 +79,6 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Open a file
      *
-     * This method does not check if \a fileInfo refers to a executable file of any format.
-     *
      * \pre \a fileInfo must have a file path set
      * \pre this reader must not allready have a file open
      * \sa isOpen()
@@ -149,7 +147,7 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
-    void instanciateReader(const Platform & platform) noexcept;
+    void instanciateReader(ExecutableFileFormat format) noexcept;
 
     std::unique_ptr<AbstractExecutableFileReaderEngine> mReaderEngine;
   };

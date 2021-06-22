@@ -57,6 +57,32 @@ bool PeFileReader::doIsPeImageFile()
 
 Platform PeFileReader::doGetFilePlatform()
 {
+  using Impl::Pe::CoffHeader;
+  using Impl::Pe::MachineType;
+
+  const auto os = OperatingSystem::Windows;
+  const auto fileFormat = ExecutableFileFormat::Pe;
+  const auto fakeCompiler = Compiler::Gcc;
+
+  if( !tryExtractDosCoffAndOptionalHeader() ){
+    const QString message = tr("file '%1' is not a valid PE image")
+                            .arg( fileName() );
+    throw ExecutableFileReadError(message);
+  }
+
+  ProcessorISA cpu;
+  switch( mImpl->coffHeader().machineType() ){
+    case MachineType::I386:
+      cpu = ProcessorISA::X86_32;
+      break;
+    case MachineType::Amd64:
+      cpu = ProcessorISA::X86_64;
+      break;
+    default:
+      cpu = ProcessorISA::Unknown;
+  }
+
+  return Platform(os, fileFormat, fakeCompiler, cpu);
 }
 
 bool PeFileReader::doIsExecutableOrSharedLibrary()

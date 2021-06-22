@@ -41,12 +41,32 @@ void ExecutableFileReader::openFile(const QFileInfo & fileInfo)
   assert( !fileInfo.filePath().isEmpty() );
   assert( !isOpen() );
 
+  const auto hostPlatform = Platform::nativePlatform();
+
   if( !mReaderEngine ){
-    instanciateReader( Platform::nativePlatform() );
+    instanciateReader( hostPlatform.executableFileFormat() );
   }
   assert( mReaderEngine.get() != nullptr );
 
   mReaderEngine->openFile(fileInfo);
+
+  if( hostPlatform.operatingSystem() == OperatingSystem::Linux ){
+    if( !mReaderEngine->isElfFile() ){
+      mReaderEngine->close();
+      mReaderEngine.reset();
+      instanciateReader(ExecutableFileFormat::Pe);
+      mReaderEngine->openFile(fileInfo);
+    }
+  }
+
+  if( hostPlatform.operatingSystem() == OperatingSystem::Windows ){
+    if( !mReaderEngine->isPeImageFile() ){
+      mReaderEngine->close();
+      mReaderEngine.reset();
+      instanciateReader(ExecutableFileFormat::Elf);
+      mReaderEngine->openFile(fileInfo);
+    }
+  }
 }
 
 void ExecutableFileReader::openFile(const QFileInfo & fileInfo, const Platform & platform)
@@ -56,22 +76,29 @@ void ExecutableFileReader::openFile(const QFileInfo & fileInfo, const Platform &
   assert( !isOpen() );
 
   if( !mReaderEngine ){
-    instanciateReader(platform);
+    instanciateReader( platform.executableFileFormat() );
   }
   assert( mReaderEngine.get() != nullptr );
 
   if( !mReaderEngine->supportsPlatform(platform) ){
     mReaderEngine.reset();
-    instanciateReader(platform);
+    instanciateReader( platform.executableFileFormat() );
   }
   assert( mReaderEngine.get() != nullptr );
 
   mReaderEngine->openFile(fileInfo);
 
-  /// \todo implement
-//   if( getFilePlatform() != platform ){
-//     /// \todo exception
-//   }
+  Platform filePlatform;
+  try{
+    filePlatform = getFilePlatform();
+  }catch(const ExecutableFileReadError &){
+  }
+
+  if( filePlatform != platform ){
+    const QString message = tr("File '%1' is not of the requested platorm")
+                            .arg( fileInfo.absoluteFilePath() );
+    throw FileOpenError(message);
+  }
 }
 
 bool ExecutableFileReader::isOpen() const noexcept
@@ -123,16 +150,19 @@ QStringList ExecutableFileReader::getRunPath()
   return mReaderEngine->getRunPath();
 }
 
-void ExecutableFileReader::instanciateReader(const Platform & platform) noexcept
+void ExecutableFileReader::instanciateReader(ExecutableFileFormat format) noexcept
 {
   assert( mReaderEngine.get() == nullptr );
+  assert( format != ExecutableFileFormat::Unknown );
 
-  switch( platform.executableFileFormat() ){
+  switch(format){
     case ExecutableFileFormat::Elf:
       mReaderEngine = std::make_unique<ElfFileReader>();
       break;
     case ExecutableFileFormat::Pe:
       mReaderEngine = std::make_unique<PeFileReader>();
+      break;
+    case ExecutableFileFormat::Unknown:
       break;
   }
 }

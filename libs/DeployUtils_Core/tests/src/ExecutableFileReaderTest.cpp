@@ -64,6 +64,12 @@ TEST_CASE("getFilePlatform")
     reader.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
     REQUIRE( reader.getFilePlatform() == platform );
   }
+
+  SECTION("shared library")
+  {
+    reader.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    REQUIRE( reader.getFilePlatform() == platform );
+  }
 }
 
 TEST_CASE("isExecutableOrSharedLibrary")

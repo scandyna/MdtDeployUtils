@@ -85,9 +85,51 @@ bool ElfFileReader::doIsElfFile()
 
 Platform ElfFileReader::doGetFilePlatform()
 {
-  /// \todo implement
-  /// \todo should make a common function to get Ident ?
-  return Platform();
+  using Impl::ByteArraySpan;
+  using Impl::Elf::FileHeader;
+  using Impl::Elf::OsAbiType;
+  using Impl::Elf::Machine;
+
+  const int64_t size = mImpl->minimumSizeToReadFileHeader();
+
+  if( fileSize() < size ){
+    const QString message = tr("file '%1' is to small to read the file header")
+                            .arg( fileName() );
+    throw ExecutableFileReadError(message);
+  }
+
+  const ByteArraySpan map = mapIfRequired(0, size);
+
+  const FileHeader fileHeader = mImpl->getFileHeader(map);
+  assert( fileHeader.seemsValid() );
+
+  const auto fileFormat = ExecutableFileFormat::Elf;
+
+  OperatingSystem os;
+  switch( fileHeader.ident.osAbiType() ){
+    case OsAbiType::SystemV:
+    case OsAbiType::Linux:
+      os = OperatingSystem::Linux;
+      break;
+    default:
+      os = OperatingSystem::Unknown;
+  }
+
+  ProcessorISA cpu;
+  switch( fileHeader.machine ){
+    case Machine::X86:
+      cpu = ProcessorISA::X86_32;
+      break;
+    case Machine::X86_64:
+      cpu = ProcessorISA::X86_64;
+      break;
+    default:
+      cpu = ProcessorISA::Unknown;
+  }
+
+  const auto fakeCompiler = Compiler::Gcc;
+
+  return Platform(os, fileFormat, fakeCompiler, cpu);
 }
 
 bool ElfFileReader::doIsExecutableOrSharedLibrary()
@@ -97,7 +139,7 @@ bool ElfFileReader::doIsExecutableOrSharedLibrary()
   using Impl::Elf::ObjectFileType;
   using Impl::Elf::extractFileHeader;
 
-  const qint64 size = 64;
+  const int64_t size = mImpl->minimumSizeToReadFileHeader();
 
   if( fileSize() < size ){
     return false;

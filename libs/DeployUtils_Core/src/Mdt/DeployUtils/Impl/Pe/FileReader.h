@@ -550,6 +550,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       mOptionalHeader.clear();
     }
 
+    const CoffHeader & coffHeader() const noexcept
+    {
+      assert( mCoffHeader.seemsValid() );
+
+      return mCoffHeader;
+    }
+
     QStringList getNeededSharedLibraries(const ByteArraySpan & map)
     {
       assert( !map.isNull() );

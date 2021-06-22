@@ -142,6 +142,13 @@ namespace Mdt{ namespace DeployUtils{
      */
     qint64 fileSize() const noexcept;
 
+    /*! \brief Get the name of the file
+     *
+     * \pre this reader must have a open file
+     * \sa isOpen()
+     */
+    QString fileName() const noexcept;
+
     /*! \brief Map the file into memory
      *
      * \pre this reader must have a open file

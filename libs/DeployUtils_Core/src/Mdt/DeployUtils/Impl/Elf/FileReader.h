@@ -942,6 +942,31 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mFileName.clear();
     }
 
+    /*! \brief Get minimum size to read the file header
+     *
+     * The get the real minimum size we have to extract the Ident part first.
+     * It can be either 52 or 64 bytes.
+     * Here we simply return 64.
+     *
+     * \sa minimumSizeToReadFileHeader(const Ident &)
+     */
+    int64_t minimumSizeToReadFileHeader() const noexcept
+    {
+      return 64;
+    }
+
+    /*! \brief Get the file header
+     */
+    FileHeader getFileHeader(const ByteArraySpan & map)
+    {
+      assert( !map.isNull() );
+      assert( map.size >= minimumSizeToReadFileHeader() );
+
+      readFileHeaderIfNull(map);
+
+      return mFileHeader;
+    }
+
     /*! \brief
      *
      * \pre \a map must not be null
@@ -1019,6 +1044,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     void readFileHeaderIfNull(const ByteArraySpan & map)
     {
       assert( !map.isNull() );
+      assert( map.size >= minimumSizeToReadFileHeader() );
 
       if( mFileHeader.seemsValid() ){
         return;

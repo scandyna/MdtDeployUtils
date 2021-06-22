@@ -55,8 +55,10 @@ TEST_CASE("nativePlatformTest")
   // Check that the correct OS was choosen
 #ifdef Q_OS_LINUX
   REQUIRE(pf.operatingSystem() == OperatingSystem::Linux);
+  REQUIRE(pf.executableFileFormat() == ExecutableFileFormat::Elf);
 #elif defined Q_OS_WIN
   REQUIRE(pf.operatingSystem() == OperatingSystem::Windows);
+  REQUIRE(pf.executableFileFormat() == ExecutableFileFormat::Pe);
 #else
  #error "Current OS is not supported"
 #endif
