@@ -87,3 +87,32 @@ To build, run:
 ```cmd
 make -j4
 ```
+
+## Build on Linux with Clang and libc++
+
+Install the dependencies:
+```bash
+conan install --profile linux_clang6.0_x86_64_libc++_qt_widgets_modules -s build_type=Debug -o MdtDeployUtils:use_conan_qt=True --build=missing ..
+```
+
+Activate the build environment:
+```bash
+source activate.sh
+```
+
+Configure MdtDeployUtils:
+```bash
+cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON ..
+cmake-gui .
+```
+
+Build and run the tests:
+```bash
+cmake --build .
+ctest . --output-on-failure
+```
+
+To restore the standard environment:
+```bash
+source deactivate.sh
+```
