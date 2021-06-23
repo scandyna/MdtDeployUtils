@@ -133,11 +133,13 @@ test_linux_system_wide_install:
   extends: .test_linux
 
 
+# With LTO ON, fails.
+# See: https://gitlab.com/scandyna/mdtdeployutils/-/jobs/1371648798
 build_linux_clang6.0_x86_64_release:
   variables:
     CONAN_PROFILE: linux_clang6.0_x86_64_libstdc++11
     BUILD_TYPE: Release
-    BUILD_USE_IPO_LTO: "ON"
+    BUILD_USE_IPO_LTO: "OFF"
   extends: .build_linux
 
 test_linux_clang6.0_x86_64_release:
