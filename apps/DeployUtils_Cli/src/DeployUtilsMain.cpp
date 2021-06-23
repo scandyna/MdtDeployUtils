@@ -62,6 +62,12 @@ int DeployUtilsMain::runMain()
     case CommandLineCommand::CopySharedLibrariesTargetDependsOn:
       copySharedLibrariesTargetDependsOn(commandLineParser);
       break;
+    case CommandLineCommand::GetSharedLibrariesTargetDependsOn:
+      /// \todo to implement
+      break;
+    case CommandLineCommand::DeployApplication:
+      /// \todo to implement
+      break;
     case CommandLineCommand::Unknown:
       // Maybe just Bash completion
       return 0;
