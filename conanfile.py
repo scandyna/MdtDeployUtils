@@ -16,8 +16,8 @@ class MdtDeployUtilsConan(ConanFile):
   default_options = {"shared": True,
                      "use_conan_boost": False,
                      "use_conan_qt": False}
-  requires = "MdtApplication/[>=0.3.0]@scandyna/testing"
-  build_requires = "MdtCMakeModules/[>=0.14.12]@scandyna/testing", "Catch2/[>=2.11.1]@catchorg/stable"
+  requires = "MdtApplication/0.3.4@scandyna/testing"
+  build_requires = "MdtCMakeModules/[>=0.14.12]@scandyna/testing", "Catch2/2.11.1@catchorg/stable"
   generators = "cmake", "cmake_paths", "virtualenv"
   exports_sources = "apps/*", "libs/*", "cmake/*", "CMakeLists.txt", "conanfile.py", "LICENSE.txt", "COPYING", "COPYING.LESSER"
   # If no_copy_source is False, conan copies sources to build directory and does in-source build,
@@ -43,7 +43,8 @@ class MdtDeployUtilsConan(ConanFile):
     # Building 5.14.x causes currently problems (8.04.2020)
     # As workaround, try fix a known version that we can build
     if self.options.use_conan_qt:
-      self.requires("qt/5.12.7@bincrafters/stable")
+      self.requires("qt/5.14.2@bincrafters/stable")
+      self.options["MdtApplication"].use_conan_qt = True
 
 
   def configure_cmake(self):
@@ -65,6 +66,7 @@ class MdtDeployUtilsConan(ConanFile):
     cmake.build()
 
 
+  # TODO: check component install ?
   def package(self):
     cmake = self.configure_cmake()
     cmake.install()
