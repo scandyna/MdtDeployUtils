@@ -125,7 +125,7 @@ namespace Mdt{ namespace DeployUtils{
      * \sa isSharedLibraryFile()
      */
     static
-    LibraryInfo fromFile(const QString & filePath) noexcept
+    LibraryInfo fromFile(const QString & /*filePath*/) noexcept
     {
       return LibraryInfo();
     }

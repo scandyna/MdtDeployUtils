@@ -32,7 +32,7 @@ ExecutableFileReader::ExecutableFileReader(QObject* parent)
 {
 }
 
-ExecutableFileReader::~ExecutableFileReader()
+ExecutableFileReader::~ExecutableFileReader() noexcept
 {
 }
 
