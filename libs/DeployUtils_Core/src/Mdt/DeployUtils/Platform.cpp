@@ -68,7 +68,7 @@ Compiler Platform::nativeCompiler() noexcept
 ProcessorISA Platform::nativeProcessorISA() noexcept
 {
 #ifdef Q_PROCESSOR_X86_32
-  return Processor::X86_32;
+  return ProcessorISA::X86_32;
 #elif defined Q_PROCESSOR_X86_64
   return ProcessorISA::X86_64;
 #else
