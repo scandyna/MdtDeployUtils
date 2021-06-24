@@ -76,7 +76,7 @@ TEST_CASE("nativePlatformTest")
 
   // Check that correct processor was choosen
 #ifdef Q_PROCESSOR_X86_32
-  REQUIRE(pf.processor() == ProcessorISA::X86_32);
+  REQUIRE(pf.processorISA() == ProcessorISA::X86_32);
 #elif defined Q_PROCESSOR_X86_64
   REQUIRE(pf.processorISA() == ProcessorISA::X86_64);
 #else
