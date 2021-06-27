@@ -7,6 +7,10 @@
 include(MdtAddTest)
 include(GenerateExportHeader)
 
+# MOC (or CMake?) does not support having ;
+string(REPLACE ";" ":" TEST_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
+
+
 mdt_add_test(
   NAME AlgorithmTest
   TARGET algorithmTest
@@ -301,14 +305,32 @@ if(UNIX)
   target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 endif()
 
-# mdt_add_test(
-#   NAME BinaryDependenciesTest
-#   TARGET binaryDependenciesTest
-#   DEPENDENCIES Mdt::DeployUtils Qt5::Test
-#   SOURCE_FILES
-#     src/BinaryDependenciesTest.cpp
-# )
-# target_compile_definitions(binaryDependenciesTest PRIVATE PREFIX_PATH="${CMAKE_PREFIX_PATH}")
+mdt_add_test(
+  NAME BinaryDependenciesImplTest
+  TARGET binaryDependenciesImplTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BinaryDependenciesImplTest.cpp
+)
+
+mdt_add_test(
+  NAME BinaryDependenciesTest
+  TARGET binaryDependenciesTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BinaryDependenciesTest.cpp
+)
+target_compile_definitions(binaryDependenciesTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+target_compile_definitions(binaryDependenciesTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+target_compile_definitions(binaryDependenciesTest PRIVATE PREFIX_PATH="${TEST_PREFIX_PATH}")
+
+mdt_add_test(
+  NAME BinaryDependenciesErrorTest
+  TARGET binaryDependenciesErrorTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BinaryDependenciesErrorTest.cpp
+)
 
 mdt_add_test(
   NAME CopySharedLibrariesTargetDependsOnTest

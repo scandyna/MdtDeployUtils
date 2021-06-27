@@ -46,7 +46,8 @@ add_library(Mdt_DeployUtils
   Mdt/DeployUtils/PeFileReader.cpp
   Mdt/DeployUtils/ExecutableFileReader.cpp
 #   Mdt/DeployUtils/BinaryDependenciesImplementationInterface.cpp
-#   Mdt/DeployUtils/BinaryDependencies.cpp
+  Mdt/DeployUtils/Impl/BinaryDependencies.cpp
+  Mdt/DeployUtils/BinaryDependencies.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.cpp
 )

@@ -19,18 +19,13 @@
  **
  ****************************************************************************/
 #include "BinaryDependencies.h"
-#include "BinaryDependenciesImplementationInterface.h"
-#include "BinaryDependenciesLdd.h"
-#include "BinaryDependenciesObjdump.h"
-#include "BinaryFormat.h"
-#include "Mdt/FileSystem/SearchPathList.h"
-#include "Console.h"
-#include <QFileInfo>
+#include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
+#include "ExecutableFileReader.h"
 #include <QDir>
+#include <cassert>
 
 // #include <QDebug>
-
-using namespace Mdt::FileSystem;
+#include <iostream>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -39,116 +34,30 @@ BinaryDependencies::BinaryDependencies(QObject* parent)
 {
 }
 
-BinaryDependencies::~BinaryDependencies()
+QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList)
 {
-}
+  using Impl::ExecutableFileInfo;
+  using Impl::ExecutableFileInfoList;
 
-bool BinaryDependencies::findDependencies(const QString & binaryFilePath, const PathList & searchFirstPathPrefixList)
-{
-  QFileInfo binaryFileInfo(binaryFilePath);
-  auto impl = initImpl(binaryFileInfo, searchFirstPathPrefixList);
-  if(!impl){
-    return false;
-  }
-  // Process
-  Console::info(2) << " searching dependencies for " << binaryFileInfo.fileName();
-  if(!impl->findDependencies(binaryFileInfo.absoluteFilePath())){
-    setLastError(impl->lastError());
-    return false;
-  }
-  // Store result
-  mDependencies = impl->dependencies();
+  assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
 
-  return true;
-}
+  ExecutableFileInfoList dependencies;
 
-bool BinaryDependencies::findDependencies(const QStringList & binariesFilePaths, const PathList & searchFirstPathPrefixList)
-{
-  if(binariesFilePaths.isEmpty()){
-    return true;
-  }
-  QFileInfo binaryFileInfo(binariesFilePaths.at(0));
-  auto impl = initImpl(binaryFileInfo, searchFirstPathPrefixList);
-  if(!impl){
-    return false;
-  }
-  // Process
-  if(!impl->findDependencies(binariesFilePaths)){
-    setLastError(impl->lastError());
-    return false;
-  }
-  // Store result
-  mDependencies = impl->dependencies();
+  // open file
+  ExecutableFileInfo target;
+  target.fileName = binaryFilePath.fileName();
+  target.directoryPath = binaryFilePath.absoluteDir().path();
 
-  return true;
-}
+  ExecutableFileReader reader;
 
-bool BinaryDependencies::findDependencies(const LibraryInfoList & libraries, const PathList & searchFirstPathPrefixList)
-{
-  if(libraries.isEmpty()){
-    return true;
-  }
-  QFileInfo binaryFileInfo(libraries.at(0).absoluteFilePath());
-  auto impl = initImpl(binaryFileInfo, searchFirstPathPrefixList);
-  if(!impl){
-    return false;
-  }
-  // Process
-  if(!impl->findDependencies(libraries)){
-    setLastError(impl->lastError());
-    return false;
-  }
-  // Store result
-  mDependencies = impl->dependencies();
+  /// \todo fix platform
+  const PathList searchPathList = Impl::buildSearchPathList( searchFirstPathPrefixList, Platform::nativePlatform() );
 
-  return true;
-}
+  std::cout << "searchPathList:\n" << searchPathList.toStringList().join(QLatin1Char('\n')).toStdString() << std::endl;
 
-std::unique_ptr<BinaryDependenciesImplementationInterface> BinaryDependencies::initImpl(const QFileInfo & binaryFileInfo, const PathList & searchFirstPathPrefixList)
-{
-  std::unique_ptr<BinaryDependenciesImplementationInterface> impl;
-  SearchPathList searchPathList;
+  Impl::findDependencies(target, dependencies, searchPathList, reader, Impl::isExistingSharedLibrary);
 
-  // Check that given file exists
-  if(!binaryFileInfo.exists()){
-    const auto msg = tr("File '%1' does not exist.").arg(binaryFileInfo.absoluteFilePath());
-    auto error = mdtErrorNewQ(msg, Mdt::Error::Critical, this);
-    setLastError(error);
-    return impl;
-  }
-  // Choose a implementation regarding binary file format
-  BinaryFormat bfmt;
-  if(!bfmt.readFormat(binaryFileInfo.absoluteFilePath())){
-    setLastError(bfmt.lastError());
-    return impl;
-  }
-  switch(bfmt.operatingSystem()){
-    case OperatingSystem::Unknown:
-      break;
-    case OperatingSystem::Linux:
-      impl.reset(new BinaryDependenciesLdd);
-      break;
-    case OperatingSystem::Windows:
-      impl.reset(new BinaryDependenciesObjdump);
-      searchPathList.prependPath( binaryFileInfo.absoluteDir().absolutePath() );
-      searchPathList.setPathPrefixList(searchFirstPathPrefixList);
-      searchPathList.setPathSuffixList({"bin","qt5/bin"});
-      impl->setLibrarySearchFirstPathList(searchPathList.pathList());
-      break;
-  }
-  if(!impl){
-    const QString msg = tr("Could not find a tool to get dependencies for file '%1'.").arg(binaryFileInfo.absoluteFilePath());
-    auto error = mdtErrorNewQ(msg, Mdt::Error::Critical, this);
-    setLastError(error);
-    return impl;
-  }
-
-  return impl;
-}
-
-void BinaryDependencies::setLastError(const Error& error)
-{
-  mLastError = error;
+  return Impl::qStringListFromExecutableFileInfoList(dependencies);
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

@@ -21,20 +21,16 @@
 #ifndef MDT_DEPLOY_UTILS_BINARY_DEPENDENCIES_H
 #define MDT_DEPLOY_UTILS_BINARY_DEPENDENCIES_H
 
-#include "LibraryInfoList.h"
-#include "Mdt/FileSystem/PathList.h"
-#include "Mdt/Error.h"
+#include "FindDependencyError.h"
+#include "PathList.h"
 #include "mdt_deployutils_export.h"
 #include <QObject>
+#include <QFileInfo>
 #include <QString>
 #include <QStringList>
 #include <memory>
 
-class QFileInfo;
-
 namespace Mdt{ namespace DeployUtils{
-
-  class BinaryDependenciesImplementationInterface;
 
   /*! \brief Find dependencies for a executable or a library
    */
@@ -48,58 +44,27 @@ namespace Mdt{ namespace DeployUtils{
      */
     BinaryDependencies(QObject* parent = nullptr);
 
-    /*! \brief Destructor
-     */
-    ~BinaryDependencies();
-
-    /*! \brief Find dependencies for a executable or a library
+    /*! \brief Find dependencies for a executable or a shared library
      *
-     * For target platforms that do not support RPATH (like DLL based systems),
-     *  dependencies must be searched in several directories.
-     *  Dependning on implementation, dependencies will be searched in the directory of \a binaryFilePath first.
-     *  Then, dependencies will be searched, for each path in \a searchFirstPathPrefixList ,
+     * At first, the target platform will be determined by \a binaryFilePath .
+     *
+     * For target platforms that support RPATH, they will be used for libraries that have them set.
+     * Then, depending on target platform, dependencies will be searched in the directory of \a binaryFilePath .
+     * Then, dependencies will be searched, for each path in \a searchFirstPathPrefixList ,
      *  in known subdirectories (like lib, bin, qt5/lib, qt5/bin).
-     *  Finally, depending of the implementation, dependencies can also be serached in
+     * Finally, depending on target platform, dependencies can also be serached in
      *  in system paths.
-     */
-    bool findDependencies(const QString & binaryFilePath, const Mdt::FileSystem::PathList & searchFirstPathPrefixList);
-
-    /*! \brief Find dependencies for a list of executables and/or libraries
      *
-     * \sa findDependencies(const QString &, const PathList &)
-     * \note It is assumed that each binary file has the same binary format (PA, or elf, or ...)
-     */
-    bool findDependencies(const QStringList & binariesFilePaths, const Mdt::FileSystem::PathList & searchFirstPathPrefixList);
-
-    /*! \brief Find dependencies for a lits of libraries
+     * Some libraries, known not have to be distributed,
+     * will not be part of the result.
      *
-     * \sa findDependencies(const QString &, const PathList &)
-     * \note It is assumed that each library has the same binary format (PA, or elf, or ...)
-     * \pre Each library list libraries must have its full path set
+     * Each library returned in the result will have its absolute file path.
+     *
+     * \pre \a binaryFilePath must have its path set
+     * \exception FindDependencyError
      */
-    bool findDependencies(const LibraryInfoList & libraries, const Mdt::FileSystem::PathList & searchFirstPathPrefixList);
+    QStringList findDependencies(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList);
 
-    /*! \brief Get dependencies
-     */
-    LibraryInfoList dependencies() const
-    {
-      return mDependencies;
-    }
-
-    /*! \brief Get last error
-     */
-    Mdt::Error lastError() const
-    {
-      return mLastError;
-    }
-
-   private:
-
-    std::unique_ptr<BinaryDependenciesImplementationInterface> initImpl(const QFileInfo & binaryFileInfo, const Mdt::FileSystem::PathList & searchFirstPathPrefixList);
-    void setLastError(const Mdt::Error & error);
-
-    LibraryInfoList mDependencies;
-    Mdt::Error mLastError;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

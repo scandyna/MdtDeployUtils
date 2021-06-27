@@ -20,8 +20,18 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Mdt/DeployUtils/Algorithm.h"
+#include <QLatin1String>
+#include <QString>
+#include <QFileInfo>
 #include <vector>
 #include <string>
+
+
+QFileInfo fileInfoFromString(const std::string & file)
+{
+  return QFileInfo( QString::fromStdString(file) );
+}
+
 
 TEST_CASE("joinToStdString")
 {

@@ -18,23 +18,6 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef BINARY_DEPENDENCIES_TEST_H
-#define BINARY_DEPENDENCIES_TEST_H
-
-#include <QObject>
-#include <QtTest/QTest>
-
-class BinaryDependenciesTest : public QObject
-{
- Q_OBJECT
-
- private slots:
-
-  void initTestCase();
-  void cleanupTestCase();
-
-  void implementationInterfaceTest();
-  void runTest();
-};
-
-#endif // #ifndef BINARY_DEPENDENCIES_TEST_H
+#include "catch2/catch.hpp"
+#include "Catch2QString.h"
+#include "TestUtils.h"

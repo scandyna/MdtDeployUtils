@@ -24,6 +24,7 @@
 #include "Mdt/DeployUtils/LibraryName.h"
 #include <QString>
 #include <QStringList>
+#include <QFileInfo>
 #include <vector>
 #include <string>
 #include <cassert>
@@ -58,7 +59,8 @@ bool containsLibrary(const QStringList & libraries, const QString & libraryName)
   const Mdt::DeployUtils::LibraryName searchedLibraryName(libraryName);
 
   for(const QString & library : libraries){
-    const Mdt::DeployUtils::LibraryName currentLibraryName(library);
+    const QFileInfo libraryFile(library);
+    const Mdt::DeployUtils::LibraryName currentLibraryName( libraryFile.fileName() );
     if( currentLibraryName.nameWithoutDebugSuffix() == searchedLibraryName.nameWithoutDebugSuffix() ){
       return true;
     }

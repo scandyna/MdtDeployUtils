@@ -21,6 +21,7 @@
 #ifndef MDT_DEPLOY_UTILS_PATH_LIST_H
 #define MDT_DEPLOY_UTILS_PATH_LIST_H
 
+#include "Platform.h"
 #include "mdt_deployutils_export.h"
 #include <QString>
 #include <QStringList>
@@ -167,14 +168,23 @@ namespace Mdt{ namespace DeployUtils{
      *  which should be set on most operating systems.
      *
      * \note The list of paths is built at each call of this method
+     * \warning Using this method will probably not work for cross-compiled binaries
      */
     static PathList getSystemExecutablePathList();
 
     /*! \brief Get a list of system library paths
      *
      * \note The list of paths is built at each call of this method
+     * \warning Using this method will probably not work for cross-compiled binaries
      */
     static PathList getSystemLibraryPathList();
+
+    /*! \brief Get a list of system library paths for \a platform
+     *
+     * \sa getSystemLibraryKnownPathListLinux()
+     * \sa getSystemLibraryKnownPathListWindows()
+     */
+    static PathList getSystemLibraryKnownPathList(const Platform & platform);
 
     /*! \brief Get a list of system library paths for Linux
      *

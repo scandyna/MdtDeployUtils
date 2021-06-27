@@ -114,6 +114,18 @@ PathList PathList::getSystemLibraryPathList()
   return pathList;
 }
 
+PathList PathList::getSystemLibraryKnownPathList(const Platform & platform)
+{
+  switch( platform.operatingSystem() ){
+    case OperatingSystem::Linux:
+      return getSystemLibraryKnownPathListLinux();
+    case OperatingSystem::Windows:
+      return getSystemLibraryKnownPathListWindows();
+  }
+
+  return PathList();
+}
+
 PathList PathList::getSystemLibraryKnownPathListLinux()
 {
   return PathList{

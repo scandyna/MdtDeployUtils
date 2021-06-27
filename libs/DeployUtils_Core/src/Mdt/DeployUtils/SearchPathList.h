@@ -81,7 +81,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Get a list with all paths
      */
-    PathList pathList() const
+    const PathList & pathList() const
     {
       return mPathList;
     }
