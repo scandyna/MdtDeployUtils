@@ -38,7 +38,7 @@
 #include <vector>
 #include <algorithm>
 
-// #include <QDebug>
+#include <QDebug>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
@@ -95,26 +95,64 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
   }
 
   /*! \internal
-   *
-   * \pre \a libraryFile must be a absolute file path
    */
   inline
-  bool isExistingSharedLibrary(const QFileInfo & libraryFile)
+  QFileInfo tryAlternativeFileNamesWindows(const QFileInfo & file) noexcept
   {
-    assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
-    assert( libraryFile.isAbsolute() );
+    QFileInfo alternativeFile = file;
 
-    if( !libraryFile.exists() ){
-      return false;
+    const QDir directory = file.absoluteDir();
+    alternativeFile.setFile( directory, file.fileName().toUpper() );
+    if( alternativeFile.exists() ){
+      return alternativeFile;
+    }
+    alternativeFile.setFile( directory, file.fileName().toLower() );
+
+    return alternativeFile;
+  }
+
+  /*! \internal
+   */
+  struct IsExistingSharedLibraryFunc
+  {
+    IsExistingSharedLibraryFunc(ExecutableFileReader & reader, const Platform & platform) noexcept
+     : mReader(reader),
+       mPlatform(platform)
+    {
     }
 
-    /// \todo Should not instanciate every call, it's heavy (see openFile) !
-    ExecutableFileReader reader;
-    reader.openFile(libraryFile);
+    /*! \internal
+     *
+     * \pre \a libraryFile must be a absolute file path
+     */
+    bool operator()(const QFileInfo & libraryFile)
+    {
+      assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
+      assert( libraryFile.isAbsolute() );
+      assert( !mReader.isOpen() );
 
-    /// \todo should be isSharedLibrary()
-    return reader.isExecutableOrSharedLibrary();
-  }
+      if( !libraryFile.exists() ){
+        return false;
+      }
+
+      mReader.openFile(libraryFile,mPlatform);
+
+      /// \todo should be isSharedLibrary()
+      const bool isSharedLibrary = mReader.isExecutableOrSharedLibrary();
+
+      const Platform libraryPlatform = mReader.getFilePlatform();
+      const bool isCorrectProcessorISA = ( libraryPlatform.processorISA() == mPlatform.processorISA() );
+
+      mReader.close();
+
+      return isSharedLibrary && isCorrectProcessorISA;
+    }
+
+   private:
+
+    ExecutableFileReader & mReader;
+    Platform mPlatform;
+  };
 
   /*! \internal
    */
@@ -136,7 +174,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
   template<typename IsExistingSharedLibraryOp>
   ExecutableFileInfo findLibraryAbsolutePathByRpath(const ExecutableFileInfo & originExecutable,
                                                     const QString & libraryName, const QStringList & rpath,
-                                                    const IsExistingSharedLibraryOp & isExistingSharedLibraryOp) noexcept
+                                                    IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
   {
     assert( originExecutable.hasAbsoluteFilePath() );
     assert( !libraryName.trimmed().isEmpty() );
@@ -165,7 +203,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
    */
   template<typename IsExistingSharedLibraryOp>
   ExecutableFileInfo findLibraryAbsolutePath(const QString & libraryName, const PathList & searchPathList,
-                                            const IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+                                             const Platform & platform,
+                                             IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
   {
     assert( !libraryName.trimmed().isEmpty() );
     assert( !searchPathList.isEmpty() );
@@ -173,11 +212,19 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     ExecutableFileInfo fi;
 
     for(const auto & directory : searchPathList){
-      const QFileInfo libraryFile(directory, libraryName);
+      QFileInfo libraryFile(directory, libraryName);
       if( isExistingSharedLibraryOp(libraryFile) ){
-        fi.fileName = libraryName;
+        fi.fileName = libraryFile.fileName();
         fi.directoryPath = libraryFile.absoluteDir().path();
         return fi;
+      }
+      if( platform.operatingSystem() == OperatingSystem::Windows ){
+        libraryFile = tryAlternativeFileNamesWindows(libraryFile);
+        if( isExistingSharedLibraryOp(libraryFile) ){
+          fi.fileName = libraryFile.fileName();
+          fi.directoryPath = libraryFile.absoluteDir().path();
+          return fi;
+        }
       }
     }
 
@@ -194,7 +241,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
   template<typename IsExistingSharedLibraryOp>
   ExecutableFileInfoList findLibrariesAbsolutePath(const ExecutableFileInfo & originExecutable, const QStringList & librariesNames,
                                                    const QStringList & rpath, const PathList & searchPathList,
-                                                   const IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+                                                   const Platform & platform,
+                                                   IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
   {
     assert( originExecutable.hasAbsoluteFilePath() );
 
@@ -206,7 +254,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
         library = findLibraryAbsolutePathByRpath(originExecutable, libraryName, rpath, isExistingSharedLibraryOp);
       }
       if( library.isNull() ){
-        library =  findLibraryAbsolutePath(libraryName, searchPathList, isExistingSharedLibraryOp);
+        library =  findLibraryAbsolutePath(libraryName, searchPathList, platform, isExistingSharedLibraryOp);
       }
       libraries.push_back(library);
     }
@@ -255,31 +303,46 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
    */
   template<typename Reader, typename IsExistingSharedLibraryOp>
   void findDependencies(const ExecutableFileInfo & currentFile, ExecutableFileInfoList & allDependencies, PathList searchPathList,
-                        Reader & reader, const IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+                        Reader & reader, const Platform & platform, IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
   {
     assert( currentFile.hasAbsoluteFilePath() );
+    assert( !reader.isOpen() );
 
-    reader.openFile( currentFile.toFileInfo() );
+    qDebug() << "solve for " << currentFile.fileName;
+    
+    QFileInfo currentFileInfo = currentFile.toFileInfo();
+    if( !currentFileInfo.exists() ){
+      if( platform.operatingSystem() == OperatingSystem::Windows ){
+        currentFileInfo = tryAlternativeFileNamesWindows(currentFileInfo);
+      }
+    }
+
+    reader.openFile(currentFileInfo, platform);
     if( !reader.isExecutableOrSharedLibrary() ){
+      qDebug() << " not a exe";
       /// \todo Exception
       return;
     }
 
     QStringList dependentLibraryNames = reader.getNeededSharedLibraries();
 
-    /// \todo do it regarding platform
-    removeLibrariesInExcludeListLinux(dependentLibraryNames);
+    if( platform.operatingSystem() == OperatingSystem::Linux ){
+      removeLibrariesInExcludeListLinux(dependentLibraryNames);
+    }
+    if( platform.operatingSystem() == OperatingSystem::Windows ){
+      /// \todo remove also for Windows
+    }
 
     const QStringList runPath = reader.getRunPath();
     reader.close();
 
-    ExecutableFileInfoList dependencies = findLibrariesAbsolutePath(currentFile, dependentLibraryNames, runPath, searchPathList, isExistingSharedLibraryOp);
+    ExecutableFileInfoList dependencies = findLibrariesAbsolutePath(currentFile, dependentLibraryNames, runPath, searchPathList, platform, isExistingSharedLibraryOp);
 
     removeDuplicates(allDependencies);
 
     for(const ExecutableFileInfo & library : dependencies){
       allDependencies.push_back(library);
-      findDependencies(library, allDependencies, searchPathList, reader, isExistingSharedLibraryOp);
+      findDependencies(library, allDependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
     }
   }
 
@@ -287,13 +350,18 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
   /*! \internal Build a list of search path
    */
   inline
-  PathList buildSearchPathList(const PathList & searchFirstPathPrefixList, const Platform & platform) noexcept
+  PathList buildSearchPathList(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList, const Platform & platform) noexcept
   {
+    assert( !binaryFilePath.path().isEmpty() );
+
     PathList pathList;
 
+    /// \todo should check which path to add depending on cpu (32/64bit)
     SearchPathList searchFirstPathList;
+    searchFirstPathList.setIncludePathPrefixes(true);
     if( platform.operatingSystem() == OperatingSystem::Windows ){
       searchFirstPathList.setPathSuffixList({QLatin1String("bin"),QLatin1String("qt5/bin")});
+      searchFirstPathList.appendPath( binaryFilePath.absoluteDir().path() );
     }else{
       searchFirstPathList.setPathSuffixList({QLatin1String("lib"),QLatin1String("qt5/lib")});
     }

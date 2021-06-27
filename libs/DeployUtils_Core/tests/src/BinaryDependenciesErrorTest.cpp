@@ -20,4 +20,24 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "BinaryDependenciesTestCommon.h"
 #include "TestUtils.h"
+#include "Mdt/DeployUtils/FindDependencyError.h"
+
+TEST_CASE("findLibraryAbsolutePath")
+{
+  using Impl::findLibraryAbsolutePath;
+
+  PathList pathList;
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  const auto platform = Platform::nativePlatform();
+//   ExecutableFileInfo library;
+
+  SECTION("libA.so - pathList:/tmp - not exists in given pathList")
+  {
+    pathList.appendPathList( {QLatin1String("/tmp")} );
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libB.so","/opt/libA.so"});
+//     library = findLibraryAbsolutePath( QLatin1String("libA.so"), pathList, isExistingSharedLibraryOp );
+    REQUIRE_THROWS_AS( findLibraryAbsolutePath( QLatin1String("libA.so"), pathList, platform, isExistingSharedLibraryOp ), FindDependencyError );
+  }
+}

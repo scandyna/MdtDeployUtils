@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "BinaryDependenciesTestCommon.h"
 #include "TestUtils.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
 #include <QFileInfo>
@@ -27,6 +28,7 @@
 #include <QMap>
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 using namespace Mdt::DeployUtils;
 using Impl::ExecutableFileInfo;
@@ -77,6 +79,10 @@ void debugOutPathList(const PathList & pathList)
  * A simplified tree to test dependencies
  * This is a basic limited implementation of a tree,
  * to avoid creating a tree class just for this test
+ *
+ * TODO: could use somthing other than QMap,
+ * because we finally allways iterate over it.
+ * Also, private methods are poorly named.
  */
 class TestDependencyTree
 {
@@ -110,7 +116,7 @@ class TestDependencyTree
   {
     assert( isFileWithoutPath(file) );
 
-    if( mDependencies.contains(file) ){
+    if( containsKey(file) ){
       mCurrentDirectDependency = file;
     }else if( !containsValue(file) ){
       mIsAtLeef = false;
@@ -127,21 +133,61 @@ class TestDependencyTree
     if( mCurrentDirectDependency.isEmpty() ){
       return mDependencies.keys();
     }
-    return mDependencies.value(mCurrentDirectDependency);
+    return value(mCurrentDirectDependency);
   }
 
  private:
 
+  using Map = QMap<QString, QStringList>;
+
+  static
+  bool stringAreEqualCI(const QString & a, const QString & b) noexcept
+  {
+    return QString::compare(a, b, Qt::CaseInsensitive) == 0;
+  }
+
+  Map::const_iterator iteratorForKey(const QString & key) const noexcept
+  {
+    Map::const_iterator first = mDependencies.cbegin();
+    const Map::const_iterator last = mDependencies.cend();
+
+    while(first != last){
+      if( stringAreEqualCI(first.key(), key) ){
+        return first;
+      }
+      ++first;
+    }
+
+    return last;
+  }
+
+  bool containsKey(const QString & key) const
+  {
+    return iteratorForKey(key) != mDependencies.cend();
+  }
+
+  QStringList value(const QString & key) const
+  {
+    const auto it = iteratorForKey(key);
+
+    if( it == mDependencies.cend() ){
+      return QStringList();
+    }
+
+    return it.value();
+  }
+
   bool containsValue(const QString & value) const
   {
     for(const QStringList & deps : mDependencies){
-      if( deps.contains(value) ){
+      if( deps.contains(value, Qt::CaseInsensitive) ){
         return true;
       }
     }
 
     return false;
   }
+
 
   static
   bool isFileWithoutPath(const QString & file)
@@ -225,53 +271,50 @@ TEST_CASE("TestDependencyTree")
 
     SECTION("When setting current file to a value that not exists in the tree, current dependencies will be those from root")
     {
-      tree.setCurrentFile( QLatin1String("target") );
-      REQUIRE( tree.currentDependencies() == QStringList{QLatin1String("A")} );
+      SECTION("same case")
+      {
+        tree.setCurrentFile( QLatin1String("target") );
+        REQUIRE( tree.currentDependencies() == QStringList{QLatin1String("A")} );
+      }
+
+      SECTION("UPPER case")
+      {
+        tree.setCurrentFile( QLatin1String("TARGET") );
+        REQUIRE( tree.currentDependencies() == QStringList{QLatin1String("A")} );
+      }
     }
 
     SECTION("When setting current file to A, current dependencies will return B")
     {
-      tree.setCurrentFile( QLatin1String("A") );
-      REQUIRE( tree.currentDependencies() == QStringList{QLatin1String("B")} );
+      SECTION("same case")
+      {
+        tree.setCurrentFile( QLatin1String("A") );
+        REQUIRE( tree.currentDependencies() == QStringList{QLatin1String("B")} );
+      }
+
+      SECTION("lower case")
+      {
+        tree.setCurrentFile( QLatin1String("a") );
+        REQUIRE( tree.currentDependencies() == QStringList{QLatin1String("B")} );
+      }
     }
 
     SECTION("When setting current file to B, current dependencies will return nothing (leaf)")
     {
-      tree.setCurrentFile( QLatin1String("B") );
-      REQUIRE( tree.currentDependencies().isEmpty() );
+      SECTION("same case")
+      {
+        tree.setCurrentFile( QLatin1String("B") );
+        REQUIRE( tree.currentDependencies().isEmpty() );
+      }
+
+      SECTION("lower case")
+      {
+        tree.setCurrentFile( QLatin1String("b") );
+        REQUIRE( tree.currentDependencies().isEmpty() );
+      }
     }
   }
 }
-
-class TestIsExistingSharedLibrary
-{
- public:
-
-  void setExistingSharedLibraries(const std::vector<std::string> & libraries)
-  {
-    for(const auto & library : libraries){
-      const QString libraryFilePath = QString::fromStdString(library);
-      assert( QFileInfo(libraryFilePath).isAbsolute() );
-      mExistingSharedLibraries.append(libraryFilePath);
-    }
-  }
-
-  /*! \internal
-   *
-   * \pre \a libraryFile must be a absolute file path
-   */
-  bool operator()(const QFileInfo & libraryFile) const
-  {
-    assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
-    assert( libraryFile.isAbsolute() );
-
-    return mExistingSharedLibraries.contains( libraryFile.absoluteFilePath() );
-  }
-
- private:
-
-  QStringList mExistingSharedLibraries;
-};
 
 class TestExecutableFileReader
 {
@@ -280,16 +323,22 @@ class TestExecutableFileReader
   void openFile(const QFileInfo & fileInfo)
   {
     mDependencies.setCurrentFile( fileInfo.fileName() );
+    mIsOpen = true;
   }
 
-//   void openFile(const QFileInfo & fileInfo, const Platform & platform)
-//   {
-//   }
+  void openFile(const QFileInfo & fileInfo, const Platform &)
+  {
+    openFile(fileInfo);
+  }
 
-//   bool isOpen() const noexcept;
+  bool isOpen() const noexcept
+  {
+    return mIsOpen;
+  }
 
   void close()
   {
+    mIsOpen = false;
   }
 
 //   Platform getFilePlatform()
@@ -328,6 +377,7 @@ class TestExecutableFileReader
 
  private:
 
+  bool mIsOpen = false;
   TestDependencyTree mDependencies;
   QStringList mRunPath;
 };
@@ -410,12 +460,6 @@ TEST_CASE("executableFileInfoAreEqual")
   }
 }
 
-TEST_CASE("removeDuplicates_ExecutableFileInfo")
-{
-  using Impl::removeDuplicates;
-
-}
-
 TEST_CASE("findLibraryAbsolutePath")
 {
   using Impl::findLibraryAbsolutePath;
@@ -423,12 +467,13 @@ TEST_CASE("findLibraryAbsolutePath")
   PathList pathList;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
   ExecutableFileInfo library;
+  const auto platform = Platform::nativePlatform();
 
   SECTION("libA.so - pathList:/tmp - exists")
   {
     pathList.appendPath( QLatin1String("/tmp") );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so"});
-    library = findLibraryAbsolutePath( QLatin1String("libA.so"), pathList, isExistingSharedLibraryOp );
+    library = findLibraryAbsolutePath( QLatin1String("libA.so"), pathList, platform, isExistingSharedLibraryOp );
     REQUIRE( library.hasAbsoluteFilePath() );
     REQUIRE( library.toFileInfo().absoluteFilePath() == QLatin1String("/tmp/libA.so") );
   }
@@ -437,17 +482,9 @@ TEST_CASE("findLibraryAbsolutePath")
   {
     pathList.appendPathList( {QLatin1String("/tmp"),QLatin1String("/opt")} );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so","/opt/libA.so"});
-    library = findLibraryAbsolutePath( QLatin1String("libA.so"), pathList, isExistingSharedLibraryOp );
+    library = findLibraryAbsolutePath( QLatin1String("libA.so"), pathList, platform, isExistingSharedLibraryOp );
     REQUIRE( library.hasAbsoluteFilePath() );
     REQUIRE( library.toFileInfo().absoluteFilePath() == QLatin1String("/tmp/libA.so") );
-  }
-
-  SECTION("libA.so - pathList:/tmp - not exists in given pathList")
-  {
-    pathList.appendPathList( {QLatin1String("/tmp")} );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libB.so","/opt/libA.so"});
-    library = findLibraryAbsolutePath( QLatin1String("libA.so"), pathList, isExistingSharedLibraryOp );
-    REQUIRE( library.isNull() );
   }
 }
 
@@ -520,6 +557,7 @@ TEST_CASE("buildSearchPathList")
 
   PathList searchPathList;
   PathList searchFirstPathPrefixList;
+  QFileInfo target( QLatin1String("/tmp/myapp") );
 
   SECTION("Linux")
   {
@@ -527,10 +565,8 @@ TEST_CASE("buildSearchPathList")
 
     SECTION("no prefix PATH")
     {
-      searchPathList = buildSearchPathList(searchFirstPathPrefixList, platform);
-      
+      searchPathList = buildSearchPathList(target, searchFirstPathPrefixList, platform);
       debugOutPathList(searchPathList);
-      
       REQUIRE( !searchPathList.isEmpty() );
     }
   }
@@ -538,6 +574,13 @@ TEST_CASE("buildSearchPathList")
   SECTION("Windows")
   {
     Platform platform(OperatingSystem::Windows, ExecutableFileFormat::Pe, Compiler::Gcc, ProcessorISA::X86_64);
+
+    SECTION("no prefix PATH")
+    {
+      searchPathList = buildSearchPathList(target, searchFirstPathPrefixList, platform);
+      debugOutPathList(searchPathList);
+      REQUIRE( !searchPathList.isEmpty() );
+    }
   }
 }
 
@@ -548,6 +591,7 @@ TEST_CASE("findDependencies")
   ExecutableFileInfo target;
   PathList searchPathList;
   TestExecutableFileReader reader;
+  const auto platform = Platform::nativePlatform();
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
   ExecutableFileInfoList dependencies;
 
@@ -557,7 +601,7 @@ TEST_CASE("findDependencies")
   {
     target = executableFileInfoFromFullPath("/tmp/libm.so");
 //     debugExecutableFileInfo(target);
-    findDependencies(target, dependencies, searchPathList, reader, isExistingSharedLibraryOp);
+    findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
 //     debugExecutableFileInfoList(dependencies);
     REQUIRE( dependencies.size() == 0 );
   }
@@ -574,7 +618,7 @@ TEST_CASE("findDependencies")
     reader.setDirectDependencies({"libMyLibA.so"});
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so"});
 
-    findDependencies(target, dependencies, searchPathList, reader, isExistingSharedLibraryOp);
+    findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
 
     REQUIRE( dependencies.size() == 1 );
     REQUIRE( dependenciesEquals(dependencies, {"/opt/MyLibs/libMyLibA.so"}) );
@@ -595,7 +639,7 @@ TEST_CASE("findDependencies")
     reader.addDependenciesToDirectDependency("libMyLibA.so",{"libQt5Core.so"});
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so","/opt/qt/libQt5Core.so"});
 
-    findDependencies(target, dependencies, searchPathList, reader, isExistingSharedLibraryOp);
+    findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
 
     REQUIRE( dependencies.size() == 2 );
     REQUIRE( dependenciesEquals(dependencies, {"/opt/MyLibs/libMyLibA.so","/opt/qt/libQt5Core.so"}) );

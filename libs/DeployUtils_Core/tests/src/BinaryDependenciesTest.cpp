@@ -40,7 +40,7 @@ TEST_CASE("findDependencies")
 {
   BinaryDependencies solver;
 
-  PathList pathList = PathList::fromStringList( QString::fromLocal8Bit(PREFIX_PATH).split( QLatin1Char(':') ) );
+  PathList searchFirstPathPrefixList = PathList::fromStringList( QString::fromLocal8Bit(PREFIX_PATH).split( QLatin1Char(':') ) );
   /// pathList.appendPathList( PathList::getSystemLibraryPathList() );
 
   QStringList dependencies;
@@ -48,11 +48,34 @@ TEST_CASE("findDependencies")
   SECTION("Executable")
   {
     const QFileInfo target( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
-    dependencies = solver.findDependencies(target, pathList);
+    dependencies = solver.findDependencies(target, searchFirstPathPrefixList);
 
     std::cout << "deps:\n" << dependencies.join( QLatin1Char('\n') ).toStdString() << std::endl;
 
     REQUIRE( containsTestSharedLibrary(dependencies) );
+    REQUIRE( containsQt5Core(dependencies) );
+  }
+}
+
+TEST_CASE("Windows_sandbox")
+{
+  BinaryDependencies solver;
+
+  PathList searchFirstPathPrefixList;
+  searchFirstPathPrefixList.appendPath( QLatin1String("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/Tools/mingw492_32/") );
+  searchFirstPathPrefixList.appendPath( QLatin1String("/home/philippe/.wine/drive_c/windows/syswow64/") );
+  searchFirstPathPrefixList.appendPath( QLatin1String("/home/philippe/.wine/drive_c/windows/system32/") );
+
+  QStringList dependencies;
+
+  SECTION("Qt5")
+  {
+    const QFileInfo target( QString::fromLocal8Bit("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Widgets.dll") );
+    dependencies = solver.findDependencies(target, searchFirstPathPrefixList);
+
+    std::cout << "deps:\n" << dependencies.join( QLatin1Char('\n') ).toStdString() << std::endl;
+
+//     REQUIRE( containsTestSharedLibrary(dependencies) );
     REQUIRE( containsQt5Core(dependencies) );
   }
 }

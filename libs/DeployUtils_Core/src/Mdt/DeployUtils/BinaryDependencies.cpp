@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "BinaryDependencies.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
+#include "Mdt/DeployUtils/Platform.h"
 #include "ExecutableFileReader.h"
 #include <QDir>
 #include <cassert>
@@ -43,19 +44,21 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
 
   ExecutableFileInfoList dependencies;
 
-  // open file
   ExecutableFileInfo target;
   target.fileName = binaryFilePath.fileName();
   target.directoryPath = binaryFilePath.absoluteDir().path();
 
   ExecutableFileReader reader;
+  reader.openFile(binaryFilePath);
+  const Platform platform = reader.getFilePlatform();
+  reader.close();
 
-  /// \todo fix platform
-  const PathList searchPathList = Impl::buildSearchPathList( searchFirstPathPrefixList, Platform::nativePlatform() );
+  const PathList searchPathList = Impl::buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, platform);
 
   std::cout << "searchPathList:\n" << searchPathList.toStringList().join(QLatin1Char('\n')).toStdString() << std::endl;
 
-  Impl::findDependencies(target, dependencies, searchPathList, reader, Impl::isExistingSharedLibrary);
+  Impl::IsExistingSharedLibraryFunc isExistingSharedLibrary(reader, platform);
+  Impl::findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibrary);
 
   return Impl::qStringListFromExecutableFileInfoList(dependencies);
 }

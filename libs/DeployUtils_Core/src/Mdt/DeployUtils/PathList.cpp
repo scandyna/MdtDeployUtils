@@ -121,6 +121,8 @@ PathList PathList::getSystemLibraryKnownPathList(const Platform & platform)
       return getSystemLibraryKnownPathListLinux();
     case OperatingSystem::Windows:
       return getSystemLibraryKnownPathListWindows();
+    case OperatingSystem::Unknown:
+      return PathList();
   }
 
   return PathList();

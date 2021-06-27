@@ -197,6 +197,8 @@ namespace Mdt{ namespace DeployUtils{
      *
      * Returns a hard-coded list of system library paths
      *  that are known to exist on Windows
+     *
+     * \todo should check which path to add depending on cpu (32/64bit)
      */
     static PathList getSystemLibraryKnownPathListWindows();
 
