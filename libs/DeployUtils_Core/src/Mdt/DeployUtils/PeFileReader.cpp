@@ -85,15 +85,6 @@ Platform PeFileReader::doGetFilePlatform()
   return Platform(os, fileFormat, fakeCompiler, cpu);
 }
 
-bool PeFileReader::doIsSharedLibrary()
-{
-  if( !tryExtractDosCoffAndOptionalHeader() ){
-    return false;
-  }
-
-  return mImpl->isSharedLibrary();
-}
-
 bool PeFileReader::doIsExecutableOrSharedLibrary()
 {
   if( !tryExtractDosCoffAndOptionalHeader() ){

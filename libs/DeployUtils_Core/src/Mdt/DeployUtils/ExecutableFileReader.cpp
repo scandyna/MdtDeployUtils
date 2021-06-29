@@ -124,14 +124,6 @@ Platform ExecutableFileReader::getFilePlatform()
   return mReaderEngine->getFilePlatform();
 }
 
-bool ExecutableFileReader::isSharedLibrary()
-{
-  assert( isOpen() );
-  assert( mReaderEngine.get() != nullptr );
-
-  return mReaderEngine->isSharedLibrary();
-}
-
 bool ExecutableFileReader::isExecutableOrSharedLibrary()
 {
   assert( isOpen() );

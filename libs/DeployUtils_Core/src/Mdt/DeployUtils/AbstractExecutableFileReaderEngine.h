@@ -105,14 +105,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     Platform getFilePlatform();
 
-    /*! \brief Check if this reader refers to a shared library
-     *
-     * \pre this reader must have a open file
-     * \sa isOpen()
-     * \exception ExecutableFileReadError
-     */
-    bool isSharedLibrary();
-
     /*! \brief Check if this reader refers to a executable or a shared library
      *
      * \pre this reader must have a open file
@@ -186,7 +178,6 @@ namespace Mdt{ namespace DeployUtils{
     }
 
     virtual Platform doGetFilePlatform() = 0;
-    virtual bool doIsSharedLibrary() = 0;
     virtual bool doIsExecutableOrSharedLibrary() = 0;
     virtual QStringList doGetNeededSharedLibraries() = 0;
 

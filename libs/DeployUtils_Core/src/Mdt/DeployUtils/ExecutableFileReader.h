@@ -117,23 +117,14 @@ namespace Mdt{ namespace DeployUtils{
      */
     Platform getFilePlatform();
 
-    /*! \brief Check if this reader refers to a shared library
-     *
-     * \pre this reader must have a open file
-     * \sa isOpen()
-     * \exception ExecutableFileReadError
-     *
-     * \todo see https://unix.stackexchange.com/questions/472449/what-is-the-difference-between-lsb-executable-et-exec-and-lsb-shared-object
-     */
-    bool isSharedLibrary();
-
     /*! \brief Check if this reader refers to a executable or a shared library
      *
      * \pre this reader must have a open file
      * \sa isOpen()
      * \exception ExecutableFileReadError
      * \note There is not method to check if this reader refers to a shared library.
-     * The reason is that there is no difference on some platform, like ELF.
+     * The reason is that there is no difference between
+     * a dynamicly linked executable and a shared library on some platform, like ELF.
      * For some explanations,
      * see https://unix.stackexchange.com/questions/472449/what-is-the-difference-between-lsb-executable-et-exec-and-lsb-shared-object
      */

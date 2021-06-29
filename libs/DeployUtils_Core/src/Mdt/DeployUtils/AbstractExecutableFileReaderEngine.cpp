@@ -77,13 +77,6 @@ Platform AbstractExecutableFileReaderEngine::getFilePlatform()
   return doGetFilePlatform();
 }
 
-bool AbstractExecutableFileReaderEngine::isSharedLibrary()
-{
-  assert( isOpen() );
-
-  return doIsSharedLibrary();
-}
-
 bool AbstractExecutableFileReaderEngine::isExecutableOrSharedLibrary()
 {
   assert( isOpen() );
