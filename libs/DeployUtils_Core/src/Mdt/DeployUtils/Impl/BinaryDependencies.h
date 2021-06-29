@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_IMPL_BINARY_DEPENDENCIES_H
 
 #include "LibraryExcludeListLinux.h"
+#include "LibraryExcludeListWindows.h"
 #include "Mdt/DeployUtils/FindDependencyError.h"
 #include "Mdt/DeployUtils/ExecutableFileReader.h"
 #include "Mdt/DeployUtils/PathList.h"
@@ -37,8 +38,6 @@
 #include <cassert>
 #include <vector>
 #include <algorithm>
-
-#include <QDebug>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
@@ -135,17 +134,21 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
         return false;
       }
 
-      mReader.openFile(libraryFile,mPlatform);
+      try{
+        mReader.openFile(libraryFile,mPlatform);
 
-      /// \todo should be isSharedLibrary()
-      const bool isSharedLibrary = mReader.isExecutableOrSharedLibrary();
+        const bool isSharedLibrary = mReader.isExecutableOrSharedLibrary();
 
-      const Platform libraryPlatform = mReader.getFilePlatform();
-      const bool isCorrectProcessorISA = ( libraryPlatform.processorISA() == mPlatform.processorISA() );
+        const Platform libraryPlatform = mReader.getFilePlatform();
+        const bool isCorrectProcessorISA = ( libraryPlatform.processorISA() == mPlatform.processorISA() );
 
-      mReader.close();
+        mReader.close();
 
-      return isSharedLibrary && isCorrectProcessorISA;
+        return isSharedLibrary && isCorrectProcessorISA;
+      }catch(...){
+        mReader.close();
+        throw;
+      }
     }
 
    private:
@@ -268,7 +271,19 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
   void removeLibrariesInExcludeListLinux(QStringList & libraryNames) noexcept
   {
     const auto pred = [](const QString & libraryName){
-      return generatedExcludelistLinux.contains(libraryName);
+      return libraryExcludelistLinux.contains(libraryName);
+    };
+
+    libraryNames.erase( std::remove_if( libraryNames.begin(), libraryNames.end(), pred), libraryNames.end() );
+  }
+
+  /*! \internal
+   */
+  inline
+  void removeLibrariesInExcludeListWindows(QStringList & libraryNames) noexcept
+  {
+    const auto pred = [](const QString & libraryName){
+      return libraryExcludelistWindows.contains(libraryName, Qt::CaseInsensitive);
     };
 
     libraryNames.erase( std::remove_if( libraryNames.begin(), libraryNames.end(), pred), libraryNames.end() );
@@ -308,8 +323,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     assert( currentFile.hasAbsoluteFilePath() );
     assert( !reader.isOpen() );
 
-    qDebug() << "solve for " << currentFile.fileName;
-    
     QFileInfo currentFileInfo = currentFile.toFileInfo();
     if( !currentFileInfo.exists() ){
       if( platform.operatingSystem() == OperatingSystem::Windows ){
@@ -319,9 +332,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
     reader.openFile(currentFileInfo, platform);
     if( !reader.isExecutableOrSharedLibrary() ){
-      qDebug() << " not a exe";
-      /// \todo Exception
-      return;
+      const QString message = QCoreApplication::translate("Mdt::DeployUtils::Impl::findDependencies()",
+                                                          "'%1' is not a executable or a shared library")
+                              .arg( currentFileInfo.absoluteFilePath() );
+      throw FindDependencyError(message);
     }
 
     QStringList dependentLibraryNames = reader.getNeededSharedLibraries();
@@ -330,7 +344,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
       removeLibrariesInExcludeListLinux(dependentLibraryNames);
     }
     if( platform.operatingSystem() == OperatingSystem::Windows ){
-      /// \todo remove also for Windows
+      removeLibrariesInExcludeListWindows(dependentLibraryNames);
     }
 
     const QStringList runPath = reader.getRunPath();

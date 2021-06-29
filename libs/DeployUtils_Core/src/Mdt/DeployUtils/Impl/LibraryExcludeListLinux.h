@@ -13,11 +13,14 @@
  *
  * Credits: https://github.com/probonopd/linuxdeployqt
  */
+#ifndef MDT_DEPLOY_UTILS_IMPL_LIBRARY_EXCLUDE_LIST_LINUX_H
+#define MDT_DEPLOY_UTILS_IMPL_LIBRARY_EXCLUDE_LIST_LINUX_H
+
 #include <QStringList>
 #include <QLatin1String>
 
 static
-const QStringList generatedExcludelistLinux = {
+const QStringList libraryExcludelistLinux = {
   QLatin1String("ld-linux.so.2"),
   QLatin1String("ld-linux-x86-64.so.2"),
   QLatin1String("libanl.so.1"),
@@ -76,3 +79,5 @@ const QStringList generatedExcludelistLinux = {
   QLatin1String("libxcb.so.1"),
   QLatin1String("libz.so.1")
 };
+
+#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_LIBRARY_EXCLUDE_LIST_LINUX_H

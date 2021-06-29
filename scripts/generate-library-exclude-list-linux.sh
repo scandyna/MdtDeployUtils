@@ -39,11 +39,14 @@ cat > "$destinationFile" <<EOF
  *
  * Credits: https://github.com/probonopd/linuxdeployqt
  */
+#ifndef MDT_DEPLOY_UTILS_IMPL_LIBRARY_EXCLUDE_LIST_LINUX_H
+#define MDT_DEPLOY_UTILS_IMPL_LIBRARY_EXCLUDE_LIST_LINUX_H
+
 #include <QStringList>
 #include <QLatin1String>
 
 static
-const QStringList generatedExcludelistLinux = {
+const QStringList libraryExcludelistLinux = {
 EOF
 
 for item in ${excludeList[@]:0:${#excludeList[@]}-1};
@@ -53,3 +56,5 @@ done
 echo -e '  QLatin1String("'"${excludeList[$((${#excludeList[@]}-1))]}"'")' >> "$destinationFile"
 
 echo "};" >> "$destinationFile"
+echo "" >> "$destinationFile"
+echo "#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_LIBRARY_EXCLUDE_LIST_LINUX_H" >> "$destinationFile"
