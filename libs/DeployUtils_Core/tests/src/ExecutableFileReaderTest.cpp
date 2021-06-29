@@ -72,6 +72,57 @@ TEST_CASE("getFilePlatform")
   }
 }
 
+TEST_CASE("isSharedLibrary")
+{
+  QTemporaryFile file;
+  REQUIRE( file.open() );
+
+  ExecutableFileReader reader;
+
+  SECTION("empty file")
+  {
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isSharedLibrary() );
+    reader.close();
+  }
+
+  SECTION("text file")
+  {
+    REQUIRE( writeTextFileUtf8( file, generateStringWithNChars(100) ) );
+    file.close();
+    reader.openFile( file.fileName() );
+    REQUIRE( !reader.isSharedLibrary() );
+    reader.close();
+  }
+
+  SECTION("executable file")
+  {
+    reader.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+    REQUIRE( !reader.isSharedLibrary() );
+    reader.close();
+  }
+
+  SECTION("shared library")
+  {
+    reader.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    REQUIRE( reader.isSharedLibrary() );
+    reader.close();
+  }
+
+  SECTION("static library")
+  {
+    reader.openFile( QString::fromLocal8Bit(TEST_STATIC_LIBRARY_FILE_PATH) );
+    REQUIRE( !reader.isSharedLibrary() );
+    reader.close();
+  }
+}
+
+TEST_CASE("isSharedLibrary_sandboxWindows")
+{
+  REQUIRE(false);
+}
+
 TEST_CASE("isExecutableOrSharedLibrary")
 {
   QTemporaryFile file;

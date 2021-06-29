@@ -60,6 +60,7 @@ namespace Mdt{ namespace DeployUtils{
     bool doSupportsPlatform(const Platform & platform) const noexcept override;
     bool doIsPeImageFile() override;
     Platform doGetFilePlatform() override;
+    bool doIsSharedLibrary() override;
     bool doIsExecutableOrSharedLibrary() override;
     QStringList doGetNeededSharedLibraries() override;
 

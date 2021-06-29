@@ -658,6 +658,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       return mOptionalHeader.seemsValid();
     }
 
+    bool isSharedLibrary() const noexcept
+    {
+      assert( mCoffHeader.seemsValid() );
+
+      return mCoffHeader.isDll();
+    }
+
     bool isValidExecutableImage() const noexcept
     {
       assert( mCoffHeader.seemsValid() );

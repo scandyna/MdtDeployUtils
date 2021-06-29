@@ -132,6 +132,34 @@ Platform ElfFileReader::doGetFilePlatform()
   return Platform(os, fileFormat, fakeCompiler, cpu);
 }
 
+bool ElfFileReader::doIsSharedLibrary()
+{
+  using Impl::ByteArraySpan;
+  using Impl::Elf::FileHeader;
+  using Impl::Elf::ObjectFileType;
+  using Impl::Elf::extractFileHeader;
+
+  const int64_t size = mImpl->minimumSizeToReadFileHeader();
+
+  if( fileSize() < size ){
+    return false;
+  }
+
+  const ByteArraySpan map = mapIfRequired(0, size);
+
+  const FileHeader fileHeader = extractFileHeader(map);
+
+  if( !fileHeader.seemsValid() ){
+    return false;
+  }
+
+  if(fileHeader.type == ObjectFileType::SharedObject){
+    return true;
+  }
+
+  return false;
+}
+
 bool ElfFileReader::doIsExecutableOrSharedLibrary()
 {
   using Impl::ByteArraySpan;

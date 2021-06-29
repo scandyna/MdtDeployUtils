@@ -91,6 +91,7 @@ namespace Mdt{ namespace DeployUtils{
     bool doSupportsPlatform(const Platform & platform) const noexcept override;
     bool doIsElfFile() override;
     Platform doGetFilePlatform() override;
+    bool doIsSharedLibrary() override;
     bool doIsExecutableOrSharedLibrary() override;
     QStringList doGetNeededSharedLibraries() override;
     QStringList doGetRunPath() override;
