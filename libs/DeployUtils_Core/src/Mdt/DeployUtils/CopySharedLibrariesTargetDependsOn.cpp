@@ -19,10 +19,12 @@
  **
  ****************************************************************************/
 #include "CopySharedLibrariesTargetDependsOn.h"
+#include "BinaryDependencies.h"
+#include "PathList.h"
 #include <cassert>
 
 #include <QDebug>
-#include <iostream>
+// #include <iostream>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -31,14 +33,64 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   assert( !request.targetFilePath.trimmed().isEmpty() );
   assert( !request.destinationDirectoryPath.trimmed().isEmpty() );
 
-  std::cout << "Overwrite behavior: " << (int)request.overwriteBehavior << '\n';
-  std::cout << "Remove RPATH: " << request.removeRpath << '\n';
-  std::cout << "Search prefix path list: " << request.searchPrefixPathList.join( QChar::fromLatin1(',') ).toStdString() << '\n';
-  std::cout << "Target file path: " << request.targetFilePath.toStdString() << '\n';
-  std::cout << "Destination directory: " << request.destinationDirectoryPath.toStdString() << std::endl;
+  const QString startMessage = tr("copy dependencies for %1").arg(request.targetFilePath);
+  emit message(startMessage);
 
-  const QString msg = tr("Some message to check logger");
-  emit message(msg);
+  emitSearchPrefixPathListMessage(request.searchPrefixPathList);
+
+  const QString overwriteBehaviorMessage = tr("Overwrite behavior: %1").arg( overwriteBehaviorToString(request.overwriteBehavior) );
+  emit verboseMessage(overwriteBehaviorMessage);
+
+  if(request.removeRpath){
+    const QString rpathMessage = tr("RPATH will be removed in copied libraries");
+    emit verboseMessage(rpathMessage);
+  }else{
+    const QString rpathMessage = tr("RPATH will be set to $ORIGIN in copied libraries");
+    emit verboseMessage(rpathMessage);
+  }
+
+  BinaryDependencies binaryDependencies;
+  connect(&binaryDependencies, &BinaryDependencies::message, this, &CopySharedLibrariesTargetDependsOn::message);
+  connect(&binaryDependencies, &BinaryDependencies::verboseMessage, this, &CopySharedLibrariesTargetDependsOn::verboseMessage);
+  const QStringList dependencies = binaryDependencies.findDependencies( request.targetFilePath, PathList::fromStringList(request.searchPrefixPathList) );
+
+  emitFoundDependenciesMessage(dependencies);
+}
+
+void CopySharedLibrariesTargetDependsOn::emitSearchPrefixPathListMessage(const QStringList & pathList) const noexcept
+{
+  const QString startMessage = tr("search prefix path list:");
+  emit verboseMessage(startMessage);
+
+  for(const QString & path : pathList){
+    const QString msg = tr(" %1").arg(path);
+    emit verboseMessage(msg);
+  }
+}
+
+void CopySharedLibrariesTargetDependsOn::emitFoundDependenciesMessage(const QStringList & dependencies) const noexcept
+{
+  const QString startMessage = tr("found dependencies:");
+  emit verboseMessage(startMessage);
+
+  for(const QString & dependency : dependencies){
+    const QString msg = tr(" %1").arg(dependency);
+    emit verboseMessage(msg);
+  }
+}
+
+QString CopySharedLibrariesTargetDependsOn::overwriteBehaviorToString(OverwriteBehavior overwriteBehavior) noexcept
+{
+  switch(overwriteBehavior){
+    case OverwriteBehavior::Keep:
+      return tr("keep");
+    case OverwriteBehavior::Overwrite:
+      return tr("overwrite");
+    case OverwriteBehavior::Fail:
+      return tr("fail");
+  }
+
+  return QString();
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

@@ -23,6 +23,7 @@
 
 #include "FindDependencyError.h"
 #include "PathList.h"
+#include "ProcessorISA.h"
 #include "mdt_deployutils_export.h"
 #include <QObject>
 #include <QFileInfo>
@@ -62,9 +63,40 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \pre \a binaryFilePath must have its path set
      * \exception FindDependencyError
+     * \sa buildSearchPathListLinux()
+     * \sa https://man7.org/linux/man-pages/man8/ld.so.8.html
      */
     QStringList findDependencies(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList);
 
+    /*! \brief Build and returns a list of path to directories where to find shared libraries
+     *
+     * \pre \a platform must not be null
+     * \sa buildSearchPathListLinux()
+     * \sa buildSearchPathListWindows()
+     */
+    PathList buildSearchPathList(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList, const Platform & platform) const noexcept;
+
+    /*! \brief Build and returns a list of path to directories where to find shared libraries
+     *
+     * \sa PathList::getSystemLibraryKnownPathListLinux()
+     * \sa https://man7.org/linux/man-pages/man8/ld.so.8.html
+     */
+    PathList buildSearchPathListLinux(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) const noexcept;
+
+    /*! \brief Build and returns a list of path to directories where to find shared libraries
+     *
+     * \sa PathList::getSystemLibraryKnownPathListWindows()
+     */
+    PathList buildSearchPathListWindows(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) const noexcept;
+
+   signals:
+
+    void message(const QString & message) const;
+    void verboseMessage(const QString & message) const;
+
+   private:
+
+    void emitSearchPathListMessage(const PathList & pathList) const;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

@@ -551,43 +551,11 @@ TEST_CASE("findLibraryAbsolutePathByRpath")
   }
 }
 
-TEST_CASE("buildSearchPathList")
-{
-  using Impl::buildSearchPathList;
-
-  PathList searchPathList;
-  PathList searchFirstPathPrefixList;
-  QFileInfo target( QLatin1String("/tmp/myapp") );
-
-  SECTION("Linux")
-  {
-    Platform platform(OperatingSystem::Linux, ExecutableFileFormat::Elf, Compiler::Gcc, ProcessorISA::X86_64);
-
-    SECTION("no prefix PATH")
-    {
-      searchPathList = buildSearchPathList(target, searchFirstPathPrefixList, platform);
-      debugOutPathList(searchPathList);
-      REQUIRE( !searchPathList.isEmpty() );
-    }
-  }
-
-  SECTION("Windows")
-  {
-    Platform platform(OperatingSystem::Windows, ExecutableFileFormat::Pe, Compiler::Gcc, ProcessorISA::X86_64);
-
-    SECTION("no prefix PATH")
-    {
-      searchPathList = buildSearchPathList(target, searchFirstPathPrefixList, platform);
-      debugOutPathList(searchPathList);
-      REQUIRE( !searchPathList.isEmpty() );
-    }
-  }
-}
-
 TEST_CASE("findDependencies")
 {
-  using Impl::findDependencies;
+//   using Impl::findDependencies;
 
+  Impl::FindDependenciesImpl impl;
   ExecutableFileInfo target;
   PathList searchPathList;
   TestExecutableFileReader reader;
@@ -601,7 +569,7 @@ TEST_CASE("findDependencies")
   {
     target = executableFileInfoFromFullPath("/tmp/libm.so");
 //     debugExecutableFileInfo(target);
-    findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
+    impl.findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
 //     debugExecutableFileInfoList(dependencies);
     REQUIRE( dependencies.size() == 0 );
   }
@@ -618,7 +586,7 @@ TEST_CASE("findDependencies")
     reader.setDirectDependencies({"libMyLibA.so"});
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so"});
 
-    findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
+    impl.findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
 
     REQUIRE( dependencies.size() == 1 );
     REQUIRE( dependenciesEquals(dependencies, {"/opt/MyLibs/libMyLibA.so"}) );
@@ -639,7 +607,7 @@ TEST_CASE("findDependencies")
     reader.addDependenciesToDirectDependency("libMyLibA.so",{"libQt5Core.so"});
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so","/opt/qt/libQt5Core.so"});
 
-    findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
+    impl.findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
 
     REQUIRE( dependencies.size() == 2 );
     REQUIRE( dependenciesEquals(dependencies, {"/opt/MyLibs/libMyLibA.so","/opt/qt/libQt5Core.so"}) );

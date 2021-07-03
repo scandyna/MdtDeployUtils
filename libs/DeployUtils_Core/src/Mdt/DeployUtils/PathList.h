@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_PATH_LIST_H
 
 #include "Platform.h"
+#include "ProcessorISA.h"
 #include "mdt_deployutils_export.h"
 #include <QString>
 #include <QStringList>
@@ -181,6 +182,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Get a list of system library paths for \a platform
      *
+     * \pre \a platform must not be null
      * \sa getSystemLibraryKnownPathListLinux()
      * \sa getSystemLibraryKnownPathListWindows()
      */
@@ -190,17 +192,21 @@ namespace Mdt{ namespace DeployUtils{
      *
      * Returns a hard-coded list of system library paths
      *  that are known to exist on certains Linux distributions
+     *
+     * \pre \a processorISA must not be unknown
      */
-    static PathList getSystemLibraryKnownPathListLinux();
+    static
+    PathList getSystemLibraryKnownPathListLinux(ProcessorISA processorISA) noexcept;
 
     /*! \brief Get a list of system library paths for Windows
      *
      * Returns a hard-coded list of system library paths
      *  that are known to exist on Windows
      *
-     * \todo should check which path to add depending on cpu (32/64bit)
+     * \pre \a processorISA must not be unknown
      */
-    static PathList getSystemLibraryKnownPathListWindows();
+    static
+    PathList getSystemLibraryKnownPathListWindows(ProcessorISA processorISA) noexcept;
 
    private:
 

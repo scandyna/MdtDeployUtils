@@ -25,6 +25,7 @@
 #include <QString>
 #include <QStringList>
 #include <QFileInfo>
+#include <QLatin1Char>
 #include <vector>
 #include <string>
 #include <cassert>
@@ -52,6 +53,11 @@ QString generateStringWithNChars(int n)
   assert( str.length() == n );
 
   return str;
+}
+
+QStringList getTestPrefixPath(const char * const prefixPath)
+{
+  return QString::fromLocal8Bit(prefixPath).split( QLatin1Char(':') );
 }
 
 bool containsLibrary(const QStringList & libraries, const QString & libraryName)

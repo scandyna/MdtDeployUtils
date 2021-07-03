@@ -27,6 +27,7 @@
 #include <QString>
 #include <QLatin1String>
 #include <QStringList>
+#include <QFileInfo>
 #include <string>
 #include <vector>
 
@@ -35,12 +36,51 @@
 
 using namespace Mdt::DeployUtils;
 
+TEST_CASE("buildSearchPathListLinux")
+{
+  BinaryDependencies binaryDependencies;
+  PathList searchFirstPathPrefixList;
+  PathList searchPathList;
+
+  SECTION("x86")
+  {
+    searchPathList = binaryDependencies.buildSearchPathListLinux(searchFirstPathPrefixList, ProcessorISA::X86_32);
+    REQUIRE( !searchPathList.isEmpty() );
+  }
+
+  SECTION("x86_64")
+  {
+    searchPathList = binaryDependencies.buildSearchPathListLinux(searchFirstPathPrefixList, ProcessorISA::X86_64);
+    REQUIRE( !searchPathList.isEmpty() );
+  }
+}
+
+TEST_CASE("buildSearchPathListWindows")
+{
+  BinaryDependencies binaryDependencies;
+  PathList searchFirstPathPrefixList;
+  PathList searchPathList;
+
+  QFileInfo binaryFilePath( QLatin1String("/some/path/to/app.exe") );
+
+  SECTION("x86")
+  {
+    searchPathList = binaryDependencies.buildSearchPathListWindows(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_32);
+    REQUIRE( !searchPathList.isEmpty() );
+  }
+
+  SECTION("x86_64")
+  {
+    searchPathList = binaryDependencies.buildSearchPathListWindows(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_64);
+    REQUIRE( !searchPathList.isEmpty() );
+  }
+}
 
 TEST_CASE("findDependencies")
 {
   BinaryDependencies solver;
 
-  PathList searchFirstPathPrefixList = PathList::fromStringList( QString::fromLocal8Bit(PREFIX_PATH).split( QLatin1Char(':') ) );
+  PathList searchFirstPathPrefixList = PathList::fromStringList( getTestPrefixPath(PREFIX_PATH) );
   /// pathList.appendPathList( PathList::getSystemLibraryPathList() );
 
   QStringList dependencies;

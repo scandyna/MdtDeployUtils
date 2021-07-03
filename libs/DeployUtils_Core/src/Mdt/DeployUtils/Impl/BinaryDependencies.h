@@ -28,6 +28,7 @@
 #include "Mdt/DeployUtils/PathList.h"
 #include "Mdt/DeployUtils/SearchPathList.h"
 #include "Mdt/DeployUtils/Platform.h"
+#include "mdt_deployutils_export.h"
 #include <QString>
 #include <QLatin1String>
 #include <QStringList>
@@ -35,6 +36,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QCoreApplication>
+#include <QObject>
 #include <cassert>
 #include <vector>
 #include <algorithm>
@@ -316,76 +318,91 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
   /*! \internal
    */
-  template<typename Reader, typename IsExistingSharedLibraryOp>
-  void findDependencies(const ExecutableFileInfo & currentFile, ExecutableFileInfoList & allDependencies, PathList searchPathList,
-                        Reader & reader, const Platform & platform, IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+  class MDT_DEPLOYUTILS_EXPORT FindDependenciesImpl : public QObject
   {
-    assert( currentFile.hasAbsoluteFilePath() );
-    assert( !reader.isOpen() );
+    Q_OBJECT
 
-    QFileInfo currentFileInfo = currentFile.toFileInfo();
-    if( !currentFileInfo.exists() ){
+   public:
+
+    FindDependenciesImpl(QObject *parent = nullptr)
+     : QObject(parent)
+    {
+    }
+
+    /*! \internal
+     */
+    template<typename Reader, typename IsExistingSharedLibraryOp>
+    void findDependencies(const ExecutableFileInfo & currentFile, ExecutableFileInfoList & allDependencies, PathList searchPathList,
+                          Reader & reader, const Platform & platform, IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+    {
+      assert( currentFile.hasAbsoluteFilePath() );
+      assert( !reader.isOpen() );
+
+      QFileInfo currentFileInfo = currentFile.toFileInfo();
+      if( !currentFileInfo.exists() ){
+        if( platform.operatingSystem() == OperatingSystem::Windows ){
+          currentFileInfo = tryAlternativeFileNamesWindows(currentFileInfo);
+        }
+      }
+
+      emitProcessingCurrentFileMessage(currentFileInfo);
+
+      reader.openFile(currentFileInfo, platform);
+      if( !reader.isExecutableOrSharedLibrary() ){
+        const QString message = tr("'%1' is not a executable or a shared library")
+                                .arg( currentFileInfo.absoluteFilePath() );
+        throw FindDependencyError(message);
+      }
+
+      QStringList dependentLibraryNames = reader.getNeededSharedLibraries();
+
+      emitDirectDependenciesMessage(currentFileInfo, dependentLibraryNames);
+
+      if( platform.operatingSystem() == OperatingSystem::Linux ){
+        removeLibrariesInExcludeListLinux(dependentLibraryNames);
+      }
       if( platform.operatingSystem() == OperatingSystem::Windows ){
-        currentFileInfo = tryAlternativeFileNamesWindows(currentFileInfo);
+        removeLibrariesInExcludeListWindows(dependentLibraryNames);
+      }
+
+      const QStringList runPath = reader.getRunPath();
+      reader.close();
+
+      ExecutableFileInfoList dependencies = findLibrariesAbsolutePath(currentFile, dependentLibraryNames, runPath, searchPathList, platform, isExistingSharedLibraryOp);
+
+      removeDuplicates(allDependencies);
+
+      for(const ExecutableFileInfo & library : dependencies){
+        allDependencies.push_back(library);
+        findDependencies(library, allDependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
       }
     }
 
-    reader.openFile(currentFileInfo, platform);
-    if( !reader.isExecutableOrSharedLibrary() ){
-      const QString message = QCoreApplication::translate("Mdt::DeployUtils::Impl::findDependencies()",
-                                                          "'%1' is not a executable or a shared library")
-                              .arg( currentFileInfo.absoluteFilePath() );
-      throw FindDependencyError(message);
+   signals:
+
+    void verboseMessage(const QString & message) const;
+
+   private:
+
+    void emitProcessingCurrentFileMessage(const QFileInfo & file) const noexcept
+    {
+      const QString message = tr("searching dependencies for %1").arg( file.fileName() );
+      emit verboseMessage(message);
     }
 
-    QStringList dependentLibraryNames = reader.getNeededSharedLibraries();
-
-    if( platform.operatingSystem() == OperatingSystem::Linux ){
-      removeLibrariesInExcludeListLinux(dependentLibraryNames);
+    void emitDirectDependenciesMessage(const QFileInfo & currentFile, const QStringList & dependencies) const noexcept
+    {
+      if( dependencies.isEmpty() ){
+        return;
+      }
+      const QString startMessage = tr("%1 has following direct dependencies:").arg( currentFile.fileName() );
+      emit verboseMessage(startMessage);
+      for(const QString & dependency : dependencies){
+        const QString msg = tr(" %1").arg(dependency);
+        emit verboseMessage(msg);
+      }
     }
-    if( platform.operatingSystem() == OperatingSystem::Windows ){
-      removeLibrariesInExcludeListWindows(dependentLibraryNames);
-    }
-
-    const QStringList runPath = reader.getRunPath();
-    reader.close();
-
-    ExecutableFileInfoList dependencies = findLibrariesAbsolutePath(currentFile, dependentLibraryNames, runPath, searchPathList, platform, isExistingSharedLibraryOp);
-
-    removeDuplicates(allDependencies);
-
-    for(const ExecutableFileInfo & library : dependencies){
-      allDependencies.push_back(library);
-      findDependencies(library, allDependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
-    }
-  }
-
-
-  /*! \internal Build a list of search path
-   */
-  inline
-  PathList buildSearchPathList(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList, const Platform & platform) noexcept
-  {
-    assert( !binaryFilePath.path().isEmpty() );
-
-    PathList pathList;
-
-    /// \todo should check which path to add depending on cpu (32/64bit)
-    SearchPathList searchFirstPathList;
-    searchFirstPathList.setIncludePathPrefixes(true);
-    if( platform.operatingSystem() == OperatingSystem::Windows ){
-      searchFirstPathList.setPathSuffixList({QLatin1String("bin"),QLatin1String("qt5/bin")});
-      searchFirstPathList.appendPath( binaryFilePath.absoluteDir().path() );
-    }else{
-      searchFirstPathList.setPathSuffixList({QLatin1String("lib"),QLatin1String("qt5/lib")});
-    }
-    searchFirstPathList.setPathPrefixList(searchFirstPathPrefixList);
-
-    pathList.appendPathList( searchFirstPathList.pathList() );
-    pathList.appendPathList( PathList::getSystemLibraryKnownPathList(platform) );
-
-    return pathList;
-  }
+  };
 
 }}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{
 

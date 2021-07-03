@@ -22,9 +22,11 @@
 #define MDT_DEPLOY_UTILS_COPY_SHARED_LIBRARIES_TARGET_DEPENDS_ON_H
 
 #include "CopySharedLibrariesTargetDependsOnRequest.h"
+#include "OverwriteBehavior.h"
 #include "mdt_deployutils_export.h"
 #include <QObject>
 #include <QString>
+#include <QStringList>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -51,15 +53,9 @@ namespace Mdt{ namespace DeployUtils{
    * the rpath informations is set to $ORIGIN for each shared library that has been copied.
    * If \a removeRpath is true, the rpath informations are removed for each shared library that has been copied.
    *
-   * On Linux, ldd is internally used to find the shared libraries,
-   * which should find dependencies using rpath informations and other mechanisms.
-   * On some cases, some shared libraries cannot be found.
-   * For more informations about why,
-   * see https://scandyna.gitlab.io/mdt-cmake-modules/Modules/MdtRuntimeEnvironment.html .
-   * To solve such case, \a searchPrefixPathList will be used to help ldd.
+   * To find dependencies, \a searchPrefixPathList will be used.
    *
-   * On Windows, there is no rpath informations,
-   * so \a searchPrefixPathList will be used to find dependencies.
+   * \sa BinaryDependencies
    *
    * \todo Should also require full path to tools, like ldd, objdump, etc..
    * (we should not do magic search here, which can be wrong when a user specify its own version of a specific tool, or cross-compilation)
@@ -83,13 +79,24 @@ namespace Mdt{ namespace DeployUtils{
      * \pre request's \a destinationDirectoryPath must be specified
      * \todo tools must also be specified
      *
-     * \exception 
+     * \exception FileOpenError
+     * \exception ExecutableFileReadError
+     * \exception FindDependencyError
      */
     void execute(const CopySharedLibrariesTargetDependsOnRequest & request);
 
    signals:
 
-    void message(const QString & message);
+    void message(const QString & message) const;
+    void verboseMessage(const QString & message) const;
+
+   private:
+
+    void emitSearchPrefixPathListMessage(const QStringList & pathList) const noexcept;
+    void emitFoundDependenciesMessage(const QStringList & dependencies) const noexcept;
+
+    static
+    QString overwriteBehaviorToString(OverwriteBehavior overwriteBehavior) noexcept;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

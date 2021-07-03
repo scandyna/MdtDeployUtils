@@ -19,6 +19,7 @@
  **
  ****************************************************************************/
 #include "BinaryDependencies.h"
+#include "SearchPathList.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
 #include "Mdt/DeployUtils/Platform.h"
 #include "ExecutableFileReader.h"
@@ -26,7 +27,7 @@
 #include <cassert>
 
 // #include <QDebug>
-#include <iostream>
+// #include <iostream>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -53,14 +54,81 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
   const Platform platform = reader.getFilePlatform();
   reader.close();
 
-  const PathList searchPathList = Impl::buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, platform);
+  if( platform.operatingSystem() == OperatingSystem::Unknown ){
+    const QString message = tr("'%1' targets a operating system that is not supported")
+                            .arg( binaryFilePath.fileName() );
+    throw FindDependencyError(message);
+  }
 
-  std::cout << "searchPathList:\n" << searchPathList.toStringList().join(QLatin1Char('\n')).toStdString() << std::endl;
+  const PathList searchPathList = buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, platform);
+
+  emitSearchPathListMessage(searchPathList);
 
   Impl::IsExistingSharedLibraryFunc isExistingSharedLibrary(reader, platform);
-  Impl::findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibrary);
+  Impl::FindDependenciesImpl impl;
+  connect(&impl, &Impl::FindDependenciesImpl::verboseMessage, this, &BinaryDependencies::verboseMessage);
+  impl.findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibrary);
 
   return Impl::qStringListFromExecutableFileInfoList(dependencies);
+}
+
+PathList BinaryDependencies::buildSearchPathList(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList, const Platform & platform) const noexcept
+{
+  assert( !platform.isNull() );
+
+  switch( platform.operatingSystem() ){
+    case OperatingSystem::Linux:
+      return buildSearchPathListLinux( searchFirstPathPrefixList, platform.processorISA() );
+    case OperatingSystem::Windows:
+      return buildSearchPathListWindows( binaryFilePath, searchFirstPathPrefixList, platform.processorISA() );
+    case OperatingSystem::Unknown:
+      break;
+  }
+
+  return PathList();
+}
+
+PathList BinaryDependencies::buildSearchPathListLinux(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) const noexcept
+{
+  PathList searchPathList;
+
+  SearchPathList searchFirstPathList;
+  searchFirstPathList.setIncludePathPrefixes(true);
+  searchFirstPathList.setPathSuffixList({QLatin1String("lib"),QLatin1String("qt5/lib")});
+  searchFirstPathList.setPathPrefixList(searchFirstPathPrefixList);
+
+  searchPathList.appendPathList( searchFirstPathList.pathList() );
+  searchPathList.appendPathList( PathList::getSystemLibraryKnownPathListLinux(processorISA) );
+
+  return searchPathList;
+}
+
+PathList BinaryDependencies::buildSearchPathListWindows(const QFileInfo & binaryFilePath,
+                                                        const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) const noexcept
+{
+  PathList searchPathList;
+
+  SearchPathList searchFirstPathList;
+  searchFirstPathList.setIncludePathPrefixes(true);
+  searchFirstPathList.setPathSuffixList({QLatin1String("bin"),QLatin1String("qt5/bin")});
+  searchFirstPathList.appendPath( binaryFilePath.absoluteDir().path() );
+  searchFirstPathList.setPathPrefixList(searchFirstPathPrefixList);
+
+  searchPathList.appendPathList( searchFirstPathList.pathList() );
+  searchPathList.appendPathList( PathList::getSystemLibraryKnownPathListWindows(processorISA) );
+
+  return searchPathList;
+}
+
+void BinaryDependencies::emitSearchPathListMessage(const PathList & pathList) const
+{
+  const QString startMessage = tr("search path list:");
+  emit verboseMessage(startMessage);
+
+  for(const QString & path : pathList){
+    const QString msg = tr(" %1").arg(path);
+    emit verboseMessage(msg);
+  }
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

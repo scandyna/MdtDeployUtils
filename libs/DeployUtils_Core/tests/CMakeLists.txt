@@ -339,6 +339,8 @@ mdt_add_test(
   SOURCE_FILES
     src/CopySharedLibrariesTargetDependsOnTest.cpp
 )
+target_compile_definitions(copySharedLibrariesTargetDependsOnTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+target_compile_definitions(copySharedLibrariesTargetDependsOnTest PRIVATE PREFIX_PATH="${TEST_PREFIX_PATH}")
 
 mdt_add_test(
   NAME CopySharedLibrariesTargetDependsOnErrorTest

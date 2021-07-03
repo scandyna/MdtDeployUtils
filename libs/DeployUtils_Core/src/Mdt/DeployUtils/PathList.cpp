@@ -25,6 +25,7 @@
 #include <QLibraryInfo>
 #include <QDir>
 #include <QChar>
+#include <cassert>
 
 // #include <QDebug>
 
@@ -102,7 +103,7 @@ PathList PathList::getSystemLibraryPathList()
    * For the other, we guess what system library paths could exist
    */
 #ifdef Q_OS_UNIX
-  PathList pathList = getSystemLibraryKnownPathListLinux();
+  PathList pathList = getSystemLibraryKnownPathListLinux( Platform::nativeProcessorISA() );
 #endif // #ifdef Q_OS_UNIX
 #ifdef Q_OS_WIN
 //  PathList pathList = getSystemLibraryKnownPathListWindows();
@@ -116,11 +117,13 @@ PathList PathList::getSystemLibraryPathList()
 
 PathList PathList::getSystemLibraryKnownPathList(const Platform & platform)
 {
+  assert( !platform.isNull() );
+
   switch( platform.operatingSystem() ){
     case OperatingSystem::Linux:
-      return getSystemLibraryKnownPathListLinux();
+      return getSystemLibraryKnownPathListLinux( platform.processorISA() );
     case OperatingSystem::Windows:
-      return getSystemLibraryKnownPathListWindows();
+      return getSystemLibraryKnownPathListWindows( platform.processorISA() );
     case OperatingSystem::Unknown:
       return PathList();
   }
@@ -128,27 +131,58 @@ PathList PathList::getSystemLibraryKnownPathList(const Platform & platform)
   return PathList();
 }
 
-PathList PathList::getSystemLibraryKnownPathListLinux()
+PathList PathList::getSystemLibraryKnownPathListLinux(ProcessorISA processorISA) noexcept
 {
-  return PathList{
-    QString::fromLatin1("/usr/lib"),
-    QString::fromLatin1("/usr/lib/x86_64-linux-gnu"),
-    QString::fromLatin1("/usr/lib32"),
-    QString::fromLatin1("/usr/libx32"),
-    QString::fromLatin1("/lib"),
-    QString::fromLatin1("/lib32"),
-    QString::fromLatin1("/lib64"),
-    QString::fromLatin1("/libx32")
-  };
+  assert( processorISA != ProcessorISA::Unknown );
+
+  switch(processorISA){
+    case ProcessorISA::X86_32:
+      return PathList{
+        QString::fromLatin1("/usr/lib"),
+        QString::fromLatin1("/usr/lib32"),
+        QString::fromLatin1("/usr/libx32"),
+        QString::fromLatin1("/lib"),
+        QString::fromLatin1("/lib32"),
+        QString::fromLatin1("/libx32")
+      };
+    case ProcessorISA::X86_64:
+      return PathList{
+        QString::fromLatin1("/usr/lib"),
+        QString::fromLatin1("/usr/lib/x86_64-linux-gnu"),
+        QString::fromLatin1("/lib"),
+        QString::fromLatin1("/lib64"),
+      };
+    case ProcessorISA::Unknown:
+      break;
+  }
+
+  return PathList();
 }
 
-PathList PathList::getSystemLibraryKnownPathListWindows()
+/*
+ * See: https://stackoverflow.com/questions/949959/why-do-64-bit-dlls-go-to-system32-and-32-bit-dlls-to-syswow64-on-64-bit-windows
+ */
+PathList PathList::getSystemLibraryKnownPathListWindows(ProcessorISA processorISA) noexcept
 {
-  return PathList{
-    QString::fromLatin1("/windows/syswow64"),
-    QString::fromLatin1("/windows/system32"),
-    QString::fromLatin1("/windows/system")
-  };
+  assert( processorISA != ProcessorISA::Unknown );
+
+  switch(processorISA){
+    case ProcessorISA::X86_32:
+      return PathList{
+        QString::fromLatin1("/windows/syswow64"),
+        QString::fromLatin1("/windows/system32"),
+        QString::fromLatin1("/windows/system")
+      };
+    case ProcessorISA::X86_64:
+      return PathList{
+        QString::fromLatin1("/windows/system32"),
+        QString::fromLatin1("/windows/system")
+      };
+    case ProcessorISA::Unknown:
+      break;
+  }
+
+  return PathList();
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

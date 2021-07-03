@@ -22,7 +22,34 @@
 #include "Catch2QString.h"
 #include "TestUtils.h"
 #include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.h"
+#include <QTemporaryDir>
+
+#include "Mdt/DeployUtils/MessageLogger.h"
+#include "Mdt/DeployUtils/CMakeStyleMessageLogger.h"
 
 using namespace Mdt::DeployUtils;
 
+TEST_CASE("sandbox")
+{
+  QTemporaryDir destinationDir;
+  REQUIRE( destinationDir.isValid() );
 
+  CopySharedLibrariesTargetDependsOnRequest request;
+
+  request.targetFilePath = QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH);
+  request.searchPrefixPathList = getTestPrefixPath(PREFIX_PATH);
+  request.destinationDirectoryPath = destinationDir.path();
+  request.overwriteBehavior = OverwriteBehavior::Overwrite;
+  request.removeRpath = false;
+
+  /// \todo just for sandbox
+  MessageLogger messageLogger;
+  MessageLogger::setBackend<CMakeStyleMessageLogger>();
+
+  CopySharedLibrariesTargetDependsOn useCase;
+
+  QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::message, MessageLogger::info);
+  QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::verboseMessage, MessageLogger::info);
+
+  useCase.execute(request);
+}
