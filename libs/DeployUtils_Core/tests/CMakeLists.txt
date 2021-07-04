@@ -333,6 +333,22 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME FileCopierTest
+  TARGET fileCopierTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/FileCopierTest.cpp
+)
+
+mdt_add_test(
+  NAME FileCopierErrorTest
+  TARGET fileCopierErrorTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/FileCopierErrorTest.cpp
+)
+
+mdt_add_test(
   NAME CopySharedLibrariesTargetDependsOnTest
   TARGET copySharedLibrariesTargetDependsOnTest
   DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt

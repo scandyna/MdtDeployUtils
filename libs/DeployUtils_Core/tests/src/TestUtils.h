@@ -26,6 +26,9 @@
 #include <QStringList>
 #include <QFileInfo>
 #include <QLatin1Char>
+#include <QLatin1String>
+#include <QDir>
+#include <QTemporaryDir>
 #include <vector>
 #include <string>
 #include <cassert>

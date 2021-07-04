@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "CopySharedLibrariesTargetDependsOn.h"
 #include "BinaryDependencies.h"
+#include "FileCopier.h"
 #include "PathList.h"
 #include <cassert>
 
@@ -55,6 +56,13 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   const QStringList dependencies = binaryDependencies.findDependencies( request.targetFilePath, PathList::fromStringList(request.searchPrefixPathList) );
 
   emitFoundDependenciesMessage(dependencies);
+
+  FileCopier fileCopier;
+  fileCopier.setOverwriteBehavior(request.overwriteBehavior);
+  connect(&fileCopier, &FileCopier::verboseMessage, this, &CopySharedLibrariesTargetDependsOn::verboseMessage);
+  fileCopier.copyFiles(dependencies, request.destinationDirectoryPath);
+
+  /// \todo RPATH !
 }
 
 void CopySharedLibrariesTargetDependsOn::emitSearchPrefixPathListMessage(const QStringList & pathList) const noexcept

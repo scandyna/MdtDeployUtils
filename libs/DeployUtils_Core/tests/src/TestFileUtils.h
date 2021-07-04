@@ -24,7 +24,18 @@
 #include <QFile>
 #include <QString>
 #include <QTextStream>
+#include <QTemporaryDir>
 #include <cassert>
+
+QString makePath(const QTemporaryDir & dir, const char * const subPath)
+{
+  return QDir::cleanPath( dir.path() + QLatin1Char('/') + QLatin1String(subPath) );
+}
+
+bool fileExists(const QString & filePath)
+{
+  return QFile::exists(filePath);
+}
 
 bool writeTextFileUtf8(QFile & file, const QString & content)
 {
@@ -36,6 +47,38 @@ bool writeTextFileUtf8(QFile & file, const QString & content)
   out << content;
 
   return true;
+}
+
+bool createTextFileUtf8(const QString & filePath , const QString & content)
+{
+  QFile file(filePath);
+  if( !file.open(QIODevice::WriteOnly | QIODevice::Text) ){
+    return false;
+  }
+  if( !writeTextFileUtf8(file, content) ){
+    return false;
+  }
+  file.close();
+
+  return true;
+}
+
+QString readTextFileUtf8(const QString & filePath)
+{
+  QString content;
+
+  QFile file(filePath);
+  if( !file.open(QIODevice::ReadOnly | QIODevice::Text) ){
+    return content;
+  }
+
+  QTextStream in(&file);
+  in.setCodec("UTF-8");
+  content = in.readAll();
+
+  file.close();
+
+  return content;
 }
 
 #endif // #ifndef TEST_FILE_UTILS_H

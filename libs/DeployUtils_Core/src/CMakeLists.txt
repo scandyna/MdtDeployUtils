@@ -48,6 +48,8 @@ add_library(Mdt_DeployUtils
 #   Mdt/DeployUtils/BinaryDependenciesImplementationInterface.cpp
   Mdt/DeployUtils/Impl/BinaryDependencies.cpp
   Mdt/DeployUtils/BinaryDependencies.cpp
+  Mdt/DeployUtils/FileCopyError.cpp
+  Mdt/DeployUtils/FileCopier.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.cpp
 )
