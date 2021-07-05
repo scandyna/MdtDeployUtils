@@ -53,11 +53,12 @@ bool dependenciesEquals(const ExecutableFileInfoList & efis, const std::vector<s
     return false;
   }
   for(size_t i = 0; i < efis.size(); ++i){
-    const std::string actualFilePath = efis.at(i).toFileInfo().absoluteFilePath().toStdString();
-    if( actualFilePath != list.at(i) ){
+    const QFileInfo actualFile = efis.at(i).toFileInfo();
+    const QFileInfo expectedFile( QString::fromStdString( list.at(i) ) );
+    if(actualFile != expectedFile){
       std::cerr << "dependencies differs at index " << i << ":";
-      std::cerr << "\nactual  : " << actualFilePath;
-      std::cerr << "\nexpected: " << list.at(i) << std::endl;
+      std::cerr << "\nactual  : " << actualFile.absoluteFilePath().toStdString();
+      std::cerr << "\nexpected: " << expectedFile.absoluteFilePath().toStdString() << std::endl;
       return false;
     }
   }
@@ -475,7 +476,7 @@ TEST_CASE("findLibraryAbsolutePath")
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so"});
     library = findLibraryAbsolutePath( QLatin1String("libA.so"), pathList, platform, isExistingSharedLibraryOp );
     REQUIRE( library.hasAbsoluteFilePath() );
-    REQUIRE( library.toFileInfo().absoluteFilePath() == QLatin1String("/tmp/libA.so") );
+    REQUIRE( library.toFileInfo().absoluteFilePath() == QFileInfo( QLatin1String("/tmp/libA.so") ).absoluteFilePath() );
   }
 
   SECTION("libA.so - pathList:/tmp,/opt - exists in both path - must pick the first one")
@@ -484,7 +485,7 @@ TEST_CASE("findLibraryAbsolutePath")
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so","/opt/libA.so"});
     library = findLibraryAbsolutePath( QLatin1String("libA.so"), pathList, platform, isExistingSharedLibraryOp );
     REQUIRE( library.hasAbsoluteFilePath() );
-    REQUIRE( library.toFileInfo().absoluteFilePath() == QLatin1String("/tmp/libA.so") );
+    REQUIRE( library.toFileInfo().absoluteFilePath() == QFileInfo( QLatin1String("/tmp/libA.so") ).absoluteFilePath() );
   }
 }
 
@@ -530,7 +531,7 @@ TEST_CASE("findLibraryAbsolutePathByRpath")
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so"});
     library = findLibraryAbsolutePathByRpath(originExecutable, QLatin1String("libA.so"), rpath, isExistingSharedLibraryOp);
     REQUIRE( library.hasAbsoluteFilePath() );
-    REQUIRE( library.toFileInfo().absoluteFilePath() == QLatin1String("/tmp/libA.so") );
+    REQUIRE( library.toFileInfo().absoluteFilePath() == QFileInfo( QLatin1String("/tmp/libA.so") ).absoluteFilePath() );
   }
 
   SECTION("libA.so - rpath:$ORIGIN - exists")
@@ -539,7 +540,7 @@ TEST_CASE("findLibraryAbsolutePathByRpath")
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/libA.so"});
     library = findLibraryAbsolutePathByRpath(originExecutable, QLatin1String("libA.so"), rpath, isExistingSharedLibraryOp);
     REQUIRE( library.hasAbsoluteFilePath() );
-    REQUIRE( library.toFileInfo().absoluteFilePath() == QLatin1String("/opt/libA.so") );
+    REQUIRE( library.toFileInfo().absoluteFilePath() == QFileInfo( QLatin1String("/opt/libA.so") ).absoluteFilePath() );
   }
 
   SECTION("libA.so - rpath:/tmp - not exists")
