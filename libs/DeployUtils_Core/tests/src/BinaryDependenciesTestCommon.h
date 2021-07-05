@@ -35,9 +35,9 @@ class TestIsExistingSharedLibrary
   void setExistingSharedLibraries(const std::vector<std::string> & libraries)
   {
     for(const auto & library : libraries){
-      const QString libraryFilePath = QString::fromStdString(library);
-      assert( QFileInfo(libraryFilePath).isAbsolute() );
-      mExistingSharedLibraries.append(libraryFilePath);
+      const QFileInfo libraryFile( QString::fromStdString(library) );
+      assert( libraryFile.isAbsolute() );
+      mExistingSharedLibraries.append( libraryFile.absoluteFilePath() );
     }
   }
 
