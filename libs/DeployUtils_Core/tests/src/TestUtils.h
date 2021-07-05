@@ -60,7 +60,7 @@ QString generateStringWithNChars(int n)
 
 QStringList getTestPrefixPath(const char * const prefixPath)
 {
-  return QString::fromLocal8Bit(prefixPath).split( QLatin1Char(':') );
+  return QString::fromLocal8Bit(prefixPath).split( QLatin1Char(',') );
 }
 
 bool containsLibrary(const QStringList & libraries, const QString & libraryName)

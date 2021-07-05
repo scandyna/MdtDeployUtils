@@ -8,7 +8,7 @@ include(MdtAddTest)
 include(GenerateExportHeader)
 
 # MOC (or CMake?) does not support having ;
-string(REPLACE ";" ":" TEST_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
+string(REPLACE ";" "," TEST_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
 
 
 mdt_add_test(
