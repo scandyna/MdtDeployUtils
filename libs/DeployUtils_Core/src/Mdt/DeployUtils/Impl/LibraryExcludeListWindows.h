@@ -43,6 +43,7 @@ const QStringList libraryExcludelistWindows = {
   QLatin1String("SHSCRAP.DLL"),
   QLatin1String("WINMM.DLL"),
   QLatin1String("MSVCRT.DLL"),
+  QLatin1String("USERENV.DLL"),
   QLatin1String("mpr.DLL"),
   QLatin1String("ole32.DLL"),
   QLatin1String("shell32.DLL"),
