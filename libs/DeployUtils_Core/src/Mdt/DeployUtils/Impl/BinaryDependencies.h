@@ -296,7 +296,15 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
   inline
   bool compareExecutableFileInfo(const ExecutableFileInfo & a, const ExecutableFileInfo & b) noexcept
   {
-    return (QString::compare(a.fileName, b.fileName) < 0) || (QString::compare(a.directoryPath, b.directoryPath) < 0);
+    const int directoryCmpValue = QString::compare(a.directoryPath, b.directoryPath);
+    if(directoryCmpValue < 0){
+      return true;
+    }
+    if(directoryCmpValue == 0){
+      return (QString::compare(a.fileName, b.fileName) < 0);
+    }
+
+    return false;
   }
 
   /*! \internal

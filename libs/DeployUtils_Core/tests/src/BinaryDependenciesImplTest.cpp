@@ -422,6 +422,8 @@ TEST_CASE("compareExecutableFileInfo")
 
     REQUIRE( !compareExecutableFileInfo(a, b) );
     REQUIRE( !compareExecutableFileInfo(b, a) );
+    REQUIRE( !compareExecutableFileInfo(a, a) );
+    REQUIRE( !compareExecutableFileInfo(b, b) );
   }
 
   SECTION("a:/a - b:/b")
@@ -433,6 +435,21 @@ TEST_CASE("compareExecutableFileInfo")
 
     REQUIRE( compareExecutableFileInfo(a, b) );
     REQUIRE( !compareExecutableFileInfo(b, a) );
+    REQUIRE( !compareExecutableFileInfo(a, a) );
+    REQUIRE( !compareExecutableFileInfo(b, b) );
+  }
+
+  SECTION("a:/a/a - b:/a/a")
+  {
+    a.directoryPath = QLatin1String("/a");
+    a.fileName = QLatin1String("a");
+    b.directoryPath = QLatin1String("/a");
+    b.fileName = QLatin1String("a");
+
+    REQUIRE( !compareExecutableFileInfo(a, b) );
+    REQUIRE( !compareExecutableFileInfo(b, a) );
+    REQUIRE( !compareExecutableFileInfo(a, a) );
+    REQUIRE( !compareExecutableFileInfo(b, b) );
   }
 
   SECTION("a:/a/a - b:/a/b")
@@ -444,6 +461,8 @@ TEST_CASE("compareExecutableFileInfo")
 
     REQUIRE( compareExecutableFileInfo(a, b) );
     REQUIRE( !compareExecutableFileInfo(b, a) );
+    REQUIRE( !compareExecutableFileInfo(a, a) );
+    REQUIRE( !compareExecutableFileInfo(b, b) );
   }
 
   SECTION("a:/a/a - b:/b/a")
@@ -455,6 +474,24 @@ TEST_CASE("compareExecutableFileInfo")
 
     REQUIRE( compareExecutableFileInfo(a, b) );
     REQUIRE( !compareExecutableFileInfo(b, a) );
+    REQUIRE( !compareExecutableFileInfo(a, a) );
+    REQUIRE( !compareExecutableFileInfo(b, b) );
+  }
+
+  /*
+   * Caused a assertion failure 'invalid comparator' on MSVC
+   */
+  SECTION("C:/Qt/5.14.2/msvc2017_64/bin/Qt5Cored.dll - C:/windows/system32/MSVCP140D.dll")
+  {
+    a.directoryPath = QLatin1String("C:/Qt/5.14.2/msvc2017_64/bin/");
+    a.fileName = QLatin1String("Qt5Cored.dll");
+    b.directoryPath = QLatin1String("C:/windows/system32/");
+    b.fileName = QLatin1String("MSVCP140D.dll");
+
+    REQUIRE( compareExecutableFileInfo(a, b) );
+    REQUIRE( !compareExecutableFileInfo(b, a) );
+    REQUIRE( !compareExecutableFileInfo(a, a) );
+    REQUIRE( !compareExecutableFileInfo(b, b) );
   }
 }
 
