@@ -415,22 +415,46 @@ TEST_CASE("compareExecutableFileInfo")
 
   SECTION("a:/a - b:/a")
   {
-    a.fileName = QLatin1String("a");
     a.directoryPath = QLatin1String("/");
-    b.fileName = QLatin1String("a");
+    a.fileName = QLatin1String("a");
     b.directoryPath = QLatin1String("/");
+    b.fileName = QLatin1String("a");
 
     REQUIRE( !compareExecutableFileInfo(a, b) );
+    REQUIRE( !compareExecutableFileInfo(b, a) );
   }
 
   SECTION("a:/a - b:/b")
   {
-    a.fileName = QLatin1String("a");
     a.directoryPath = QLatin1String("/");
-    b.fileName = QLatin1String("b");
+    a.fileName = QLatin1String("a");
     b.directoryPath = QLatin1String("/");
+    b.fileName = QLatin1String("b");
 
     REQUIRE( compareExecutableFileInfo(a, b) );
+    REQUIRE( !compareExecutableFileInfo(b, a) );
+  }
+
+  SECTION("a:/a/a - b:/a/b")
+  {
+    a.directoryPath = QLatin1String("/a");
+    a.fileName = QLatin1String("a");
+    b.directoryPath = QLatin1String("/a");
+    b.fileName = QLatin1String("b");
+
+    REQUIRE( compareExecutableFileInfo(a, b) );
+    REQUIRE( !compareExecutableFileInfo(b, a) );
+  }
+
+  SECTION("a:/a/a - b:/b/a")
+  {
+    a.directoryPath = QLatin1String("/a");
+    a.fileName = QLatin1String("a");
+    b.directoryPath = QLatin1String("/b");
+    b.fileName = QLatin1String("a");
+
+    REQUIRE( compareExecutableFileInfo(a, b) );
+    REQUIRE( !compareExecutableFileInfo(b, a) );
   }
 }
 
