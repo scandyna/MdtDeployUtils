@@ -44,7 +44,8 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Find the root of MSVC for given \a version
      *
      * For example, for Visual Studio 2017,
-     * the result could be .......
+     * the result could be
+     * C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools
      *
      * \pre \a version must be valid
      */

@@ -31,6 +31,8 @@ MsvcFinder::MsvcFinder(QObject* parent)
 QString MsvcFinder::findMsvcRoot(const MsvcVersion & version)
 {
   assert( !version.isNull() );
+  
+  return QString();
 }
 
 }} // namespace Mdt{ namespace DeployUtils{
