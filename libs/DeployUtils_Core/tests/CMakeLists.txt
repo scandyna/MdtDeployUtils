@@ -306,6 +306,41 @@ if(UNIX)
 endif()
 
 mdt_add_test(
+  NAME MsvcVersionTest
+  TARGET msvcVersionTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/MsvcVersionTest.cpp
+)
+
+mdt_add_test(
+  NAME MsvcFinderTest
+  TARGET msvcFinderTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/MsvcFinderTest.cpp
+)
+
+mdt_add_test(
+  NAME MsvcFinderErrorTest
+  TARGET msvcFinderErrorTest
+  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/MsvcFinderErrorTest.cpp
+)
+
+if(MSVC)
+  mdt_add_test(
+    NAME MsvcFinderTest_Msvc
+    TARGET msvcFinderTest_Msvc
+    DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+    SOURCE_FILES
+      src/MsvcFinderTest_Msvc.cpp
+  )
+  target_compile_definitions(msvcFinderTest_Msvc PRIVATE MSVC_VERSION="${MSVC_VERSION}")
+endif()
+
+mdt_add_test(
   NAME BinaryDependenciesImplTest
   TARGET binaryDependenciesImplTest
   DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt

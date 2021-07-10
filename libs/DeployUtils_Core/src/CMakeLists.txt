@@ -45,6 +45,9 @@ add_library(Mdt_DeployUtils
   Mdt/DeployUtils/Impl/Pe/Debug.cpp
   Mdt/DeployUtils/PeFileReader.cpp
   Mdt/DeployUtils/ExecutableFileReader.cpp
+  Mdt/DeployUtils/FindMsvcError.cpp
+  Mdt/DeployUtils/MsvcVersion.cpp
+  Mdt/DeployUtils/MsvcFinder.cpp
 #   Mdt/DeployUtils/BinaryDependenciesImplementationInterface.cpp
   Mdt/DeployUtils/Impl/BinaryDependencies.cpp
   Mdt/DeployUtils/BinaryDependencies.cpp
