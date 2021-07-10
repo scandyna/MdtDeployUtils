@@ -57,6 +57,8 @@ namespace Mdt{ namespace DeployUtils{
    *
    * \sa BinaryDependencies
    *
+   * \todo Document compiler location
+   * 
    * \todo Should also require full path to tools, like ldd, objdump, etc..
    * (we should not do magic search here, which can be wrong when a user specify its own version of a specific tool, or cross-compilation)
    */

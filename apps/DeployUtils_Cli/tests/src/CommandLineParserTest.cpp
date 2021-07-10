@@ -86,6 +86,43 @@ TEST_CASE("CopySharedLibrariesTargetDependsOn")
     REQUIRE( request.removeRpath );
   }
 
+  SECTION("Specify compiler location")
+  {
+    SECTION("from ENV")
+    {
+      arguments << qStringListFromUtf8Strings({"--compiler-location","from-env","/tmp/lib.so","/tmp"});
+      parser.process(arguments);
+
+      request = parser.copySharedLibrariesTargetDependsOnRequest();
+      REQUIRE( request.compilerLocationType == CompilerLocationType::FromEnv );
+      REQUIRE( request.compilerLocationValue.isEmpty() );
+    }
+
+    SECTION("vc-install-dir")
+    {
+      const std::string vcInstallDir = "vc-install-dir=\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\"";
+      const QString expectedVcInstallDirValue = QLatin1String("C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC");
+      arguments << qStringListFromUtf8Strings({"--compiler-location",vcInstallDir,"/tmp/lib.so","/tmp"});
+      parser.process(arguments);
+
+      request = parser.copySharedLibrariesTargetDependsOnRequest();
+      REQUIRE( request.compilerLocationType == CompilerLocationType::VcInstallDir );
+      REQUIRE( request.compilerLocationValue == expectedVcInstallDirValue );
+    }
+
+    SECTION("compiler-path")
+    {
+      const std::string compilerPath = "compiler-path=\"/opt/qt/Tools/mingw730_64/bin/g++\"";
+      const QString expectedCompilerPath = QLatin1String("/opt/qt/Tools/mingw730_64/bin/g++");
+      arguments << qStringListFromUtf8Strings({"--compiler-location",compilerPath,"/tmp/lib.so","/tmp"});
+      parser.process(arguments);
+
+      request = parser.copySharedLibrariesTargetDependsOnRequest();
+      REQUIRE( request.compilerLocationType == CompilerLocationType::CompilerPath );
+      REQUIRE( request.compilerLocationValue == expectedCompilerPath );
+    }
+  }
+
   SECTION("Specify search-prefix-path-list")
   {
     arguments << qStringListFromUtf8Strings({"--search-prefix-path-list","/opt;/tmp","/tmp/lib.so","/tmp"});

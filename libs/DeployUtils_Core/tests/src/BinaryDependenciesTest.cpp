@@ -97,6 +97,7 @@ TEST_CASE("findDependencies")
   }
 }
 
+/// \todo see https://doc.qt.io/qt-6/windows-deployment.html#application-dependencies
 TEST_CASE("Windows_sandbox")
 {
   BinaryDependencies solver;

@@ -28,13 +28,27 @@
 
 namespace Mdt{ namespace DeployUtils{
 
+  /*! \brief
+   */
+  enum class CompilerLocationType
+  {
+    Undefined,
+    FromEnv,
+    VcInstallDir,
+    CompilerPath
+  };
+
   /*! \brief DTO for CopySharedLibrariesTargetDependsOn
+   *
+   * \todo compilerLocationType should default to FromEnv
    */
   struct MDT_DEPLOYUTILS_EXPORT CopySharedLibrariesTargetDependsOnRequest
   {
     OverwriteBehavior overwriteBehavior = OverwriteBehavior::Fail;
     bool removeRpath = false;
     QStringList searchPrefixPathList;
+    CompilerLocationType compilerLocationType = CompilerLocationType::Undefined;
+    QString compilerLocationValue;
     QString targetFilePath;
     QString destinationDirectoryPath;
   };

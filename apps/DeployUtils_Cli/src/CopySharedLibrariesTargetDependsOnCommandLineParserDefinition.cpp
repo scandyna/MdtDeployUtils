@@ -66,6 +66,7 @@ void CopySharedLibrariesTargetDependsOnCommandLineParserDefinition::setup() noex
   );
   mCommand.addOption( QLatin1String("remove-rpath"), removePathOptionDescription );
 
+  /// \todo fix doc
   const QString searchPrefixPathListOptionDescription = tr(
     "Semicolon separated list of path where to find the shared libraries.\n"
     "Each path represents the installation prefix of a library, for examle: /opt/Qt5/5.14.2/gcc_64.\n"
@@ -77,4 +78,17 @@ void CopySharedLibrariesTargetDependsOnCommandLineParserDefinition::setup() noex
   ParserDefinitionOption searchPrefixPathListOption( QLatin1String("search-prefix-path-list"), searchPrefixPathListOptionDescription );
   searchPrefixPathListOption.setValueName( QLatin1String("path-list") );
   mCommand.addOption(searchPrefixPathListOption);
+
+  const QString compilerLocationOptionDescription = tr(
+    "Location of the compiler.\n"
+    "This option is used to locate compiler libraries to distribute, like, for example, LIBSTDC++-6.DLL for MinGW or MSVCP140.DLL for MSVC.\n"
+    "Possible values are from-env, vc-install-dir=$PATH_TO_DIR, compiler-path=$PATH\n"
+    "from-env: will use known environment variables, like VcInstallDir (MSVC) or PATH\n"
+    "vc-install-dir=PATH_TO_DIR: specify the path to MSVC install directory. Example:\n"
+    " vc-install-dir=\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\"\n"
+    "compiler-path=PATH: full path to the compiler. This can be used with CMAKE_CXX_COMPILER"
+  );
+  ParserDefinitionOption compilerLocationOption( QLatin1String("compiler-location"), compilerLocationOptionDescription );
+  compilerLocationOption.setValueName( QLatin1String("location") );
+  mCommand.addOption(compilerLocationOption);
 }

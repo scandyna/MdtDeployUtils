@@ -100,6 +100,7 @@ class CommandLineParser : public QObject
   void addDeployApplicationCommand();
   void processGetSharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
   void processCopySharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
+  void processCopySharedLibrariesTargetDependsOnCompilerLocation(const QStringList & compilerLocationValues);
   void processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
 
   const Mdt::CommandLineParser::ParserDefinitionOption & loggerBackendOption() const noexcept

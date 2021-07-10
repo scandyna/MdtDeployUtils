@@ -329,6 +329,8 @@ mdt_add_test(
     src/MsvcFinderErrorTest.cpp
 )
 
+message("CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")
+
 if(MSVC)
   mdt_add_test(
     NAME MsvcFinderTest_Msvc

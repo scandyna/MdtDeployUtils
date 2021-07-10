@@ -89,6 +89,18 @@ class CopySharedLibrariesTargetDependsOnCommandLineParserDefinition : public QOb
     return mCommand.optionAt(3);
   }
 
+  /*! \brief Get the compiler location option
+   *
+   * \pre setup must have been done before
+   * \sa setup()
+   */
+  const Mdt::CommandLineParser::ParserDefinitionOption & compilerLocationOption() const noexcept
+  {
+    assert( mCommand.hasOptions() );
+
+    return mCommand.optionAt(4);
+  }
+
   /*! \brief Get the internal parser definition command
    */
   const Mdt::CommandLineParser::ParserDefinitionCommand & command() const noexcept

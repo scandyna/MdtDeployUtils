@@ -31,6 +31,8 @@
 #include <cassert>
 #include <cstdlib>
 
+// #include <QDebug>
+
 using namespace Mdt::CommandLineParser;
 using namespace Mdt::DeployUtils;
 
@@ -181,6 +183,8 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
       = searchPrefixPathListValues.at(0).split( QChar::fromLatin1(';'), QString::SkipEmptyParts );
   }
 
+  processCopySharedLibrariesTargetDependsOnCompilerLocation( resultCommand.getValues( mCopySharedLibrariesTargetDependsOnDefinition.compilerLocationOption() ) );
+
   if( resultCommand.positionalArgumentCount() != 2 ){
     const QString message = tr("expected 2 (positional) arguments: target file and destination directory");
     throw CommandLineParseError(message);
@@ -188,6 +192,52 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
 
   mCopySharedLibrariesTargetDependsOnRequest.targetFilePath = resultCommand.positionalArgumentAt(0);
   mCopySharedLibrariesTargetDependsOnRequest.destinationDirectoryPath = resultCommand.positionalArgumentAt(1);
+}
+
+void CommandLineParser::processCopySharedLibrariesTargetDependsOnCompilerLocation(const QStringList & compilerLocationValues)
+{
+  if( compilerLocationValues.isEmpty() ){
+    return;
+  }
+
+  if( compilerLocationValues.count() > 1 ){
+    const QString message = tr("compiler-location option given more than once");
+    throw CommandLineParseError(message);
+  }
+
+  const QStringList compilerLocationKeyAndValue = compilerLocationValues.at(0).split( QLatin1Char('=') );
+
+  if( compilerLocationKeyAndValue.count() == 1 ){
+    const QString compilerLocationType = compilerLocationKeyAndValue.at(0);
+    if( compilerLocationType == QLatin1String("from-env") ){
+      mCopySharedLibrariesTargetDependsOnRequest.compilerLocationType = CompilerLocationType::FromEnv;
+      return;
+    }else{
+      const QString message = tr("unknown compiler-location type '%1'").arg(compilerLocationType);
+      throw CommandLineParseError(message);
+    }
+  }
+
+  if( compilerLocationKeyAndValue.count() != 2 ){
+    const QString message = tr("compiler-location: expected type=value syntax, got '%1'").arg( compilerLocationValues.at(0) );
+    throw CommandLineParseError(message);
+  }
+
+  const QString compilerLocationType = compilerLocationKeyAndValue.at(0);
+  if( compilerLocationType == QLatin1String("vc-install-dir") ){
+    mCopySharedLibrariesTargetDependsOnRequest.compilerLocationType = CompilerLocationType::VcInstallDir;
+    QString path = compilerLocationKeyAndValue.at(1);
+    path.remove( QLatin1Char('"') );
+    mCopySharedLibrariesTargetDependsOnRequest.compilerLocationValue = path;
+  }else if( compilerLocationType == QLatin1String("compiler-path") ){
+    mCopySharedLibrariesTargetDependsOnRequest.compilerLocationType = CompilerLocationType::CompilerPath;
+    QString path = compilerLocationKeyAndValue.at(1);
+    path.remove( QLatin1Char('"') );
+    mCopySharedLibrariesTargetDependsOnRequest.compilerLocationValue = path;
+  }else{
+    const QString message = tr("unknown compiler-location type '%1'").arg(compilerLocationType);
+    throw CommandLineParseError(message);
+  }
 }
 
 void CommandLineParser::processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand& resultCommand)

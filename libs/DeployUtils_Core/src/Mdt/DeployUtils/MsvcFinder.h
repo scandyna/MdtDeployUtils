@@ -45,7 +45,9 @@ namespace Mdt{ namespace DeployUtils{
      *
      * For example, for Visual Studio 2017,
      * the result could be
+     * \code
      * C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools
+     * \endcode
      *
      * \pre \a version must be valid
      */
