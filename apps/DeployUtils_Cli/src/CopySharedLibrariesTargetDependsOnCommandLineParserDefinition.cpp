@@ -82,11 +82,12 @@ void CopySharedLibrariesTargetDependsOnCommandLineParserDefinition::setup() noex
   const QString compilerLocationOptionDescription = tr(
     "Location of the compiler.\n"
     "This option is used to locate compiler libraries to distribute, like, for example, LIBSTDC++-6.DLL for MinGW or MSVCP140.DLL for MSVC.\n"
-    "Possible values are from-env, vc-install-dir=$PATH_TO_DIR, compiler-path=$PATH\n"
-    "from-env: will use known environment variables, like VcInstallDir (MSVC) or PATH\n"
-    "vc-install-dir=PATH_TO_DIR: specify the path to MSVC install directory. Example:\n"
+    "Possible values are from-env=<var-name>, vc-install-dir=<path-to-dir>, compiler-path=<path>\n"
+    "from-env=<var-name>: will use given environment variable. Note: the var-name cannot be PATH. Example:\n"
+    " from-env=VcInstallDir\n"
+    "vc-install-dir=<path-to-dir>: specify the path to MSVC install directory. Example:\n"
     " vc-install-dir=\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\BuildTools\\VC\"\n"
-    "compiler-path=PATH: full path to the compiler. This can be used with CMAKE_CXX_COMPILER"
+    "compiler-path=<path>: full path to the compiler. This can be used with CMAKE_CXX_COMPILER"
   );
   ParserDefinitionOption compilerLocationOption( QLatin1String("compiler-location"), compilerLocationOptionDescription );
   compilerLocationOption.setValueName( QLatin1String("location") );

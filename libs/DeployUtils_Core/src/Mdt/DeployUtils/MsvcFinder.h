@@ -21,17 +21,17 @@
 #ifndef MDT_DEPLOY_UTILS_MSVC_FINDER_H
 #define MDT_DEPLOY_UTILS_MSVC_FINDER_H
 
-#include "FindMsvcError.h"
+#include "AbstractCompilerFinderEngine.h"
+#include "FindCompilerError.h"
 #include "MsvcVersion.h"
 #include "mdt_deployutils_export.h"
-#include <QObject>
 #include <QString>
 
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Helper to find MSVC installation
    */
-  class MDT_DEPLOYUTILS_EXPORT MsvcFinder : public QObject
+  class MDT_DEPLOYUTILS_EXPORT MsvcFinder : public AbstractCompilerFinderEngine
   {
    Q_OBJECT
 
@@ -52,6 +52,33 @@ namespace Mdt{ namespace DeployUtils{
      * \pre \a version must be valid
      */
     QString findMsvcRoot(const MsvcVersion & version);
+
+   private:
+
+    Compiler doCompiler() const noexcept override
+    {
+      return Compiler::Msvc;
+    }
+
+    bool doIsSupportedCompiler(const QFileInfo & executablePath) const noexcept override;
+    void doFindFromCxxCompilerPath(const QFileInfo & executablePath) override;
+
+    void doSetInstallDir(const QString & path) override
+    {
+      mVcInstallDir = path;
+    }
+
+    bool doHasInstallDir() const noexcept override
+    {
+      return !mVcInstallDir.isEmpty();
+    }
+
+    QString doInstallDir() const noexcept override
+    {
+      return mVcInstallDir;
+    }
+
+    QString mVcInstallDir;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

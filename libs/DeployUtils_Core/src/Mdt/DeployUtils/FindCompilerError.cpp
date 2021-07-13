@@ -18,30 +18,4 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_FIND_MSVC_ERROR_H
-#define MDT_DEPLOY_UTILS_FIND_MSVC_ERROR_H
-
-#include "QRuntimeError.h"
-#include "mdt_deployutils_export.h"
-#include <QString>
-
-namespace Mdt{ namespace DeployUtils{
-
-  /*! \brief Error when fails to find MSVC
-   */
-  class MDT_DEPLOYUTILS_EXPORT FindMsvcError : public QRuntimeError
-  {
-   public:
-
-    /*! \brief Constructor
-     */
-    explicit FindMsvcError(const QString & what)
-      : QRuntimeError(what)
-    {
-    }
-
-  };
-
-}} // namespace Mdt{ namespace DeployUtils{
-
-#endif // #ifndef MDT_DEPLOY_UTILS_FIND_MSVC_ERROR_H
+#include "FindCompilerError.h"

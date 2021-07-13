@@ -39,8 +39,6 @@ namespace Mdt{ namespace DeployUtils{
   };
 
   /*! \brief DTO for CopySharedLibrariesTargetDependsOn
-   *
-   * \todo compilerLocationType should default to FromEnv
    */
   struct MDT_DEPLOYUTILS_EXPORT CopySharedLibrariesTargetDependsOnRequest
   {

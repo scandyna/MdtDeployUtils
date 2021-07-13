@@ -36,6 +36,14 @@ BinaryDependencies::BinaryDependencies(QObject* parent)
 {
 }
 
+void BinaryDependencies::setCompilerFinder(const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept
+{
+  assert( compilerFinder.get() != nullptr );
+  assert( compilerFinder->hasInstallDir() );
+
+  mCompilerFinder = compilerFinder;
+}
+
 QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList)
 {
   using Impl::ExecutableFileInfo;
@@ -60,6 +68,8 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
     throw FindDependencyError(message);
   }
 
+  /// \todo We have to detect the build type (at least for Windows)
+  
   const PathList searchPathList = buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, platform);
 
   emitSearchPathListMessage(searchPathList);
@@ -115,6 +125,10 @@ PathList BinaryDependencies::buildSearchPathListWindows(const QFileInfo & binary
   searchFirstPathList.setPathPrefixList(searchFirstPathPrefixList);
 
   searchPathList.appendPathList( searchFirstPathList.pathList() );
+  if( hasCompilerInstallDir() ){
+    /// \todo We have to get the right build type !
+    searchPathList.appendPath( mCompilerFinder->findRedistDirectory(processorISA, BuildType::Release) );
+  }
   searchPathList.appendPathList( PathList::getSystemLibraryKnownPathListWindows(processorISA) );
 
   return searchPathList;
@@ -129,6 +143,14 @@ void BinaryDependencies::emitSearchPathListMessage(const PathList & pathList) co
     const QString msg = tr(" %1").arg(path);
     emit verboseMessage(msg);
   }
+}
+
+bool BinaryDependencies::hasCompilerInstallDir() const noexcept
+{
+  if( mCompilerFinder.get() == nullptr ){
+    return false;
+  }
+  return mCompilerFinder->hasInstallDir();
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

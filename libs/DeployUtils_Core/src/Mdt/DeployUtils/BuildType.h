@@ -18,4 +18,19 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "FindMsvcError.h"
+#ifndef MDT_DEPLOY_UTILS_BUILD_TYPE_H
+#define MDT_DEPLOY_UTILS_BUILD_TYPE_H
+
+namespace Mdt{ namespace DeployUtils{
+
+  /*! \brief Build type enum
+   */
+  enum class BuildType
+  {
+    Debug,    /*!< Debug build type */
+    Release   /*!< Release build type */
+  };
+
+}} // namespace Mdt{ namespace DeployUtils{
+
+#endif // #ifndef MDT_DEPLOY_UTILS_BUILD_TYPE_H

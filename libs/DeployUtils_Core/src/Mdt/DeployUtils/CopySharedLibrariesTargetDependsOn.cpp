@@ -20,9 +20,11 @@
  ****************************************************************************/
 #include "CopySharedLibrariesTargetDependsOn.h"
 #include "BinaryDependencies.h"
+#include "CompilerFinder.h"
 #include "FileCopier.h"
 #include "PathList.h"
 #include <cassert>
+#include <memory>
 
 #include <QDebug>
 // #include <iostream>
@@ -53,6 +55,26 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   BinaryDependencies binaryDependencies;
   connect(&binaryDependencies, &BinaryDependencies::message, this, &CopySharedLibrariesTargetDependsOn::message);
   connect(&binaryDependencies, &BinaryDependencies::verboseMessage, this, &CopySharedLibrariesTargetDependsOn::verboseMessage);
+
+  if( request.compilerLocationType != CompilerLocationType::Undefined ){
+    auto compilerFinder = std::make_shared<CompilerFinder>();
+    switch(request.compilerLocationType){
+      case CompilerLocationType::FromEnv:
+        /// \todo Implement
+        break;
+      case CompilerLocationType::VcInstallDir:
+        compilerFinder->setInstallDir(request.compilerLocationValue, Compiler::Msvc);
+        break;
+      case CompilerLocationType::CompilerPath:
+        compilerFinder->findFromCxxCompilerPath(request.compilerLocationValue);
+        break;
+      case CompilerLocationType::Undefined:
+        // Just to avoid compiler warnings
+        break;
+    }
+    binaryDependencies.setCompilerFinder(compilerFinder);
+  }
+
   const QStringList dependencies = binaryDependencies.findDependencies( request.targetFilePath, PathList::fromStringList(request.searchPrefixPathList) );
 
   emitFoundDependenciesMessage(dependencies);

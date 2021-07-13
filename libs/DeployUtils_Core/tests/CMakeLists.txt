@@ -342,6 +342,21 @@ if(MSVC)
   target_compile_definitions(msvcFinderTest_Msvc PRIVATE MSVC_VERSION="${MSVC_VERSION}")
 endif()
 
+# TODO enable if
+# if(MSVC)
+  mdt_add_test(
+    NAME CompilerFinderTest_Msvc
+    TARGET compilerFinderTest_Msvc
+    DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+    SOURCE_FILES
+      src/CompilerFinderTest_Msvc.cpp
+  )
+  target_compile_definitions(compilerFinderTest_Msvc
+    PRIVATE
+      CXX_COMPILER_PATH="${CMAKE_CXX_COMPILER}"
+  )
+# endif()
+
 mdt_add_test(
   NAME BinaryDependenciesImplTest
   TARGET binaryDependenciesImplTest

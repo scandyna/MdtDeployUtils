@@ -90,12 +90,12 @@ TEST_CASE("CopySharedLibrariesTargetDependsOn")
   {
     SECTION("from ENV")
     {
-      arguments << qStringListFromUtf8Strings({"--compiler-location","from-env","/tmp/lib.so","/tmp"});
+      arguments << qStringListFromUtf8Strings({"--compiler-location","from-env=VcInstallDir","/tmp/lib.so","/tmp"});
       parser.process(arguments);
 
       request = parser.copySharedLibrariesTargetDependsOnRequest();
       REQUIRE( request.compilerLocationType == CompilerLocationType::FromEnv );
-      REQUIRE( request.compilerLocationValue.isEmpty() );
+      REQUIRE( request.compilerLocationValue == QLatin1String("VcInstallDir") );
     }
 
     SECTION("vc-install-dir")

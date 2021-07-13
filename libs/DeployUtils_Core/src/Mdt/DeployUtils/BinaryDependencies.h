@@ -24,6 +24,7 @@
 #include "FindDependencyError.h"
 #include "PathList.h"
 #include "ProcessorISA.h"
+#include "CompilerFinder.h"
 #include "mdt_deployutils_export.h"
 #include <QObject>
 #include <QFileInfo>
@@ -34,6 +35,8 @@
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Find dependencies for a executable or a library
+   *
+   * \todo See various todo in CPP file
    */
   class MDT_DEPLOYUTILS_EXPORT BinaryDependencies : public QObject
   {
@@ -44,6 +47,13 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Constructor
      */
     BinaryDependencies(QObject* parent = nullptr);
+
+    /*! \brief Set the compiler finder
+     *
+     * \pre \a compilerFinder must be a valid pointer
+     * \pre \a compilerFinder must have its install dir set
+     */
+    void setCompilerFinder(const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept;
 
     /*! \brief Find dependencies for a executable or a shared library
      *
@@ -97,6 +107,9 @@ namespace Mdt{ namespace DeployUtils{
    private:
 
     void emitSearchPathListMessage(const PathList & pathList) const;
+    bool hasCompilerInstallDir() const noexcept;
+
+    std::shared_ptr<CompilerFinder> mCompilerFinder;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

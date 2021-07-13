@@ -207,16 +207,16 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOnCompilerLocatio
 
   const QStringList compilerLocationKeyAndValue = compilerLocationValues.at(0).split( QLatin1Char('=') );
 
-  if( compilerLocationKeyAndValue.count() == 1 ){
-    const QString compilerLocationType = compilerLocationKeyAndValue.at(0);
-    if( compilerLocationType == QLatin1String("from-env") ){
-      mCopySharedLibrariesTargetDependsOnRequest.compilerLocationType = CompilerLocationType::FromEnv;
-      return;
-    }else{
-      const QString message = tr("unknown compiler-location type '%1'").arg(compilerLocationType);
-      throw CommandLineParseError(message);
-    }
-  }
+//   if( compilerLocationKeyAndValue.count() == 1 ){
+//     const QString compilerLocationType = compilerLocationKeyAndValue.at(0);
+//     if( compilerLocationType == QLatin1String("from-env") ){
+//       mCopySharedLibrariesTargetDependsOnRequest.compilerLocationType = CompilerLocationType::FromEnv;
+//       return;
+//     }else{
+//       const QString message = tr("unknown compiler-location type '%1'").arg(compilerLocationType);
+//       throw CommandLineParseError(message);
+//     }
+//   }
 
   if( compilerLocationKeyAndValue.count() != 2 ){
     const QString message = tr("compiler-location: expected type=value syntax, got '%1'").arg( compilerLocationValues.at(0) );
@@ -224,7 +224,12 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOnCompilerLocatio
   }
 
   const QString compilerLocationType = compilerLocationKeyAndValue.at(0);
-  if( compilerLocationType == QLatin1String("vc-install-dir") ){
+  if( compilerLocationType == QLatin1String("from-env") ){
+    mCopySharedLibrariesTargetDependsOnRequest.compilerLocationType = CompilerLocationType::FromEnv;
+    QString varName = compilerLocationKeyAndValue.at(1);
+    varName.remove( QLatin1Char('"') );
+    mCopySharedLibrariesTargetDependsOnRequest.compilerLocationValue = varName;
+  }else if( compilerLocationType == QLatin1String("vc-install-dir") ){
     mCopySharedLibrariesTargetDependsOnRequest.compilerLocationType = CompilerLocationType::VcInstallDir;
     QString path = compilerLocationKeyAndValue.at(1);
     path.remove( QLatin1Char('"') );

@@ -25,11 +25,17 @@
 #include <QString>
 #include <QTextStream>
 #include <QTemporaryDir>
+#include <QDir>
 #include <cassert>
 
 QString makePath(const QTemporaryDir & dir, const char * const subPath)
 {
   return QDir::cleanPath( dir.path() + QLatin1Char('/') + QLatin1String(subPath) );
+}
+
+bool isExistingDirectory(const QString & path)
+{
+  return QDir(path).exists();
 }
 
 bool fileExists(const QString & filePath)

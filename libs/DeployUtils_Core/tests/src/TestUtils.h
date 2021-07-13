@@ -22,6 +22,7 @@
 #define TEST_UTILS_H
 
 #include "Mdt/DeployUtils/LibraryName.h"
+#include "Mdt/DeployUtils/BuildType.h"
 #include <QString>
 #include <QStringList>
 #include <QFileInfo>
@@ -32,6 +33,17 @@
 #include <vector>
 #include <string>
 #include <cassert>
+
+Mdt::DeployUtils::BuildType currentBuildType()
+{
+  using Mdt::DeployUtils::BuildType;
+
+#ifdef NDEBUG
+  return BuildType::Release;
+#else
+  return BuildType::Debug;
+#endif
+}
 
 QStringList qStringListFromUtf8Strings(const std::vector<std::string> & args)
 {

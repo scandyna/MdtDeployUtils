@@ -18,47 +18,30 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "MsvcFinder.h"
-#include <QLatin1String>
-#include <QDir>
-#include <cassert>
+#ifndef MDT_DEPLOY_UTILS_FIND_COMPILER_ERROR_H
+#define MDT_DEPLOY_UTILS_FIND_COMPILER_ERROR_H
 
-#include <QDebug>
+#include "QRuntimeError.h"
+#include "mdt_deployutils_export.h"
+#include <QString>
 
 namespace Mdt{ namespace DeployUtils{
 
-MsvcFinder::MsvcFinder(QObject* parent)
- : AbstractCompilerFinderEngine(parent)
-{
-}
-
-QString MsvcFinder::findMsvcRoot(const MsvcVersion & version)
-{
-  assert( !version.isNull() );
-  
-  return QString();
-}
-
-bool MsvcFinder::doIsSupportedCompiler(const QFileInfo & executablePath) const noexcept
-{
-  qDebug() << "MSVC impl, try " << executablePath.absoluteFilePath();
-
-  return executablePath.baseName() == QLatin1String("cl");
-}
-
-void MsvcFinder::doFindFromCxxCompilerPath(const QFileInfo & executablePath)
-{
-  QDir dir = executablePath.absoluteDir();
-
-  /*
-   * Example of MSVC 2017 installation:
-   * C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Tools\MSVC\14.12.25827\bin\Hostx64\x64\cl.exe
+  /*! \brief Error when fails to find MSVC
    */
-  if( !cdUp(dir, 6) ){
-    return;
-  }
+  class MDT_DEPLOYUTILS_EXPORT FindCompilerError : public QRuntimeError
+  {
+   public:
 
-  mVcInstallDir = dir.absolutePath();
-}
+    /*! \brief Constructor
+     */
+    explicit FindCompilerError(const QString & what)
+      : QRuntimeError(what)
+    {
+    }
+
+  };
 
 }} // namespace Mdt{ namespace DeployUtils{
+
+#endif // #ifndef MDT_DEPLOY_UTILS_FIND_COMPILER_ERROR_H
