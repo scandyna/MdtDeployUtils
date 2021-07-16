@@ -117,6 +117,7 @@ bool MsvcFinder::isDirectoryContainingDebugNonRedist(const QFileInfo & fi) noexc
   assert( fi.isDir() );
 
   const QFileInfo debugSubDirFi = QDir::cleanPath( fi.absolutePath() % QLatin1String("/debug_nonredist") );
+  qDebug() << " try " << debugSubDirFi.absolutePath();
   if( !debugSubDirFi.isDir() ){
     return false;
   }
