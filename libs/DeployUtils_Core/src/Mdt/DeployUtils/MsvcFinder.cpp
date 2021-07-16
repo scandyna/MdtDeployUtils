@@ -78,6 +78,7 @@ QString MsvcFinder::doFindRedistDirectory(ProcessorISA cpu, BuildType buildType)
   }
 
   const QFileInfo versionSubDir = findLatestVersionDirContainingDebugNonRedist(dir);
+  qDebug() << "versionSubDir: " << versionSubDir.absolutePath();
   if( !versionSubDir.exists() ){
     const QString msg = tr("could not find a redist version directory in: '%1'").arg( dir.absolutePath() );
     throw FindCompilerError(msg);
