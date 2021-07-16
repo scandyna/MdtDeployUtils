@@ -70,5 +70,8 @@ TEST_CASE("findRedistDirectory")
   REQUIRE( finder.hasInstallDir() );
 
   const QString redistPath = finder.findRedistDirectory( platform.processorISA(), currentBuildType() );
+  
+  qDebug() << "redistPath: " << redistPath;
+  
   REQUIRE( isExistingDirectory(redistPath) );
 }

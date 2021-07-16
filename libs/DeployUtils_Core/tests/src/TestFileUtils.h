@@ -35,6 +35,8 @@ QString makePath(const QTemporaryDir & dir, const char * const subPath)
 
 bool isExistingDirectory(const QString & path)
 {
+  assert( !path.trimmed().isEmpty() );
+
   return QDir(path).exists();
 }
 

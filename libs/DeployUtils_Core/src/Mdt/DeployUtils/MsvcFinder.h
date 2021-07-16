@@ -26,10 +26,17 @@
 #include "MsvcVersion.h"
 #include "mdt_deployutils_export.h"
 #include <QString>
+#include <QDir>
+#include <QFileInfo>
 
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Helper to find MSVC installation
+   *
+   * \todo Microsoft recommends not redistribute dll's, but vc_redistxYY.exe
+   * \sa https://docs.microsoft.com/en-us/cpp/windows/determining-which-dlls-to-redistribute?view=msvc-160
+   *
+   * \todo see various todo in cpp file
    */
   class MDT_DEPLOYUTILS_EXPORT MsvcFinder : public AbstractCompilerFinderEngine
   {
@@ -77,6 +84,31 @@ namespace Mdt{ namespace DeployUtils{
     {
       return mVcInstallDir;
     }
+
+    QString doFindRedistDirectory(ProcessorISA cpu, BuildType buildType) const override;
+
+    static
+    bool isDirectoryContainingDebugNonRedist(const QFileInfo & fi) noexcept;
+
+    /** \todo Think that sorting is lexicographic, does it work ?
+     *   Also, should deploy the version matching MSVC ?
+     * \sa https://docs.microsoft.com/en-us/cpp/windows/determining-which-dlls-to-redistribute?view=msvc-160
+     */
+    static
+    QFileInfo findLatestVersionDirContainingDebugNonRedist(const QDir & dir) noexcept;
+
+    /** \todo Think that sorting is lexicographic, does it work ?
+     *   Also, should deploy the version matching MSVC ?
+     * \sa https://docs.microsoft.com/en-us/cpp/windows/determining-which-dlls-to-redistribute?view=msvc-160
+     */
+    static
+    QFileInfo findLatestVcCrtDirectory(const QDir & dir, BuildType buildType) noexcept;
+
+    static
+    QString processorISADirectoryName(ProcessorISA cpu) noexcept;
+
+    static
+    bool useDebugRedist(BuildType buildType) noexcept;
 
     QString mVcInstallDir;
   };

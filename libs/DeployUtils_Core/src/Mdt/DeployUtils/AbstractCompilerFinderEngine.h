@@ -22,6 +22,9 @@
 #define MDT_DEPLOY_UTILS_ABSTRACT_COMPILER_FINDER_ENGINE_H
 
 #include "Compiler.h"
+#include "ProcessorISA.h"
+#include "BuildType.h"
+#include "FindCompilerError.h"
 #include "mdt_deployutils_export.h"
 #include <QObject>
 #include <QFileInfo>
@@ -102,6 +105,21 @@ namespace Mdt{ namespace DeployUtils{
       return doInstallDir();
     }
 
+    /*! \brief Find the path to the redistributable libraries
+     *
+     * \pre the install dir must be defined
+     * \sa hasInstallDir()
+     * \pre \a cpu must be defined
+     * \exception FindCompilerError
+     */
+    QString findRedistDirectory(ProcessorISA cpu, BuildType buildType) const
+    {
+      assert( hasInstallDir() );
+      assert( cpu != ProcessorISA::Unknown );
+
+      return doFindRedistDirectory(cpu, buildType);
+    }
+
    protected:
 
     /*! \brief Call cdUp() on \a dir for \a level count
@@ -125,6 +143,7 @@ namespace Mdt{ namespace DeployUtils{
     virtual void doSetInstallDir(const QString & path) = 0;
     virtual bool doHasInstallDir() const noexcept = 0;
     virtual QString doInstallDir() const noexcept = 0;
+    virtual QString doFindRedistDirectory(ProcessorISA cpu, BuildType buildType) const = 0;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
