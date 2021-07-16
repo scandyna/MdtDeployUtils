@@ -94,6 +94,8 @@ QString CompilerFinder::findRedistDirectory(ProcessorISA cpu, BuildType buildTyp
 {
   assert( hasInstallDir() );
   assert( cpu != ProcessorISA::Unknown );
+
+  return mEngine->findRedistDirectory(cpu, buildType);
 }
 
 void CompilerFinder::instanciateMsvcEngine()
