@@ -24,7 +24,7 @@
 #include <QFileInfoList>
 #include <cassert>
 
-#include <QDebug>
+// #include <QDebug>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -42,8 +42,6 @@ QString MsvcFinder::findMsvcRoot(const MsvcVersion & version)
 
 bool MsvcFinder::doIsSupportedCompiler(const QFileInfo & executablePath) const noexcept
 {
-  qDebug() << "MSVC impl, try " << executablePath.absoluteFilePath();
-
   return executablePath.baseName() == QLatin1String("cl");
 }
 
@@ -69,7 +67,9 @@ QString MsvcFinder::doFindRedistDirectory(ProcessorISA cpu, BuildType buildType)
    * C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Redist\MSVC\14.12.25810\x64\Microsoft.VC<version>.CRT
    */
 
-  /// See https://github.com/dotnet/runtime/issues/40131
+  /// \todo See https://github.com/dotnet/runtime/issues/40131
+
+  /// \todo Should we distribute what is in onecore sub-dir if exists ?
 
   QDir dir = QDir( QDir::cleanPath( mVcInstallDir % QLatin1String("/Redist/MSVC") ) );
   if( !dir.exists() ){
@@ -77,17 +77,6 @@ QString MsvcFinder::doFindRedistDirectory(ProcessorISA cpu, BuildType buildType)
     throw FindCompilerError(msg);
   }
 
-//   const QFileInfo versionSubDir = findLatestVersionDirContainingDebugNonRedist(dir);
-//   qDebug() << "versionSubDir: " << versionSubDir.absolutePath();
-//   if( !versionSubDir.exists() ){
-//     const QString msg = tr("could not find a redist version directory in: '%1'").arg( dir.absolutePath() );
-//     throw FindCompilerError(msg);
-//   }
-//   assert( versionSubDir.isDir() );
-
-  /// \todo Should we distribute what is in onecore sub-dir if exists ?
-
-//   QDir redistDir = versionSubDir.absoluteDir();
   QDir redistDir = findLatestVersionDirContainingDebugNonRedist(dir);
   assert( redistDir.exists() );
 
@@ -104,13 +93,6 @@ QString MsvcFinder::doFindRedistDirectory(ProcessorISA cpu, BuildType buildType)
     throw FindCompilerError(msg);
   }
 
-//   const QFileInfo vcCrtDirFi = findLatestVcCrtDirectory(redistDir, buildType);
-//   if( !vcCrtDirFi.exists() ){
-//     const QString msg = tr("could not find any VC CRT directory in: '%1'").arg( redistDir.absolutePath() );
-//     throw FindCompilerError(msg);
-//   }
-//   assert( vcCrtDirFi.isDir() );
-
   const QDir vcCrtDir = findLatestVcCrtDirectory(redistDir, buildType);
   assert( vcCrtDir.exists() );
 
@@ -122,7 +104,6 @@ bool MsvcFinder::isDirectoryContainingDebugNonRedist(const QFileInfo & fi) noexc
   assert( fi.isDir() );
 
   const QFileInfo debugSubDirFi = QDir::cleanPath( fi.absoluteFilePath() % QLatin1String("/debug_nonredist") );
-//   qDebug() << " try " << debugSubDirFi.absolutePath();
   if( !debugSubDirFi.isDir() ){
     return false;
   }
@@ -159,13 +140,7 @@ QDir MsvcFinder::findLatestVcCrtDirectory(const QDir & dir, BuildType buildType)
     filters << QLatin1String("Microsoft.VC*.CRT");
   }
 
-  qDebug() << "search VC CRT in " << dir.absolutePath();
-  
   const QFileInfoList subDirs = dir.entryInfoList(filters, QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
-  // const QFileInfoList subDirs = dir.entryInfoList(filters);
-  
-  qDebug() << "dirs: " << subDirs;
-  
   if( subDirs.isEmpty() ){
     // throw here because QDir() will return current path
     const QString msg = tr("could not find any VC CRT directory in: '%1'").arg( dir.absolutePath() );

@@ -57,6 +57,8 @@ namespace Mdt{ namespace DeployUtils{
      * \endcode
      *
      * \pre \a version must be valid
+     *
+     * \todo remove ?
      */
     QString findMsvcRoot(const MsvcVersion & version);
 
