@@ -138,7 +138,7 @@ QDir MsvcFinder::findLatestVersionDirContainingDebugNonRedist(const QDir & dir)
   const QFileInfoList versionSubDirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
   for(const QFileInfo & fi : versionSubDirs){
     if( isDirectoryContainingDebugNonRedist(fi) ){
-      return fi.absolutePath();
+      return fi.absoluteFilePath();
     }
   }
 
@@ -149,14 +149,23 @@ QDir MsvcFinder::findLatestVersionDirContainingDebugNonRedist(const QDir & dir)
 
 QDir MsvcFinder::findLatestVcCrtDirectory(const QDir & dir, BuildType buildType)
 {
+  assert( dir.exists() );
+  assert( dir.isReadable() );
+
   QStringList filters;
   if( useDebugRedist(buildType) ){
-    filters << QLatin1String("Microsoft.VC*.CRT");
-  }else{
     filters << QLatin1String("Microsoft.VC*.DebugCRT");
+  }else{
+    filters << QLatin1String("Microsoft.VC*.CRT");
   }
 
+  qDebug() << "search VC CRT in " << dir.absolutePath();
+  
   const QFileInfoList subDirs = dir.entryInfoList(filters, QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
+  // const QFileInfoList subDirs = dir.entryInfoList(filters);
+  
+  qDebug() << "dirs: " << subDirs;
+  
   if( subDirs.isEmpty() ){
     // throw here because QDir() will return current path
     const QString msg = tr("could not find any VC CRT directory in: '%1'").arg( dir.absolutePath() );
