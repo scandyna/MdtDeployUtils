@@ -95,14 +95,14 @@ namespace Mdt{ namespace DeployUtils{
      * \sa https://docs.microsoft.com/en-us/cpp/windows/determining-which-dlls-to-redistribute?view=msvc-160
      */
     static
-    QFileInfo findLatestVersionDirContainingDebugNonRedist(const QDir & dir) noexcept;
+    QDir findLatestVersionDirContainingDebugNonRedist(const QDir & dir);
 
     /** \todo Think that sorting is lexicographic, does it work ?
      *   Also, should deploy the version matching MSVC ?
      * \sa https://docs.microsoft.com/en-us/cpp/windows/determining-which-dlls-to-redistribute?view=msvc-160
      */
     static
-    QFileInfo findLatestVcCrtDirectory(const QDir & dir, BuildType buildType) noexcept;
+    QDir findLatestVcCrtDirectory(const QDir & dir, BuildType buildType);
 
     static
     QString processorISADirectoryName(ProcessorISA cpu) noexcept;

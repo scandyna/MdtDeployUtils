@@ -77,17 +77,19 @@ QString MsvcFinder::doFindRedistDirectory(ProcessorISA cpu, BuildType buildType)
     throw FindCompilerError(msg);
   }
 
-  const QFileInfo versionSubDir = findLatestVersionDirContainingDebugNonRedist(dir);
-  qDebug() << "versionSubDir: " << versionSubDir.absolutePath();
-  if( !versionSubDir.exists() ){
-    const QString msg = tr("could not find a redist version directory in: '%1'").arg( dir.absolutePath() );
-    throw FindCompilerError(msg);
-  }
-  assert( versionSubDir.isDir() );
+//   const QFileInfo versionSubDir = findLatestVersionDirContainingDebugNonRedist(dir);
+//   qDebug() << "versionSubDir: " << versionSubDir.absolutePath();
+//   if( !versionSubDir.exists() ){
+//     const QString msg = tr("could not find a redist version directory in: '%1'").arg( dir.absolutePath() );
+//     throw FindCompilerError(msg);
+//   }
+//   assert( versionSubDir.isDir() );
 
   /// \todo Should we distribute what is in onecore sub-dir if exists ?
 
-  QDir redistDir = versionSubDir.absoluteDir();
+//   QDir redistDir = versionSubDir.absoluteDir();
+  QDir redistDir = findLatestVersionDirContainingDebugNonRedist(dir);
+  assert( redistDir.exists() );
 
   if( useDebugRedist(buildType) ){
     if( !redistDir.cd( QLatin1String("debug_nonredist") ) ){
@@ -102,22 +104,25 @@ QString MsvcFinder::doFindRedistDirectory(ProcessorISA cpu, BuildType buildType)
     throw FindCompilerError(msg);
   }
 
-  const QFileInfo vcCrtDirFi = findLatestVcCrtDirectory(redistDir, buildType);
-  if( !vcCrtDirFi.exists() ){
-    const QString msg = tr("could not find any VC CRT directory in: '%1'").arg( redistDir.absolutePath() );
-    throw FindCompilerError(msg);
-  }
-  assert( vcCrtDirFi.isDir() );
+//   const QFileInfo vcCrtDirFi = findLatestVcCrtDirectory(redistDir, buildType);
+//   if( !vcCrtDirFi.exists() ){
+//     const QString msg = tr("could not find any VC CRT directory in: '%1'").arg( redistDir.absolutePath() );
+//     throw FindCompilerError(msg);
+//   }
+//   assert( vcCrtDirFi.isDir() );
 
-  return vcCrtDirFi.absolutePath();
+  const QDir vcCrtDir = findLatestVcCrtDirectory(redistDir, buildType);
+  assert( vcCrtDir.exists() );
+
+  return vcCrtDir.absolutePath();
 }
 
 bool MsvcFinder::isDirectoryContainingDebugNonRedist(const QFileInfo & fi) noexcept
 {
   assert( fi.isDir() );
 
-  const QFileInfo debugSubDirFi = QDir::cleanPath( fi.absolutePath() % QLatin1String("/debug_nonredist") );
-  qDebug() << " try " << debugSubDirFi.absolutePath();
+  const QFileInfo debugSubDirFi = QDir::cleanPath( fi.absoluteFilePath() % QLatin1String("/debug_nonredist") );
+//   qDebug() << " try " << debugSubDirFi.absolutePath();
   if( !debugSubDirFi.isDir() ){
     return false;
   }
@@ -128,7 +133,7 @@ bool MsvcFinder::isDirectoryContainingDebugNonRedist(const QFileInfo & fi) noexc
   return true;
 }
 
-QFileInfo MsvcFinder::findLatestVersionDirContainingDebugNonRedist(const QDir & dir) noexcept
+QDir MsvcFinder::findLatestVersionDirContainingDebugNonRedist(const QDir & dir)
 {
   const QFileInfoList versionSubDirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
   for(const QFileInfo & fi : versionSubDirs){
@@ -137,10 +142,12 @@ QFileInfo MsvcFinder::findLatestVersionDirContainingDebugNonRedist(const QDir & 
     }
   }
 
-  return QFileInfo();
+  // throw here because QDir() will return current path
+  const QString msg = tr("could not find a redist version directory in: '%1'").arg( dir.absolutePath() );
+  throw FindCompilerError(msg);
 }
 
-QFileInfo MsvcFinder::findLatestVcCrtDirectory(const QDir & dir, BuildType buildType) noexcept
+QDir MsvcFinder::findLatestVcCrtDirectory(const QDir & dir, BuildType buildType)
 {
   QStringList filters;
   if( useDebugRedist(buildType) ){
@@ -151,10 +158,12 @@ QFileInfo MsvcFinder::findLatestVcCrtDirectory(const QDir & dir, BuildType build
 
   const QFileInfoList subDirs = dir.entryInfoList(filters, QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
   if( subDirs.isEmpty() ){
-    return QFileInfo();
+    // throw here because QDir() will return current path
+    const QString msg = tr("could not find any VC CRT directory in: '%1'").arg( dir.absolutePath() );
+    throw FindCompilerError(msg);
   }
 
-  return subDirs.first();
+  return subDirs.first().absoluteFilePath();
 }
 
 QString MsvcFinder::processorISADirectoryName(ProcessorISA cpu) noexcept
