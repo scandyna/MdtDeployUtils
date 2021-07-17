@@ -351,10 +351,7 @@ endif()
     SOURCE_FILES
       src/CompilerFinderTest_Msvc.cpp
   )
-  target_compile_definitions(compilerFinderTest_Msvc
-    PRIVATE
-      CXX_COMPILER_PATH="${CMAKE_CXX_COMPILER}"
-  )
+  target_compile_definitions(compilerFinderTest_Msvc PRIVATE CXX_COMPILER_PATH="${CMAKE_CXX_COMPILER}")
 # endif()
 
 mdt_add_test(
@@ -409,6 +406,20 @@ mdt_add_test(
 )
 target_compile_definitions(copySharedLibrariesTargetDependsOnTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 target_compile_definitions(copySharedLibrariesTargetDependsOnTest PRIVATE PREFIX_PATH="${TEST_PREFIX_PATH}")
+
+# TODO enable if
+# if(MSVC)
+  mdt_add_test(
+    NAME CopySharedLibrariesTargetDependsOnTest_Msvc
+    TARGET copySharedLibrariesTargetDependsOnTest_Msvc
+    DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+    SOURCE_FILES
+      src/CopySharedLibrariesTargetDependsOnTest_Msvc.cpp
+  )
+  target_compile_definitions(copySharedLibrariesTargetDependsOnTest_Msvc PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+  target_compile_definitions(copySharedLibrariesTargetDependsOnTest_Msvc PRIVATE PREFIX_PATH="${TEST_PREFIX_PATH}")
+  target_compile_definitions(copySharedLibrariesTargetDependsOnTest_Msvc PRIVATE CXX_COMPILER_PATH="${CMAKE_CXX_COMPILER}")
+# endif()
 
 mdt_add_test(
   NAME CopySharedLibrariesTargetDependsOnErrorTest

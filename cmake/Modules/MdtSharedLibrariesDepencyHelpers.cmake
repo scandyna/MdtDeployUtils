@@ -299,6 +299,7 @@ function(mdt_install_shared_libraries_target_depends_on)
     TARGET ${ARG_TARGET}
   )
 
+  # TODO considere COMPONENT
   install(SCRIPT "${installScript}" COMPONENT Runtime)
 
 endfunction()

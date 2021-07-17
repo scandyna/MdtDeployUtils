@@ -8,6 +8,8 @@ message("DESTDIR: $ENV{DESTDIR}")
 message("CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 message("CMAKE_PREFIX_PATH: @CMAKE_PREFIX_PATH@")
+message("CMAKE_CXX_COMPILER: @CMAKE_CXX_COMPILER@")
+message("Is MSVC: @MSVC@")
 
 
 set(DESTINATION "@MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_DESTINATION@")
@@ -48,11 +50,17 @@ endif()
 message("overwriteBehavior: ${overwriteBehavior}")
 message("removeRpathOptionArgument: ${removeRpathOptionArgument}")
 
+set(compilerLocationArguments)
+if(@MSVC@)
+  set(compilerLocationArguments --compiler-location compiler-path="@CMAKE_CXX_COMPILER@")
+endif()
+
 execute_process(
   COMMAND "${mdtDeployUtilsCommand}" --logger-backend cmake copy-shared-libraries-target-depends-on
             --overwrite-behavior ${overwriteBehavior}
             ${removeRpathOptionArgument}
             --search-prefix-path-list "@CMAKE_PREFIX_PATH@"
+            ${compilerLocationArguments}
             "${targetFile}"
             "${librariesDestination}"
   RESULTS_VARIABLE mdtDeployUtilsResult
