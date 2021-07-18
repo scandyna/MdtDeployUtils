@@ -61,6 +61,7 @@ namespace Mdt{ namespace DeployUtils{
     bool doIsPeImageFile() override;
     Platform doGetFilePlatform() override;
     bool doIsExecutableOrSharedLibrary() override;
+    bool doContainsDebugSymbols() override;
     QStringList doGetNeededSharedLibraries() override;
 
     bool tryExtractDosCoffAndOptionalHeader();

@@ -92,6 +92,7 @@ namespace Mdt{ namespace DeployUtils{
     bool doIsElfFile() override;
     Platform doGetFilePlatform() override;
     bool doIsExecutableOrSharedLibrary() override;
+    bool doContainsDebugSymbols() override;
     QStringList doGetNeededSharedLibraries() override;
     QStringList doGetRunPath() override;
 

@@ -28,6 +28,9 @@
  *
  * A good starting point can be found on Wikipedia:
  * https://en.wikipedia.org/wiki/Microsoft_Windows_library_files
+ *
+ * \todo see reg query "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\KnownDLLs"
+ * \todo Debug variants ?
  */
 static
 const QStringList libraryExcludelistWindows = {

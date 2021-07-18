@@ -163,6 +163,17 @@ bool ElfFileReader::doIsExecutableOrSharedLibrary()
   return false;
 }
 
+bool ElfFileReader::doContainsDebugSymbols()
+{
+  using Impl::ByteArraySpan;
+
+  const qint64 size = fileSize();
+
+  const ByteArraySpan map = mapIfRequired(0, size);
+
+  return mImpl->containsDebugSymbols(map);
+}
+
 QStringList ElfFileReader::doGetNeededSharedLibraries()
 {
   using Impl::ByteArraySpan;

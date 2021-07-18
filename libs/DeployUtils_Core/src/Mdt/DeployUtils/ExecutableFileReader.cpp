@@ -132,6 +132,15 @@ bool ExecutableFileReader::isExecutableOrSharedLibrary()
   return mReaderEngine->isExecutableOrSharedLibrary();
 }
 
+bool ExecutableFileReader::containsDebugSymbols()
+{
+  assert( isOpen() );
+  assert( isExecutableOrSharedLibrary() );
+  assert( mReaderEngine.get() != nullptr );
+
+  return mReaderEngine->containsDebugSymbols();
+}
+
 QStringList ExecutableFileReader::getNeededSharedLibraries()
 {
   assert( isOpen() );

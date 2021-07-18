@@ -29,6 +29,24 @@
 
 namespace Mdt{ namespace DeployUtils{
 
+  /*! \brief Check if \a str starts with \a s
+   *
+   * \note current implementation is case sensitive
+   * \pre \a s must not be empty
+   */
+  inline
+  bool stringStartsWith(const std::string & str, const std::string & s) noexcept
+  {
+    assert( !s.empty() );
+
+    if( s.size() > str.size() ){
+      return false;
+    }
+    const auto last = str.cbegin() + s.size();
+
+    return std::equal( str.cbegin(), last, s.cbegin(), s.cend() );
+  }
+
   /*! \brief Joint each strings in \a list to a single string with each element seperated by given \a separator
    */
   inline

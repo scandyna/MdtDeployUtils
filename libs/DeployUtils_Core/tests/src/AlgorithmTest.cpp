@@ -32,6 +32,75 @@ QFileInfo fileInfoFromString(const std::string & file)
   return QFileInfo( QString::fromStdString(file) );
 }
 
+TEST_CASE("stringStartsWith")
+{
+  using Mdt::DeployUtils::stringStartsWith;
+
+  std::string str;
+
+  SECTION("str empty")
+  {
+    SECTION("s A")
+    {
+      REQUIRE( !stringStartsWith(str, "A") );
+    }
+  }
+
+  SECTION("str A")
+  {
+    str = "A";
+
+    SECTION("s A")
+    {
+      REQUIRE( stringStartsWith(str, "A") );
+    }
+
+    SECTION("s a")
+    {
+      REQUIRE( !stringStartsWith(str, "a") );
+    }
+
+    SECTION("s B")
+    {
+      REQUIRE( !stringStartsWith(str, "B") );
+    }
+  }
+
+  SECTION("str AB")
+  {
+    str = "AB";
+
+    SECTION("s A")
+    {
+      REQUIRE( stringStartsWith(str, "A") );
+    }
+
+    SECTION("s a")
+    {
+      REQUIRE( !stringStartsWith(str, "a") );
+    }
+
+    SECTION("s B")
+    {
+      REQUIRE( !stringStartsWith(str, "B") );
+    }
+
+    SECTION("s AA")
+    {
+      REQUIRE( !stringStartsWith(str, "AA") );
+    }
+
+    SECTION("s AB")
+    {
+      REQUIRE( stringStartsWith(str, "AB") );
+    }
+
+    SECTION("s ABC")
+    {
+      REQUIRE( !stringStartsWith(str, "ABC") );
+    }
+  }
+}
 
 TEST_CASE("joinToStdString")
 {

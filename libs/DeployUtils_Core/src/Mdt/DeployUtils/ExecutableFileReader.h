@@ -130,6 +130,15 @@ namespace Mdt{ namespace DeployUtils{
      */
     bool isExecutableOrSharedLibrary();
 
+    /*! \brief Check if this reader refers to a executable that contains debug symbols
+     *
+     * \pre this reader must have a open file which is a executable or a shared library
+     * \sa isOpen()
+     * \sa isExecutableOrSharedLibrary()
+     * \exception ExecutableFileReadError
+     */
+    bool containsDebugSymbols();
+
     /*! \brief Get a list of needed shared libraries the file this reader refers to
      *
      * \pre this reader must have a open file which is a executable or a shared library

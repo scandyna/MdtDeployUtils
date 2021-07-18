@@ -145,6 +145,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       return characteristics & 0x2000;
     }
 
+    /*! \brief Check if debugging information is removed from the image file
+     */
+    bool isDebugStripped() const noexcept
+    {
+      return characteristics & 0x0200;
+    }
+
     /*! \brief Check if this COFF header seems valid
      */
     bool seemsValid() const noexcept
@@ -216,6 +223,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
     uint16_t magic = 0;
     uint32_t numberOfRvaAndSizes = 0;
     uint64_t importTable = 0;
+    uint64_t debug = 0;
     uint64_t delayImportTable = 0;
 
     void clear() noexcept
@@ -223,6 +231,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       magic = 0;
       numberOfRvaAndSizes = 0;
       importTable = 0;
+      debug = 0;
       delayImportTable = 0;
     }
 
@@ -298,6 +307,19 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       return ImageDataDirectory::fromUint64(delayImportTable);
     }
 
+    /*! \brief Check if this header contains the debug data starting address and size
+     */
+    bool containsDebugDirectory() const noexcept
+    {
+      if( numberOfRvaAndSizes < 7 ){
+        return false;
+      }
+      if( debug == 0 ){
+        return false;
+      }
+
+      return true;
+    }
   };
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{

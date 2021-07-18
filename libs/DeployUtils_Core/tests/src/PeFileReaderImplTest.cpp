@@ -185,6 +185,7 @@ TEST_CASE("CoffHeader")
       REQUIRE( header.isValidExecutableImage() );
       REQUIRE( header.is32BitWordMachine() );
       REQUIRE( header.isDll() );
+      REQUIRE( header.isDebugStripped() );
     }
 
     SECTION("Valid 32 bit DLL (debug build example)")
@@ -193,6 +194,7 @@ TEST_CASE("CoffHeader")
       REQUIRE( header.isValidExecutableImage() );
       REQUIRE( header.is32BitWordMachine() );
       REQUIRE( header.isDll() );
+      REQUIRE( !header.isDebugStripped() );
     }
 
     SECTION("Invalid image")
@@ -383,6 +385,27 @@ TEST_CASE("OptionalHeader")
       REQUIRE( header.containsDelayImportTable() );
     }
   }
+
+  SECTION("Debug directory")
+  {
+    SECTION("default constructed")
+    {
+      REQUIRE( !header.containsDebugDirectory() );
+    }
+
+    SECTION("no debug directory")
+    {
+      header.numberOfRvaAndSizes = 6;
+      REQUIRE( !header.containsDebugDirectory() );
+    }
+
+    SECTION("has debug directory")
+    {
+      header.numberOfRvaAndSizes = 7;
+      header.debug = 1234;
+      REQUIRE( header.containsDebugDirectory() );
+    }
+  }
 }
 
 TEST_CASE("optionalHeaderFromArray")
@@ -417,6 +440,15 @@ TEST_CASE("optionalHeaderFromArray")
     array[109] = 0x56;
     array[110] = 0x34;
     array[111] = 0x12;
+    // Debug directory: 0x8765432187654321
+    array[144] = 0x21;
+    array[145] = 0x43;
+    array[146] = 0x65;
+    array[147] = 0x87;
+    array[148] = 0x21;
+    array[149] = 0x43;
+    array[150] = 0x65;
+    array[151] = 0x87;
     // Delay import table: 0x3456789012345678
     array[200] = 0x78;
     array[201] = 0x56;
@@ -432,6 +464,7 @@ TEST_CASE("optionalHeaderFromArray")
     REQUIRE( header.magic == 0x10B );
     REQUIRE( header.numberOfRvaAndSizes == 0x12345678 );
     REQUIRE( header.importTable == 0x1234567812345678 );
+    REQUIRE( header.debug == 0x8765432187654321 );
     REQUIRE( header.delayImportTable == 0x3456789012345678 );
   }
 
@@ -458,6 +491,15 @@ TEST_CASE("optionalHeaderFromArray")
     array[125] = 0x56;
     array[126] = 0x34;
     array[127] = 0x12;
+    // Debug directory: 0x8765432187654321
+    array[160] = 0x21;
+    array[161] = 0x43;
+    array[162] = 0x65;
+    array[163] = 0x87;
+    array[164] = 0x21;
+    array[165] = 0x43;
+    array[166] = 0x65;
+    array[167] = 0x87;
     // Delay import table: 0x3456789012345678
     array[216] = 0x78;
     array[217] = 0x56;
@@ -473,6 +515,7 @@ TEST_CASE("optionalHeaderFromArray")
     REQUIRE( header.magic == 0x20B );
     REQUIRE( header.numberOfRvaAndSizes == 0x12345678 );
     REQUIRE( header.importTable == 0x1234567812345678 );
+    REQUIRE( header.debug == 0x8765432187654321 );
     REQUIRE( header.delayImportTable == 0x3456789012345678 );
   }
 }

@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "BinaryDependencies.h"
 #include "SearchPathList.h"
+#include "LibraryName.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
 #include "Mdt/DeployUtils/Platform.h"
 #include "ExecutableFileReader.h"
@@ -56,10 +57,16 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
   ExecutableFileInfo target;
   target.fileName = binaryFilePath.fileName();
   target.directoryPath = binaryFilePath.absoluteDir().path();
+  bool isWindowsDebugBuild = false;
 
   ExecutableFileReader reader;
   reader.openFile(binaryFilePath);
   const Platform platform = reader.getFilePlatform();
+  if( platform.operatingSystem() == OperatingSystem::Windows ){
+    const bool targetContainsDebugSymbols = reader.containsDebugSymbols();
+    const QStringList directDependentDllNames = reader.getNeededSharedLibraries();
+    isWindowsDebugBuild = checkIfIsWindowsDebugBuild(targetContainsDebugSymbols, directDependentDllNames);
+  }
   reader.close();
 
   if( platform.operatingSystem() == OperatingSystem::Unknown ){
@@ -68,9 +75,19 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
     throw FindDependencyError(message);
   }
 
-  /// \todo We have to detect the build type (at least for Windows)
-  
-  const PathList searchPathList = buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, platform);
+  PathList searchPathList;
+  if( platform.operatingSystem() == OperatingSystem::Linux ){
+    searchPathList = buildSearchPathListLinux( searchFirstPathPrefixList, platform.processorISA() );
+  }else if( platform.operatingSystem() == OperatingSystem::Windows ){
+    BuildType buildType;
+    if( isWindowsDebugBuild ){
+      buildType = BuildType::Debug;
+    }else{
+      buildType = BuildType::Release;
+    }
+    searchPathList = buildSearchPathListWindows(binaryFilePath, searchFirstPathPrefixList, platform.processorISA(), buildType);
+    emitBuildTypeMessage(buildType);
+  }
 
   emitSearchPathListMessage(searchPathList);
 
@@ -80,22 +97,6 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
   impl.findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibrary);
 
   return Impl::qStringListFromExecutableFileInfoList(dependencies);
-}
-
-PathList BinaryDependencies::buildSearchPathList(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList, const Platform & platform) const noexcept
-{
-  assert( !platform.isNull() );
-
-  switch( platform.operatingSystem() ){
-    case OperatingSystem::Linux:
-      return buildSearchPathListLinux( searchFirstPathPrefixList, platform.processorISA() );
-    case OperatingSystem::Windows:
-      return buildSearchPathListWindows( binaryFilePath, searchFirstPathPrefixList, platform.processorISA() );
-    case OperatingSystem::Unknown:
-      break;
-  }
-
-  return PathList();
 }
 
 PathList BinaryDependencies::buildSearchPathListLinux(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) const noexcept
@@ -113,8 +114,8 @@ PathList BinaryDependencies::buildSearchPathListLinux(const PathList & searchFir
   return searchPathList;
 }
 
-PathList BinaryDependencies::buildSearchPathListWindows(const QFileInfo & binaryFilePath,
-                                                        const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) const noexcept
+PathList BinaryDependencies::buildSearchPathListWindows(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList,
+                                                        ProcessorISA processorISA, BuildType buildType) const noexcept
 {
   PathList searchPathList;
 
@@ -126,12 +127,25 @@ PathList BinaryDependencies::buildSearchPathListWindows(const QFileInfo & binary
 
   searchPathList.appendPathList( searchFirstPathList.pathList() );
   if( hasCompilerInstallDir() ){
-    /// \todo We have to get the right build type !
-    searchPathList.appendPath( mCompilerFinder->findRedistDirectory(processorISA, BuildType::Release) );
+    searchPathList.appendPath( mCompilerFinder->findRedistDirectory(processorISA, buildType) );
   }
-  searchPathList.appendPathList( PathList::getSystemLibraryKnownPathListWindows(processorISA) );
 
   return searchPathList;
+}
+
+bool BinaryDependencies::checkIfIsWindowsDebugBuild(bool targetHasDebugSymbols, const QStringList & directDependentDllNames) noexcept
+{
+  if( !targetHasDebugSymbols ){
+    return false;
+  }
+  for( const QString & dllName : directDependentDllNames ){
+    const LibraryName libName(dllName);
+    if( libName.hasNameDebugSuffix() ){
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void BinaryDependencies::emitSearchPathListMessage(const PathList & pathList) const
@@ -141,6 +155,17 @@ void BinaryDependencies::emitSearchPathListMessage(const PathList & pathList) co
 
   for(const QString & path : pathList){
     const QString msg = tr(" %1").arg(path);
+    emit verboseMessage(msg);
+  }
+}
+
+void BinaryDependencies::emitBuildTypeMessage(BuildType buildType) const
+{
+  if(buildType == BuildType::Debug){
+    const QString msg = tr("build type is Debug");
+    emit verboseMessage(msg);
+  }else{
+    const QString msg = tr("build type is Release (like)");
     emit verboseMessage(msg);
   }
 }

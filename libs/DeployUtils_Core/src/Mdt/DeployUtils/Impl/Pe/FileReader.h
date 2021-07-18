@@ -198,6 +198,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
     if( header.magicType() == MagicType::Pe32 ){
       header.numberOfRvaAndSizes = get32BitValueLE( map.subSpan(92, 4) );
       header.importTable = get64BitValueLE( map.subSpan(104, 8) );
+      if( map.size > 151  ){
+        header.debug = get64BitValueLE( map.subSpan(144, 8) );
+      }
       if( map.size >= 208 ){
         header.delayImportTable = get64BitValueLE( map.subSpan(200, 8) );
       }
@@ -205,6 +208,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       header.numberOfRvaAndSizes = get32BitValueLE( map.subSpan(108, 4) );
       if( map.size >= 128 ){
         header.importTable = get64BitValueLE( map.subSpan(120, 8) );
+      }
+      if( map.size > 168  ){
+        header.debug = get64BitValueLE( map.subSpan(160, 8) );
       }
       if( map.size >= 224 ){
         header.delayImportTable = get64BitValueLE( map.subSpan(216, 8) );
@@ -670,6 +676,22 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       assert( mCoffHeader.seemsValid() );
 
       return mCoffHeader.isValidExecutableImage();
+    }
+
+    bool containsDebugSymbols()
+    {
+      assert( mDosHeader.seemsValid() );
+      assert( mCoffHeader.seemsValid() );
+      assert( mOptionalHeader.seemsValid() );
+
+      if( !mCoffHeader.isDebugStripped() ){
+        return true;
+      }
+      if( mOptionalHeader.containsDebugDirectory() ){
+        return true;
+      }
+
+      return false;
     }
 
    private:

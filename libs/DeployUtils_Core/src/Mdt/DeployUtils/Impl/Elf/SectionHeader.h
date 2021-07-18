@@ -32,7 +32,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   enum class SectionType
   {
     Null = 0,               /*!< Inactive section header, does not have a associated section */
-    ProgramData = 0x01,     /*!< Program data */
+    ProgramData = 0x01,     /*!< Program data - SHT_PROGBITS */
     SymbolTable = 0x02,     /*!< Symbol table */
     StringTable = 0x03,     /*!< Refers to a string table section */
     Rela = 0x04,            /*!< Relocation entries with addends */

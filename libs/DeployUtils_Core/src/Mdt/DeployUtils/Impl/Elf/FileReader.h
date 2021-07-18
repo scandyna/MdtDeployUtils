@@ -25,6 +25,7 @@
 #include "SectionHeader.h"
 #include "DynamicSection.h"
 #include "Mdt/DeployUtils/ExecutableFileReadError.h"
+#include "Mdt/DeployUtils/Algorithm.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include "Mdt/DeployUtils/Impl/ExecutableFileReaderUtils.h"
 #include <QChar>
@@ -662,6 +663,38 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return sectionHeaders;
   }
 
+  /*! \internal Find the first section header for which its name matches \a namePredicate
+   */
+  template<typename UnaryPredicate>
+  inline
+  SectionHeader findFirstSectionHeader(const ByteArraySpan & map, const FileHeader & fileHeader,
+                                       const SectionHeader & sectionNamesStringTableSectionHeader,
+                                       SectionType type, UnaryPredicate namePredicate)
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.seemsValid() );
+    assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
+    assert( sectionNamesStringTableSectionHeader.sectionType() == SectionType::StringTable );
+    assert( type != SectionType::Null );
+
+    SectionHeader sectionHeader;
+    const uint16_t sectionHeaderCount = fileHeader.shnum;
+
+    for(uint16_t i = 0; i < sectionHeaderCount; ++i){
+      sectionHeader = extractSectionHeaderAt(map, fileHeader, i);
+      if( sectionHeader.sectionType() == type ){
+        setSectionHeaderName(map.data, sectionNamesStringTableSectionHeader, sectionHeader);
+        if( namePredicate(sectionHeader.name) ){
+          return sectionHeader;
+        }
+      }
+    }
+
+    sectionHeader.type = 0;
+
+    return sectionHeader;
+  }
+
   /*! \internal Find a section header by a type and a name
    *
    * If requested section header does not exist,
@@ -687,22 +720,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( type != SectionType::Null );
     assert( !name.empty() );
 
-    SectionHeader sectionHeader;
-    const uint16_t sectionHeaderCount = fileHeader.shnum;
+    const auto namePredicate = [&name](const std::string & currentName){
+      return currentName == name;
+    };
 
-    for(uint16_t i = 0; i < sectionHeaderCount; ++i){
-      sectionHeader = extractSectionHeaderAt(map, fileHeader, i);
-      if( sectionHeader.sectionType() == type ){
-        setSectionHeaderName(map.data, sectionNamesStringTableSectionHeader, sectionHeader);
-        if( sectionHeader.name == name ){
-          return sectionHeader;
-        }
-      }
-    }
-
-    sectionHeader.type = 0;
-
-    return sectionHeader;
+    return findFirstSectionHeader(map, fileHeader, sectionNamesStringTableSectionHeader, type, namePredicate);
   }
 
   /*! \brief Check if \a header is a string table section header
@@ -965,6 +987,24 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       readFileHeaderIfNull(map);
 
       return mFileHeader;
+    }
+
+    /*! \internal
+     */
+    bool containsDebugSymbols(const ByteArraySpan & map)
+    {
+      assert( !map.isNull() );
+
+      readFileHeaderIfNull(map);
+      checkFileSizeToReadSectionHeaders(map);
+      readSectionNameStringTableHeaderIfNull(map);
+
+      const auto pred = [](const std::string & currentName){
+        return Mdt::DeployUtils::stringStartsWith(currentName, ".debug");
+      };
+      const SectionHeader header  = findFirstSectionHeader(map, mFileHeader, mSectionNamesStringTableSectionHeader, SectionType::ProgramData, pred);
+
+      return header.sectionType() != SectionType::Null;
     }
 
     /*! \brief

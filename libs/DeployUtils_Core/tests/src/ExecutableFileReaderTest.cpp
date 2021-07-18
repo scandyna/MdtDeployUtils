@@ -118,6 +118,45 @@ TEST_CASE("isExecutableOrSharedLibrary")
   }
 }
 
+TEST_CASE("containsDebugSymbols")
+{
+  ExecutableFileReader reader;
+  const bool isDebug = currentBuildType() == BuildType::Debug;
+
+  SECTION("shared library")
+  {
+    reader.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    REQUIRE( reader.containsDebugSymbols() == isDebug );
+    reader.close();
+  }
+
+  SECTION("dynamic linked executable")
+  {
+    reader.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+    REQUIRE( reader.containsDebugSymbols() == isDebug );
+    reader.close();
+  }
+}
+
+TEST_CASE("containsDebugSymbols_Windows_sandbox")
+{
+  ExecutableFileReader reader;
+
+  SECTION("Qt5Core")
+  {
+    reader.openFile( QString::fromLocal8Bit("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Core.dll") );
+    REQUIRE( !reader.containsDebugSymbols() );
+    reader.close();
+  }
+
+  SECTION("Qt5Cored")
+  {
+    reader.openFile( QString::fromLocal8Bit("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Cored.dll") );
+    REQUIRE( reader.containsDebugSymbols() );
+    reader.close();
+  }
+}
+
 TEST_CASE("getNeededSharedLibraries")
 {
   ExecutableFileReader reader;

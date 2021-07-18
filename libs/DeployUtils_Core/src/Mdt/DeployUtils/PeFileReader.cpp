@@ -97,6 +97,17 @@ bool PeFileReader::doIsExecutableOrSharedLibrary()
   return true;
 }
 
+bool PeFileReader::doContainsDebugSymbols()
+{
+  if( !tryExtractDosCoffAndOptionalHeader() ){
+    const QString message = tr("file '%1' is not a valid PE image")
+                            .arg( fileName() );
+    throw ExecutableFileReadError(message);
+  }
+
+  return mImpl->containsDebugSymbols();
+}
+
 QStringList PeFileReader::doGetNeededSharedLibraries()
 {
   using Impl::ByteArraySpan;

@@ -84,6 +84,14 @@ bool AbstractExecutableFileReaderEngine::isExecutableOrSharedLibrary()
   return doIsExecutableOrSharedLibrary();
 }
 
+bool AbstractExecutableFileReaderEngine::containsDebugSymbols()
+{
+  assert( isOpen() );
+  assert( isExecutableOrSharedLibrary() );
+
+  return doContainsDebugSymbols();
+}
+
 QStringList AbstractExecutableFileReaderEngine::getNeededSharedLibraries()
 {
   assert( isOpen() );

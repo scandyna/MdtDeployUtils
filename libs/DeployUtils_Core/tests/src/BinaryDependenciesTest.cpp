@@ -65,13 +65,13 @@ TEST_CASE("buildSearchPathListWindows")
 
   SECTION("x86")
   {
-    searchPathList = binaryDependencies.buildSearchPathListWindows(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_32);
+    searchPathList = binaryDependencies.buildSearchPathListWindows(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_32, BuildType::Release);
     REQUIRE( !searchPathList.isEmpty() );
   }
 
   SECTION("x86_64")
   {
-    searchPathList = binaryDependencies.buildSearchPathListWindows(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_64);
+    searchPathList = binaryDependencies.buildSearchPathListWindows(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_64, BuildType::Release);
     REQUIRE( !searchPathList.isEmpty() );
   }
 }
@@ -109,9 +109,20 @@ TEST_CASE("Windows_sandbox")
 
   QStringList dependencies;
 
-  SECTION("Qt5")
+  SECTION("Qt5Widgets")
   {
     const QFileInfo target( QString::fromLocal8Bit("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Widgets.dll") );
+    dependencies = solver.findDependencies(target, searchFirstPathPrefixList);
+
+    std::cout << "deps:\n" << dependencies.join( QLatin1Char('\n') ).toStdString() << std::endl;
+
+//     REQUIRE( containsTestSharedLibrary(dependencies) );
+    REQUIRE( containsQt5Core(dependencies) );
+  }
+
+  SECTION("Qt5Widgetsd")
+  {
+    const QFileInfo target( QString::fromLocal8Bit("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Widgetsd.dll") );
     dependencies = solver.findDependencies(target, searchFirstPathPrefixList);
 
     std::cout << "deps:\n" << dependencies.join( QLatin1Char('\n') ).toStdString() << std::endl;
