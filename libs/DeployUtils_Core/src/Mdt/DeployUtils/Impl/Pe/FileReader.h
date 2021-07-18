@@ -684,11 +684,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       assert( mCoffHeader.seemsValid() );
       assert( mOptionalHeader.seemsValid() );
 
-      if( !mCoffHeader.isDebugStripped() ){
-        return true;
-      }
       if( mOptionalHeader.containsDebugDirectory() ){
         return true;
+      }
+      if( mCoffHeader.isDebugStripped() ){
+        return false;
       }
 
       return false;
