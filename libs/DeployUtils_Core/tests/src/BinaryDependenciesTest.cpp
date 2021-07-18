@@ -96,38 +96,3 @@ TEST_CASE("findDependencies")
     REQUIRE( containsQt5Core(dependencies) );
   }
 }
-
-/// \todo see https://doc.qt.io/qt-6/windows-deployment.html#application-dependencies
-TEST_CASE("Windows_sandbox")
-{
-  BinaryDependencies solver;
-
-  PathList searchFirstPathPrefixList;
-  searchFirstPathPrefixList.appendPath( QLatin1String("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/Tools/mingw492_32/") );
-  searchFirstPathPrefixList.appendPath( QLatin1String("/home/philippe/.wine/drive_c/windows/syswow64/") );
-  searchFirstPathPrefixList.appendPath( QLatin1String("/home/philippe/.wine/drive_c/windows/system32/") );
-
-  QStringList dependencies;
-
-  SECTION("Qt5Widgets")
-  {
-    const QFileInfo target( QString::fromLocal8Bit("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Widgets.dll") );
-    dependencies = solver.findDependencies(target, searchFirstPathPrefixList);
-
-    std::cout << "deps:\n" << dependencies.join( QLatin1Char('\n') ).toStdString() << std::endl;
-
-//     REQUIRE( containsTestSharedLibrary(dependencies) );
-    REQUIRE( containsQt5Core(dependencies) );
-  }
-
-  SECTION("Qt5Widgetsd")
-  {
-    const QFileInfo target( QString::fromLocal8Bit("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Widgetsd.dll") );
-    dependencies = solver.findDependencies(target, searchFirstPathPrefixList);
-
-    std::cout << "deps:\n" << dependencies.join( QLatin1Char('\n') ).toStdString() << std::endl;
-
-//     REQUIRE( containsTestSharedLibrary(dependencies) );
-    REQUIRE( containsQt5Core(dependencies) );
-  }
-}
