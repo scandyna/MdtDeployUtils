@@ -118,6 +118,11 @@ TEST_CASE("isExecutableOrSharedLibrary")
   }
 }
 
+/*
+ * MSVC allways adds debug symbols,
+ * so this test will fail for Release build
+ */
+#ifndef COMPILER_IS_MSVC
 TEST_CASE("containsDebugSymbols")
 {
   ExecutableFileReader reader;
@@ -137,3 +142,4 @@ TEST_CASE("containsDebugSymbols")
     reader.close();
   }
 }
+#endif // #ifndef COMPILER_IS_MSVC

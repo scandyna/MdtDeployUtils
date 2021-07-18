@@ -277,7 +277,9 @@ target_compile_definitions(executableFileReaderTest PRIVATE TEST_SHARED_LIBRARY_
 target_compile_definitions(executableFileReaderTest PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
 target_compile_definitions(executableFileReaderTest PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
 target_compile_definitions(executableFileReaderTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
-
+if(MSVC)
+  target_compile_definitions(executableFileReaderTest PRIVATE COMPILER_IS_MSVC=1)
+endif()
 
 mdt_add_test(
   NAME ExecutableFileReaderErrorTest
