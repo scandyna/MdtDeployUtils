@@ -34,17 +34,37 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     int64_t size = 0;
 
     constexpr
+    inline
     bool isNull() const noexcept
     {
       return data == nullptr;
     }
 
-    /*! \brief Get a span that is a view over the \a count elements of this span starting at \a offset
+    /*! \brief Check if \a offset and \a count represents a valid range for this span
      *
      * \pre this span must not be null
      * \pre \a offset must be >= 0
      * \pre \a count must be > 0
-     * \pre \a offset + \a count must be <= the size of this span
+     */
+    constexpr
+    inline
+    bool isInRange(int64_t offset, int64_t count) const noexcept
+    {
+      assert( !isNull() );
+      assert( offset >= 0 );
+      assert( count > 0 );
+
+      return (offset + count) <= size;
+    }
+
+    /*! \brief Get a span that is a view over the \a count elements of this span starting at \a offset
+     *
+     * \pre this span must not be null
+     * \sa isNull()
+     * \pre \a offset must be >= 0
+     * \pre \a count must be > 0
+     * \pre \a offset + \a count must be in range of this span
+     * \sa isInRange()
      */
     constexpr
     ByteArraySpan subSpan(int64_t offset, int64_t count) const noexcept
@@ -52,7 +72,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
       assert( !isNull() );
       assert( offset >= 0 );
       assert( count > 0 );
-      assert( (offset + count) <= size );
+      assert( isInRange(offset, count) );
 
       ByteArraySpan span;
 

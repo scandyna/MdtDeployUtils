@@ -45,6 +45,27 @@ TEST_CASE("Construct")
   }
 }
 
+TEST_CASE("isInRange")
+{
+  unsigned char array[4] = {1,2,3,4};
+  const ByteArraySpan span = spanFromArray( array, sizeof(array) );
+
+  SECTION("offset 0, size 1")
+  {
+    REQUIRE( span.isInRange(0, 1) );
+  }
+
+  SECTION("offset 1, size 3")
+  {
+    REQUIRE( span.isInRange(1, 3) );
+  }
+
+  SECTION("offset 1, size 4")
+  {
+    REQUIRE( !span.isInRange(1, 4) );
+  }
+}
+
 TEST_CASE("subSpan")
 {
   unsigned char array[4] = {1,2,3,4};
