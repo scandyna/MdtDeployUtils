@@ -315,8 +315,7 @@ mdt_add_test(
     src/MsvcVersionTest.cpp
 )
 
-# TODO enable if
-# if(MSVC)
+if(MSVC)
   mdt_add_test(
     NAME CompilerFinderTest_Msvc
     TARGET compilerFinderTest_Msvc
@@ -325,7 +324,7 @@ mdt_add_test(
       src/CompilerFinderTest_Msvc.cpp
   )
   target_compile_definitions(compilerFinderTest_Msvc PRIVATE CXX_COMPILER_PATH="${CMAKE_CXX_COMPILER}")
-# endif()
+endif()
 
 mdt_add_test(
   NAME BinaryDependenciesImplTest

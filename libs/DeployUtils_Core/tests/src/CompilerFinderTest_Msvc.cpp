@@ -26,7 +26,7 @@
 #include "TestUtils.h"
 #include <QString>
 
-#include <QDebug>
+// #include <QDebug>
 
 using namespace Mdt::DeployUtils;
 
@@ -42,8 +42,6 @@ TEST_CASE("hasInstallDir")
 
 TEST_CASE("findFromCxxCompilerPath")
 {
-  qDebug() << "CXX_COMPILER_PATH: " << CXX_COMPILER_PATH;
-  
   CompilerFinder finder;
   finder.findFromCxxCompilerPath( QString::fromLocal8Bit(CXX_COMPILER_PATH) );
   REQUIRE( finder.hasInstallDir() );
@@ -70,8 +68,5 @@ TEST_CASE("findRedistDirectory")
   REQUIRE( finder.hasInstallDir() );
 
   const QString redistPath = finder.findRedistDirectory( platform.processorISA(), currentBuildType() );
-  
-  qDebug() << "redistPath: " << redistPath;
-  
   REQUIRE( isExistingDirectory(redistPath) );
 }
