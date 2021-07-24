@@ -99,13 +99,19 @@ bool PeFileReader::doIsExecutableOrSharedLibrary()
 
 bool PeFileReader::doContainsDebugSymbols()
 {
-  if( !tryExtractDosCoffAndOptionalHeader() ){
-    const QString message = tr("file '%1' is not a valid PE image")
-                            .arg( fileName() );
-    throw ExecutableFileReadError(message);
-  }
+//   if( !tryExtractDosCoffAndOptionalHeader() ){
+//     const QString message = tr("file '%1' is not a valid PE image")
+//                             .arg( fileName() );
+//     throw ExecutableFileReadError(message);
+//   }
 
-  return mImpl->containsDebugSymbols();
+  using Impl::ByteArraySpan;
+
+  const qint64 size = fileSize();
+
+  const ByteArraySpan map = mapIfRequired(0, size);
+
+  return mImpl->containsDebugSymbols(map);
 }
 
 QStringList PeFileReader::doGetNeededSharedLibraries()
