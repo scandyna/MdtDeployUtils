@@ -40,6 +40,13 @@ namespace Mdt{ namespace DeployUtils{
      : runtime_error( what.toLocal8Bit().toStdString() )
     {
     }
+
+    /*! \brief Get a QString version of what()
+     */
+    QString whatQString() const noexcept
+    {
+      return QString::fromLocal8Bit( QByteArray::fromStdString( what() ) );
+    }
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
