@@ -294,6 +294,28 @@ TEST_CASE("coffHeaderFromArray")
   }
 }
 
+TEST_CASE("CoffStringTableHandle")
+{
+  using Impl::Pe::CoffStringTableHandle;
+
+  CoffStringTableHandle stringTable;
+
+  SECTION("default constructed")
+  {
+    REQUIRE( stringTable.isNull() );
+    REQUIRE( stringTable.isEmpty() );
+  }
+
+  SECTION("empty string table")
+  {
+    unsigned char array[4] = {1,2,3,4};
+    stringTable.table = arraySpanFromArray( array, sizeof(array) );
+
+    REQUIRE( !stringTable.isNull() );
+    REQUIRE( stringTable.isEmpty() );
+  }
+}
+
 TEST_CASE("ImageDataDirectory")
 {
   using Impl::Pe::ImageDataDirectory;
@@ -520,7 +542,7 @@ TEST_CASE("optionalHeaderFromArray")
   }
 }
 
-TEST_CASE("qStringFromUft8UnsignedCharArray")
+TEST_CASE("qStringFromUft8BoundedUnsignedCharArray")
 {
   using Impl::Pe::qStringFromUft8BoundedUnsignedCharArray;
 
@@ -544,6 +566,74 @@ TEST_CASE("qStringFromUft8UnsignedCharArray")
       };
       arraySpan = arraySpanFromArray( array, sizeof(array) );
       REQUIRE( qStringFromUft8BoundedUnsignedCharArray(arraySpan) == QLatin1String("abcdefgh") );
+    }
+  }
+}
+
+TEST_CASE("getSectionHeaderName")
+{
+  using Impl::Pe::getSectionHeaderName;
+
+  ByteArraySpan arraySpan;
+  Impl::Pe::CoffStringTableHandle stringTable;
+
+  SECTION("Short names (standard for image files)")
+  {
+    /*
+     * We don't have to check every possible string length etc,
+     * this is done by qStringFromUft8BoundedUnsignedCharArray()
+     */
+    SECTION(".idata")
+    {
+      unsigned char array[8] = {
+        '.','i','d','a','t','a',0,0
+      };
+      arraySpan = arraySpanFromArray( array, sizeof(array) );
+      REQUIRE( getSectionHeaderName(arraySpan, stringTable) == QLatin1String(".idata") );
+    }
+  }
+
+  SECTION("Long names")
+  {
+    SECTION("string table is empty")
+    {
+      SECTION("/4")
+      {
+        unsigned char array[8] = {
+          '/','4',0,0,0,0,0,0
+        };
+        arraySpan = arraySpanFromArray( array, sizeof(array) );
+        REQUIRE( getSectionHeaderName(arraySpan, stringTable) == QLatin1String("/4") );
+      }
+    }
+
+    SECTION("string table exists and is not empty")
+    {
+      unsigned char stringTableArray[29] = {
+        0,0,0,0x1D, // size: 29
+        '.','e','h','_','f','r','a','m','e',0,
+        '.','d','e','b','u','g','_','a','r','a','n','g','e','s',0
+      };
+      stringTable.table = arraySpanFromArray( stringTableArray, sizeof(stringTableArray) );
+
+      SECTION(".eh_frame")
+      {
+        unsigned char array[8] = {
+          '/','4',0,0,0,0,0,0
+        };
+        arraySpan = arraySpanFromArray( array, sizeof(array) );
+        REQUIRE( getSectionHeaderName(arraySpan, stringTable) == QLatin1String(".eh_frame") );
+      }
+
+      SECTION(".debug_aranges")
+      {
+        unsigned char array[8] = {
+          '/','1','4',0,0,0,0,0
+        };
+        arraySpan = arraySpanFromArray( array, sizeof(array) );
+        REQUIRE( getSectionHeaderName(arraySpan, stringTable) == QLatin1String(".debug_aranges") );
+      }
+
     }
   }
 }
@@ -669,10 +759,12 @@ TEST_CASE("SectionHeader")
 TEST_CASE("sectionHeaderFromArray")
 {
   using Impl::Pe::sectionHeaderFromArray;
+  using Impl::Pe::CoffStringTableHandle;
   using Impl::Pe::SectionHeader;
 
   unsigned char array[40] = {};
   ByteArraySpan arraySpan;
+  CoffStringTableHandle stringTable;
   SectionHeader header;
 
   SECTION(".idata")
@@ -708,7 +800,7 @@ TEST_CASE("sectionHeaderFromArray")
     array[23] = 0x87;
 
     arraySpan = arraySpanFromArray( array, sizeof(array) );
-    header = sectionHeaderFromArray(arraySpan);
+    header = sectionHeaderFromArray(arraySpan, stringTable);
     REQUIRE( header.name == QLatin1String(".idata") );
     REQUIRE( header.virtualSize == 0x12345678 );
     REQUIRE( header.virtualAddress == 0x34567890 );

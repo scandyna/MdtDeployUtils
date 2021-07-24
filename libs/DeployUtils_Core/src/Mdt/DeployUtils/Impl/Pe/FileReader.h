@@ -31,6 +31,7 @@
 #include <QCoreApplication>
 #include <QtGlobal>
 #include <QString>
+#include <QStringRef>
 #include <QStringList>
 #include <QObject>
 #include <string>
@@ -38,6 +39,7 @@
 
 // #include "Debug.h"
 // #include <iostream>
+// #include <QDebug>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
@@ -284,6 +286,55 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
   }
 
   /*! \internal
+   */
+  inline
+  int64_t minimumSizeToExtractCoffStringTableHandle(const CoffHeader & coffHeader) noexcept
+  {
+    assert( coffHeader.seemsValid() );
+
+    return coffHeader.coffStringTableOffset() + 4;
+  }
+
+  /*! \internal
+   *
+   * \exception FileCorrupted
+   */
+  inline
+  CoffStringTableHandle extractCoffStringTableHandle(const ByteArraySpan & map, const CoffHeader & coffHeader)
+  {
+    assert( !map.isNull() );
+    assert( coffHeader.seemsValid() );
+    assert( coffHeader.containsCoffStringTable() );
+    assert( map.size >= minimumSizeToExtractCoffStringTableHandle(coffHeader) );
+
+    CoffStringTableHandle stringTable;
+
+    const int64_t stringTableByteCount = get32BitValueLE( map.subSpan(coffHeader.coffStringTableOffset(), 4) );
+    if( !map.isInRange(coffHeader.coffStringTableOffset(), stringTableByteCount) ){
+      const QString message = tr("declared COFF string table size %1 is out of range of the file size %2")
+                              .arg( QString::number(stringTableByteCount), QString::number(map.size) );
+      throw FileCorrupted(message);
+    }
+    stringTable.table = map.subSpan(coffHeader.coffStringTableOffset(), stringTableByteCount);
+
+    return stringTable;
+  }
+
+  /*! \internal
+   *
+   * \exception NotNullTerminatedStringError
+   */
+  inline
+  QString extractString(const CoffStringTableHandle & stringTable, int offset) noexcept
+  {
+    assert( !stringTable.isEmpty() );
+    assert( offset >= 0 );
+    assert( stringTable.isInRange(offset) );
+
+    return qStringFromUft8ByteArraySpan( stringTable.table.subSpan(offset) );
+  }
+
+  /*! \internal
    *
    * \pre \a coffHeader must be valid
    * \pre \a dosHeader must be valid
@@ -325,18 +376,66 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
   /*! \internal
    *
-   * \pre \a map must not be null
-   * \pre \a map size must be the size of a section header
+   * The section header name is directly encoded as UTF-8 null padded string.
+   *
+   * For names longer that 8 bytes, it begins with a '/'
+   * followed by an ASCII representation of a decimal number
+   * that is an offset into the COFF string table.
+   *
+   * Microsoft's documentations tells that the COFF string table
+   * is not used for executable image files.
+   * Despite that, some compilers, like Gcc,
+   * will use names longer thant 8 bytes,
+   * generate a COFF string table and put a offset to the name
+   * (for example '/81').
+   *
+   * \sa https://docs.microsoft.com/en-us/windows/win32/debug/pe-format#section-table-section-headers
+   *
+   * \pre \a charArray must not be null
+   * \pre \a charArray size must be 8
+   * \exception NotNullTerminatedStringError
+   * \exception FileCorrupted
    */
   inline
-  SectionHeader sectionHeaderFromArray(const ByteArraySpan & map) noexcept
+  QString getSectionHeaderName(const ByteArraySpan & charArray, const CoffStringTableHandle & stringTable)
+  {
+    assert( !charArray.isNull() );
+    assert( charArray.size == 8 );
+
+    const QString name = qStringFromUft8BoundedUnsignedCharArray(charArray);
+
+    if( (charArray.data[0] == '/') && !stringTable.isEmpty() ){
+      bool numOk = false;
+      const int offset = name.rightRef(name.size()-1).toInt(&numOk);
+      if( !numOk || (offset < 4) || !stringTable.isInRange(offset) ){
+        const QString message = tr("section %1 is a invalid offset to the COFF string table")
+                                .arg(name);
+        throw FileCorrupted(message);
+      }
+
+      return extractString(stringTable, offset);
+    }
+
+    return name;
+  }
+
+  /*! \internal
+   *
+   * \pre \a map must not be null
+   * \pre \a map size must be the size of a section header
+   * \note \a stringTable can be empty
+   * \exception NotNullTerminatedStringError
+   * \exception FileCorrupted
+   */
+  inline
+  SectionHeader sectionHeaderFromArray(const ByteArraySpan & map, const CoffStringTableHandle & stringTable)
   {
     assert( !map.isNull() );
     assert( map.size == 40 );
 
     SectionHeader header;
 
-    header.name = qStringFromUft8BoundedUnsignedCharArray( map.subSpan(0, 8) );
+    header.name = getSectionHeaderName( map.subSpan(0, 8), stringTable );
     header.virtualSize = get32BitValueLE( map.subSpan(8, 4) );
     header.virtualAddress = get32BitValueLE( map.subSpan(12, 4) );
     header.sizeOfRawData = get32BitValueLE( map.subSpan(16, 4) );
@@ -345,26 +444,57 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
     return header;
   }
 
-  /*! \internal
+  /*! \internal Find the first section header that matches \a predicate
+   *
+   * Predicate is of the form:
+   * \code
+   * bool p(const SectionHeader & header);
+   * \endcode
    */
+  template<typename UnaryPredicate>
   inline
-  SectionHeader findSectionHeaderByRva(const ByteArraySpan & map, uint32_t rva, const CoffHeader & coffHeader, const DosHeader & dosHeader) noexcept
+  SectionHeader findFirstSectionHeader(const ByteArraySpan & map, const CoffHeader & coffHeader, const DosHeader & dosHeader, UnaryPredicate predicate)
   {
     assert( !map.isNull() );
     assert( coffHeader.seemsValid() );
     assert( dosHeader.seemsValid() );
     assert( map.size >= minimumSizeToExtractSectionTable(coffHeader, dosHeader) );
 
+    CoffStringTableHandle stringTable;
+    if( coffHeader.containsCoffStringTable() && map.size >= minimumSizeToExtractCoffStringTableHandle(coffHeader) ){
+      stringTable = extractCoffStringTableHandle(map, coffHeader);
+    }
+
     int64_t offset = sectionTableOffset(coffHeader, dosHeader);
     for(uint16_t i = 1; i < coffHeader.numberOfSections; ++i){
-      const SectionHeader sectionHeader = sectionHeaderFromArray( map.subSpan(offset, 40) );
-      if( sectionHeader.seemsValid() && sectionHeader.rvaIsInThisSection(rva) ){
+      const SectionHeader sectionHeader = sectionHeaderFromArray( map.subSpan(offset, 40), stringTable );
+      if( sectionHeader.seemsValid() && predicate(sectionHeader) ){
         return sectionHeader;
       }
       offset += 40;
     }
 
     return SectionHeader();
+  }
+
+  /*! \internal
+   *
+   * \exception NotNullTerminatedStringError
+   * \exception FileCorrupted
+   */
+  inline
+  SectionHeader findSectionHeaderByRva(const ByteArraySpan & map, uint32_t rva, const CoffHeader & coffHeader, const DosHeader & dosHeader)
+  {
+    assert( !map.isNull() );
+    assert( coffHeader.seemsValid() );
+    assert( dosHeader.seemsValid() );
+    assert( map.size >= minimumSizeToExtractSectionTable(coffHeader, dosHeader) );
+
+    const auto pred = [rva](const SectionHeader & header){
+      return header.rvaIsInThisSection(rva);
+    };
+
+    return findFirstSectionHeader(map, coffHeader, dosHeader, pred);
   }
 
   /*! \internal Find a section header from a optional header data directory
@@ -374,9 +504,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
    * \pre \a coffHeader must be valid
    * \pre \a dosHeader must be valid
    * \pre \a map size must be big enouth to extract the the section table
+   * \exception NotNullTerminatedStringError
+   * \exception FileCorrupted
    */
   inline
-  SectionHeader findSectionHeader(const ByteArraySpan & map, const ImageDataDirectory & directory, const CoffHeader & coffHeader, const DosHeader & dosHeader) noexcept
+  SectionHeader findSectionHeader(const ByteArraySpan & map, const ImageDataDirectory & directory, const CoffHeader & coffHeader, const DosHeader & dosHeader)
   {
     assert( !map.isNull() );
     assert( !directory.isNull() );
@@ -678,15 +810,34 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       return mCoffHeader.isValidExecutableImage();
     }
 
-    bool containsDebugSymbols()
+    bool containsDebugSymbols(const ByteArraySpan & map)
     {
-      assert( mDosHeader.seemsValid() );
-      assert( mCoffHeader.seemsValid() );
-      assert( mOptionalHeader.seemsValid() );
+      assert( !map.isNull() );
+
+      extractDosHeaderIfNull(map);
+      extractCoffHeaderIfNull(map);
+      extractOptionalHeaderIfNull(map);
+
+      assert( map.size >= minimumSizeToExtractSectionTable(mCoffHeader, mDosHeader) );
 
       if( mOptionalHeader.containsDebugDirectory() ){
         return true;
       }
+
+      const auto pred = [](const SectionHeader & header){
+        return header.name.startsWith( QLatin1String(".debug") );
+      };
+      try{
+        const SectionHeader debugSectionHeader = findFirstSectionHeader(map, mCoffHeader, mDosHeader, pred);
+        if( debugSectionHeader.seemsValid() ){
+          return true;
+        }
+      }catch(const FileCorrupted & error){
+        const QString message = tr("file '%1' is corruped: %2")
+                                .arg( mFileName, error.whatQString() );
+        throw ExecutableFileReadError(message);
+      }
+
       if( mCoffHeader.isDebugStripped() ){
         return false;
       }

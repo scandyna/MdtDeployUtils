@@ -21,6 +21,8 @@
 #ifndef MDT_DEPLOY_UTILS_IMPL_PE_FILE_HEADER_H
 #define MDT_DEPLOY_UTILS_IMPL_PE_FILE_HEADER_H
 
+#include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
+#include <QString>
 #include <cstdint>
 #include <cassert>
 
@@ -152,6 +154,20 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       return characteristics & 0x0200;
     }
 
+    /*! \brief Check if the COFF string table exists
+     */
+    bool containsCoffStringTable() const noexcept
+    {
+      return coffStringTableOffset() > 0;
+    }
+
+    /*! \brief Get the file offset of the COFF string table
+     */
+    int64_t coffStringTableOffset() const noexcept
+    {
+      return pointerToSymbolTable + numberOfSymbols * 18;
+    }
+
     /*! \brief Check if this COFF header seems valid
      */
     bool seemsValid() const noexcept
@@ -173,6 +189,45 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
       return true;
     }
+  };
+
+  /*! \internal
+   */
+  struct CoffStringTableHandle
+  {
+    ByteArraySpan table;
+
+    /*! \internal
+     */
+    int64_t byteCount() const noexcept
+    {
+      return table.size;
+    }
+
+    /*! \internal
+     */
+    bool isNull() const noexcept
+    {
+      return byteCount() == 0;
+    }
+
+    /*! \internal
+     */
+    bool isEmpty() const noexcept
+    {
+      return byteCount() <= 4;
+    }
+
+    /*! \internal
+     */
+    bool isInRange(int offset) const noexcept
+    {
+      assert( !isEmpty() );
+      assert(offset >= 0);
+
+      return table.isInRange(offset, 1);
+    }
+
   };
 
   /*! \internal

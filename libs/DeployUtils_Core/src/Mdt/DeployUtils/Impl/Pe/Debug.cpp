@@ -63,6 +63,8 @@ QString toDebugString(const CoffHeader & header)
   QString str = QLatin1String("Machine type: 0x") + QString::number(header.machine, 16)
                 + QLatin1String(" (") + toDebugString( header.machineType() ) + QLatin1String(")");
 
+  str += QLatin1String("\nstring table offset: 0x") + QString::number( header.coffStringTableOffset(), 16 ) ;
+
   str += QLatin1String("\nsize of optional header: ") + QString::number(header.sizeOfOptionalHeader)
        + QLatin1String(" (0x") + QString::number(header.sizeOfOptionalHeader, 16) + QLatin1String(")");
 

@@ -143,3 +143,24 @@ TEST_CASE("containsDebugSymbols")
   }
 }
 #endif // #ifndef COMPILER_IS_MSVC
+
+/*
+TEST_CASE("Sandbox_Windows")
+{
+  ExecutableFileReader reader;
+
+  SECTION("Qt5Core")
+  {
+    reader.openFile( QString::fromLocal8Bit("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Core.dll") );
+    REQUIRE( !reader.containsDebugSymbols() );
+    reader.close();
+  }
+
+  SECTION("Qt5Cored")
+  {
+    reader.openFile( QString::fromLocal8Bit("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Cored.dll") );
+    REQUIRE( reader.containsDebugSymbols() );
+    reader.close();
+  }
+}
+*/

@@ -39,7 +39,20 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
       : QRuntimeError(what)
     {
     }
+  };
 
+  /*! \internal
+   */
+  class MDT_DEPLOYUTILS_EXPORT FileCorrupted : public QRuntimeError
+  {
+   public:
+
+    /*! \brief Constructor
+     */
+    explicit FileCorrupted(const QString & what)
+      : QRuntimeError(what)
+    {
+    }
   };
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
