@@ -65,13 +65,13 @@ TEST_CASE("buildSearchPathListWindows")
 
   SECTION("x86")
   {
-    searchPathList = binaryDependencies.buildSearchPathListWindows(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_32, BuildType::Release);
+    searchPathList = binaryDependencies.buildSearchPathListWindows(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_32);
     REQUIRE( !searchPathList.isEmpty() );
   }
 
   SECTION("x86_64")
   {
-    searchPathList = binaryDependencies.buildSearchPathListWindows(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_64, BuildType::Release);
+    searchPathList = binaryDependencies.buildSearchPathListWindows(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_64);
     REQUIRE( !searchPathList.isEmpty() );
   }
 }
@@ -81,8 +81,6 @@ TEST_CASE("findDependencies")
   BinaryDependencies solver;
 
   PathList searchFirstPathPrefixList = PathList::fromStringList( getTestPrefixPath(PREFIX_PATH) );
-  /// pathList.appendPathList( PathList::getSystemLibraryPathList() );
-
   QStringList dependencies;
 
   SECTION("Executable")

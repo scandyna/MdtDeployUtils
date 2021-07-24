@@ -91,7 +91,7 @@ namespace Mdt{ namespace DeployUtils{
      * \sa PathList::getSystemLibraryKnownPathListWindows()
      */
     PathList buildSearchPathListWindows(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList,
-                                        ProcessorISA processorISA, BuildType buildType) const noexcept;
+                                        ProcessorISA processorISA) const noexcept;
 
    signals:
 
@@ -100,11 +100,11 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
-    static
-    bool checkIfIsWindowsDebugBuild(bool targetHasDebugSymbols, const QStringList & directDependentDllNames) noexcept;
+//     static
+//     bool checkIfIsWindowsDebugBuild(bool targetHasDebugSymbols, const QStringList & directDependentDllNames) noexcept;
 
     void emitSearchPathListMessage(const PathList & pathList) const;
-    void emitBuildTypeMessage(BuildType buildType) const;
+//     void emitBuildTypeMessage(BuildType buildType) const;
     bool hasCompilerInstallDir() const noexcept;
 
     std::shared_ptr<CompilerFinder> mCompilerFinder;

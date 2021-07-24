@@ -57,16 +57,16 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
   ExecutableFileInfo target;
   target.fileName = binaryFilePath.fileName();
   target.directoryPath = binaryFilePath.absoluteDir().path();
-  bool isWindowsDebugBuild = false;
+//   bool isWindowsDebugBuild = false;
 
   ExecutableFileReader reader;
   reader.openFile(binaryFilePath);
   const Platform platform = reader.getFilePlatform();
-  if( platform.operatingSystem() == OperatingSystem::Windows ){
-    const bool targetContainsDebugSymbols = reader.containsDebugSymbols();
-    const QStringList directDependentDllNames = reader.getNeededSharedLibraries();
-    isWindowsDebugBuild = checkIfIsWindowsDebugBuild(targetContainsDebugSymbols, directDependentDllNames);
-  }
+//   if( platform.operatingSystem() == OperatingSystem::Windows ){
+//     const bool targetContainsDebugSymbols = reader.containsDebugSymbols();
+//     const QStringList directDependentDllNames = reader.getNeededSharedLibraries();
+//     isWindowsDebugBuild = checkIfIsWindowsDebugBuild(targetContainsDebugSymbols, directDependentDllNames);
+//   }
   reader.close();
 
   if( platform.operatingSystem() == OperatingSystem::Unknown ){
@@ -79,14 +79,14 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
   if( platform.operatingSystem() == OperatingSystem::Linux ){
     searchPathList = buildSearchPathListLinux( searchFirstPathPrefixList, platform.processorISA() );
   }else if( platform.operatingSystem() == OperatingSystem::Windows ){
-    BuildType buildType;
-    if( isWindowsDebugBuild ){
-      buildType = BuildType::Debug;
-    }else{
-      buildType = BuildType::Release;
-    }
-    searchPathList = buildSearchPathListWindows(binaryFilePath, searchFirstPathPrefixList, platform.processorISA(), buildType);
-    emitBuildTypeMessage(buildType);
+//     BuildType buildType;
+//     if( isWindowsDebugBuild ){
+//       buildType = BuildType::Debug;
+//     }else{
+//       buildType = BuildType::Release;
+//     }
+    searchPathList = buildSearchPathListWindows( binaryFilePath, searchFirstPathPrefixList, platform.processorISA() );
+//     emitBuildTypeMessage(buildType);
   }
 
   emitSearchPathListMessage(searchPathList);
@@ -115,7 +115,7 @@ PathList BinaryDependencies::buildSearchPathListLinux(const PathList & searchFir
 }
 
 PathList BinaryDependencies::buildSearchPathListWindows(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList,
-                                                        ProcessorISA processorISA, BuildType buildType) const noexcept
+                                                        ProcessorISA processorISA) const noexcept
 {
   PathList searchPathList;
 
@@ -127,14 +127,50 @@ PathList BinaryDependencies::buildSearchPathListWindows(const QFileInfo & binary
 
   searchPathList.appendPathList( searchFirstPathList.pathList() );
   if( hasCompilerInstallDir() ){
-    searchPathList.appendPath( mCompilerFinder->findRedistDirectory(processorISA, buildType) );
+    /*
+     * The main use-case to find specific redist directories is MSVC,
+     * which can be several different directories.
+     * (To see more about it, see MsvcFinder.cpp).
+     *
+     * Try to deduce if a executable was some sort of Debug build is not possible.
+     * For example, MSVC, by default (when used with CMake),
+     * will add some debug symbols for Release builds anyway.
+     *
+     * See also: https://stackoverflow.com/questions/11115832/how-to-check-if-an-executable-or-dll-is-build-in-release-or-debug-mode-c
+     *
+     * Anyway, DLL's like Qt and also MSVC runtimes
+     * are suffixed with a d (or D),
+     * so we better add both build types directores here in the search paths.
+     */
+    searchPathList.appendPath( mCompilerFinder->findRedistDirectory(processorISA, BuildType::Release) );
+    searchPathList.appendPath( mCompilerFinder->findRedistDirectory(processorISA, BuildType::Debug) );
+  }
+  /*
+   * One possible way to build on Windows is to prepare a shell
+   * with a environment that has several dependencies in the PATH.
+   *
+   * For cross-compilation, this has not sense.
+   * The user will probably have to give some prefixes anyway
+   * (like for example CMAKE_PREFIX_PATH),
+   * which will be in searchFirstPathPrefixList
+   */
+  if(Platform::nativeOperatingSystem() == OperatingSystem::Windows){
+    SearchPathList pathSearchPathList;
+    pathSearchPathList.setIncludePathPrefixes(true);
+    pathSearchPathList.setPathSuffixList({QLatin1String("bin"),QLatin1String("qt5/bin")});
+    pathSearchPathList.appendPath( binaryFilePath.absoluteDir().path() );
+    pathSearchPathList.setPathPrefixList( PathList::getSystemExecutablePathList() );
+    searchPathList.appendPathList( pathSearchPathList.pathList() );
   }
 
   return searchPathList;
 }
 
+/*
 bool BinaryDependencies::checkIfIsWindowsDebugBuild(bool targetHasDebugSymbols, const QStringList & directDependentDllNames) noexcept
 {
+  qDebug() << "Has debug symbols: " << targetHasDebugSymbols;
+
   if( !targetHasDebugSymbols ){
     return false;
   }
@@ -147,6 +183,7 @@ bool BinaryDependencies::checkIfIsWindowsDebugBuild(bool targetHasDebugSymbols, 
 
   return false;
 }
+*/
 
 void BinaryDependencies::emitSearchPathListMessage(const PathList & pathList) const
 {
@@ -159,6 +196,7 @@ void BinaryDependencies::emitSearchPathListMessage(const PathList & pathList) co
   }
 }
 
+/*
 void BinaryDependencies::emitBuildTypeMessage(BuildType buildType) const
 {
   if(buildType == BuildType::Debug){
@@ -169,6 +207,7 @@ void BinaryDependencies::emitBuildTypeMessage(BuildType buildType) const
     emit verboseMessage(msg);
   }
 }
+*/
 
 bool BinaryDependencies::hasCompilerInstallDir() const noexcept
 {

@@ -53,3 +53,39 @@ TEST_CASE("sandbox")
 
   useCase.execute(request);
 }
+
+/*
+TEST_CASE("sandbox_Windows")
+{
+  QTemporaryDir destinationDir;
+  REQUIRE( destinationDir.isValid() );
+
+  CopySharedLibrariesTargetDependsOnRequest request;
+
+  request.destinationDirectoryPath = destinationDir.path();
+  request.overwriteBehavior = OverwriteBehavior::Overwrite;
+  request.removeRpath = false;
+
+  /// \todo just for sandbox
+  MessageLogger messageLogger;
+  MessageLogger::setBackend<CMakeStyleMessageLogger>();
+
+  CopySharedLibrariesTargetDependsOn useCase;
+
+  QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::message, MessageLogger::info);
+  QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::verboseMessage, MessageLogger::info);
+
+
+  SECTION("Qt5Core")
+  {
+    request.targetFilePath = QString::fromLocal8Bit("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Core.dll");
+    useCase.execute(request);
+  }
+
+  SECTION("Qt5Cored")
+  {
+    request.targetFilePath = QString::fromLocal8Bit("/home/philippe/.wine/drive_c/Qt/Qt5.6.2/5.6/mingw49_32/bin/Qt5Cored.dll");
+    useCase.execute(request);
+  }
+}
+*/
