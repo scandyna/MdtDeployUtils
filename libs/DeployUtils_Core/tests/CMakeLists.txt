@@ -315,17 +315,6 @@ mdt_add_test(
     src/MsvcVersionTest.cpp
 )
 
-if(MSVC)
-  mdt_add_test(
-    NAME MsvcFinderTest_Msvc
-    TARGET msvcFinderTest_Msvc
-    DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
-    SOURCE_FILES
-      src/MsvcFinderTest_Msvc.cpp
-  )
-  target_compile_definitions(msvcFinderTest_Msvc PRIVATE MSVC_VERSION="${MSVC_VERSION}")
-endif()
-
 # TODO enable if
 # if(MSVC)
   mdt_add_test(
