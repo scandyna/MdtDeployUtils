@@ -62,7 +62,9 @@ const QStringList libraryExcludelistWindows = {
   QLatin1String("Secur32.DLL"),
   QLatin1String("odbc32.DLL"),
   QLatin1String("shfolder.DLL"),
-  QLatin1String("wsock32.DLL")
+  QLatin1String("wsock32.DLL"),
+  QLatin1String("ucrtbase.dll"),
+  QLatin1String("ucrtbased.dll")
 };
 
 #endif // #ifndef MDT_DEPLOY_UTILS_IMPL_LIBRARY_EXCLUDE_LIST_WINDOWS_H
