@@ -315,24 +315,6 @@ mdt_add_test(
     src/MsvcVersionTest.cpp
 )
 
-mdt_add_test(
-  NAME MsvcFinderTest
-  TARGET msvcFinderTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/MsvcFinderTest.cpp
-)
-
-mdt_add_test(
-  NAME MsvcFinderErrorTest
-  TARGET msvcFinderErrorTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/MsvcFinderErrorTest.cpp
-)
-
-message("CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")
-
 if(MSVC)
   mdt_add_test(
     NAME MsvcFinderTest_Msvc
