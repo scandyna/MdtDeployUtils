@@ -275,7 +275,7 @@ function(mdt_install_shared_libraries_target_depends_on)
     string(REPLACE ";" "\\;" MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH}")
   endif()
 
-  message("MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH: ${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH}")
+#   message("MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH: ${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH}")
 
   # configure_file() does not support generator expression
   # file(GENERATE) supports generator expression, but not @ expension

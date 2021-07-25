@@ -63,10 +63,10 @@ if(IS_MSVC)
   set(compilerLocationArguments --compiler-location compiler-path="@CMAKE_CXX_COMPILER@")
 endif()
 
-message("MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH: @MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH@")
+# message("MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH: @MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH@")
 
 execute_process(
-  COMMAND "${CMAKE_COMMAND}" -E env ${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH}
+  COMMAND "${CMAKE_COMMAND}" -E env "@MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH@"
           "${mdtDeployUtilsCommand}" --logger-backend cmake copy-shared-libraries-target-depends-on
             --overwrite-behavior ${overwriteBehavior}
             ${removeRpathOptionArgument}
