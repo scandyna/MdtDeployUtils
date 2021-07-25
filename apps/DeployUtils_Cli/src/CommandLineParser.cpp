@@ -32,6 +32,7 @@
 #include <cstdlib>
 
 // #include <QDebug>
+#include <iostream>
 
 using namespace Mdt::CommandLineParser;
 using namespace Mdt::DeployUtils;
@@ -66,6 +67,8 @@ CommandLineParser::CommandLineParser(QObject *parent)
 
 void CommandLineParser::process(const QStringList & arguments)
 {
+  std::cout << "cmd args: " << arguments.join(QLatin1Char(' ')).toStdString() << std::endl;
+
   Parser parser(mParserDefinition);
   parser.parse(arguments);
 
