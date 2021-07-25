@@ -33,12 +33,12 @@ MsvcFinder::MsvcFinder(QObject* parent)
 {
 }
 
-QString MsvcFinder::findMsvcRoot(const MsvcVersion & version)
-{
-  assert( !version.isNull() );
-  
-  return QString();
-}
+// QString MsvcFinder::findMsvcRoot(const MsvcVersion & version)
+// {
+//   assert( !version.isNull() );
+//
+//   return QString();
+// }
 
 bool MsvcFinder::doIsSupportedCompiler(const QFileInfo & executablePath) const noexcept
 {

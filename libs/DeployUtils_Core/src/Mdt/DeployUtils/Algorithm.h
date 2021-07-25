@@ -42,7 +42,7 @@ namespace Mdt{ namespace DeployUtils{
     if( s.size() > str.size() ){
       return false;
     }
-    const auto last = str.cbegin() + s.size();
+    const auto last = str.cbegin() + static_cast<std::string::difference_type>( s.size() );
 
     return std::equal( str.cbegin(), last, s.cbegin(), s.cend() );
   }

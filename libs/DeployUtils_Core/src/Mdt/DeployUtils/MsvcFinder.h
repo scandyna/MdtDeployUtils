@@ -60,7 +60,7 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \todo remove ?
      */
-    QString findMsvcRoot(const MsvcVersion & version);
+//     QString findMsvcRoot(const MsvcVersion & version);
 
    private:
 
