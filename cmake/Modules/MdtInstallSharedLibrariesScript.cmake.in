@@ -9,7 +9,9 @@ message("CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 message("CMAKE_PREFIX_PATH: @CMAKE_PREFIX_PATH@")
 message("CMAKE_CXX_COMPILER: @CMAKE_CXX_COMPILER@")
-message("Is MSVC: @MSVC@")
+
+set(IS_MSVC @MSVC@)
+message("Is MSVC: ${IS_MSVC}")
 
 
 set(DESTINATION "@MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_DESTINATION@")
@@ -51,7 +53,8 @@ message("overwriteBehavior: ${overwriteBehavior}")
 message("removeRpathOptionArgument: ${removeRpathOptionArgument}")
 
 set(compilerLocationArguments)
-if(@MSVC@)
+if(IS_MSVC)
+  message("Is MSVC, use compiler finder to locate redist dirs")
   set(compilerLocationArguments --compiler-location compiler-path="@CMAKE_CXX_COMPILER@")
 endif()
 

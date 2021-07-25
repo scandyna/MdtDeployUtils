@@ -22,7 +22,7 @@
 # We can use the DESTDIR environment variable to relocate the installation.
 # Note: this also checks that DESTDIR is used properly in some of the scripts.
 # This also works on Windows, also with MSVC,
-# but CMake do recomment it, because CMAKE_INSTALL_PREFIX may start with a drive letter,
+# but CMake do not recomment it, because CMAKE_INSTALL_PREFIX may start with a drive letter,
 # like C:/Program Files, which cannot be prepended with some other prefix.
 #
 # So, if CMAKE_INSTALL_PREFIX is, for example, C:/Program Files/MdtDeployUtils
