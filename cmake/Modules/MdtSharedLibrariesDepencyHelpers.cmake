@@ -271,6 +271,10 @@ function(mdt_install_shared_libraries_target_depends_on)
 
   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH)
   mdt_target_libraries_to_library_env_path(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH TARGET mdtdeployutils)
+  if(WIN32)
+    string(REPLACE ";" "\\;" MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH}")
+  endif()
+
   message("MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH: ${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH}")
 
   # configure_file() does not support generator expression
