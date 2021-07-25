@@ -625,8 +625,6 @@ TEST_CASE("findDependencies")
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
   ExecutableFileInfoList dependencies;
 
-//   qDebug() << "----------------";
-
   SECTION("no dependencies")
   {
     target = executableFileInfoFromFullPath("/tmp/libm.so");
@@ -674,6 +672,27 @@ TEST_CASE("findDependencies")
     REQUIRE( dependencies.size() == 2 );
     REQUIRE( dependenciesEquals(dependencies, {"/opt/MyLibs/libMyLibA.so","/opt/qt/libQt5Core.so"}) );
   }
+
+  /*
+   * This test does not work with current fake moc tree
+   *
+   * If, some day, we have a real tree for the moc,
+   * we should be able to enable it.
+   *
+  SECTION("circular dependencies (MSVCP140D <-> CONCRT14D)")
+  {
+    target = executableFileInfoFromFullPath("/tmp/MSVCP140D.dll");
+    searchPathList.appendPathList( {QLatin1String("/tmp/")} );
+    reader.setDirectDependencies({"CONCRT140D.dll"});
+    reader.addDependenciesToDirectDependency("CONCRT140D.dll",{"MSVCP140D.dll"});
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/MSVCP140D.dll","/tmp/CONCRT140D.dll"});
+
+    impl.findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
+
+    REQUIRE( dependencies.size() == 1 );
+    REQUIRE( dependenciesEquals(dependencies, {"/tmp/CONCRT140D.dll"}) );
+  }
+  */
 
   /*
    * Target: /tmp/build/myapp

@@ -346,6 +346,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
       assert( currentFile.hasAbsoluteFilePath() );
       assert( !reader.isOpen() );
 
+      if( directDependenciesAreSolved(currentFile) ){
+        return;
+      }
+
       QFileInfo currentFileInfo = currentFile.toFileInfo();
       if( !currentFileInfo.exists() ){
         if( platform.operatingSystem() == OperatingSystem::Windows ){
@@ -378,6 +382,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
       ExecutableFileInfoList dependencies = findLibrariesAbsolutePath(currentFile, dependentLibraryNames, runPath, searchPathList, platform, isExistingSharedLibraryOp);
 
+      setDirectDependenciesSolved(currentFile);
       removeDuplicates(allDependencies);
 
       for(const ExecutableFileInfo & library : dependencies){
@@ -391,6 +396,20 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     void verboseMessage(const QString & message) const;
 
    private:
+
+    bool directDependenciesAreSolved(const ExecutableFileInfo & file) const noexcept
+    {
+      const auto pred = [&file](const ExecutableFileInfo & currentFile){
+        return executableFileInfoAreEqual(currentFile, file);
+      };
+
+      return std::find_if(mSolvedFiles.cbegin(), mSolvedFiles.cend(), pred) != mSolvedFiles.cend();
+    }
+
+    void setDirectDependenciesSolved(const ExecutableFileInfo & file) noexcept
+    {
+      mSolvedFiles.push_back(file);
+    }
 
     void emitProcessingCurrentFileMessage(const QFileInfo & file) const noexcept
     {
@@ -410,6 +429,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
         emit verboseMessage(msg);
       }
     }
+
+    ExecutableFileInfoList mSolvedFiles;
   };
 
 }}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{
