@@ -32,7 +32,7 @@ TEST_CASE("contruct")
     REQUIRE( v.isNull() );
   }
 
-  SECTION("from _MSC_VER")
+  SECTION("from_MSC_VER")
   {
     const auto v = MsvcVersion::fromMscVer(100);
     REQUIRE( v.mscVer() == 100 );

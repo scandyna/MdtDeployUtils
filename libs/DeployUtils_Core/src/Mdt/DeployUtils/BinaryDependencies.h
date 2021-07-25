@@ -100,11 +100,7 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
-//     static
-//     bool checkIfIsWindowsDebugBuild(bool targetHasDebugSymbols, const QStringList & directDependentDllNames) noexcept;
-
     void emitSearchPathListMessage(const PathList & pathList) const;
-//     void emitBuildTypeMessage(BuildType buildType) const;
     bool hasCompilerInstallDir() const noexcept;
 
     std::shared_ptr<CompilerFinder> mCompilerFinder;

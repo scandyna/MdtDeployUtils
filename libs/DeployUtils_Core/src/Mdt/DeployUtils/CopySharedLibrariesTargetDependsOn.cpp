@@ -72,6 +72,13 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
         // Just to avoid compiler warnings
         break;
     }
+    if( !compilerFinder->hasInstallDir() ){
+      const QString msg = tr(
+        "it was requested to find the compiler redistribute directory, but this failed"
+        "(maybe your compiler is currently not supported for this feature)"
+      );
+      throw FindCompilerError(msg);
+    }
     binaryDependencies.setCompilerFinder(compilerFinder);
   }
 

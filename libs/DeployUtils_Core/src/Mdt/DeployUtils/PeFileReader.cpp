@@ -99,12 +99,6 @@ bool PeFileReader::doIsExecutableOrSharedLibrary()
 
 bool PeFileReader::doContainsDebugSymbols()
 {
-//   if( !tryExtractDosCoffAndOptionalHeader() ){
-//     const QString message = tr("file '%1' is not a valid PE image")
-//                             .arg( fileName() );
-//     throw ExecutableFileReadError(message);
-//   }
-
   using Impl::ByteArraySpan;
 
   const qint64 size = fileSize();

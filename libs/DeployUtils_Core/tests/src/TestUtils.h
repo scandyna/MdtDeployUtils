@@ -90,14 +90,31 @@ bool containsLibrary(const QStringList & libraries, const QString & libraryName)
   return false;
 }
 
+bool dirContainsLibrary(const QTemporaryDir & dir, const QString & libraryName)
+{
+  assert( dir.isValid() );
+
+  return containsLibrary( QDir( dir.path() ).entryList(QDir::Files), libraryName );
+}
+
 bool containsQt5Core(const QStringList & libraries)
 {
   return containsLibrary(libraries, QLatin1String("Qt5Core"));
 }
 
+bool dirContainsQt5Core(const QTemporaryDir & dir)
+{
+  return dirContainsLibrary( dir, QLatin1String("Qt5Core") );
+}
+
 bool containsTestSharedLibrary(const QStringList & libraries)
 {
   return containsLibrary( libraries, QLatin1String("testSharedLibrary") );
+}
+
+bool dirContainsTestSharedLibrary(const QTemporaryDir & dir)
+{
+  return dirContainsLibrary( dir, QLatin1String("testSharedLibrary") );
 }
 
 #endif // #ifndef TEST_UTILS_H

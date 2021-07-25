@@ -22,10 +22,9 @@
 #include "Catch2QString.h"
 #include "TestUtils.h"
 #include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.h"
-#include <QTemporaryDir>
-
 #include "Mdt/DeployUtils/MessageLogger.h"
-#include "Mdt/DeployUtils/CMakeStyleMessageLogger.h"
+#include "Mdt/DeployUtils/ConsoleMessageLogger.h"
+#include <QTemporaryDir>
 
 using namespace Mdt::DeployUtils;
 
@@ -42,9 +41,8 @@ TEST_CASE("sandbox")
   request.overwriteBehavior = OverwriteBehavior::Overwrite;
   request.removeRpath = false;
 
-  /// \todo just for sandbox
   MessageLogger messageLogger;
-  MessageLogger::setBackend<CMakeStyleMessageLogger>();
+  MessageLogger::setBackend<ConsoleMessageLogger>();
 
   CopySharedLibrariesTargetDependsOn useCase;
 
@@ -52,6 +50,9 @@ TEST_CASE("sandbox")
   QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::verboseMessage, MessageLogger::info);
 
   useCase.execute(request);
+
+  REQUIRE( dirContainsTestSharedLibrary(destinationDir) );
+  REQUIRE( dirContainsQt5Core(destinationDir) );
 }
 
 /*

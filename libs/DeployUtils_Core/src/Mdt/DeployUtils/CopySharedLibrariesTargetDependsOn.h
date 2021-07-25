@@ -83,6 +83,7 @@ namespace Mdt{ namespace DeployUtils{
      * \pre request's \a destinationDirectoryPath must be specified
      * \todo tools must also be specified
      *
+     * \exception FindCompilerError
      * \exception FileOpenError
      * \exception ExecutableFileReadError
      * \exception FindDependencyError
