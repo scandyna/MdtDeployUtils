@@ -42,15 +42,9 @@
 # the rpath informations is set to ``$ORIGIN`` for each shared library that has been  copied.
 # If ``REMOVE_RPATH`` is ``TRUE``, the rpath informations are removed for each shared library that has been copied.
 #
-# On Linux, ``ldd`` is internally used to find the shared libraries,
-# which should find dependencies using rpath informations and other mechanisms.
-# On some cases, some shared libraries cannot be found.
-# For more informations about why,
-# see https://scandyna.gitlab.io/mdt-cmake-modules/Modules/MdtRuntimeEnvironment.html .
-# To solve such case, ``CMAKE_PREFIX_PATH`` will be used to help ``ldd``.
-#
-# On Windows, there is no rpath informations,
-# so ``CMAKE_PREFIX_PATH`` will be used to find dependencies.
+# To find the shared libraries, the rpath informations will be used if available,
+# then dependencies will be searched in ``CMAKE_PREFIX_PATH``.
+# Some platform specific locations will also be used to find the libraries.
 #
 # Example:
 #
@@ -101,11 +95,9 @@
 #
 # If a shared library ``target`` depends on allready exists at the destination location,
 # but it is not the same (source and destination locations are different),
-# and ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ``TRUE``, a fatal error is thrown.
-# The reason is to prevent erasing system wide installed libraries with a other version,
-# which could corrupt the whole system.
-# On the other hand, erasing libraries while creating a standalone application
-# will happen often, and is not a problem.
+# the destination library will be replaced,
+# except if ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ``TRUE``,
+# in which case the destination library will not be changed at all.
 #
 # On platform that supports rpath,
 # the rpath informations is set to ``$ORIGIN`` for each shared library that has been installed.
@@ -267,12 +259,6 @@ function(mdt_install_shared_libraries_target_depends_on)
   set(componentArguments)
   if(ARG_COMPONENT)
     set(componentArguments COMPONENT ${ARG_COMPONENT})
-  endif()
-
-  if(ARG_INSTALL_IS_UNIX_SYSTEM_WIDE)
-    set(overwriteBehavior FAIL)
-  else()
-    set(overwriteBehavior OVERWRITE)
   endif()
 
   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_INSTALL_IS_UNIX_SYSTEM_WIDE ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE})
