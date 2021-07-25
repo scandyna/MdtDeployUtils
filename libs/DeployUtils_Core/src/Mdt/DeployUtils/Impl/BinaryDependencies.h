@@ -389,6 +389,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
         allDependencies.push_back(library);
         findDependencies(library, allDependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
       }
+
+      removeDuplicates(allDependencies);
     }
 
    signals:
