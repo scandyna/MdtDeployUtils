@@ -269,6 +269,10 @@ function(mdt_install_shared_libraries_target_depends_on)
     set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_DESTINATION "${ARG_LIBRARY_DESTINATION}")
   endif()
 
+  set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH)
+  mdt_target_libraries_to_library_env_path(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH TARGET mdtdeployutils)
+  message("MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH: ${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH}")
+
   # configure_file() does not support generator expression
   # file(GENERATE) supports generator expression, but not @ expension
   # Result: the expression $<TARGET_FILE:${ARG_TARGET}> cannot be used in the input script,
