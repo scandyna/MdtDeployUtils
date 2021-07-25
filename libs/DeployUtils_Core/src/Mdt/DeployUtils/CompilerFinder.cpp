@@ -21,6 +21,7 @@
 #include "CompilerFinder.h"
 #include "AbstractCompilerFinderEngine.h"
 #include "MsvcFinder.h"
+#include <QLatin1String>
 #include <cassert>
 
 // #include <QDebug>
@@ -68,7 +69,15 @@ void CompilerFinder::setInstallDir(const QString & path, Compiler compiler)
       case Compiler::Msvc:
         instanciateMsvcEngine();
         break;
+      default:
+        break;
     }
+  }
+
+  if( !mEngine ){
+    const QString msg = tr("requested compiler '%1' is not supported")
+                        .arg( compilerName(compiler) );
+    throw FindCompilerError(msg);
   }
 
   mEngine->setInstallDir(path);
@@ -103,6 +112,22 @@ void CompilerFinder::instanciateMsvcEngine()
   assert( mEngine.get() == nullptr );
 
   mEngine = std::make_unique<MsvcFinder>();
+}
+
+QString CompilerFinder::compilerName(Compiler compiler)
+{
+  switch(compiler){
+    case Compiler::Msvc:
+      return QLatin1String("MSVC");
+    case Compiler::Gcc:
+      return QLatin1String("Gcc");
+    case Compiler::Clang:
+      return QLatin1String("Clang");
+    case Compiler::Unknown:
+      return QLatin1String("Unknown");
+  }
+
+  return QString();
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

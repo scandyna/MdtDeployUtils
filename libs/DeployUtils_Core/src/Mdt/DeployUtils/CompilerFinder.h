@@ -91,6 +91,9 @@ namespace Mdt{ namespace DeployUtils{
 
     void instanciateMsvcEngine();
 
+    static
+    QString compilerName(Compiler compiler);
+
     std::unique_ptr<AbstractCompilerFinderEngine> mEngine;
   };
 
