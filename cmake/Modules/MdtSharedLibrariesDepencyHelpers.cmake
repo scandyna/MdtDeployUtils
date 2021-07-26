@@ -271,9 +271,14 @@ function(mdt_install_shared_libraries_target_depends_on)
 
   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH)
   mdt_target_libraries_to_library_env_path(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH TARGET mdtdeployutils)
-  if(WIN32)
-    string(REPLACE ";" "\\;" MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH}")
-  endif()
+#   if(WIN32)
+#     # Use forward slashes to avoid warnings about invalid escape sequence \U
+#     # See: https://stackoverflow.com/questions/13737370/cmake-error-invalid-escape-sequence-u/28565713
+#     # The install script will call cmake -E , so /'s should be ok
+#     string(REPLACE "\\" "/;" MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH}")
+#     #
+#     string(REPLACE ";" "\\;" MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH "${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH}")
+#   endif()
 
 #   message("MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH: ${MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH}")
 

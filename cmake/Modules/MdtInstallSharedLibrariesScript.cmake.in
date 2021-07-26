@@ -18,6 +18,32 @@ message("CMAKE_CXX_COMPILER: @CMAKE_CXX_COMPILER@")
 set(IS_MSVC @MSVC@)
 message("Is MSVC: ${IS_MSVC}")
 
+set(mdtDeployUtilsCommand "$<TARGET_FILE:mdtdeployutils>")
+message("mdtDeployUtilsCommand: ${mdtDeployUtilsCommand}")
+
+set(targetFile "$<TARGET_FILE:@ARG_TARGET@>")
+message("targetFile: ${targetFile}")
+
+###########################################
+# PATH environment to run mdtdeployutils
+###########################################
+
+set(runPath "@MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH@")
+if(WIN32)
+  # Use forward slashes to avoid warnings about invalid escape sequence \U
+  # See: https://stackoverflow.com/questions/13737370/cmake-error-invalid-escape-sequence-u/28565713
+  # We call cmake -E , so /'s should be ok
+  string(REPLACE "\\" "/;" runPath "${runPath}")
+  # ; have to be escaped, otherwise the environment will not be set properly
+  # See: https://cmake.org/pipermail/cmake/2009-May/029425.html
+  string(REPLACE ";" "\\;" runPath "${runPath}")
+endif()
+
+message("runPath: ${runPath}")
+
+###########################################
+# Destination and install path
+###########################################
 
 set(DESTINATION "@MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_DESTINATION@")
 
@@ -27,21 +53,29 @@ if(NOT DESTINATION)
   message(FATAL_ERROR "MdtInstallSharedLibrariesScript: missing DESTINATION")
 endif()
 
-set(mdtDeployUtilsCommand "$<TARGET_FILE:mdtdeployutils>")
-message("mdtDeployUtilsCommand: ${mdtDeployUtilsCommand}")
-
-set(targetFile "$<TARGET_FILE:@ARG_TARGET@>")
-message("targetFile: ${targetFile}")
 
 # Prevent having //path if DESTIR is not used
 set(destDir "$ENV{DESTDIR}")
 if(destDir)
-  get_filename_component(librariesDestination "$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/${DESTINATION}" ABSOLUTE)
+  if(WIN32)
+    # Remove C: from CMAKE_INSTALL_PREFIX
+    string(REGEX REPLACE "^[a-zA-Z]:" ""
+      installPrefix
+      "${CMAKE_INSTALL_PREFIX}"
+    )
+    get_filename_component(librariesDestination "$ENV{DESTDIR}/${installPrefix}/${DESTINATION}" ABSOLUTE)
+  else()
+    get_filename_component(librariesDestination "$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/${DESTINATION}" ABSOLUTE)
+  endif()
 else()
   get_filename_component(librariesDestination "${CMAKE_INSTALL_PREFIX}/${DESTINATION}" ABSOLUTE)
 endif()
 
 message("librariesDestination: ${librariesDestination}")
+
+###########################################
+# Options
+###########################################
 
 set(INSTALL_IS_UNIX_SYSTEM_WIDE @MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_INSTALL_IS_UNIX_SYSTEM_WIDE@)
 if(INSTALL_IS_UNIX_SYSTEM_WIDE)
@@ -63,10 +97,9 @@ if(IS_MSVC)
   set(compilerLocationArguments --compiler-location compiler-path="@CMAKE_CXX_COMPILER@")
 endif()
 
-# message("MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH: @MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH@")
 
 execute_process(
-  COMMAND "${CMAKE_COMMAND}" -E env "@MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH@"
+  COMMAND "${CMAKE_COMMAND}" -E env "${runPath}"
           "${mdtDeployUtilsCommand}" --logger-backend cmake copy-shared-libraries-target-depends-on
             --overwrite-behavior ${overwriteBehavior}
             ${removeRpathOptionArgument}
