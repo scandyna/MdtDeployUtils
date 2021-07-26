@@ -28,6 +28,7 @@
 #include <QString>
 #include <QLatin1String>
 #include <QChar>
+#include <QLatin1Char>
 #include <cassert>
 #include <cstdlib>
 
@@ -189,7 +190,10 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
   processCopySharedLibrariesTargetDependsOnCompilerLocation( resultCommand.getValues( mCopySharedLibrariesTargetDependsOnDefinition.compilerLocationOption() ) );
 
   if( resultCommand.positionalArgumentCount() != 2 ){
-    const QString message = tr("expected 2 (positional) arguments: target file and destination directory");
+    const QString message = tr(
+      "expected 2 (positional) arguments: target file and destination directory.\n"
+      "given: %1"
+    ).arg( resultCommand.positionalArguments().join( QLatin1Char(' ') ) );
     throw CommandLineParseError(message);
   }
 
