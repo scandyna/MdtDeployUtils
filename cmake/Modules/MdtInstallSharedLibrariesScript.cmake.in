@@ -95,7 +95,7 @@ message("removeRpathOptionArgument: ${removeRpathOptionArgument}")
 set(compilerLocationArguments)
 if(IS_MSVC)
   message("Is MSVC, use compiler finder to locate redist dirs")
-  set(compilerLocationArguments --compiler-location compiler-path="@CMAKE_CXX_COMPILER@")
+  set(compilerLocationArguments --compiler-location "compiler-path=@CMAKE_CXX_COMPILER@")
 endif()
 
 
