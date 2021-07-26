@@ -193,7 +193,7 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
     const QString message = tr(
       "expected 2 (positional) arguments: target file and destination directory.\n"
       "given: %1"
-    ).arg( resultCommand.positionalArguments().join( QLatin1Char(' ') ) );
+    ).arg( resultCommand.positionalArguments().join( QLatin1Char(',') ) );
     throw CommandLineParseError(message);
   }
 
