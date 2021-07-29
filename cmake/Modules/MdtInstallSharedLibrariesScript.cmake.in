@@ -34,7 +34,7 @@ if(WIN32)
   # See: https://stackoverflow.com/questions/13737370/cmake-error-invalid-escape-sequence-u/28565713
   # We call cmake -E , so /'s should be ok
   # TODO: this does NOT fix the problem. The source should generate /
-  string(REPLACE "\\" "/" runPath "${runPath}")
+#   string(REPLACE "\\" "/" runPath "${runPath}")
   # ; have to be escaped, otherwise the environment will not be set properly
   # See: https://cmake.org/pipermail/cmake/2009-May/029425.html
   string(REPLACE ";" "\\;" runPath "${runPath}")

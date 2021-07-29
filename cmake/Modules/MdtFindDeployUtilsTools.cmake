@@ -17,6 +17,8 @@
 #
 # For all host platforms, a IMPORTED target named ``mdtdeployutils`` will be created.
 #
+# TODO: update ! ldd and objdump probably not needed anymore
+#
 # On Linux host, a IMPORTED target named ``ldd`` will also be created.
 #
 # On Windows host, a IMPORTED target named ``objdump`` will also be created.
@@ -30,6 +32,7 @@
 #   mdt_find_deploy_utils_tools()
 #
 #   mdt_deploy_application(...)
+#
 #
 
 function(mdt_find_deploy_utils_tools)
