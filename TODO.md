@@ -11,22 +11,89 @@ TODO: only MdtDeployUtils with components:
  - dev (dev, headers, CMake package config files for headers etc..)
 
 
-Use MdtDeployUtils
-
+This version is simple and explicit about using libs as a developer of its own tool:
+```
 ${CMAKE_INSTALL_PREFIX}
   |
   |-bin
-  |  |-mdtdeployutils
+  |  |-mdtdeployutils   (Runtime)
+  |
+  |-include   (Dev)
   |
   |-lib
-     |-libMdt0DeployUtils.so
-     |-libDepA.so
-     |-libDepB.so
+     |-libMdt0DeployUtils.so  (Runtime)
+     |-libDepA.so             (Runtime)
+     |-libDepB.so             (Runtime)
      |-cmake
-         |-Modules
+         |-Modules            (Runtime)
          |-Mdt0DeployUtils
-             |-Mdt0DeployUtilsConfig.cmake
-             |-Mdt0DeployUtilsConfigVersion.cmake
+         |   |-Mdt0DeployUtilsTargets.cmake             (Runtime) adds mdtdeployutils IMPORTED TARGET
+         |   |-Mdt0DeployUtilsConfig.cmake              (Runtime)
+         |   |-Mdt0DeployUtilsConfigVersion.cmake       (Runtime)
+         |-Mdt0DeployUtilsLibs
+             |-Mdt0DeployUtilsLibsTargets.cmake         (Dev) adds libMdt0DeployUtils.so IMPORTED TARGET
+             |-Mdt0DeployUtilsLibsConfig.cmake          (Dev)
+             |-Mdt0DeployUtilsLibsConfigVersion.cmake   (Dev)
+```
+
+Usage as tool:
+```cmake
+find_package(Mdt0 COMPONENTS DeployUtils REQUIRED)
+
+add_executable(myApp myApp.cpp)
+target_link_libraries(myApp PRIVATE Mdt0::PlainText Qt5::Widgets)
+
+mdt_deploy_application(TARGET myApp)
+```
+
+Usage as developer of its own tool:
+```cmake
+find_package(Mdt0 COMPONENTS DeployUtilsLibs REQUIRED)
+
+add_executable(myTool myTool.cpp)
+target_link_libraries(myTool PRIVATE Mdt0::DeployUtilsLibs Qt5::Gui)
+```
+
+
+This variant is more complex and confusing:
+```
+${CMAKE_INSTALL_PREFIX}
+  |
+  |-bin
+  |  |-mdtdeployutils   (Runtime)
+  |
+  |-include   (Dev)
+  |
+  |-lib
+     |-libMdt0DeployUtils.so  (Runtime)
+     |-libDepA.so             (Runtime)
+     |-libDepB.so             (Runtime)
+     |-cmake
+         |-Modules            (Runtime)
+         |-Mdt0DeployUtils
+             |-Mdt0DeployUtilsTargets.cmake       (Dev) or runtime ! Must define mdtdeployutils (Runtime) and libMdt0DeployUtils.so (Dev) IMPORTED TARGETs
+             |-Mdt0DeployUtilsConfig.cmake        (Runtime)
+             |-Mdt0DeployUtilsConfigVersion.cmake (Dev)
+```
+
+Usage as tool:
+```cmake
+find_package(Mdt0 COMPONENTS DeployUtils REQUIRED)
+
+add_executable(myApp myApp.cpp)
+target_link_libraries(myApp PRIVATE Mdt0::PlainText Qt5::Widgets)
+
+mdt_deploy_application(TARGET myApp)
+```
+
+Usage as developer of its own tool:
+```cmake
+find_package(Mdt0 COMPONENTS DeployUtils REQUIRED)
+
+add_executable(myTool myTool.cpp)
+target_link_libraries(myTool PRIVATE Mdt0::DeployUtils Qt5::Gui)
+```
+
 
 
 Use MdtDeployUtils to create a app
@@ -48,46 +115,6 @@ ${CMAKE_INSTALL_PREFIX}
              |-Mdt0DeployUtilsLibsConfigVersion.cmake
 
 
-${CMAKE_INSTALL_PREFIX}
-  |
-  |-bin
-  |  |-mdtdeployutils   (Runtime)
-  |
-  |-include   (Dev)
-  |
-  |-lib
-     |-libMdt0DeployUtils.so  (Runtime) conflict !
-     |-libDepA.so             (Runtime)
-     |-libDepB.so             (Runtime)
-     |-cmake
-         |-Modules            (Runtime)
-         |-Mdt0DeployUtils
-         |   |-Mdt0DeployUtilsTargets.cmake             (Runtime) conflict !
-         |   |-Mdt0DeployUtilsConfig.cmake              (Runtime)
-         |   |-Mdt0DeployUtilsConfigVersion.cmake       (Runtime)
-         |-Mdt0DeployUtilsLibs
-             |-Mdt0DeployUtilsLibsTargets.cmake         (Dev) conflict !
-             |-Mdt0DeployUtilsLibsConfig.cmake          (Dev)
-             |-Mdt0DeployUtilsLibsConfigVersion.cmake   (Dev)
-
-
-${CMAKE_INSTALL_PREFIX}
-  |
-  |-bin
-  |  |-mdtdeployutils   (Runtime)
-  |
-  |-include   (Dev)
-  |
-  |-lib
-     |-libMdt0DeployUtils.so  (Runtime)
-     |-libDepA.so             (Runtime)
-     |-libDepB.so             (Runtime)
-     |-cmake
-         |-Modules            (Runtime)
-         |-Mdt0DeployUtils
-             |-Mdt0DeployUtilsTargets.cmake       (Dev)
-             |-Mdt0DeployUtilsConfig.cmake        (Runtime)
-             |-Mdt0DeployUtilsConfigVersion.cmake (Dev)
 
 # Conan file
 
