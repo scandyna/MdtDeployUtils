@@ -21,6 +21,8 @@
 #
 #   mdt_install_cmake_modules(
 #     FILES files...
+#     [DESTINATION <dir>]
+#     [EXPORT_DIRECTORY <dir>]
 #     EXPORT_NAME <export-name>
 #     EXPORT_NAMESPACE <export-namespace>  TODO: not used
 #     INSTALL_NAMESPACE <install-namespace>
@@ -35,8 +37,12 @@
 #
 # Install the CMake modules designated by ``files`` using :command:`install(FILES)`.
 #
-# The destination is relative to ``CMAKE_INSTALL_PREFIX`` and depends on ``INSTALL_IS_UNIX_SYSTEM_WIDE``:
+# By default, the destination is relative to ``CMAKE_INSTALL_PREFIX`` and depends on ``INSTALL_IS_UNIX_SYSTEM_WIDE``:
 # if it is ``TRUE``, it will be ``${CMAKE_INSTALL_DATADIR}/<package-name>/Modules``, otherwise ``cmake/Modules``.
+#
+# Alternatively, it is possible to specify a directory (or a relative path) using the ``DESTINATION`` argument.
+# This directory will be relative to ``CMAKE_INSTALL_PREFIX``.
+# When using ``DESTINATION``, ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ignored.
 #
 # ``<package-name>`` is named ``${INSTALL_NAMESPACE}${EXPORT_NAME}``.
 #
@@ -115,6 +121,54 @@
 #             |-Mdt0DeployUtilsCMake
 #                 |-Mdt0DeployUtilsCMakeConfig.cmake
 #
+#
+#
+# Example to install CMake modules that are part of a project having other parts:
+#
+# .. code-block:: cmake
+#
+#   # This should be set at the top level CMakeLists.txt
+#   set(MDT_INSTALL_PACKAGE_NAME Mdt0)
+#   include(GNUInstallDirs)
+#   include(MdtInstallDirs)
+#
+#   mdt_install_cmake_modules(
+#     FILES
+#       Modules/ModuleA.cmake
+#       Modules/ModuleB.cmake
+#     DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#     EXPORT_DIRECTORY DeployUtils
+#     EXPORT_NAME DeployUtilsModules
+#     INSTALL_NAMESPACE ${MDT_INSTALL_PACKAGE_NAME}
+#     COMPONENT ${PROJECT_NAME}_Runtime
+#   )
+#
+# On a non system wide Linux installation, the result will be::
+#
+#   ${CMAKE_INSTALL_PREFIX}
+#     lib
+#      |-cmake
+#         |-Modules
+#         |  |-ModuleA.cmake
+#         |  |-ModuleB.cmake
+#         |-Mdt0DeployUtils
+#              |-Mdt0DeployUtilsModulesConfig.cmake
+#
+#
+# Example of a system wide install on a Debian MultiArch (``CMAKE_INSTALL_PREFIX=/usr``)::
+#
+#     /usr
+#       |-lib
+#          |-x86_64-linux-gnu
+#             |-cmake
+#                |-Modules
+#                |  |-ModuleA.cmake
+#                |  |-ModuleB.cmake
+#                |-Mdt0DeployUtils
+#                     |-Mdt0DeployUtilsModulesConfig.cmake
+#
+#
+# TODO: document project config file that includes the module config file
 #
 # Install modules that requires tools
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
