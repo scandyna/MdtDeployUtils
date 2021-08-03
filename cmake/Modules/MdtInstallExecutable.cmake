@@ -8,8 +8,9 @@
 # .. contents:: Summary
 #    :local:
 #
-# Functions
-# ^^^^^^^^^
+#
+# Function to install a executable
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # .. command:: mdt_install_executable
 #
@@ -18,9 +19,14 @@
 #   mdt_install_executable(
 #     TARGET <target>
 #     RUNTIME_DESTINATION <dir>
-#     LIBRARY_DESTINATION <dir>
+#     [LIBRARY_DESTINATION <dir>]
+#     [EXPORT_DIRECTORY <dir>]
+#     [EXPORT_NAME <export-name>]
+#     [EXPORT_NAMESPACE <export-namespace>]
 #     [INSTALL_IS_UNIX_SYSTEM_WIDE [TRUE|FALSE]]
 #     [COMPONENT <component-name>]
+#     [RUNTIME_COMPONENT <component-name>] TODO remove
+#     [DEVELOPMENT_COMPONENT <component-name>] TODO remove
 #   )
 #
 # Will install the executable `target` to ``CMAKE_INSTALL_PREFIX``
@@ -30,6 +36,13 @@
 # the rpath informations is set to ``$ORIGIN/../${LIBRARY_DESTINATION}``.
 # If ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ``TRUE``,
 # the rpath informations are removed.
+#
+# TODO: finish doc
+#
+# See also :command:`mdt_deploy_application()`
+#
+# Simple example
+# ^^^^^^^^^^^^^^
 #
 # Example:
 #
@@ -44,10 +57,132 @@
 #   mdt_install_executable(
 #     TARGET myApp
 #     RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
-#     LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
-#     COMPONENT ${PROJECT_NAME}_Tools
+#     COMPONENT ${PROJECT_NAME}_Runtime
 #   )
+#
+# On a non system wide Linux installation, the result will be::
+#
+#   ${CMAKE_INSTALL_PREFIX}
+#     |-bin
+#     |  |-myApp
+#
+#
+# Example with a package config file
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
+# This example illustrates a exported target:
+#
+# .. code-block:: cmake
+#
+#   # This should be set at the top level CMakeLists.txt
+#   include(GNUInstallDirs)
+#   include(MdtInstallDirs)
+#
+#   add_executable(mdtdeployutils DeployUtils.cpp)
+#
+#   mdt_install_executable(
+#     TARGET mdtdeployutils
+#     RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
+#     LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#     EXPORT_NAME DeployUtilsExecutable
+#     EXPORT_NAMESPACE Mdt${PROJECT_VERSION_MAJOR}
+#     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
+#     COMPONENT ${PROJECT_NAME}_Runtime
+#   )
+#
+#
+# On a non system wide Linux installation, the result will be::
+#
+#   ${CMAKE_INSTALL_PREFIX}
+#     |-bin
+#     |  |-mdtdeployutils
+#     |-lib
+#        |-cmake
+#            |-Mdt0DeployUtilsExecutable
+#                 |-Mdt0DeployUtilsExecutable.cmake
+#
+#
+# Once the executable is installed,
+# the user should be able to find it using CMake find_package() in its CMakeLists.txt:
+#
+# .. code-block:: cmake
+#
+#   find_package(Mdt0DeployUtilsExecutable REQUIRED)
+#
+#   add_executable(myApp myApp.cpp)
+#
+#   add_custom_command(TARGET myApp COMMAND mdtdeployutils ... VERBATIM)
+#   OR
+#   add_custom_command(TARGET myApp COMMAND Mdt0::DeployUtilsExecutable ... VERBATIM)
+#
+#
+# Example with a package config file part of a project
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
+# This example illustrates how to install a tool
+# that is part of a project, and that can later be imported
+# from a other project:
+#
+# .. code-block:: cmake
+#
+#   # This should be set at the top level CMakeLists.txt
+#   include(GNUInstallDirs)
+#   include(MdtInstallDirs)
+#
+#   add_executable(mdtdeployutils DeployUtils.cpp)
+#
+#   mdt_install_executable(
+#     TARGET mdtdeployutils
+#     RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
+#     LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#     EXPORT_DIRECTORY DeployUtils
+#     EXPORT_NAME DeployUtilsExecutable
+#     EXPORT_NAMESPACE Mdt${PROJECT_VERSION_MAJOR}
+#     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
+#     COMPONENT ${PROJECT_NAME}_Runtime
+#   )
+#
+#
+# On a non system wide Linux installation, the result will be::
+#
+#   ${CMAKE_INSTALL_PREFIX}
+#     |-bin
+#     |  |-mdtdeployutils
+#     |-lib
+#        |-cmake
+#            |-Mdt0DeployUtils
+#                 |-Mdt0DeployUtilsExecutable.cmake
+#                 |-Mdt0DeployUtilsConfig.cmake
+#
+#
+# Here ``Mdt0DeployUtilsConfig.cmake`` includes ``Mdt0DeployUtilsExecutable.cmake``.
+#
+# Once the project is installed,
+# the user should be able to find it using CMake find_package() in its CMakeLists.txt:
+#
+# .. code-block:: cmake
+#
+#   find_package(Mdt0DeployUtils REQUIRED)
+#
+#   add_executable(myApp myApp.cpp)
+#
+#   add_custom_command(TARGET myApp COMMAND mdtdeployutils ... VERBATIM)
+#   OR
+#   add_custom_command(TARGET myApp COMMAND Mdt0::DeployUtilsExecutable ... VERBATIM)
+#
+#
+# Example of a system wide install on a Debian MultiArch (``CMAKE_INSTALL_PREFIX=/usr``)::
+#
+#   /usr
+#     |-bin
+#     |  |-mdtdeployutils
+#     |-lib
+#        |-x86_64-linux-gnu
+#           |-cmake
+#               |-Mdt0DeployUtils
+#                    |-Mdt0DeployUtilsExecutable.cmake
+#                    |-Mdt0DeployUtilsConfig.cmake
 #
 
 # TODO : if subdir not 1 level, document to set RPATH manually
