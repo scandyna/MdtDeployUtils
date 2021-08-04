@@ -19,10 +19,11 @@
 #   mdt_install_executable(
 #     TARGET <target>
 #     RUNTIME_DESTINATION <dir>
-#     [LIBRARY_DESTINATION <dir>]
-#     [EXPORT_DIRECTORY <dir>]
+#     LIBRARY_DESTINATION <dir>
 #     [EXPORT_NAME <export-name>]
 #     [EXPORT_NAMESPACE <export-namespace>]
+#     [NO_PACKAGE_CONFIG_FILE]
+#     [EXPORT_DIRECTORY <dir>]
 #     [INSTALL_IS_UNIX_SYSTEM_WIDE [TRUE|FALSE]]
 #     [COMPONENT <component-name>]
 #     [RUNTIME_COMPONENT <component-name>] TODO remove
@@ -36,6 +37,28 @@
 # the rpath informations is set to ``$ORIGIN/../${LIBRARY_DESTINATION}``.
 # If ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ``TRUE``,
 # the rpath informations are removed.
+#
+# To generate CMake exports, use ``EXPORT_NAME`` and ``EXPORT_NAMESPACE``.
+# If specified, a file, named ``${EXPORT_NAMESPACE}${EXPORT_NAME}.cmake`` will be generated
+# and installed to ``${LIBRARY_DESTINATION}/cmake/${EXPORT_NAMESPACE}${EXPORT_NAME}``,
+# relative to ``CMAKE_INSTALL_PREFIX``.
+# If ``NO_PACKAGE_CONFIG_FILE`` is not set,
+# a CMake package config file, named ``${EXPORT_NAMESPACE}${EXPORT_NAME}Config.cmake``,
+# will also be generated and installed to the same location.
+# To controle the content of a CMake package,
+# pass the ``NO_PACKAGE_CONFIG_FILE`` option and specify ``EXPORT_DIRECTORY``.
+#
+# To generate CMake exports, use ``EXPORT_NAME`` and ``EXPORT_NAMESPACE``.
+# If specified, a file, named ``${EXPORT_NAMESPACE}${EXPORT_NAME}.cmake``, will be generated.
+# This file will define a ``IMPORTED`` target, named ``${EXPORT_NAMESPACE}::${EXPORT_NAME}``.
+# If ``NO_PACKAGE_CONFIG_FILE`` is not set,
+# a CMake package config file, named ``${EXPORT_NAMESPACE}${EXPORT_NAME}Config.cmake``, will be generated.
+# By default, those generated files are installed to ``${LIBRARY_DESTINATION}/cmake/${EXPORT_NAMESPACE}${EXPORT_NAME}``.
+# If ``EXPORT_DIRECTORY`` is set,
+# those generated files are installed to ``${LIBRARY_DESTINATION}/cmake/${EXPORT_DIRECTORY}``.
+#
+#
+#
 #
 # TODO: finish doc
 #
@@ -57,6 +80,7 @@
 #   mdt_install_executable(
 #     TARGET myApp
 #     RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
+#     LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
 #     COMPONENT ${PROJECT_NAME}_Runtime
 #   )
@@ -65,7 +89,7 @@
 #
 #   ${CMAKE_INSTALL_PREFIX}
 #     |-bin
-#     |  |-myApp
+#        |-myApp
 #
 #
 # Example with a package config file
@@ -101,6 +125,7 @@
 #        |-cmake
 #            |-Mdt0DeployUtilsExecutable
 #                 |-Mdt0DeployUtilsExecutable.cmake
+#                 |-Mdt0DeployUtilsExecutableConfig.cmake
 #
 #
 # Once the executable is installed,
@@ -112,8 +137,6 @@
 #
 #   add_executable(myApp myApp.cpp)
 #
-#   add_custom_command(TARGET myApp COMMAND mdtdeployutils ... VERBATIM)
-#   OR
 #   add_custom_command(TARGET myApp COMMAND Mdt0::DeployUtilsExecutable ... VERBATIM)
 #
 #
@@ -136,9 +159,10 @@
 #     TARGET mdtdeployutils
 #     RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
 #     LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#     EXPORT_DIRECTORY DeployUtils
 #     EXPORT_NAME DeployUtilsExecutable
 #     EXPORT_NAMESPACE Mdt${PROJECT_VERSION_MAJOR}
+#     NO_PACKAGE_CONFIG_FILE
+#     EXPORT_DIRECTORY DeployUtils
 #     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
 #     COMPONENT ${PROJECT_NAME}_Runtime
 #   )
@@ -156,7 +180,8 @@
 #                 |-Mdt0DeployUtilsConfig.cmake
 #
 #
-# Here ``Mdt0DeployUtilsConfig.cmake`` includes ``Mdt0DeployUtilsExecutable.cmake``.
+# Here ``Mdt0DeployUtilsConfig.cmake`` is not generated, but created manually.
+# It includes ``Mdt0DeployUtilsExecutable.cmake``.
 #
 # Once the project is installed,
 # the user should be able to find it using CMake find_package() in its CMakeLists.txt:
@@ -167,8 +192,6 @@
 #
 #   add_executable(myApp myApp.cpp)
 #
-#   add_custom_command(TARGET myApp COMMAND mdtdeployutils ... VERBATIM)
-#   OR
 #   add_custom_command(TARGET myApp COMMAND Mdt0::DeployUtilsExecutable ... VERBATIM)
 #
 #
