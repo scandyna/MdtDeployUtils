@@ -25,9 +25,8 @@
 #     [NO_PACKAGE_CONFIG_FILE]
 #     [EXPORT_DIRECTORY <dir>]
 #     [INSTALL_IS_UNIX_SYSTEM_WIDE [TRUE|FALSE]]
-#     [COMPONENT <component-name>]
-#     [RUNTIME_COMPONENT <component-name>] TODO remove
-#     [DEVELOPMENT_COMPONENT <component-name>] TODO remove
+#     [RUNTIME_COMPONENT <component-name>]
+#     [DEVELOPMENT_COMPONENT <component-name>]
 #   )
 #
 # Will install the executable `target` to ``CMAKE_INSTALL_PREFIX``
@@ -39,16 +38,6 @@
 # the rpath informations are removed.
 #
 # To generate CMake exports, use ``EXPORT_NAME`` and ``EXPORT_NAMESPACE``.
-# If specified, a file, named ``${EXPORT_NAMESPACE}${EXPORT_NAME}.cmake`` will be generated
-# and installed to ``${LIBRARY_DESTINATION}/cmake/${EXPORT_NAMESPACE}${EXPORT_NAME}``,
-# relative to ``CMAKE_INSTALL_PREFIX``.
-# If ``NO_PACKAGE_CONFIG_FILE`` is not set,
-# a CMake package config file, named ``${EXPORT_NAMESPACE}${EXPORT_NAME}Config.cmake``,
-# will also be generated and installed to the same location.
-# To controle the content of a CMake package,
-# pass the ``NO_PACKAGE_CONFIG_FILE`` option and specify ``EXPORT_DIRECTORY``.
-#
-# To generate CMake exports, use ``EXPORT_NAME`` and ``EXPORT_NAMESPACE``.
 # If specified, a file, named ``${EXPORT_NAMESPACE}${EXPORT_NAME}.cmake``, will be generated.
 # This file will define a ``IMPORTED`` target, named ``${EXPORT_NAMESPACE}::${EXPORT_NAME}``.
 # If ``NO_PACKAGE_CONFIG_FILE`` is not set,
@@ -57,10 +46,10 @@
 # If ``EXPORT_DIRECTORY`` is set,
 # those generated files are installed to ``${LIBRARY_DESTINATION}/cmake/${EXPORT_DIRECTORY}``.
 #
+# If ``RUNTIME_COMPONENT`` is specified, the target installation will be part of it.
 #
+# If ``DEVELOPMENT_COMPONENT`` is specified, the CMake exports and package config files installation will be part of it.
 #
-#
-# TODO: finish doc
 #
 # See also :command:`mdt_deploy_application()`
 #
@@ -82,7 +71,7 @@
 #     RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
 #     LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
-#     COMPONENT ${PROJECT_NAME}_Runtime
+#     RUNTIME_COMPONENT ${PROJECT_NAME}_Runtime
 #   )
 #
 # On a non system wide Linux installation, the result will be::
@@ -112,7 +101,8 @@
 #     EXPORT_NAME DeployUtilsExecutable
 #     EXPORT_NAMESPACE Mdt${PROJECT_VERSION_MAJOR}
 #     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
-#     COMPONENT ${PROJECT_NAME}_Runtime
+#     RUNTIME_COMPONENT ${PROJECT_NAME}_Runtime
+#     DEVELOPMENT_COMPONENT ${PROJECT_NAME}_Devel
 #   )
 #
 #
@@ -164,7 +154,8 @@
 #     NO_PACKAGE_CONFIG_FILE
 #     EXPORT_DIRECTORY DeployUtils
 #     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
-#     COMPONENT ${PROJECT_NAME}_Runtime
+#     RUNTIME_COMPONENT ${PROJECT_NAME}_Runtime
+#     DEVELOPMENT_COMPONENT ${PROJECT_NAME}_Devel
 #   )
 #
 #
