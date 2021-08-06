@@ -26,7 +26,7 @@
 #include "ProcessorISA.h"
 #include "CompilerFinder.h"
 #include "BuildType.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QFileInfo>
 #include <QString>
@@ -39,7 +39,7 @@ namespace Mdt{ namespace DeployUtils{
    *
    * \todo See various todo in CPP file
    */
-  class MDT_DEPLOYUTILS_EXPORT BinaryDependencies : public QObject
+  class MDT_DEPLOYUTILSCORE_EXPORT BinaryDependencies : public QObject
   {
    Q_OBJECT
 

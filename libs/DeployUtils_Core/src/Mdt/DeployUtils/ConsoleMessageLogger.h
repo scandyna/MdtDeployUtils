@@ -22,7 +22,7 @@
 #define MDT_DEPLOY_UTILS_CONSOLE_MESSAGE_LOGGER_H
 
 #include "AbstractMessageLoggerBackend.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -30,7 +30,7 @@ namespace Mdt{ namespace DeployUtils{
    *
    * \sa MessageLogger
    */
-  class MDT_DEPLOYUTILS_EXPORT ConsoleMessageLogger : public AbstractMessageLoggerBackend
+  class MDT_DEPLOYUTILSCORE_EXPORT ConsoleMessageLogger : public AbstractMessageLoggerBackend
   {
    public:
 

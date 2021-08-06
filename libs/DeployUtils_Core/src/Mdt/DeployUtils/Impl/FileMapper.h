@@ -23,7 +23,7 @@
 
 #include "ByteArraySpan.h"
 #include "Mdt/DeployUtils/FileOpenError.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QFileDevice>
 #include <QString>
 #include <QObject>
@@ -73,7 +73,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
    *
    * In all cases, it is a simple way to obtain a ByteArraySpan from a QFile.
    */
-  class MDT_DEPLOYUTILS_EXPORT FileMapper : public QObject
+  class MDT_DEPLOYUTILSCORE_EXPORT FileMapper : public QObject
   {
     Q_OBJECT
 

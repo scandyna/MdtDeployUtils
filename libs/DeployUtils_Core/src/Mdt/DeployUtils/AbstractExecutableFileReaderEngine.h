@@ -25,7 +25,7 @@
 #include "ExecutableFileReadError.h"
 #include "Platform.h"
 #include "Mdt/DeployUtils/Impl/FileMapper.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QFile>
 #include <QFileInfo>
@@ -36,7 +36,7 @@ namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Interface to a minimal executable file reader
    */
-  class MDT_DEPLOYUTILS_EXPORT AbstractExecutableFileReaderEngine : public QObject
+  class MDT_DEPLOYUTILSCORE_EXPORT AbstractExecutableFileReaderEngine : public QObject
   {
     Q_OBJECT
 

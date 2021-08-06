@@ -22,7 +22,7 @@
 #define MDT_DEPLOY_UTILS_SEARCH_PATH_LIST_H
 
 #include "PathList.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QStringList>
 
@@ -30,7 +30,7 @@ namespace Mdt{ namespace DeployUtils{
 
   /*! \brief SearchPathList provides additional tools to PathList
    */
-  class MDT_DEPLOYUTILS_EXPORT SearchPathList
+  class MDT_DEPLOYUTILSCORE_EXPORT SearchPathList
   {
    public:
 

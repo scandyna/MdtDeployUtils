@@ -24,59 +24,59 @@
 #include "FileHeader.h"
 #include "SectionHeader.h"
 #include "ImportDirectory.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const DosHeader & header);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(MachineType type);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const CoffHeader & header);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(MagicType type);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const OptionalHeader & header);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const SectionHeader & header);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const ImportDirectory & directory, const QString & leftPad = QLatin1String("  "));
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const ImportDirectoryTable & directoryTable);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const DelayLoadDirectory & directory, const QString & leftPad = QLatin1String("  "));
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const DelayLoadTable & table);
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{

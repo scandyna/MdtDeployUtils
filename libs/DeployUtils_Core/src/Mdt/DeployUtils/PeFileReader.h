@@ -22,7 +22,7 @@
 #define MDT_DEPLOY_UTILS_PE_FILE_READER_H
 
 #include "AbstractExecutableFileReaderEngine.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <memory>
 
 namespace Mdt{ namespace DeployUtils{
@@ -41,7 +41,7 @@ namespace Mdt{ namespace DeployUtils{
    * For other purposes, other tools
    * like objdump or readpe should be considered.
    */
-  class MDT_DEPLOYUTILS_EXPORT PeFileReader : public AbstractExecutableFileReaderEngine
+  class MDT_DEPLOYUTILSCORE_EXPORT PeFileReader : public AbstractExecutableFileReaderEngine
   {
     Q_OBJECT
 

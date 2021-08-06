@@ -25,7 +25,7 @@
 #include "Compiler.h"
 #include "ProcessorISA.h"
 #include "ExecutableFileFormat.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -41,7 +41,7 @@ namespace Mdt{ namespace DeployUtils{
    * Note that the operating system and the executable file format
    * can seem redoundant. But, for example, ELF supports Linux, NetBSD, HP-UX and many others.
    */
-  class MDT_DEPLOYUTILS_EXPORT Platform
+  class MDT_DEPLOYUTILSCORE_EXPORT Platform
   {
    public:
 

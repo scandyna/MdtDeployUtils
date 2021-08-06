@@ -23,7 +23,7 @@
 
 #include "CopySharedLibrariesTargetDependsOnRequest.h"
 #include "OverwriteBehavior.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -64,7 +64,7 @@ namespace Mdt{ namespace DeployUtils{
    * \todo Should also require full path to tools, like ldd, objdump, etc..
    * (we should not do magic search here, which can be wrong when a user specify its own version of a specific tool, or cross-compilation)
    */
-  class MDT_DEPLOYUTILS_EXPORT CopySharedLibrariesTargetDependsOn : public QObject
+  class MDT_DEPLOYUTILSCORE_EXPORT CopySharedLibrariesTargetDependsOn : public QObject
   {
    Q_OBJECT
 

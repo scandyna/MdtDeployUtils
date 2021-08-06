@@ -23,7 +23,7 @@
 
 #include "Platform.h"
 #include "ProcessorISA.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QStringList>
 #include <QMetaType>
@@ -33,7 +33,7 @@ namespace Mdt{ namespace DeployUtils{
 
   /*! \brief PathList contains a list of paths
    */
-  class MDT_DEPLOYUTILS_EXPORT PathList
+  class MDT_DEPLOYUTILSCORE_EXPORT PathList
   {
    public:
 

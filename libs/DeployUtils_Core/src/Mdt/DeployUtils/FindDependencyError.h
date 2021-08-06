@@ -22,14 +22,14 @@
 #define MDT_DEPLOY_UTILS_FIND_DEPENDENCY_ERROR_H
 
 #include "QRuntimeError.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Error when finding some dependency
    */
-  class MDT_DEPLOYUTILS_EXPORT FindDependencyError : public QRuntimeError
+  class MDT_DEPLOYUTILSCORE_EXPORT FindDependencyError : public QRuntimeError
   {
    public:
 

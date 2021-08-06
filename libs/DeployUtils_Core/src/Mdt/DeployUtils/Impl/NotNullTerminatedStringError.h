@@ -22,14 +22,14 @@
 #define MDT_DEPLOY_UTILS_IMPL_NOT_NULL_TERMINATED_STRING_ERROR_H
 
 #include "Mdt/DeployUtils/QRuntimeError.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
   /*! \internal
    */
-  class MDT_DEPLOYUTILS_EXPORT NotNullTerminatedStringError : public QRuntimeError
+  class MDT_DEPLOYUTILSCORE_EXPORT NotNullTerminatedStringError : public QRuntimeError
   {
    public:
 

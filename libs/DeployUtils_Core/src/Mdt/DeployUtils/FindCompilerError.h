@@ -22,14 +22,14 @@
 #define MDT_DEPLOY_UTILS_FIND_COMPILER_ERROR_H
 
 #include "QRuntimeError.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Error when fails to find MSVC
    */
-  class MDT_DEPLOYUTILS_EXPORT FindCompilerError : public QRuntimeError
+  class MDT_DEPLOYUTILSCORE_EXPORT FindCompilerError : public QRuntimeError
   {
    public:
 

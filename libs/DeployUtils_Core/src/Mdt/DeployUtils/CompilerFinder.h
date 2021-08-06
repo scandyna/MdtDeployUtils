@@ -25,7 +25,7 @@
 #include "Compiler.h"
 #include "ProcessorISA.h"
 #include "BuildType.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QFileInfo>
 #include <QString>
@@ -39,7 +39,7 @@ namespace Mdt{ namespace DeployUtils{
    *
    * \todo check which method throws exceptions
    */
-  class MDT_DEPLOYUTILS_EXPORT CompilerFinder : public QObject
+  class MDT_DEPLOYUTILSCORE_EXPORT CompilerFinder : public QObject
   {
    Q_OBJECT
 

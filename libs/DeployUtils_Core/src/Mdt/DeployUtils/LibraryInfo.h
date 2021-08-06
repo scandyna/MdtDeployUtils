@@ -22,7 +22,7 @@
 #define MDT_DEPLOY_UTILS_LIBRARY_INFO_H
 
 #include "LibraryName.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QLatin1String>
 #include <QChar>
@@ -34,7 +34,7 @@ namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Data value class that stores informations about a library
    */
-  class MDT_DEPLOYUTILS_EXPORT LibraryInfo
+  class MDT_DEPLOYUTILSCORE_EXPORT LibraryInfo
   {
    public:
 

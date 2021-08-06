@@ -22,7 +22,7 @@
 #define MDT_DEPLOY_UTILS_CMAKE_STYLE_MESSAGE_LOGGER_H
 
 #include "AbstractMessageLoggerBackend.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -31,7 +31,7 @@ namespace Mdt{ namespace DeployUtils{
    * \sa MessageLogger
    * \sa https://cmake.org/cmake/help/latest/command/message.html
    */
-  class MDT_DEPLOYUTILS_EXPORT CMakeStyleMessageLogger : public AbstractMessageLoggerBackend
+  class MDT_DEPLOYUTILSCORE_EXPORT CMakeStyleMessageLogger : public AbstractMessageLoggerBackend
   {
    public:
 

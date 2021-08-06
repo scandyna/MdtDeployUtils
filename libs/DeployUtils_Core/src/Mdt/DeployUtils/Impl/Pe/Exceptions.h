@@ -22,14 +22,14 @@
 #define MDT_DEPLOY_UTILS_IMPL_PE_EXCEPTIONS_H
 
 #include "Mdt/DeployUtils/QRuntimeError.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
   /*! \internal
    */
-  class MDT_DEPLOYUTILS_EXPORT InvalidMagicType : public QRuntimeError
+  class MDT_DEPLOYUTILSCORE_EXPORT InvalidMagicType : public QRuntimeError
   {
    public:
 
@@ -43,7 +43,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Pe{
 
   /*! \internal
    */
-  class MDT_DEPLOYUTILS_EXPORT FileCorrupted : public QRuntimeError
+  class MDT_DEPLOYUTILSCORE_EXPORT FileCorrupted : public QRuntimeError
   {
    public:
 

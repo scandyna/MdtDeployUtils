@@ -24,7 +24,7 @@
 #include "FileOpenError.h"
 #include "ExecutableFileReadError.h"
 #include "Platform.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QFileInfo>
 #include <QStringList>
@@ -63,7 +63,7 @@ namespace Mdt{ namespace DeployUtils{
    * Note that \a dependencies magicly gives the full path of its previously added libraries.
    * This example is here incomplete, but the purpose is to show how ExecutableFileReader can be used.
    */
-  class MDT_DEPLOYUTILS_EXPORT ExecutableFileReader : public QObject
+  class MDT_DEPLOYUTILSCORE_EXPORT ExecutableFileReader : public QObject
   {
    Q_OBJECT
 

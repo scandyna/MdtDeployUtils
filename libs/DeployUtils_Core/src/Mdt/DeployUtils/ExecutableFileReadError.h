@@ -22,14 +22,14 @@
 #define MDT_DEPLOY_UTILS_EXECUTABLE_FILE_READ_ERROR_H
 
 #include "QRuntimeError.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Error when reading a executable file fails
    */
-  class MDT_DEPLOYUTILS_EXPORT ExecutableFileReadError : public QRuntimeError
+  class MDT_DEPLOYUTILSCORE_EXPORT ExecutableFileReadError : public QRuntimeError
   {
    public:
 

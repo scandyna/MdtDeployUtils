@@ -25,7 +25,7 @@
 #include "ProcessorISA.h"
 #include "BuildType.h"
 #include "FindCompilerError.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QFileInfo>
 #include <QDir>
@@ -35,7 +35,7 @@ namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Interface to implement a engine for CompilerFinder
    */
-  class MDT_DEPLOYUTILS_EXPORT AbstractCompilerFinderEngine : public QObject
+  class MDT_DEPLOYUTILSCORE_EXPORT AbstractCompilerFinderEngine : public QObject
   {
    Q_OBJECT
 

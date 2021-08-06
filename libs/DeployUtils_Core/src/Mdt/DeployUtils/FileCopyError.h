@@ -22,14 +22,14 @@
 #define MDT_DEPLOY_UTILS_EXECUTABLE_FILE_COPY_ERROR_H
 
 #include "QRuntimeError.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Error when copy a file fails
    */
-  class MDT_DEPLOYUTILS_EXPORT FileCopyError : public QRuntimeError
+  class MDT_DEPLOYUTILSCORE_EXPORT FileCopyError : public QRuntimeError
   {
    public:
 

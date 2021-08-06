@@ -14,7 +14,7 @@ string(REPLACE ";" "," TEST_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
 mdt_add_test(
   NAME AlgorithmTest
   TARGET algorithmTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main
   SOURCE_FILES
     src/AlgorithmTest.cpp
 )
@@ -22,7 +22,7 @@ mdt_add_test(
 mdt_add_test(
   NAME MessageLoggerTest
   TARGET messageLoggerTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/MessageLoggerTest.cpp
 )
@@ -30,7 +30,7 @@ mdt_add_test(
 mdt_add_test(
   NAME PlatformTest
   TARGET platformTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/PlatformTest.cpp
 )
@@ -38,7 +38,7 @@ mdt_add_test(
 mdt_add_test(
   NAME PathTest
   TARGET pathTest
-  DEPENDENCIES Mdt::DeployUtils Qt5::Test
+  DEPENDENCIES Mdt::DeployUtilsCore Qt5::Test
   SOURCE_FILES
     src/PathTest.cpp
 )
@@ -46,7 +46,7 @@ mdt_add_test(
 mdt_add_test(
   NAME LibraryVersionTest
   TARGET libraryVersionTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/LibraryVersionTest.cpp
 )
@@ -54,7 +54,7 @@ mdt_add_test(
 mdt_add_test(
   NAME LibraryNameExtensionTest
   TARGET libraryNameExtensionTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/LibraryNameExtensionTest.cpp
 )
@@ -62,7 +62,7 @@ mdt_add_test(
 mdt_add_test(
   NAME LibraryNameTest
   TARGET libraryNameTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/LibraryNameTest.cpp
 )
@@ -70,7 +70,7 @@ mdt_add_test(
 mdt_add_test(
   NAME LibraryInfoTest
   TARGET libraryInfoTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/LibraryInfoTest.cpp
 )
@@ -78,7 +78,7 @@ mdt_add_test(
 mdt_add_test(
   NAME LibraryInfoListTest
   TARGET libraryInfoListTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/LibraryInfoListTest.cpp
 )
@@ -86,7 +86,7 @@ mdt_add_test(
 mdt_add_test(
   NAME ByteArraySpanTest
   TARGET byteArraySpanTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ByteArraySpanTest.cpp
 )
@@ -94,7 +94,7 @@ mdt_add_test(
 mdt_add_test(
   NAME FileMapperTest
   TARGET fileMapperTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/FileMapperTest.cpp
 )
@@ -102,7 +102,7 @@ mdt_add_test(
 mdt_add_test(
   NAME ExecutableFileReaderUtilsImplTest
   TARGET executableFileReaderUtilsImplTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ExecutableFileReaderUtilsImplTest.cpp
 )
@@ -110,7 +110,7 @@ mdt_add_test(
 mdt_add_test(
   NAME ExecutableFileReaderUtilsImplErrorTest
   TARGET executableFileReaderUtilsImplErrorTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ExecutableFileReaderUtilsImplErrorTest.cpp
 )
@@ -170,7 +170,7 @@ endif()
 mdt_add_test(
   NAME ElfFileReaderImplTest
   TARGET elfFileReaderImplTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ElfFileReaderImplTest.cpp
 )
@@ -178,7 +178,7 @@ mdt_add_test(
 mdt_add_test(
   NAME ElfFileReaderTest
   TARGET elfFileReaderTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ElfFileReaderTest.cpp
 )
@@ -188,7 +188,7 @@ if( UNIX AND (NOT APPLE) )
   mdt_add_test(
     NAME ElfFileReaderTest_Unix
     TARGET elfFileReaderTest_Unix
-    DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+    DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
     SOURCE_FILES
       src/ElfFileReaderTest_Unix.cpp
   )
@@ -211,7 +211,7 @@ endif()
 mdt_add_test(
   NAME ElfFileReaderErrorTest
   TARGET elfFileReaderErrorTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ElfFileReaderErrorTest.cpp
 )
@@ -220,7 +220,7 @@ mdt_add_test(
 mdt_add_test(
   NAME PeFileReaderImplTest
   TARGET peFileReaderImplTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/PeFileReaderImplTest.cpp
 )
@@ -228,7 +228,7 @@ mdt_add_test(
 mdt_add_test(
   NAME PeFileReaderTest
   TARGET peFileReaderTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/PeFileReaderTest.cpp
 )
@@ -238,7 +238,7 @@ if(WIN32)
   mdt_add_test(
     NAME PeFileReaderTest_Windows
     TARGET peFileReaderTest_Windows
-    DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+    DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
     SOURCE_FILES
       src/PeFileReaderTest_Windows.cpp
   )
@@ -261,7 +261,7 @@ endif()
 mdt_add_test(
   NAME PeFileReaderErrorTest
   TARGET peFileReaderErrorTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/PeFileReaderErrorTest.cpp
 )
@@ -269,7 +269,7 @@ mdt_add_test(
 mdt_add_test(
   NAME ExecutableFileReaderTest
   TARGET executableFileReaderTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ExecutableFileReaderTest.cpp
 )
@@ -284,7 +284,7 @@ endif()
 mdt_add_test(
   NAME ExecutableFileReaderErrorTest
   TARGET executableFileReaderErrorTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ExecutableFileReaderErrorTest.cpp
 )
@@ -297,7 +297,7 @@ if(UNIX)
   mdt_add_test(
     NAME ExecutableFileReaderTest_Unix
     TARGET executableFileReaderTest_Unix
-    DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+    DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
     SOURCE_FILES
       src/ExecutableFileReaderTest_Unix.cpp
   )
@@ -310,7 +310,7 @@ endif()
 mdt_add_test(
   NAME MsvcVersionTest
   TARGET msvcVersionTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/MsvcVersionTest.cpp
 )
@@ -319,7 +319,7 @@ if(MSVC)
   mdt_add_test(
     NAME CompilerFinderTest_Msvc
     TARGET compilerFinderTest_Msvc
-    DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+    DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
     SOURCE_FILES
       src/CompilerFinderTest_Msvc.cpp
   )
@@ -329,7 +329,7 @@ endif()
 mdt_add_test(
   NAME BinaryDependenciesImplTest
   TARGET binaryDependenciesImplTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/BinaryDependenciesImplTest.cpp
 )
@@ -337,7 +337,7 @@ mdt_add_test(
 mdt_add_test(
   NAME BinaryDependenciesTest
   TARGET binaryDependenciesTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/BinaryDependenciesTest.cpp
 )
@@ -348,7 +348,7 @@ target_compile_definitions(binaryDependenciesTest PRIVATE PREFIX_PATH="${TEST_PR
 mdt_add_test(
   NAME BinaryDependenciesErrorTest
   TARGET binaryDependenciesErrorTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/BinaryDependenciesErrorTest.cpp
 )
@@ -356,7 +356,7 @@ mdt_add_test(
 mdt_add_test(
   NAME FileCopierTest
   TARGET fileCopierTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/FileCopierTest.cpp
 )
@@ -364,7 +364,7 @@ mdt_add_test(
 mdt_add_test(
   NAME FileCopierErrorTest
   TARGET fileCopierErrorTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/FileCopierErrorTest.cpp
 )
@@ -372,7 +372,7 @@ mdt_add_test(
 mdt_add_test(
   NAME CopySharedLibrariesTargetDependsOnTest
   TARGET copySharedLibrariesTargetDependsOnTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/CopySharedLibrariesTargetDependsOnTest.cpp
 )
@@ -383,7 +383,7 @@ if(MSVC)
   mdt_add_test(
     NAME CopySharedLibrariesTargetDependsOnTest_Msvc
     TARGET copySharedLibrariesTargetDependsOnTest_Msvc
-    DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+    DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
     SOURCE_FILES
       src/CopySharedLibrariesTargetDependsOnTest_Msvc.cpp
   )
@@ -395,7 +395,7 @@ endif()
 mdt_add_test(
   NAME CopySharedLibrariesTargetDependsOnErrorTest
   TARGET copySharedLibrariesTargetDependsOnErrorTest
-  DEPENDENCIES Mdt::DeployUtils Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/CopySharedLibrariesTargetDependsOnErrorTest.cpp
 )

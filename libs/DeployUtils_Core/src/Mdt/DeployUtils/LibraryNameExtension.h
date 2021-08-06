@@ -21,7 +21,7 @@
 #ifndef MDT_DEPLOY_UTILS_LIBRARY_NAME_EXTENSION_H
 #define MDT_DEPLOY_UTILS_LIBRARY_NAME_EXTENSION_H
 
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QChar>
 #include <cassert>
@@ -36,7 +36,7 @@ namespace Mdt{ namespace DeployUtils{
    *
    * \sa LibraryName
    */
-  class MDT_DEPLOYUTILS_EXPORT LibraryNameExtension
+  class MDT_DEPLOYUTILSCORE_EXPORT LibraryNameExtension
   {
    public:
 

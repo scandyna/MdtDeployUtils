@@ -24,7 +24,7 @@
 #include "FileHeader.h"
 #include "SectionHeader.h"
 #include "DynamicSection.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QLatin1String>
 #include <vector>
@@ -33,67 +33,67 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(Class c);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(DataFormat dataFormat);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(OsAbiType osAbiType);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const Ident & ident);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(ObjectFileType type);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(Machine machine);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const FileHeader & header);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(SectionType type);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const SectionHeader & header);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const std::vector<SectionHeader> & headers);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(DynamicSectionTagType type);
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const DynamicStruct & section, const QString & leftPad = QLatin1String("  "));
 
   /*! \internal
    */
-  MDT_DEPLOYUTILS_EXPORT
+  MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const std::vector<DynamicStruct> & sections, const QString & leftPad = QLatin1String("  "));
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{

@@ -22,7 +22,7 @@
 #define MDT_DEPLOY_UTILS_COPY_SHARED_LIBRARIES_TARGET_DEPENDS_ON_REQUEST_H
 
 #include "OverwriteBehavior.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QStringList>
 #include <QString>
 
@@ -40,7 +40,7 @@ namespace Mdt{ namespace DeployUtils{
 
   /*! \brief DTO for CopySharedLibrariesTargetDependsOn
    */
-  struct MDT_DEPLOYUTILS_EXPORT CopySharedLibrariesTargetDependsOnRequest
+  struct MDT_DEPLOYUTILSCORE_EXPORT CopySharedLibrariesTargetDependsOnRequest
   {
     OverwriteBehavior overwriteBehavior = OverwriteBehavior::Fail;
     bool removeRpath = false;

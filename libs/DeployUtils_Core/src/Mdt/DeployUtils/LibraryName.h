@@ -24,7 +24,7 @@
 #include "LibraryVersion.h"
 #include "LibraryNameExtension.h"
 #include "Impl/LibraryNameData.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QChar>
 #include <QLatin1Char>
 #include <QString>
@@ -59,7 +59,7 @@ namespace Mdt{ namespace DeployUtils{
    * | Windows | Qt5Core.dll      | n/a                    |
    *
    */
-  class MDT_DEPLOYUTILS_EXPORT LibraryName
+  class MDT_DEPLOYUTILSCORE_EXPORT LibraryName
   {
    public:
 

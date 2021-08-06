@@ -2,6 +2,7 @@
 # file Copyright.txt or https://cmake.org/licensing for details.
 
 include(MdtDeployApplication)
+include(MdtInstallExecutable) # TODO: remove
 
 add_library(Mdt_DeployUtils_Cli STATIC
   DeployUtilsMain.cpp
@@ -27,7 +28,7 @@ target_include_directories(Mdt_DeployUtils_Cli
 
 target_link_libraries(Mdt_DeployUtils_Cli
   PUBLIC
-    Mdt::DeployUtils
+    Mdt::DeployUtilsCore
     Mdt::CommandLineParser
     Mdt0::ConsoleApplication
     Qt5::Core
@@ -55,10 +56,25 @@ target_link_libraries(mdtdeployutils
     Mdt::DeployUtils_Cli
 )
 
-mdt_deploy_application(
+# TODO: re-enable
+# mdt_deploy_application(
+#   TARGET mdtdeployutils
+#   RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
+#   LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#   INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
+#   COMPONENT ${PROJECT_NAME}_Runtime
+# )
+
+# TODO: remove
+mdt_install_executable(
   TARGET mdtdeployutils
   RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  EXPORT_NAME DeployUtilsExecutable
+  EXPORT_NAMESPACE Mdt${PROJECT_VERSION_MAJOR}
+  NO_PACKAGE_CONFIG_FILE
+  EXPORT_DIRECTORY DeployUtils
   INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
-  COMPONENT ${PROJECT_NAME}_Tools
+  RUNTIME_COMPONENT ${PROJECT_NAME}_Runtime
+  DEVELOPMENT_COMPONENT ${PROJECT_NAME}_Dev
 )

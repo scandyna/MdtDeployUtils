@@ -21,7 +21,7 @@
 #ifndef MDT_DEPLOY_UTILS_MSVC_VERSION_H
 #define MDT_DEPLOY_UTILS_MSVC_VERSION_H
 
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
@@ -30,7 +30,7 @@ namespace Mdt{ namespace DeployUtils{
    *
    * \sa https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
    */
-  class MDT_DEPLOYUTILS_EXPORT MsvcVersion
+  class MDT_DEPLOYUTILSCORE_EXPORT MsvcVersion
   {
    public:
 

@@ -22,7 +22,7 @@
 #define MDT_DEPLOY_UTILS_MESSAGE_LOGGER_H
 
 #include "AbstractMessageLoggerBackend.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <exception>
 #include <memory>
@@ -89,7 +89,7 @@ namespace Mdt{ namespace DeployUtils{
    * \sa showError(const QString &)
    * \sa showError(const std::exception &)
    */
-  class MDT_DEPLOYUTILS_EXPORT MessageLogger
+  class MDT_DEPLOYUTILSCORE_EXPORT MessageLogger
   {
    public:
 

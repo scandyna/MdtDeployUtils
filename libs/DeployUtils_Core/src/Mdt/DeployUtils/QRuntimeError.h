@@ -21,7 +21,7 @@
 #ifndef MDT_DEPLOY_UTILS_QRUNTIME_ERROR_H
 #define MDT_DEPLOY_UTILS_QRUNTIME_ERROR_H
 
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QByteArray>
 #include <stdexcept>
@@ -30,7 +30,7 @@ namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Base class for runtime exceptions using QString messages
    */
-  class MDT_DEPLOYUTILS_EXPORT QRuntimeError : public std::runtime_error
+  class MDT_DEPLOYUTILSCORE_EXPORT QRuntimeError : public std::runtime_error
   {
    public:
 

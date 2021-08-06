@@ -28,7 +28,7 @@
 #include "Mdt/DeployUtils/PathList.h"
 #include "Mdt/DeployUtils/SearchPathList.h"
 #include "Mdt/DeployUtils/Platform.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QLatin1String>
 #include <QStringList>
@@ -326,7 +326,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
   /*! \internal
    */
-  class MDT_DEPLOYUTILS_EXPORT FindDependenciesImpl : public QObject
+  class MDT_DEPLOYUTILSCORE_EXPORT FindDependenciesImpl : public QObject
   {
     Q_OBJECT
 

@@ -21,7 +21,7 @@
 #ifndef MDT_DEPLOY_UTILS_ABSTRACT_MESSAGE_LOGGER_BACKEND_H
 #define MDT_DEPLOY_UTILS_ABSTRACT_MESSAGE_LOGGER_BACKEND_H
 
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 
 namespace Mdt{ namespace DeployUtils{
@@ -30,7 +30,7 @@ namespace Mdt{ namespace DeployUtils{
    *
    * \sa MessageLogger
    */
-  class MDT_DEPLOYUTILS_EXPORT AbstractMessageLoggerBackend
+  class MDT_DEPLOYUTILSCORE_EXPORT AbstractMessageLoggerBackend
   {
    public:
 

@@ -22,14 +22,14 @@
 #define MDT_DEPLOY_UTILS_FILE_OPEN_ERROR_H
 
 #include "QRuntimeError.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Error when open a file fails
    */
-  class MDT_DEPLOYUTILS_EXPORT FileOpenError : public QRuntimeError
+  class MDT_DEPLOYUTILSCORE_EXPORT FileOpenError : public QRuntimeError
   {
    public:
 

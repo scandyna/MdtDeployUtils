@@ -7,7 +7,7 @@
 include(GenerateExportHeader)
 include(MdtInstallLibrary)
 
-add_library(Mdt_DeployUtils
+add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/QRuntimeError.cpp
   Mdt/DeployUtils/FileOpenError.cpp
   Mdt/DeployUtils/BuildType.cpp
@@ -59,39 +59,39 @@ add_library(Mdt_DeployUtils
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.cpp
 )
-add_library(Mdt::DeployUtils ALIAS Mdt_DeployUtils)
+add_library(Mdt::DeployUtilsCore ALIAS Mdt_DeployUtilsCore)
 
-target_compile_features(Mdt_DeployUtils PUBLIC cxx_std_14)
+target_compile_features(Mdt_DeployUtilsCore PUBLIC cxx_std_14)
 
 if(BUILD_USE_IPO_LTO)
-  set_target_properties(Mdt_DeployUtils
+  set_target_properties(Mdt_DeployUtilsCore
     PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE
   )
 endif()
 
-target_include_directories(Mdt_DeployUtils
+target_include_directories(Mdt_DeployUtilsCore
   PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
 
-target_link_libraries(Mdt_DeployUtils
+target_link_libraries(Mdt_DeployUtilsCore
   PUBLIC
     Qt5::Core
 )
 
-generate_export_header(Mdt_DeployUtils)
+generate_export_header(Mdt_DeployUtilsCore)
 
 mdt_install_library(
-  TARGET Mdt_DeployUtils
+  TARGET Mdt_DeployUtilsCore
   RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE_DESTINATION ${CMAKE_INSTALL_LIBDIR}
   INCLUDES_DIRECTORY .
   INCLUDES_FILE_WITHOUT_EXTENSION
-  ADDITIONAL_INCLUDES_FILES "${CMAKE_CURRENT_BINARY_DIR}/mdt_deployutils_export.h"
+  ADDITIONAL_INCLUDES_FILES "${CMAKE_CURRENT_BINARY_DIR}/mdt_deployutilscore_export.h"
   INCLUDES_DESTINATION ${MDT_INSTALL_INCLUDEDIR}
-  EXPORT_NAME DeployUtils
+  EXPORT_NAME DeployUtilsCore
   EXPORT_NAMESPACE Mdt${PROJECT_VERSION_MAJOR}::
   INSTALL_NAMESPACE ${MDT_INSTALL_PACKAGE_NAME}
   FIND_PACKAGE_PATHS ..

@@ -21,7 +21,7 @@
 #ifndef MDT_DEPLOY_UTILS_LIBRARY_VERSION_H
 #define MDT_DEPLOY_UTILS_LIBRARY_VERSION_H
 
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QStringRef>
 
@@ -29,7 +29,7 @@ namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Representation of a version of a library
    */
-  class MDT_DEPLOYUTILS_EXPORT LibraryVersion
+  class MDT_DEPLOYUTILSCORE_EXPORT LibraryVersion
   {
    public:
 

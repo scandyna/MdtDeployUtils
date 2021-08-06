@@ -23,7 +23,7 @@
 
 #include "FileCopyError.h"
 #include "OverwriteBehavior.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -33,7 +33,7 @@ namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Provides utilities for files and directories manipulation
    */
-  class MDT_DEPLOYUTILS_EXPORT FileCopier : public QObject
+  class MDT_DEPLOYUTILSCORE_EXPORT FileCopier : public QObject
   {
    Q_OBJECT
 

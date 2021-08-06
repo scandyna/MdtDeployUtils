@@ -10,7 +10,7 @@ include(MdtAddTest)
 mdt_add_test(
   NAME LibraryNameBenchmark
   TARGET libraryNameBenchmark
-  DEPENDENCIES Mdt::DeployUtils Qt5::Test
+  DEPENDENCIES Mdt::DeployUtilsCore Qt5::Test
   SOURCE_FILES
     src/LibraryNameBenchmark.cpp
 )

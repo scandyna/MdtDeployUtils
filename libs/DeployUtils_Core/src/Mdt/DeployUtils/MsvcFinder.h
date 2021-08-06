@@ -24,7 +24,7 @@
 #include "AbstractCompilerFinderEngine.h"
 #include "FindCompilerError.h"
 #include "MsvcVersion.h"
-#include "mdt_deployutils_export.h"
+#include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QDir>
 #include <QFileInfo>
@@ -38,7 +38,7 @@ namespace Mdt{ namespace DeployUtils{
    *
    * \todo see various todo in cpp file
    */
-  class MDT_DEPLOYUTILS_EXPORT MsvcFinder : public AbstractCompilerFinderEngine
+  class MDT_DEPLOYUTILSCORE_EXPORT MsvcFinder : public AbstractCompilerFinderEngine
   {
    Q_OBJECT
 
