@@ -1,7 +1,7 @@
 
 Tools to help deploy C/C++ application binaries and their dependencies.
 
-[![pipeline status](https://gitlab.com/scandyna/mdtdeployutils/badges/experimental/pipeline.svg)](https://gitlab.com/scandyna/mdtdeployutils/-/pipelines)
+[![pipeline status](https://gitlab.com/scandyna/mdtdeployutils/badges/experimental/pipeline.svg)](https://gitlab.com/scandyna/mdtdeployutils/-/pipelines/latest)
 
 
 [[_TOC_]]
