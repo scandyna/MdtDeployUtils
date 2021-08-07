@@ -321,8 +321,6 @@ function(mdt_install_cmake_modules)
   endif()
 
   set(packageName "${ARG_EXPORT_NAMESPACE}${ARG_EXPORT_NAME}")
-  
-  message("packageName: ${packageName}")
 
   if(ARG_EXPORT_DIRECTORY)
     set(packageConfigInstallDirName "${ARG_EXPORT_NAMESPACE}${ARG_EXPORT_DIRECTORY}")
@@ -342,9 +340,6 @@ function(mdt_install_cmake_modules)
       set(packageConfigInstallDir "cmake/${packageConfigInstallDirName}")
     endif()
   endif()
-
-  message("modulesInstallDir: ${modulesInstallDir}")
-  message("packageConfigInstallDir: ${packageConfigInstallDir}")
 
   set(componentArguments)
   if(ARG_COMPONENT)
