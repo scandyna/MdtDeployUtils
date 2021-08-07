@@ -1,5 +1,11 @@
 
+# Tests
+
+Add InstallSharedLibrariesTargetDendsOnTest to cmake/tests
+
 # Install
+
+Remove RPATH for copied shared libraries
 
 Provides several components/packages:
 - MdtDeployUtils          (Common usecase, so this is the intuitive name)
@@ -9,6 +15,51 @@ Provides several components/packages:
 TODO: only MdtDeployUtils with components:
  - default: apps (Mdt_Runtime) + CMake modules + CMake package config files
  - dev (dev, headers, CMake package config files for headers etc..)
+
+
+This version should be the winner:
+```
+${CMAKE_INSTALL_PREFIX}
+  |
+  |-bin
+  |  |-mdtdeployutils   (Runtime)
+  |
+  |-include   (Dev)
+  |
+  |-lib
+     |-libMdt0DeployUtilsCore.so  (Runtime)
+     |-libDepA.so                 (Runtime)
+     |-libDepB.so                 (Runtime)
+     |-cmake
+         |-Modules            (Runtime)
+         |-Mdt0DeployUtils
+         |   |-Mdt0DeployUtilsExecutable.cmake          (Runtime) adds mdtdeployutils IMPORTED TARGET
+         |   |-Mdt0DeployUtilsModules.cmake             (Runtime)
+         |   |-Mdt0DeployUtilsConfig.cmake              (Runtime)
+         |   |-Mdt0DeployUtilsConfigVersion.cmake       (Runtime)
+         |-Mdt0DeployUtilsCore
+             |-Mdt0DeployUtilsCoreTargets.cmake         (Dev) adds libMdt0DeployUtilsCore.so IMPORTED TARGET
+             |-Mdt0DeployUtilsCoreConfig.cmake          (Dev)
+             |-Mdt0DeployUtilsCoreConfigVersion.cmake   (Dev)
+```
+
+Usage as tool:
+```cmake
+find_package(Mdt0 COMPONENTS DeployUtils REQUIRED)
+
+add_executable(myApp myApp.cpp)
+target_link_libraries(myApp PRIVATE Mdt0::PlainText Qt5::Widgets)
+
+mdt_deploy_application(TARGET myApp)
+```
+
+Usage as developer of its own tool:
+```cmake
+find_package(Mdt0 COMPONENTS DeployUtilsCore REQUIRED)
+
+add_executable(myTool myTool.cpp)
+target_link_libraries(myTool PRIVATE Mdt0::DeployUtilsCore Qt5::Gui)
+```
 
 
 This version is simple and explicit about using libs as a developer of its own tool:
@@ -53,6 +104,7 @@ find_package(Mdt0 COMPONENTS DeployUtilsLibs REQUIRED)
 add_executable(myTool myTool.cpp)
 target_link_libraries(myTool PRIVATE Mdt0::DeployUtilsLibs Qt5::Gui)
 ```
+
 
 
 This variant is more complex and confusing:
