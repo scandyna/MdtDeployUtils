@@ -26,12 +26,13 @@
 #     [INSTALL_IS_UNIX_SYSTEM_WIDE [TRUE|FALSE]]
 #     [RUNTIME_COMPONENT <component-name>]
 #     [DEVELOPMENT_COMPONENT <component-name>]
-#     [MDT_DEPLOY_UTILS_EXECUTABLE name or path]
-#     [LDD_EXECUTABLE name or path] TODO remove
-#     [OBJDUMP_EXECUTABLE name or path] TODO remove
 #   )
 #
 # Will install `target` using :command:`mdt_install_executable()`.
+#
+# For the usage of arguments not documented here,
+# see :command:`mdt_install_executable()`.
+#
 # The shared libraries the executable depends on
 # are also installed using :command:`mdt_install_shared_libraries_target_depends_on()`.
 #
@@ -53,37 +54,7 @@
 #     RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
 #     LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
 #     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
-#     COMPONENT ${PROJECT_NAME}_Tools
 #   )
-#
-# Specify path to required tools
-# """"""""""""""""""""""""""""""
-#
-# By default, ``mdt_deploy_application()`` expects specific targets as tools.
-# Those targets are defined using :command:`mdt_find_deploy_utils_tools()`.
-#
-# If using ``mdt_find_deploy_utils_tools()`` is not possible
-# (for example because of name clashes),
-# it is possible to specify the path for the required tools.
-#
-# Example:
-#
-# .. code-block:: cmake
-#
-#   find_program(mdtDeployUtilsPath NAMES mdtdeployutils)
-#   find_program(objdumpPath NAMES objdump)
-#
-#   mdt_deploy_application(
-#     TARGET myApp
-#     ...
-#     MDT_DEPLOY_UTILS_EXECUTABLE "${mdtDeployUtilsPath}"
-#     LDD_EXECUTABLE ldd
-#     OBJDUMP_EXECUTABLE "${objdumpPath}"
-#   )
-#
-# On a Windows host, the ``LDD_EXECUTABLE`` argument is simply ignored
-# (this avoids the caller having to conditionally call ``mdt_deploy_application()``
-# depending on the host platform).
 #
 
 include(MdtInstallExecutable)
@@ -91,8 +62,8 @@ include(MdtSharedLibrariesDepencyHelpers)
 
 function(mdt_deploy_application)
 
-  set(options)
-  set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT MDT_DEPLOY_UTILS_EXECUTABLE LDD_EXECUTABLE OBJDUMP_EXECUTABLE)
+  set(options NO_PACKAGE_CONFIG_FILE)
+  set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION EXPORT_NAME EXPORT_NAMESPACE EXPORT_DIRECTORY INSTALL_IS_UNIX_SYSTEM_WIDE RUNTIME_COMPONENT DEVELOPMENT_COMPONENT)
   set(multiValueArgs)
   cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -112,40 +83,65 @@ function(mdt_deploy_application)
     message(FATAL_ERROR "mdt_deploy_application(): unknown arguments passed: ${ARG_UNPARSED_ARGUMENTS}")
   endif()
 
-  if(ARG_MDT_DEPLOY_UTILS_EXECUTABLE)
-    set(mdtdeployutilsPath "${ARG_MDT_DEPLOY_UTILS_EXECUTABLE}")
-  else()
-    if(NOT TARGET mdtdeployutils)
-      message(FATAL_ERROR "mdt_deploy_application(): missing the required target mdtdeployutils."
-                          "Either use mdt_find_deploy_utils_tools(), "
-                          "or pass the path to mdtdeployutils using the MDT_DEPLOY_UTILS_EXECUTABLE argument.")
-    endif()
-#     get_target_property(mdtdeployutilsPath mdtdeployutils LOCATION)
-    set(mdtdeployutilsPath "$<TARGET_FILE:mdtdeployutils>")
+  set(exportNameArguments)
+  if(ARG_EXPORT_NAME)
+    set(exportNameArguments EXPORT_NAME ${ARG_EXPORT_NAME})
   endif()
-  if(NOT mdtdeployutilsPath)
-    message(FATAL_ERROR "mdt_deploy_application(): could not get path to mdtdeployutils")
+
+  set(exportNamespaceArguments)
+  if(ARG_EXPORT_NAMESPACE)
+    set(exportNamespaceArguments EXPORT_NAMESPACE ${ARG_EXPORT_NAMESPACE})
   endif()
-  
-  # TODO: also handle LDD_EXECUTABLE and OBJDUMP_EXECUTABLE
-  # Maybe add a helper function in MdtFindDeployUtilsTools
-  
-  message("mdtdeployutilsPath: ${mdtdeployutilsPath}")
+
+  set(noPackageConfigFileArguments)
+  if(ARG_NO_PACKAGE_CONFIG_FILE)
+    set(noPackageConfigFileArguments NO_PACKAGE_CONFIG_FILE)
+  endif()
+
+  set(exportDirectoryArguments)
+  if(ARG_EXPORT_DIRECTORY)
+    set(exportDirectoryArguments EXPORT_DIRECTORY ${ARG_EXPORT_DIRECTORY})
+  endif()
+
+  set(installIsUnixSystemWideArguments)
+  if(ARG_INSTALL_IS_UNIX_SYSTEM_WIDE)
+    set(installIsUnixSystemWideArguments INSTALL_IS_UNIX_SYSTEM_WIDE ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE})
+  endif()
+
+  set(runtimeComponentArguments)
+  if(ARG_RUNTIME_COMPONENT)
+    set(runtimeComponentArguments RUNTIME_COMPONENT ${ARG_RUNTIME_COMPONENT})
+  endif()
+
+  set(developmentComponentArguments)
+  if(ARG_DEVELOPMENT_COMPONENT)
+    set(developmentComponentArguments DEVELOPMENT_COMPONENT ${ARG_DEVELOPMENT_COMPONENT})
+  endif()
 
   mdt_install_executable(
     TARGET ${ARG_TARGET}
     RUNTIME_DESTINATION ${ARG_RUNTIME_DESTINATION}
     LIBRARY_DESTINATION ${ARG_LIBRARY_DESTINATION}
-    INSTALL_IS_UNIX_SYSTEM_WIDE ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE}
-    COMPONENT ${ARG_COMPONENT}
+    ${exportNameArguments}
+    ${exportNamespaceArguments}
+    ${noPackageConfigFileArguments}
+    ${exportDirectoryArguments}
+    ${installIsUnixSystemWideArguments}
+    ${runtimeComponentArguments}
+    ${developmentComponentArguments}
   )
+
+  set(componentArguments)
+  if(ARG_RUNTIME_COMPONENT)
+    set(componentArguments COMPONENT ${ARG_RUNTIME_COMPONENT})
+  endif()
 
   mdt_install_shared_libraries_target_depends_on(
     TARGET ${ARG_TARGET}
     RUNTIME_DESTINATION ${ARG_RUNTIME_DESTINATION}
     LIBRARY_DESTINATION ${ARG_LIBRARY_DESTINATION}
     INSTALL_IS_UNIX_SYSTEM_WIDE ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE}
-    COMPONENT ${ARG_COMPONENT}
+    ${componentArguments}
   )
 
 endfunction()
