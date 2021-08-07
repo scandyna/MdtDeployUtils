@@ -19,11 +19,16 @@
 #     TARGET <target>
 #     RUNTIME_DESTINATION <dir>
 #     LIBRARY_DESTINATION <dir>
+#     [EXPORT_NAME <export-name>]
+#     [EXPORT_NAMESPACE <export-namespace>]
+#     [NO_PACKAGE_CONFIG_FILE]
+#     [EXPORT_DIRECTORY <dir>]
 #     [INSTALL_IS_UNIX_SYSTEM_WIDE [TRUE|FALSE]]
-#     [COMPONENT <component-name>]
+#     [RUNTIME_COMPONENT <component-name>]
+#     [DEVELOPMENT_COMPONENT <component-name>]
 #     [MDT_DEPLOY_UTILS_EXECUTABLE name or path]
-#     [LDD_EXECUTABLE name or path]
-#     [OBJDUMP_EXECUTABLE name or path]
+#     [LDD_EXECUTABLE name or path] TODO remove
+#     [OBJDUMP_EXECUTABLE name or path] TODO remove
 #   )
 #
 # Will install `target` using :command:`mdt_install_executable()`.
