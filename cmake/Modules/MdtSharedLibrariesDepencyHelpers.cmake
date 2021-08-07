@@ -50,17 +50,26 @@
 #
 # .. code-block:: cmake
 #
+#   if(WIN32)
+#     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+#   endif()
+#
 #   add_executable(myApp myApp.cpp)
 #   target_link_libraries(myApp PRIVATE Qt5::Core)
 #   target_link_libraries(myApp PRIVATE Mdt0::PlainText)
 #
-#   mdt_copy_shared_libraries_target_depends_on(
-#     TARGET myApp
-#     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/myApp/lib"
-#     OVERWRITE_BEHAVIOR OVERWRITE
-#   )
+#   if(WIN32)
+#     mdt_copy_shared_libraries_target_depends_on(
+#       TARGET myApp
+#       DESTINATION "${CMAKE_BINARY_DIR}/bin"
+#       OVERWRITE_BEHAVIOR OVERWRITE
+#     )
+#   endif()
 #
-# The shared libraries the ``myApp`` executable depends on are copied to ``"${CMAKE_CURRENT_BINARY_DIR}/myApp/lib"``.
+#   add_test(NAME RunMyApp COMMAND myApp)
+#
+#
+# The shared libraries the ``myApp`` executable depends on are copied to ``"${CMAKE_BINARY_DIR}/bin"``.
 #
 # On platform that supports rpath,
 # the rpath informations is set to ``$ORIGIN`` for each shared library that has been copied.
@@ -145,8 +154,6 @@
 
 function(mdt_copy_shared_libraries_target_depends_on)
 
-# TODO provide MDT_DEPLOY_UTILS_EXECUTABLE etc.. + do checks - see mdt_deploy_applicastion()
-
   set(options)
   set(oneValueArgs TARGET DESTINATION OVERWRITE_BEHAVIOR REMOVE_RPATH)
   set(multiValueArgs)
@@ -185,10 +192,18 @@ function(mdt_copy_shared_libraries_target_depends_on)
     set(removeRpathOptionArgument)
   endif()
 
+  if(TARGET mdtdeployutils)
+    set(deployUtilsExecutable mdtdeployutils)
+  else()
+    set(deployUtilsExecutable Mdt0::DeployUtilsExecutable)
+  endif()
+
+  message("deployUtilsExecutable: ${deployUtilsExecutable}")
+
   add_custom_command(
     TARGET ${ARG_TARGET}
     POST_BUILD
-    COMMAND mdtdeployutils --logger-backend cmake copy-shared-libraries-target-depends-on
+    COMMAND ${deployUtilsExecutable} --logger-backend cmake copy-shared-libraries-target-depends-on
               --overwrite-behavior ${overwriteBehaviorOption}
               ${removeRpathOptionArgument}
               --search-prefix-path-list "${CMAKE_PREFIX_PATH}"
