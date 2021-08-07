@@ -77,6 +77,10 @@ stages:
     - cd build
     - conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
     - ctest --output-on-failure .
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - build
 
 .deploy_linux_conan:
   image: registry.gitlab.com/scandyna/docker-images/ubuntu-18.04-cpp-gui:latest
@@ -206,6 +210,10 @@ deploy_linux_gcc7_x86_64_relwithdebinfo:
     - cd build
     - conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
     - ctest --output-on-failure --build-config $BUILD_TYPE .
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - build
 
 .deploy_windows_conan:
   extends:
