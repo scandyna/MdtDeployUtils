@@ -28,7 +28,7 @@ to install a application and its dependencies.
 
 Example `CMakeLists.txt`:
 ```cmake
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
 project(MyApp)
 
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
@@ -54,7 +54,6 @@ mdt_deploy_application(
   RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
   INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
-  COMPONENT ${PROJECT_NAME}_Tools
 )
 ```
 
@@ -73,6 +72,14 @@ For the available CMake modules, and their usage,
 see [the CMake API documentation](https://scandyna.gitlab.io/mdtdeployutils/cmake-api)
 
 ## Command line tools
+
+To deploy a application:
+```bash
+mdtdeployutils deploy-application "appExecutable"
+```
+
+
+
 
 ```bash
 mdtdeployutils get-shared-libraries-target-depends-on "path/to/some/executable"
@@ -138,7 +145,7 @@ virtualenv
 
 Update your CMakeLists.txt to use the required libraries:
 ```cmake
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
 project(MyApp)
 
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
@@ -147,11 +154,11 @@ if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
 endif()
 
 find_package(Threads REQUIRED)
-find_package(Qt5 COMPONENTS Core Gui REQUIRED)
-find_package(Mdt0 COMPONENTS DeployUtils REQUIRED)
+find_package(Qt5 COMPONENTS Gui REQUIRED)
+find_package(Mdt0 COMPONENTS DeployUtilsCore REQUIRED)
 
 add_executable(myTool myTool.cpp)
-target_link_libraries(myTool PRIVATE Mdt0::DeployUtils)
+target_link_libraries(myTool PRIVATE Mdt0::DeployUtilsCore Qt5::Gui)
 ```
 
 ### Build your project using MdtDeployUtils on Linux with the native compiler

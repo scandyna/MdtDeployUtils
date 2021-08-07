@@ -56,17 +56,7 @@ target_link_libraries(mdtdeployutils
     Mdt::DeployUtils_Cli
 )
 
-# TODO: re-enable
-# mdt_deploy_application(
-#   TARGET mdtdeployutils
-#   RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
-#   LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#   INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
-#   COMPONENT ${PROJECT_NAME}_Runtime
-# )
-
-# TODO: remove
-mdt_install_executable(
+mdt_deploy_application(
   TARGET mdtdeployutils
   RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
