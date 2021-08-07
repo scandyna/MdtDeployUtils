@@ -68,22 +68,6 @@ mdt_add_test(
 )
 
 mdt_add_test(
-  NAME LibraryInfoTest
-  TARGET libraryInfoTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/LibraryInfoTest.cpp
-)
-
-mdt_add_test(
-  NAME LibraryInfoListTest
-  TARGET libraryInfoListTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/LibraryInfoListTest.cpp
-)
-
-mdt_add_test(
   NAME ByteArraySpanTest
   TARGET byteArraySpanTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
