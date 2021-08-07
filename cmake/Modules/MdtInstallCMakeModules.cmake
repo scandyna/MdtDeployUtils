@@ -22,57 +22,44 @@
 #   mdt_install_cmake_modules(
 #     FILES files...
 #     [DESTINATION <dir>]
-#     [EXPORT_DIRECTORY <dir>]
 #     EXPORT_NAME <export-name>
-#     EXPORT_NAMESPACE <export-namespace>  TODO: not used
-#     INSTALL_NAMESPACE <install-namespace>
+#     EXPORT_NAMESPACE <export-namespace>
+#     [NO_PACKAGE_CONFIG_FILE]
+#     [EXPORT_DIRECTORY <dir>]
 #     [INSTALL_IS_UNIX_SYSTEM_WIDE [TRUE|FALSE]]
-#     [TOOLS executable1 [executable2 ...]] TODO: remove
-#     [LINUX_TOOLS executable1 [executable2 ...]] TODO: remove
-#     [WINDOWS_TOOLS executable1 [executable2 ...]] TODO: remove
-#     [APPLE_TOOLS executable1 [executable2 ...]] TODO: remove
 #     [COMPONENT <component-name>]
-#     [NO_PACKAGE_CONFIG_FILES]
 #   )
 #
 # Install the CMake modules designated by ``files`` using :command:`install(FILES)`.
 #
 # By default, the destination is relative to ``CMAKE_INSTALL_PREFIX`` and depends on ``INSTALL_IS_UNIX_SYSTEM_WIDE``:
 # if it is ``TRUE``, it will be ``${CMAKE_INSTALL_DATADIR}/<package-name>/Modules``, otherwise ``cmake/Modules``.
+# Here, ``<package-name>`` is ``${EXPORT_NAMESPACE}${EXPORT_NAME}``.
 #
 # Alternatively, it is possible to specify a directory (or a relative path) using the ``DESTINATION`` argument.
-# This directory will be relative to ``CMAKE_INSTALL_PREFIX``.
+# In that case, the files will be installed to ``${DESTINATION}/cmake/Modules``,
+# relative to ``CMAKE_INSTALL_PREFIX``.
 # When using ``DESTINATION``, ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is ignored.
 #
-# ``<package-name>`` is named ``${INSTALL_NAMESPACE}${EXPORT_NAME}``.
+# A CMake package file, named ``${EXPORT_NAMESPACE}${EXPORT_NAME}.cmake``, is generated.
+# This file adds the location of the installed modules to ``CMAKE_MODULE_PATH``.
 #
-# If some modules requires tools, for example ``ldd``, it can be passed as ``TOOLS`` arguments.
-# Each argument is a executable name, without its ``.exe`` extension.
-# Internally, :command:`find_program()` will be used to find each tool.
+# If ``NO_PACKAGE_CONFIG_FILE`` is not set,
+# a package config file, named ``${EXPORT_NAMESPACE}${EXPORT_NAME}Config.cmake``, is also generated.
 #
-# TODO: remove tools part
+# By default, the package config files are installed to a subdirectory named ``${EXPORT_NAMESPACE}${EXPORT_NAME}``,
+# which correspond to a location :command:`find_package()` uses.
 #
-# The ``LINUX_TOOLS`` argument is the same as ``TOOLS``,
-# but is only used on Linux hosts. (i.e. ``CMAKE_HOST_UNIX`` is `true` and ``CMAKE_HOST_APPLE`` is `false`).
-#
-# The ``WINDOWS_TOOLS`` argument is the same as ``TOOLS``,
-# but is only used on Windows hosts. (i.e. ``CMAKE_HOST_WIN32`` is `true`).
-#
-# The ``APPLE_TOOLS`` argument is the same as ``TOOLS``,
-# but is only used on Apple hosts. (i.e. ``CMAKE_HOST_APPLE`` is `true`).
-#
-# Notice that the tools will not be installed by this function,
-# but :command:`find_program()` calls will be generated
-# in the package config files to find them.
-#
-# A package config file, named ``<package-name>Config.cmake``,
-# will be generated and installed in a location known by :command:`find_package()`.
-#
-# It is possible to not generate the package config files by setting
-# the ``NO_PACKAGE_CONFIG_FILES`` option.
+# If this default location does not match the required one,
+# the ``EXPORT_DIRECTORY`` can be used.
+# In that case, the package config file will be installed to a subdirectory named ``${EXPORT_NAMESPACE}${EXPORT_DIRECTORY}``.
 #
 #
-# Example:
+# Install a standalone CMake modules project
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
+# This example illustrates how to install the modules
+# and the related CMake package files:
 #
 # .. code-block:: cmake
 #
@@ -85,16 +72,9 @@
 #     FILES
 #       Modules/ModuleA.cmake
 #       Modules/ModuleB.cmake
-#     EXPORT_NAME DeployUtilsCMake
-#     EXPORT_NAMESPACE Mdt0::  TODO: not used
-#     INSTALL_NAMESPACE ${MDT_INSTALL_PACKAGE_NAME}
+#     EXPORT_NAME CMakeModules
+#     EXPORT_NAMESPACE ${MDT_INSTALL_PACKAGE_NAME}
 #     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
-#     TOOLS myTool TODO: remove
-#     LINUX_TOOLS ldd TODO: remove
-#     WINDOWS_TOOLS objdump TODO: remove
-#     APPLE_TOOLS otool TODO: remove
-#                         NOTE: could be a target: DeployUtils (which contains tools)
-#     COMPONENT Runtime
 #   )
 #
 #
@@ -105,23 +85,39 @@
 #        |-Modules
 #        |  |-ModuleA.cmake
 #        |  |-ModuleB.cmake
-#        |-Mdt0DeployUtilsCMake
-#             |-Mdt0DeployUtilsCMakeConfig.cmake
+#        |-Mdt0CMakeModules
+#             |-Mdt0CMakeModules.cmake
+#             |-Mdt0CMakeModulesConfig.cmake
 #
 #
 # Example of a system wide install on a Debian MultiArch (``CMAKE_INSTALL_PREFIX=/usr``)::
 #
 #   /usr
 #     |-share
-#         |-Mdt0DeployUtilsCMake
+#         |-Mdt0CMakeModules
 #         |   |-Modules
 #         |      |-ModuleA.cmake
 #         |      |-ModuleB.cmake
 #         |-cmake
-#             |-Mdt0DeployUtilsCMake
-#                 |-Mdt0DeployUtilsCMakeConfig.cmake
+#             |-Mdt0CMakeModules
+#                 |-Mdt0CMakeModules.cmake
+#                 |-Mdt0CMakeModulesConfig.cmake
 #
 #
+# Once the project is installed,
+# the user should be able to find it using CMake find_package() in its CMakeLists.txt:
+#
+# .. code-block:: cmake
+#
+#   find_package(Mdt0CMakeModules REQUIRED)
+#
+#   include(MdtBuildOptionsUtils)
+#
+#   mdt_set_available_build_types(Debug Release RelWithDebInfo MinSizeRel Instrumented)
+#
+#
+# Install CMake modules part of a other project
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Example to install CMake modules that are part of a project having other parts:
 #
@@ -137,11 +133,18 @@
 #       Modules/ModuleA.cmake
 #       Modules/ModuleB.cmake
 #     DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#     EXPORT_NAME DeployUtilsCMakeModules
+#     EXPORT_NAMESPACE ${MDT_INSTALL_PACKAGE_NAME}
+#     NO_PACKAGE_CONFIG_FILE
 #     EXPORT_DIRECTORY DeployUtils
-#     EXPORT_NAME DeployUtilsModules
-#     INSTALL_NAMESPACE ${MDT_INSTALL_PACKAGE_NAME}
 #     COMPONENT ${PROJECT_NAME}_Runtime
 #   )
+#
+#   my_project_write_package_config_file(...)
+#
+# In above example, ``my_project_write_package_config_file()``
+# will write a package configuration file, named ``Mdt0DeployUtils.cmake``,
+# that will include ``Mdt0DeployUtilsCMakeModules.cmake``.
 #
 # On a non system wide Linux installation, the result will be::
 #
@@ -152,7 +155,8 @@
 #         |  |-ModuleA.cmake
 #         |  |-ModuleB.cmake
 #         |-Mdt0DeployUtils
-#              |-Mdt0DeployUtilsModulesConfig.cmake
+#              |-Mdt0DeployUtilsCMakeModules.cmake
+#              |-Mdt0DeployUtilsConfig.cmake
 #
 #
 # Example of a system wide install on a Debian MultiArch (``CMAKE_INSTALL_PREFIX=/usr``)::
@@ -165,13 +169,27 @@
 #                |  |-ModuleA.cmake
 #                |  |-ModuleB.cmake
 #                |-Mdt0DeployUtils
-#                     |-Mdt0DeployUtilsModulesConfig.cmake
+#                     |-Mdt0DeployUtilsCMakeModules.cmake
+#                     |-Mdt0DeployUtilsConfig.cmake
 #
 #
-# TODO: document project config file that includes the module config file
+# Once the project is installed,
+# the user should be able to find it using CMake find_package() in its CMakeLists.txt:
+#
+# .. code-block:: cmake
+#
+#   find_package(Mdt0DeployUtils REQUIRED)
+#
+#   include(MdtDeployApplication)
+#
+#   add_executable(myApp myApp.cpp)
+#   mdt_deploy_application(TARGET myApp ...)
+#
 #
 # Install modules that requires tools
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
+# TODO: remove once described problems are solved
 #
 # Some modules can require tools, like ``ldd``, ``objdump`` or a custom tool.
 #
@@ -279,9 +297,9 @@
 
 function(mdt_install_cmake_modules)
 
-  set(options NO_PACKAGE_CONFIG_FILES)
-  set(oneValueArgs EXPORT_NAME INSTALL_NAMESPACE INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT)
-  set(multiValueArgs FILES TOOLS LINUX_TOOLS WINDOWS_TOOLS APPLE_TOOLS)
+  set(options NO_PACKAGE_CONFIG_FILE)
+  set(oneValueArgs DESTINATION EXPORT_NAME EXPORT_NAMESPACE EXPORT_DIRECTORY INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT)
+  set(multiValueArgs FILES)
   cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   if(NOT ARG_FILES)
@@ -290,28 +308,39 @@ function(mdt_install_cmake_modules)
   if(NOT ARG_EXPORT_NAME)
     message(FATAL_ERROR "mdt_install_cmake_modules(): EXPORT_NAME missing")
   endif()
-  if(NOT ARG_INSTALL_NAMESPACE)
-    message(FATAL_ERROR "mdt_install_cmake_modules(): INSTALL_NAMESPACE missing")
+  if(NOT ARG_EXPORT_NAMESPACE)
+    message(FATAL_ERROR "mdt_install_cmake_modules(): EXPORT_NAMESPACE missing")
   endif()
 
   if(ARG_UNPARSED_ARGUMENTS)
     message(FATAL_ERROR "mdt_install_cmake_modules(): unknown arguments passed: ${ARG_UNPARSED_ARGUMENTS}")
   endif()
 
-  if(NOT CMAKE_INSTALL_DATADIR)
-    message(FATAL_ERROR "mdt_install_cmake_modules(): CMAKE_INSTALL_DATADIR is not defined. Please include GNUInstallDirs before calling this function")
+  if(NOT CMAKE_INSTALL_DATADIR AND NOT ARG_DESTINATION)
+    message(FATAL_ERROR "mdt_install_cmake_modules(): CMAKE_INSTALL_DATADIR is not defined. Please include GNUInstallDirs before calling this function or sepcify a destination with DESTINATION")
   endif()
 
-  set(packageName "${ARG_INSTALL_NAMESPACE}${ARG_EXPORT_NAME}")
+  set(packageName "${ARG_EXPORT_NAMESPACE}${ARG_EXPORT_NAME}")
   
   message("packageName: ${packageName}")
 
-  if(ARG_INSTALL_IS_UNIX_SYSTEM_WIDE)
-    set(modulesInstallDir "${CMAKE_INSTALL_DATADIR}/${packageName}/Modules")
-    set(packageConfigInstallDir "${CMAKE_INSTALL_DATADIR}/cmake/${packageName}")
+  if(ARG_EXPORT_DIRECTORY)
+    set(packageConfigInstallDirName "${ARG_EXPORT_NAMESPACE}${ARG_EXPORT_DIRECTORY}")
   else()
-    set(modulesInstallDir "cmake/Modules")
-    set(packageConfigInstallDir "cmake/${packageName}")
+    set(packageConfigInstallDirName "${packageName}")
+  endif()
+
+  if(ARG_DESTINATION)
+    set(modulesInstallDir "${ARG_DESTINATION}/cmake/Modules")
+    set(packageConfigInstallDir "${ARG_DESTINATION}/cmake/${packageConfigInstallDirName}")
+  else()
+    if(ARG_INSTALL_IS_UNIX_SYSTEM_WIDE)
+      set(modulesInstallDir "${CMAKE_INSTALL_DATADIR}/${packageName}/Modules")
+      set(packageConfigInstallDir "${CMAKE_INSTALL_DATADIR}/cmake/${packageConfigInstallDirName}")
+    else()
+      set(modulesInstallDir "cmake/Modules")
+      set(packageConfigInstallDir "cmake/${packageConfigInstallDirName}")
+    endif()
   endif()
 
   message("modulesInstallDir: ${modulesInstallDir}")
@@ -329,34 +358,49 @@ function(mdt_install_cmake_modules)
   )
   
   # TODO: maybe warn if user passes TOOLS and NO_PACKAGE_CONFIG_FILES
+  # TODO: maybe allways generate package config file ?
 
-  if(NOT ARG_NO_PACKAGE_CONFIG_FILES)
-    set(packageConfigFileInContent "@PACKAGE_INIT@\n\n")
-    string(APPEND packageConfigFileInContent "set(MDT_CMAKE_MODULE_PATH \"@PACKAGE_modulesInstallDir@\")\n\n")
-    string(APPEND packageConfigFileInContent "# Add to CMAKE_MODULE_PATH if not allready\n")
-    string(APPEND packageConfigFileInContent "if(NOT \"\${MDT_CMAKE_MODULE_PATH}\" IN_LIST CMAKE_MODULE_PATH)\n")
-    string(APPEND packageConfigFileInContent "  list(APPEND CMAKE_MODULE_PATH \"\${MDT_CMAKE_MODULE_PATH}\")\n")
-    string(APPEND packageConfigFileInContent "endif()\n")
+  set(cmakePackageFileInContent "@PACKAGE_INIT@\n\n")
+  string(APPEND cmakePackageFileInContent "set(MDT_CMAKE_MODULE_PATH \"@PACKAGE_modulesInstallDir@\")\n\n")
+  string(APPEND cmakePackageFileInContent "# Add to CMAKE_MODULE_PATH if not allready\n")
+  string(APPEND cmakePackageFileInContent "if(NOT \"\${MDT_CMAKE_MODULE_PATH}\" IN_LIST CMAKE_MODULE_PATH)\n")
+  string(APPEND cmakePackageFileInContent "  list(APPEND CMAKE_MODULE_PATH \"\${MDT_CMAKE_MODULE_PATH}\")\n")
+  string(APPEND cmakePackageFileInContent "endif()\n")
 
-    set(packageConfigFileIn "${CMAKE_CURRENT_BINARY_DIR}/${packageName}Config.cmake.in")
-    set(packageConfigFile "${CMAKE_CURRENT_BINARY_DIR}/${packageName}Config.cmake")
+  set(cmakePackageFileIn "${CMAKE_CURRENT_BINARY_DIR}/${packageName}.cmake.in")
+  set(cmakePackageFile "${CMAKE_CURRENT_BINARY_DIR}/${packageName}.cmake")
 
-    file(WRITE "${packageConfigFileIn}" "${packageConfigFileInContent}")
+  file(WRITE "${cmakePackageFileIn}" "${cmakePackageFileInContent}")
 
-    configure_package_config_file(
-      "${packageConfigFileIn}"
-      "${packageConfigFile}"
-      INSTALL_DESTINATION "${packageConfigInstallDir}"
-      PATH_VARS modulesInstallDir
-      NO_SET_AND_CHECK_MACRO
-      NO_CHECK_REQUIRED_COMPONENTS_MACRO
-    )
+  configure_package_config_file(
+    "${cmakePackageFileIn}"
+    "${cmakePackageFile}"
+    INSTALL_DESTINATION "${packageConfigInstallDir}"
+    PATH_VARS modulesInstallDir
+    NO_SET_AND_CHECK_MACRO
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO
+  )
+
+  install(
+    FILES ${cmakePackageFile}
+    DESTINATION "${packageConfigInstallDir}"
+    ${componentArguments}
+  )
+
+  if(NOT ARG_NO_PACKAGE_CONFIG_FILE)
+
+    set(cmakePackageConfigFileContent "include(\"\${CMAKE_CURRENT_LIST_DIR}/${packageName}.cmake\")\n")
+
+    set(cmakePackageConfigFile "${CMAKE_CURRENT_BINARY_DIR}/${packageName}Config.cmake")
+
+    file(WRITE "${cmakePackageConfigFile}" "${cmakePackageConfigFileContent}")
 
     install(
-      FILES ${packageConfigFile}
+      FILES ${cmakePackageConfigFile}
       DESTINATION "${packageConfigInstallDir}"
       ${componentArguments}
     )
+
   endif()
 
 endfunction()
