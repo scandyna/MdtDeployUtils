@@ -39,6 +39,7 @@ set(TEST_MDT_DEPLOY_UTILS_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}${TEST_CMAK
 message("TEST_CMAKE_INSTALL_PREFIX: ${TEST_CMAKE_INSTALL_PREFIX}")
 message("TEST_MDT_DEPLOY_UTILS_INSTALL_PREFIX: ${TEST_MDT_DEPLOY_UTILS_INSTALL_PREFIX}")
 
+# TODO: component install (currently headers etc.. are installed)
 add_test(NAME EndToEndTests_Install_DeployUtils
   COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --target install --config $<CONFIG>
 #   COMMAND "${CMAKE_COMMAND}" --install "${CMAKE_BINARY_DIR}" --component Runtime
@@ -91,6 +92,7 @@ add_test(NAME Build_CopySharedLibrariesTargetDendsOnTest
     --build-options
       "-DCMAKE_PREFIX_PATH=${CMAKE_CURRENT_BINARY_DIR}/opt/ItemModel;${TEST_MDT_DEPLOY_UTILS_INSTALL_PREFIX};${CMAKE_PREFIX_PATH}"
       "-DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/opt/testApp"
+    --test-command "${CMAKE_CTEST_COMMAND}"
 )
 
 set_tests_properties(Build_CopySharedLibrariesTargetDendsOnTest
@@ -98,20 +100,24 @@ set_tests_properties(Build_CopySharedLibrariesTargetDendsOnTest
     DEPENDS "EndToEndTests_Install_ItemModel_lib;EndToEndTests_Install_DeployUtils"
 )
 
-add_test(NAME Install_CopySharedLibrariesTargetDendsOnTest
-  COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}/copySharedLibrariesTargetDendsOnTest" --target install --config $<CONFIG>
-)
+# add_test(NAME Install_CopySharedLibrariesTargetDendsOnTest
+#   COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}/copySharedLibrariesTargetDendsOnTest" --target install --config $<CONFIG>
+# )
+#
+# set_tests_properties(Install_CopySharedLibrariesTargetDendsOnTest
+#   PROPERTIES
+#     DEPENDS Build_CopySharedLibrariesTargetDendsOnTest
+# )
+#
+# add_test(NAME Run_CopySharedLibrariesTargetDendsOnTest
+#   COMMAND "${CMAKE_CURRENT_BINARY_DIR}/opt/testApp/bin/testApp${CMAKE_EXECUTABLE_SUFFIX}"
+# )
+#
+# set_tests_properties(Run_CopySharedLibrariesTargetDendsOnTest
+#   PROPERTIES
+#     DEPENDS Install_CopySharedLibrariesTargetDendsOnTest
+# )
 
-set_tests_properties(Install_CopySharedLibrariesTargetDendsOnTest
-  PROPERTIES
-    DEPENDS Build_CopySharedLibrariesTargetDendsOnTest
-)
-
-add_test(NAME Run_CopySharedLibrariesTargetDendsOnTest
-  COMMAND "${CMAKE_CURRENT_BINARY_DIR}/opt/testApp/bin/testApp${CMAKE_EXECUTABLE_SUFFIX}"
-)
-
-set_tests_properties(Run_CopySharedLibrariesTargetDendsOnTest
-  PROPERTIES
-    DEPENDS Install_CopySharedLibrariesTargetDendsOnTest
-)
+############################################
+# InstallSharedLibrariesTargetDendsOnTest test
+############################################
