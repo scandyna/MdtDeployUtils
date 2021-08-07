@@ -42,9 +42,10 @@
 # This file will define a ``IMPORTED`` target, named ``${EXPORT_NAMESPACE}::${EXPORT_NAME}``.
 # If ``NO_PACKAGE_CONFIG_FILE`` is not set,
 # a CMake package config file, named ``${EXPORT_NAMESPACE}${EXPORT_NAME}Config.cmake``, will be generated.
+#
 # By default, those generated files are installed to ``${LIBRARY_DESTINATION}/cmake/${EXPORT_NAMESPACE}${EXPORT_NAME}``.
 # If ``EXPORT_DIRECTORY`` is set,
-# those generated files are installed to ``${LIBRARY_DESTINATION}/cmake/${EXPORT_DIRECTORY}``.
+# those generated files are installed to ``${LIBRARY_DESTINATION}/cmake/${EXPORT_NAMESPACE}${EXPORT_DIRECTORY}``.
 #
 # If ``RUNTIME_COMPONENT`` is specified, the target installation will be part of it.
 #
@@ -201,10 +202,12 @@
 
 # TODO : if subdir not 1 level, document to set RPATH manually
 
+include(MdtTargetProperties)
+
 function(mdt_install_executable)
 
-  set(options)
-  set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT)
+  set(options NO_PACKAGE_CONFIG_FILE)
+  set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION EXPORT_NAME EXPORT_NAMESPACE EXPORT_DIRECTORY INSTALL_IS_UNIX_SYSTEM_WIDE RUNTIME_COMPONENT DEVELOPMENT_COMPONENT)
   set(multiValueArgs)
   cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -224,17 +227,77 @@ function(mdt_install_executable)
     message(FATAL_ERROR "mdt_install_executable(): unknown arguments passed: ${ARG_UNPARSED_ARGUMENTS}")
   endif()
 
-  set(componentArguments)
-  if(ARG_COMPONENT)
-    set(componentArguments COMPONENT ${ARG_COMPONENT})
+  set(runtimeComponentArguments)
+  if(ARG_RUNTIME_COMPONENT)
+    set(runtimeComponentArguments COMPONENT ${ARG_RUNTIME_COMPONENT})
   endif()
 
-  install(
-    TARGETS ${ARG_TARGET}
-    RUNTIME DESTINATION "${ARG_RUNTIME_DESTINATION}"
-    ${componentArguments}
+  set(developmentComponentArguments)
+  if(ARG_DEVELOPMENT_COMPONENT)
+    set(developmentComponentArguments COMPONENT ${ARG_DEVELOPMENT_COMPONENT})
+  endif()
+
+  mdt_set_target_install_rpath_property(
+    TARGET ${ARG_TARGET}
+    PATHS ../lib
   )
-  
-  # TODO: finish implementation
+
+  if(ARG_EXPORT_NAME AND ARG_EXPORT_NAMESPACE)
+
+    if(ARG_EXPORT_DIRECTORY)
+      set(cmakePackageFilesDir "${ARG_LIBRARY_DESTINATION}/cmake/${ARG_EXPORT_NAMESPACE}${ARG_EXPORT_DIRECTORY}")
+    else()
+      set(cmakePackageFilesDir "${ARG_LIBRARY_DESTINATION}/cmake/${ARG_EXPORT_NAMESPACE}${ARG_EXPORT_NAME}")
+    endif()
+
+    set(targetExportName ${ARG_EXPORT_NAMESPACE}${ARG_EXPORT_NAME})
+
+    set_target_properties(${ARG_TARGET}
+      PROPERTIES
+        EXPORT_NAME ${ARG_EXPORT_NAME}
+    )
+
+    install(
+      TARGETS ${ARG_TARGET}
+      EXPORT ${targetExportName}
+      RUNTIME
+        DESTINATION "${ARG_RUNTIME_DESTINATION}"
+        ${runtimeComponentArguments}
+    )
+
+    install(
+      EXPORT ${targetExportName}
+      DESTINATION "${cmakePackageFilesDir}"
+      NAMESPACE ${ARG_EXPORT_NAMESPACE}::
+      FILE ${targetExportName}.cmake
+      ${developmentComponentArguments}
+    )
+
+    if(NOT ARG_NO_PACKAGE_CONFIG_FILE)
+
+      set(cmakePackageConfigFileContent "include(\"\${CMAKE_CURRENT_LIST_DIR}/${targetExportName}.cmake\")\n")
+
+      set(cmakePackageConfigFile "${CMAKE_CURRENT_BINARY_DIR}/${targetExportName}Config.cmake")
+
+      file(WRITE "${cmakePackageConfigFile}" "${cmakePackageConfigFileContent}")
+
+      install(
+        FILES ${cmakePackageConfigFile}
+        DESTINATION "${cmakePackageFilesDir}"
+        ${developmentComponentArguments}
+      )
+
+    endif()
+
+  else()
+
+    install(
+      TARGETS ${ARG_TARGET}
+      RUNTIME
+        DESTINATION "${ARG_RUNTIME_DESTINATION}"
+        ${runtimeComponentArguments}
+    )
+
+  endif()
 
 endfunction()
