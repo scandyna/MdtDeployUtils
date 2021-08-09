@@ -78,7 +78,8 @@ stages:
     - conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
     - ctest --output-on-failure .
   artifacts:
-    expire_in: 1 day
+    when: on_failure
+    expire_in: 1 week
     paths:
       - build
 
@@ -211,7 +212,8 @@ deploy_linux_gcc7_x86_64_relwithdebinfo:
     - conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
     - ctest --output-on-failure --build-config $BUILD_TYPE .
   artifacts:
-    expire_in: 1 day
+    when: on_failure
+    expire_in: 1 week
     paths:
       - build
 
