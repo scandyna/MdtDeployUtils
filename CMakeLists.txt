@@ -91,6 +91,8 @@ mdt_add_thread_sanitizer_option_if_available(SANITIZER_ENABLE_THREAD
   INITIAL_VALUE OFF
 )
 
+message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
 #######################
 # Warnings
 #######################
