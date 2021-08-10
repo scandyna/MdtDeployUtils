@@ -191,7 +191,7 @@ deploy_linux_gcc7_x86_64_relwithdebinfo:
     - cd build
     - conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
     - ./activate
-    - cmake -G"$CMAKE_GENERATOR" $CMAKE_GENERATOR_EXTRA_ARGS -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+    - cmake -G"$CMAKE_GENERATOR" $CMAKE_GENERATOR_EXTRA_ARGS -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
             -DCMAKE_PREFIX_PATH="$BOOST_PREFIX_PATH;$QT_PREFIX_PATH"
             -DWARNING_AS_ERROR=ON -DBUILD_TESTS=ON ..
     - cmake --build . --config $BUILD_TYPE -j4
@@ -212,7 +212,7 @@ deploy_linux_gcc7_x86_64_relwithdebinfo:
     - 'dir env:'
     - cd build
     - conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
-    - ctest --output-on-failure --build-config $BUILD_TYPE .
+    - ctest --output-on-failure --build-config "$BUILD_TYPE" .
   artifacts:
     when: on_failure
     expire_in: 1 week
