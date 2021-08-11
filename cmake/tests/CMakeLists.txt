@@ -82,7 +82,7 @@ set_tests_properties(EndToEndTests_Install_ItemModel_lib
 # CopySharedLibrariesTargetDendsOnTest test
 ############################################
 
-add_test(NAME Build_CopySharedLibrariesTargetDendsOnTest
+add_test(NAME CMake_CopySharedLibrariesTargetDendsOnTest
   COMMAND "${CMAKE_CTEST_COMMAND}"
     --build-and-test "${CMAKE_CURRENT_SOURCE_DIR}/CopySharedLibrariesTargetDendsOnTest" "${CMAKE_CURRENT_BINARY_DIR}/copySharedLibrariesTargetDendsOnTest"
     --build-generator "${CMAKE_GENERATOR}"
@@ -95,7 +95,7 @@ add_test(NAME Build_CopySharedLibrariesTargetDendsOnTest
     --test-command "${CMAKE_CTEST_COMMAND}"
 )
 
-set_tests_properties(Build_CopySharedLibrariesTargetDendsOnTest
+set_tests_properties(CMake_CopySharedLibrariesTargetDendsOnTest
   PROPERTIES
     DEPENDS "EndToEndTests_Install_ItemModel_lib;EndToEndTests_Install_DeployUtils"
 )
