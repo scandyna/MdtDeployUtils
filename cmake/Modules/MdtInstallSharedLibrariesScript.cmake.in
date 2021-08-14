@@ -18,6 +18,7 @@ message("CMAKE_CXX_COMPILER: @CMAKE_CXX_COMPILER@")
 set(IS_MSVC @MSVC@)
 message("Is MSVC: ${IS_MSVC}")
 
+# TODO: update to take either deployUtilsExecutable
 set(mdtDeployUtilsCommand "$<TARGET_FILE:mdtdeployutils>")
 message("mdtDeployUtilsCommand: ${mdtDeployUtilsCommand}")
 
