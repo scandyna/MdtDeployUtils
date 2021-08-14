@@ -1,50 +1,18 @@
-##############################################################
-#  Copyright Philippe Steinmann 2020 - 2020.
-#  Distributed under the Boost Software License, Version 1.0.
-#  (See accompanying file LICENSE.txt or copy at
-#  https://www.boost.org/LICENSE_1_0.txt)
-##############################################################
-include(GenerateExportHeader)
-include(MdtInstallLibrary)
+# Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
+# file Copyright.txt or https://cmake.org/licensing for details.
+cmake_minimum_required(VERSION 3.10)
 
-add_library(Mdt_DeployUtils
-  Mdt/DeployUtils/Algorithm.cpp
-)
-add_library(Mdt::DeployUtils ALIAS Mdt_DeployUtils)
+project(MdtItemEditor VERSION 0.0.1)
 
-target_compile_features(Mdt_DeployUtils PUBLIC cxx_std_14)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
-if(BUILD_USE_IPO_LTO)
-  set_target_properties(Mdt_DeployUtils
-    PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE
-  )
-endif()
+find_package(MdtCMakeModules REQUIRED)
+# find_package(Mdt0 0.0.1 COMPONENTS ItemModel REQUIRED NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_SYSTEM_PATH)
+find_package(Mdt0ItemModel 0.0.1 REQUIRED NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_SYSTEM_PATH)
 
-target_include_directories(Mdt_DeployUtils
-  PUBLIC
-   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-)
+set(MDT_INSTALL_PACKAGE_NAME Mdt0)
+include(GNUInstallDirs)
+include(MdtInstallDirs)
 
-generate_export_header(Mdt_DeployUtils)
-
-mdt_install_library(
-  TARGET Mdt_DeployUtils
-  RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE_DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  INCLUDES_DIRECTORY .
-  INCLUDES_FILE_WITHOUT_EXTENSION
-  ADDITIONAL_INCLUDES_FILES "${CMAKE_CURRENT_BINARY_DIR}/mdt_deployutils_export.h"
-  INCLUDES_DESTINATION ${MDT_INSTALL_INCLUDEDIR}
-  EXPORT_NAME DeployUtils
-  EXPORT_NAMESPACE Mdt${PROJECT_VERSION_MAJOR}::
-  INSTALL_NAMESPACE ${MDT_INSTALL_PACKAGE_NAME}
-  FIND_PACKAGE_PATHS ..
-  INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
-  VERSION ${PROJECT_VERSION}
-  SOVERSION ${PROJECT_VERSION_MAJOR}
-  VERSION_COMPATIBILITY ExactVersion
-  RUNTIME_COMPONENT ${PROJECT_NAME}_Runtime
-  DEVELOPMENT_COMPONENT ${PROJECT_NAME}_Dev
-)
+add_subdirectory(src)

@@ -1,16 +1,11 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
-cmake_minimum_required(VERSION 3.10)
-
-project(MdtItemModel VERSION 0.0.1)
-
-find_package(MdtCMakeModules REQUIRED)
-
 include(GenerateExportHeader)
 include(MdtInstallLibrary)
 
 add_library(Mdt_ItemModel
   Mdt/ItemModel.cpp
+  Mdt/ItemModel/SortProxyModel.cpp
 )
 add_library(Mdt::ItemModel ALIAS Mdt_ItemModel)
 
@@ -21,10 +16,6 @@ target_include_directories(Mdt_ItemModel
 )
 
 generate_export_header(Mdt_ItemModel)
-
-set(MDT_INSTALL_PACKAGE_NAME Mdt0)
-include(GNUInstallDirs)
-include(MdtInstallDirs)
 
 mdt_install_library(
   TARGET Mdt_ItemModel

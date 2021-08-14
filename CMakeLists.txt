@@ -55,6 +55,14 @@ option(BUILD_DOCS "Build the documentations" OFF)
 mdt_set_available_build_types(Release Debug RelWithDebInfo MinSizeRel Instrumented)
 option(WARNING_AS_ERROR "Threat warnings as errors" OFF)
 
+if(BUILD_TESTS)
+  option(
+    BUILD_REAL_INSTALL_TESTS
+    "Build tests that installs components in CMAKE_INSTALL_PREFIX. This should only be enabled in virtualized environment, like a Docker image."
+    OFF
+  )
+endif()
+
 option(BUILD_USE_IPO_LTO_IF_AVAILABLE "Use link-time optimization if available on the platform" OFF)
 mark_as_advanced(BUILD_USE_IPO_LTO_IF_AVAILABLE)
 # Provide LPO/LTO option if supported

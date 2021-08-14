@@ -179,146 +179,39 @@ add_test(NAME CMake_CopySharedLibrariesTargetDendsOnTest
     --test-command "${CMAKE_CTEST_COMMAND}"
 )
 
-if(BUILD_REAL_INSTALL_TESTS)
-  set_tests_properties(CMake_CopySharedLibrariesTargetDendsOnTest
-    PROPERTIES
-      DEPENDS "EndToEndTests_Install_ItemModel_lib_Destdir;EndToEndTests_Install_ItemModel_lib_Real;EndToEndTests_Install_DeployUtils_Destdir;EndToEndTests_Install_DeployUtils_Real"
-  )
-else()
-  set_tests_properties(CMake_CopySharedLibrariesTargetDendsOnTest
-    PROPERTIES
-      DEPENDS "EndToEndTests_Install_ItemModel_lib_Destdir;EndToEndTests_Install_DeployUtils_Destdir"
-  )
-endif()
-
-
-#########################################################################
-# mdt_install_executable() test
-# TODO: should move to MdtCMakeModules
-#
-# Use a simple executable that depends on ItemEditor test library.
-# We not add other non std dependencies, like Qt.
-# (installing required dependencies
-#  is done by mdt_deploy_application() from MdtDeployUtils)
-#
-# A user project will then be build.
-# This user project will use the above app as a CMake imported target.
-# The user project also has a simple test
-# that will run the app without any special environment.
-#
-# One goal ist to check that RPATH are set correctly for Unixes
-# (note that RPATH will be empty on UNIX system wide install)
-#
-# A other goal is to check that the app is installed correctly and
-# that the CMake package files are generated and installed correctly.
-#
-# Steps:
-# - Build the app
-# - Install the app
-# - Build and run the user project
-#
-# TODO: install prefix + syswide test in CI etc.. also Windows
-#   See also docs to see what to test
-#
-# TODO: maybe add a option to build (some) install tests and use CMAKE_INSTALL_PREFIX
-#
-# TODO: test also bin/subdir , and bin/ somedir/lib/ to check ORIGIN... set (do not confuse with syswide install)
-#########################################################################
-
-if(MDT_INSTALL_IS_UNIX_SYSTEM_WIDE)
-  set(testTableEditorInstallPrefix "/usr")
-else()
-  set(testTableEditorInstallPrefix "/opt/TableEditor")
-endif()
-
-add_test(NAME EndToEndTests_Build_TableEditor
-  COMMAND "${CMAKE_CTEST_COMMAND}"
-    --build-and-test "${CMAKE_CURRENT_SOURCE_DIR}/apps/TableEditor" "${CMAKE_CURRENT_BINARY_DIR}/build/apps/TableEditor"
-    --build-generator "${CMAKE_GENERATOR}"
-    --build-generator-platform "${CMAKE_GENERATOR_PLATFORM}"
-    --build-generator-toolset "${CMAKE_GENERATOR_TOOLSET}"
-    --build-config $<CONFIG>
-    --build-options
-      "-DCMAKE_PREFIX_PATH=${testItemEditorInstallPrefix};${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH};${CMAKE_CURRENT_BINARY_DIR}${testItemEditorInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${testItemModelInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${CMAKE_PREFIX_PATH}"
-      "-DCMAKE_INSTALL_PREFIX=${testTableEditorInstallPrefix}"
-      "-DBUILD_SHARED_LIBS=ON"
-)
-
-if(BUILD_REAL_INSTALL_TESTS)
-  set_tests_properties(EndToEndTests_Build_TableEditor
-    PROPERTIES
-      DEPENDS "EndToEndTests_Install_ItemEditor_lib_Destdir;EndToEndTests_Install_ItemEditor_lib_Real;EndToEndTests_Install_DeployUtils_Destdir;EndToEndTests_Install_DeployUtils_Real"
-  )
-else()
-  set_tests_properties(EndToEndTests_Build_TableEditor
-    PROPERTIES
-      DEPENDS "EndToEndTests_Install_ItemEditor_lib_Destdir;EndToEndTests_Install_DeployUtils_Destdir"
-  )
-endif()
-
-
-add_test(NAME EndToEndTests_Install_TableEditor_Destdir
-  COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}/build/apps/TableEditor" --target install --config $<CONFIG>
-)
-
-set_tests_properties(EndToEndTests_Install_TableEditor_Destdir
+set_tests_properties(CMake_CopySharedLibrariesTargetDendsOnTest
   PROPERTIES
-    DEPENDS EndToEndTests_Build_TableEditor
-    ENVIRONMENT "DESTDIR=${CMAKE_CURRENT_BINARY_DIR}"
+    DEPENDS "EndToEndTests_Install_ItemModel_lib_Destdir;EndToEndTests_Install_DeployUtils_Destdir"
 )
+
+# On UNIX system wide install the RPATH are removed.
+# In that case, running a executable will only work
+# on a real system wide installation
+if(MDT_INSTALL_IS_UNIX_SYSTEM_WIDE)
+  set_tests_properties(CMake_CopySharedLibrariesTargetDendsOnTest PROPERTIES DISABLED YES)
+endif()
 
 if(BUILD_REAL_INSTALL_TESTS)
 
-  add_test(NAME EndToEndTests_Install_TableEditor_Real
-    COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}/build/apps/TableEditor" --target install --config $<CONFIG>
+  add_test(NAME CMake_CopySharedLibrariesTargetDendsOnTest_Real
+    COMMAND "${CMAKE_CTEST_COMMAND}"
+      --build-and-test "${CMAKE_CURRENT_SOURCE_DIR}/CopySharedLibrariesTargetDendsOnTest" "${CMAKE_CURRENT_BINARY_DIR}/copySharedLibrariesTargetDendsOnTest"
+      --build-generator "${CMAKE_GENERATOR}"
+      --build-generator-platform "${CMAKE_GENERATOR_PLATFORM}"
+      --build-generator-toolset "${CMAKE_GENERATOR_TOOLSET}"
+      --build-config $<CONFIG>
+      --build-options
+        "-DCMAKE_PREFIX_PATH=${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH};${CMAKE_CURRENT_BINARY_DIR}${testItemModelInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${CMAKE_PREFIX_PATH}"
+      --test-command "${CMAKE_CTEST_COMMAND}"
   )
 
-  set_tests_properties(EndToEndTests_Install_TableEditor_Real
+  set_tests_properties(CMake_CopySharedLibrariesTargetDendsOnTest_Real
     PROPERTIES
-      DEPENDS EndToEndTests_Build_TableEditor
+      DEPENDS "EndToEndTests_Install_ItemModel_lib_Real;EndToEndTests_Install_DeployUtils_Real"
   )
 
 endif()
 
-
-add_test(NAME EndToEndTests_BuildAndRun_TableEditorUserProject
-  COMMAND "${CMAKE_CTEST_COMMAND}"
-    --build-and-test "${CMAKE_CURRENT_SOURCE_DIR}/apps/TableEditorUserProject" "${CMAKE_CURRENT_BINARY_DIR}/build/apps/TableEditorUserProject"
-    --build-generator "${CMAKE_GENERATOR}"
-    --build-generator-platform "${CMAKE_GENERATOR_PLATFORM}"
-    --build-generator-toolset "${CMAKE_GENERATOR_TOOLSET}"
-    --build-config $<CONFIG>
-    --build-options
-      "-DCMAKE_PREFIX_PATH=${testTableEditorInstallPrefix};${CMAKE_PREFIX_PATH};${CMAKE_CURRENT_BINARY_DIR}${testTableEditorInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${CMAKE_PREFIX_PATH}"
-      "-DBUILD_SHARED_LIBS=ON"
-)
-
-if(BUILD_REAL_INSTALL_TESTS)
-
-  set_tests_properties(EndToEndTests_BuildAndRun_TableEditorUserProject
-    PROPERTIES
-      DEPENDS "EndToEndTests_Install_TableEditor_Destdir;EndToEndTests_Install_TableEditor_Real;EndToEndTests_Install_DeployUtils_Destdir;EndToEndTests_Install_DeployUtils_Real"
-  )
-
-else()
-
-  set_tests_properties(EndToEndTests_BuildAndRun_TableEditorUserProject
-    PROPERTIES
-      DEPENDS "EndToEndTests_Install_TableEditor_Destdir;EndToEndTests_Install_DeployUtils_Destdir"
-  )
-
-  # On UNIX system wide install the RPATH are removed,
-  # so the relocated binary will not work
-  # TODO: disable test
-endif()
-
-#########################################################################
-# mdt_install_executable() CMake package test
-# TODO: should move to MdtCMakeModules
-#
-# Creat a CMake project that uses above installed application
-# as a CMake imported target.
-#########################################################################
 
 # add_test(NAME Install_CopySharedLibrariesTargetDendsOnTest
 #   COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}/copySharedLibrariesTargetDendsOnTest" --target install --config $<CONFIG>

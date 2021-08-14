@@ -192,6 +192,8 @@ function(mdt_copy_shared_libraries_target_depends_on)
     set(removeRpathOptionArgument)
   endif()
 
+  # TODO Should also build a runtime PATH if mdtdeployutils not installed ?
+  #   Note: why does the test run on Windows actually ?
   if(TARGET mdtdeployutils)
     set(deployUtilsExecutable mdtdeployutils)
   else()
@@ -284,6 +286,7 @@ function(mdt_install_shared_libraries_target_depends_on)
     set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_DESTINATION "${ARG_LIBRARY_DESTINATION}")
   endif()
 
+  # TODO: update and document: use either mdtdeployutils or Mdt0::DeployUtilsExecutable
   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH)
   mdt_target_libraries_to_library_env_path(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH TARGET mdtdeployutils ALWAYS_USE_SLASHES)
 
