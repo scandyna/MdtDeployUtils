@@ -188,10 +188,10 @@ Build your project:
 make -j4
 ```
 
-# Install _Project_name_
+# Install MdtDeployUtils
 
-To install _Project_name_ see [INSTALL](INSTALL.md).
+To install MdtDeployUtils see [INSTALL](INSTALL.md).
 
-# Work on _Project_name_
+# Work on MdtDeployUtils
 
-To build _Project_name_ and run the unit tests, see [BUILD](BUILD.md).
+To build MdtDeployUtils and run the unit tests, see [BUILD](BUILD.md).
