@@ -68,7 +68,14 @@ if(BUILD_REAL_INSTALL_TESTS)
   )
 endif()
 
-set(testMdtDeployUtilsInstallPrefix "${CMAKE_INSTALL_PREFIX}")
+if(WIN32)
+  string(REGEX REPLACE "^[a-zA-Z]:" ""
+    testMdtDeployUtilsInstallPrefix
+    "${CMAKE_INSTALL_PREFIX}"
+  )
+else()
+  set(testMdtDeployUtilsInstallPrefix "${CMAKE_INSTALL_PREFIX}")
+endif()
 
 ############################
 # ItemModel library
