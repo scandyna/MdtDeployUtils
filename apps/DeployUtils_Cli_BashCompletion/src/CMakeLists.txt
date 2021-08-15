@@ -56,7 +56,22 @@ add_custom_target(generateMdtdeployutilsBashCompletionScript ALL
   VERBATIM
 )
 
-# add_custom_command(OUTPUT mdtdeployutils-completion.bash
+install(
+  FILES "${CMAKE_CURRENT_BINARY_DIR}/mdtdeployutils"
+  DESTINATION "${CMAKE_INSTALL_DATADIR}/bash-completion/completions"
+  COMPONENT ${PROJECT_NAME}_Runtime
+)
+
+# add_custom_command(
+#   OUTPUT "mdtdeployutils-completion.bash"
+#   COMMAND mdtdeployutilsBashCompletionScriptGenerator "${CMAKE_CURRENT_BINARY_DIR}"
+#   DEPENDS mdtdeployutilsBashCompletionScriptGenerator
+#   COMMENT "Generating mdtdeployutils-completion.bash"
+#   VERBATIM
+# )
+
+# add_custom_command(
+#   OUTPUT mdtdeployutils-completion.bash
 #   COMMAND generateMdtdeployutilsBashCompletionScript "$<TARGET_FILE:mdtdeployutils-completion.bash>"
 #   COMMENT "Generating mdtdeployutils-completion.bash"
 #   VERBATIM
