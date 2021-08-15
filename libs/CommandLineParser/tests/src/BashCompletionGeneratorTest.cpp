@@ -859,7 +859,7 @@ TEST_CASE("generateScriptToFile")
 
   std::cout << generator.generateScript().toLocal8Bit().toStdString() << std::endl;
 
-  const QString fileName = QLatin1String("mytool-completion.bash");
+  const QString fileName = QLatin1String("mytool");
   REQUIRE( !fileExists(dir, fileName) );
   generator.generateScriptToFile( dir.path() );
   REQUIRE( fileExists(dir, fileName) );

@@ -73,7 +73,8 @@ void BashCompletionGenerator::generateScriptToFile(const QString & directoryPath
   assert( !directoryPath.trimmed().isEmpty() );
   assert( !mApplicationName.isEmpty() );
 
-  const QString filePath = directoryPath % QLatin1Char('/') % mApplicationName % QLatin1String("-completion.bash");
+//   const QString filePath = directoryPath % QLatin1Char('/') % mApplicationName % QLatin1String("-completion.bash");
+  const QString filePath = directoryPath % QLatin1Char('/') % mApplicationName;
   QFile file(filePath);
 
   if( !file.open(QIODevice::WriteOnly | QIODevice::Text) ){
