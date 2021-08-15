@@ -5,6 +5,8 @@ project(TestApp)
 
 # TODO: add a dependency to Qt
 
+message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+
 find_package(MdtCMakeModules REQUIRED)
 find_package(Mdt0DeployUtils REQUIRED NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_PACKAGE_REGISTRY)
 # find_package(Threads REQUIRED)

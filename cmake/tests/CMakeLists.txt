@@ -68,6 +68,8 @@ if(BUILD_REAL_INSTALL_TESTS)
   )
 endif()
 
+set(testMdtDeployUtilsInstallPrefix "${CMAKE_INSTALL_PREFIX}")
+
 ############################
 # ItemModel library
 ############################
@@ -132,7 +134,7 @@ add_test(NAME EndToEndTests_Build_ItemEditor_lib
     --build-generator-toolset "${CMAKE_GENERATOR_TOOLSET}"
     --build-config $<CONFIG>
     --build-options
-      "-DCMAKE_PREFIX_PATH=${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH};${CMAKE_CURRENT_BINARY_DIR}${testItemModelInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${CMAKE_PREFIX_PATH}"
+      "-DCMAKE_PREFIX_PATH=${testItemModelInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH}"
       "-DCMAKE_INSTALL_PREFIX=${testItemEditorInstallPrefix}"
       "-DBUILD_SHARED_LIBS=ON"
 )
@@ -175,7 +177,7 @@ add_test(NAME CMake_CopySharedLibrariesTargetDendsOnTest
     --build-generator-toolset "${CMAKE_GENERATOR_TOOLSET}"
     --build-config $<CONFIG>
     --build-options
-      "-DCMAKE_PREFIX_PATH=${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH};${CMAKE_CURRENT_BINARY_DIR}${testItemModelInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${CMAKE_PREFIX_PATH}"
+      "-DCMAKE_PREFIX_PATH=${CMAKE_CURRENT_BINARY_DIR}${testMdtDeployUtilsInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH}"
     --test-command "${CMAKE_CTEST_COMMAND}"
 )
 
@@ -201,7 +203,7 @@ if(BUILD_REAL_INSTALL_TESTS)
       --build-generator-toolset "${CMAKE_GENERATOR_TOOLSET}"
       --build-config $<CONFIG>
       --build-options
-        "-DCMAKE_PREFIX_PATH=${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH};${CMAKE_CURRENT_BINARY_DIR}${testItemModelInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${CMAKE_PREFIX_PATH}"
+        "-DCMAKE_PREFIX_PATH=${testMdtDeployUtilsInstallPrefix};${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH}"
       --test-command "${CMAKE_CTEST_COMMAND}"
   )
 
