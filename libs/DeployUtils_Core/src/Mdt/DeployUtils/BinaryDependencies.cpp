@@ -101,11 +101,14 @@ PathList BinaryDependencies::buildSearchPathListLinux(const PathList & searchFir
 PathList BinaryDependencies::buildSearchPathListWindows(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList,
                                                         ProcessorISA processorISA) const noexcept
 {
+  assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
+
   PathList searchPathList;
 
   SearchPathList searchFirstPathList;
   searchFirstPathList.setIncludePathPrefixes(true);
   searchFirstPathList.setPathSuffixList({QLatin1String("bin"),QLatin1String("qt5/bin")});
+  /// \todo this is done twice on Windows
   searchFirstPathList.appendPath( binaryFilePath.absoluteDir().path() );
   searchFirstPathList.setPathPrefixList(searchFirstPathPrefixList);
 

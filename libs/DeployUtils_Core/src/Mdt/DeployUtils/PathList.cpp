@@ -33,7 +33,7 @@ namespace Mdt{ namespace DeployUtils{
 
 void PathList::appendPath(const QString& path)
 {
-  Q_ASSERT(!path.trimmed().isEmpty());
+  assert( !path.trimmed().isEmpty() );
 
   mList.removeAll(path);
   mList.append(path);
@@ -50,7 +50,7 @@ void PathList::appendPathList(const PathList & pathList)
 
 void PathList::prependPath(const QString& path)
 {
-  Q_ASSERT(!path.trimmed().isEmpty());
+  assert( !path.trimmed().isEmpty() );
 
   mList.removeAll(path);
   mList.prepend(path);
@@ -88,7 +88,7 @@ PathList PathList::getSystemExecutablePathList()
 #else
   const auto separator = QChar::fromLatin1(':');
 #endif
-  const auto rawPathList = pathEnv.split(separator);
+  const auto rawPathList = pathEnv.split(separator, QString::SkipEmptyParts);
   for(const auto & path : rawPathList){
     pathList.appendPath( QDir::cleanPath(path) );
   }
