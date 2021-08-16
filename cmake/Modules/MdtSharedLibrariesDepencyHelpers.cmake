@@ -51,7 +51,7 @@
 # .. code-block:: cmake
 #
 #   if(WIN32)
-#     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+#     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>/bin")
 #   endif()
 #
 #   add_executable(myApp myApp.cpp)
@@ -61,7 +61,7 @@
 #   if(WIN32)
 #     mdt_copy_shared_libraries_target_depends_on(
 #       TARGET myApp
-#       DESTINATION "${CMAKE_BINARY_DIR}/bin"
+#       DESTINATION "${CMAKE_BINARY_DIR}/$<CONFIG>/bin"
 #       OVERWRITE_BEHAVIOR OVERWRITE
 #     )
 #   endif()
