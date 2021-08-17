@@ -202,6 +202,13 @@ function(mdt_copy_shared_libraries_target_depends_on)
 
   message("deployUtilsExecutable: ${deployUtilsExecutable}")
 
+  set(compilerLocationArguments)
+  if(MSVC)
+    message("Is MSVC, use compiler finder to locate redist dirs")
+    set(compilerLocationArguments --compiler-location "compiler-path=${CMAKE_CXX_COMPILER}")
+  endif()
+
+
   add_custom_command(
     TARGET ${ARG_TARGET}
     POST_BUILD
@@ -209,6 +216,7 @@ function(mdt_copy_shared_libraries_target_depends_on)
               --overwrite-behavior ${overwriteBehaviorOption}
               ${removeRpathOptionArgument}
               --search-prefix-path-list "${CMAKE_PREFIX_PATH}"
+              ${compilerLocationArguments}
               $<TARGET_FILE:${ARG_TARGET}>
               "${ARG_DESTINATION}"
     VERBATIM
