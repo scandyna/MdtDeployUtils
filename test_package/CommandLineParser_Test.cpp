@@ -32,11 +32,11 @@ int main(int argc, char **argv)
   parserDefinition.setApplicationDescription("Copy utility");
   parserDefinition.addHelpOption();
 
-  Parser parser;
-  const ParserResult parserResult = parser.parse( parserDefinition, QCoreApplication::arguments() );
-  if( parserResult.hasError() ){
+  Parser parser(parserDefinition);
+  if( !parser.parse( QCoreApplication::arguments() ) ){
     return 1;
   }
+  const ParserResult parserResult = parser.toParserResult();
 
   return 0;
 }

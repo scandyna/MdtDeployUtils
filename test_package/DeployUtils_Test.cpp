@@ -18,14 +18,27 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include <QCoreApplication>
+#include <Mdt/DeployUtils/ExecutableFileReader.h>
+#include <QString>
+#include <cassert>
 
-/** \todo Should use something from DeployUtils to check if package works
- */
 int main(int argc, char **argv)
 {
-  QCoreApplication app(argc, argv);
+  using Mdt::DeployUtils::ExecutableFileReader;
 
+  assert( argc == 1 );
 
-  return 1;
+  const QString executableFile = QString::fromLocal8Bit(argv[0]);
+  int retVal = 1;
+
+  ExecutableFileReader reader;
+  reader.openFile(executableFile);
+  if( reader.isExecutableOrSharedLibrary() ){
+    retVal = 0;
+  }else{
+    retVal = 1;
+  }
+  reader.close();
+
+  return retVal;
 }

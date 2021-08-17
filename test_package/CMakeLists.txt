@@ -32,16 +32,29 @@ mdt_add_test(
 
 # TODO: should simply run the executable --help
 
+################################################
+# Check that deploy utils can be used
+################################################
+
 find_package(Mdt0 COMPONENTS DeployUtils REQUIRED)
+
+add_test(NAME RunMdtDeployUtils COMMAND Mdt0::DeployUtilsExecutable --help)
+
+################################################
+# Check that we can create a tool
+# based on the C++ API
+################################################
+
+find_package(Mdt0 COMPONENTS DeployUtilsCore REQUIRED)
 
 add_executable(deployUtils_Test DeployUtils_Test.cpp)
 
 target_link_libraries(deployUtils_Test
   PRIVATE
-    Mdt0::DeployUtils Qt5::Core
+    Mdt0::DeployUtilsCore Qt5::Core
 )
 
-add_test(NAME DeployUtils_Test COMMAND deployUtils_Test --help)
+add_test(NAME DeployUtils_Test COMMAND deployUtils_Test)
 mdt_set_test_library_env_path(NAME DeployUtils_Test TARGET deployUtils_Test)
 
 # mdt_add_test(
