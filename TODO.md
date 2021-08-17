@@ -3,9 +3,32 @@
 
 Add InstallSharedLibrariesTargetDendsOnTest to cmake/tests
 
+In CI, add a test that executes on a machine without Qt installed
+(should fail if Qt plugins not installed)
+
+Use BUILD_REAL_INSTALL_TESTS
+
 # Install
 
 Remove RPATH for copied shared libraries
+
+When targetting Linux system wide install,
+like debian packages,
+do not copy shared libraries mdtdeployutils depnds on.
+
+Maybe provide a option that can either:
+ - Deploy mdtdeployutils with the dependencies
+ - Install mdtdeployutils (use case: Debian package f.ex)
+NOTE: above could also be valid for Conan package ?
+
+For Debian packages, should provide a source package,
+then use Debian tools to build.
+Debian tooling to get dependencies may exists.
+See what CPack DEB Generator can do.
+NOTE: simply build with only Debian native pkgs
+NOTE: hmm MdtApplication, MdtCommandLineParser ??
+Should provide Debian packages for them,
+and also Mdt0.
 
 Provides several components/packages:
 - MdtDeployUtils          (Common usecase, so this is the intuitive name)
@@ -134,6 +157,8 @@ See https://scandyna.gitlab.io/mdtdeployutils/cpp-api/html/todo.html
 - Build+test for NON Unix system wide install
 
 See cmake/tests for the reason
+
+Also install and run on a dicker image without Qt installed.
 
 # Impl header files
 
