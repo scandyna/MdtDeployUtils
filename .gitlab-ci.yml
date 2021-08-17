@@ -316,32 +316,32 @@ deploy_windows_gcc7_x86_64_relwithdebinfo:
   extends: .deploy_windows_conan
 
 
-deploy_windows_gcc7_x86_32_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
-  variables:
-    CONAN_PROFILE: windows_gcc7_x86
-    BUILD_TYPE: Debug
-    BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
-    QT_PREFIX_PATH: "C:/Qt/5.14.2/mingw73_32"
-  extends: .deploy_windows_conan
+#deploy_windows_gcc7_x86_32_debug:
+  #image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
+  #variables:
+    #CONAN_PROFILE: windows_gcc7_x86
+    #BUILD_TYPE: Debug
+    #BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
+    #QT_PREFIX_PATH: "C:/Qt/5.14.2/mingw73_32"
+  #extends: .deploy_windows_conan
 
-deploy_windows_gcc7_x86_32_release:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
-  variables:
-    CONAN_PROFILE: windows_gcc7_x86
-    BUILD_TYPE: Release
-    BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
-    QT_PREFIX_PATH: "C:/Qt/5.14.2/mingw73_32"
-  extends: .deploy_windows_conan
+#deploy_windows_gcc7_x86_32_release:
+  #image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
+  #variables:
+    #CONAN_PROFILE: windows_gcc7_x86
+    #BUILD_TYPE: Release
+    #BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
+    #QT_PREFIX_PATH: "C:/Qt/5.14.2/mingw73_32"
+  #extends: .deploy_windows_conan
 
-deploy_windows_gcc7_x86_32_relwithdebinfo:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
-  variables:
-    CONAN_PROFILE: windows_gcc7_x86
-    BUILD_TYPE: RelWithDebInfo
-    BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
-    QT_PREFIX_PATH: "C:/Qt/5.14.2/mingw73_32"
-  extends: .deploy_windows_conan
+#deploy_windows_gcc7_x86_32_relwithdebinfo:
+  #image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
+  #variables:
+    #CONAN_PROFILE: windows_gcc7_x86
+    #BUILD_TYPE: RelWithDebInfo
+    #BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
+    #QT_PREFIX_PATH: "C:/Qt/5.14.2/mingw73_32"
+  #extends: .deploy_windows_conan
 
 
 deploy_windows_msvc_x86_64_debug:
