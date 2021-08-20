@@ -24,7 +24,12 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/LibraryNameImpl.cpp
   Mdt/DeployUtils/LibraryName.cpp
   Mdt/DeployUtils/ExecutableFileReadError.cpp
+
+
   Mdt/DeployUtils/AbstractExecutableFileReaderEngine.cpp
+
+  Mdt/DeployUtils/ExecutableFileIoEngine.cpp
+
   Mdt/DeployUtils/Impl/NotNullTerminatedStringError.cpp
   Mdt/DeployUtils/Impl/ExecutableFileReaderUtils.cpp
   Mdt/DeployUtils/Impl/ByteArraySpan.cpp

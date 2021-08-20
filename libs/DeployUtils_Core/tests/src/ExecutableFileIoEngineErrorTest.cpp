@@ -21,16 +21,14 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "TestUtils.h"
-#include "Mdt/DeployUtils/ExecutableFileReader.h"
-#include "Mdt/DeployUtils/Platform.h"
-#include <QString>
+#include "Mdt/DeployUtils/ExecutableFileIoEngine.h"
 
 using namespace Mdt::DeployUtils;
 
 TEST_CASE("open_wrong_platform_file")
 {
-  ExecutableFileReader reader;
+  ExecutableFileIoEngine engine;
   const QString file = QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH);
   const Platform platform = getNonNativePlatform();
-  REQUIRE_THROWS_AS(reader.openFile(file, platform), FileOpenError);
+  REQUIRE_THROWS_AS(engine.openFile(file, ExecutableFileIoEngine::ReadOnly, platform), FileOpenError);
 }

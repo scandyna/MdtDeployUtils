@@ -251,6 +251,26 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME ExecutableFileIoEngineTest
+  TARGET executableFileIoEngineTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ExecutableFileIoEngineTest.cpp
+)
+target_compile_definitions(executableFileIoEngineTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+target_compile_definitions(executableFileIoEngineTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+
+mdt_add_test(
+  NAME ExecutableFileIoEngineErrorTest
+  TARGET executableFileIoEngineErrorTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ExecutableFileIoEngineErrorTest.cpp
+)
+target_compile_definitions(executableFileIoEngineErrorTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+target_compile_definitions(executableFileIoEngineErrorTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+
+mdt_add_test(
   NAME ExecutableFileReaderTest
   TARGET executableFileReaderTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

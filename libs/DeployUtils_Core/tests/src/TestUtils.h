@@ -23,6 +23,7 @@
 
 #include "Mdt/DeployUtils/LibraryName.h"
 #include "Mdt/DeployUtils/BuildType.h"
+#include "Mdt/DeployUtils/Platform.h"
 #include <QString>
 #include <QStringList>
 #include <QFileInfo>
@@ -43,6 +44,18 @@ Mdt::DeployUtils::BuildType currentBuildType()
 #else
   return BuildType::Debug;
 #endif
+}
+
+Mdt::DeployUtils::Platform getNonNativePlatform()
+{
+  using namespace Mdt::DeployUtils;
+
+  Platform nativePlatform = Platform::nativePlatform();
+
+  if( nativePlatform.executableFileFormat() == ExecutableFileFormat::Elf ){
+    return Platform( OperatingSystem::Windows, ExecutableFileFormat::Pe, nativePlatform.compiler(), nativePlatform.processorISA() );
+  }
+  return Platform( OperatingSystem::Linux, ExecutableFileFormat::Elf, nativePlatform.compiler(), nativePlatform.processorISA() );
 }
 
 QStringList qStringListFromUtf8Strings(const std::vector<std::string> & args)
