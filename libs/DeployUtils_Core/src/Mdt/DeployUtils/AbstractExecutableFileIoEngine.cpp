@@ -18,17 +18,17 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "AbstractExecutableFileReaderEngine.h"
+#include "AbstractExecutableFileIoEngine.h"
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
 
-AbstractExecutableFileReaderEngine::AbstractExecutableFileReaderEngine(QObject* parent)
+AbstractExecutableFileIoEngine::AbstractExecutableFileIoEngine(QObject* parent)
  : QObject(parent)
 {
 }
 
-void AbstractExecutableFileReaderEngine::openFile(const QFileInfo & fileInfo)
+void AbstractExecutableFileIoEngine::openFile(const QFileInfo & fileInfo)
 {
   assert( !fileInfo.filePath().isEmpty() );
   assert( !isOpen() );
@@ -49,42 +49,42 @@ void AbstractExecutableFileReaderEngine::openFile(const QFileInfo & fileInfo)
   newFileOpen( mFile.fileName() );
 }
 
-void AbstractExecutableFileReaderEngine::close()
+void AbstractExecutableFileIoEngine::close()
 {
   mFileMapper.unmap(mFile);
   mFile.close();
   fileClosed();
 }
 
-bool AbstractExecutableFileReaderEngine::isElfFile()
+bool AbstractExecutableFileIoEngine::isElfFile()
 {
   assert( isOpen() );
 
   return doIsElfFile();
 }
 
-bool AbstractExecutableFileReaderEngine::isPeImageFile()
+bool AbstractExecutableFileIoEngine::isPeImageFile()
 {
   assert( isOpen() );
 
   return doIsPeImageFile();
 }
 
-Platform AbstractExecutableFileReaderEngine::getFilePlatform()
+Platform AbstractExecutableFileIoEngine::getFilePlatform()
 {
   assert( isOpen() );
 
   return doGetFilePlatform();
 }
 
-bool AbstractExecutableFileReaderEngine::isExecutableOrSharedLibrary()
+bool AbstractExecutableFileIoEngine::isExecutableOrSharedLibrary()
 {
   assert( isOpen() );
 
   return doIsExecutableOrSharedLibrary();
 }
 
-bool AbstractExecutableFileReaderEngine::containsDebugSymbols()
+bool AbstractExecutableFileIoEngine::containsDebugSymbols()
 {
   assert( isOpen() );
   assert( isExecutableOrSharedLibrary() );
@@ -92,7 +92,7 @@ bool AbstractExecutableFileReaderEngine::containsDebugSymbols()
   return doContainsDebugSymbols();
 }
 
-QStringList AbstractExecutableFileReaderEngine::getNeededSharedLibraries()
+QStringList AbstractExecutableFileIoEngine::getNeededSharedLibraries()
 {
   assert( isOpen() );
   assert( isExecutableOrSharedLibrary() );
@@ -100,7 +100,7 @@ QStringList AbstractExecutableFileReaderEngine::getNeededSharedLibraries()
   return doGetNeededSharedLibraries();
 }
 
-QStringList AbstractExecutableFileReaderEngine::getRunPath()
+QStringList AbstractExecutableFileIoEngine::getRunPath()
 {
   assert( isOpen() );
   assert( isExecutableOrSharedLibrary() );
@@ -108,21 +108,21 @@ QStringList AbstractExecutableFileReaderEngine::getRunPath()
   return doGetRunPath();
 }
 
-qint64 AbstractExecutableFileReaderEngine::fileSize() const noexcept
+qint64 AbstractExecutableFileIoEngine::fileSize() const noexcept
 {
   assert( isOpen() );
 
   return mFile.size();
 }
 
-QString AbstractExecutableFileReaderEngine::fileName() const noexcept
+QString AbstractExecutableFileIoEngine::fileName() const noexcept
 {
   assert( isOpen() );
 
   return mFile.fileName();
 }
 
-Impl::ByteArraySpan AbstractExecutableFileReaderEngine::mapIfRequired(qint64 offset, qint64 size)
+Impl::ByteArraySpan AbstractExecutableFileIoEngine::mapIfRequired(qint64 offset, qint64 size)
 {
   assert( isOpen() );
 

@@ -21,9 +21,11 @@
 #ifndef MDT_DEPLOY_UTILS_ELF_FILE_READER_H
 #define MDT_DEPLOY_UTILS_ELF_FILE_READER_H
 
-#include "AbstractExecutableFileReaderEngine.h"
+#include "AbstractExecutableFileIoEngine.h"
 #include "FileOpenError.h"
+
 #include "ExecutableFileReadError.h"
+
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -63,7 +65,7 @@ namespace Mdt{ namespace DeployUtils{
    * }
    * \endcode
    */
-  class MDT_DEPLOYUTILSCORE_EXPORT ElfFileReader : public AbstractExecutableFileReaderEngine
+  class MDT_DEPLOYUTILSCORE_EXPORT ElfFileReader : public AbstractExecutableFileIoEngine
   {
     Q_OBJECT
 

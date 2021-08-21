@@ -26,7 +26,7 @@
 namespace Mdt{ namespace DeployUtils{
 
 PeFileReader::PeFileReader(QObject *parent)
-  : AbstractExecutableFileReaderEngine(parent),
+  : AbstractExecutableFileIoEngine(parent),
     mImpl( std::make_unique<Impl::Pe::FileReader>() )
 {
 }

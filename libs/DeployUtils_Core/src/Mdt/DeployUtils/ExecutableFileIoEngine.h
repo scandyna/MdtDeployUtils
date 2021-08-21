@@ -33,8 +33,7 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-  /// \todo Wrong !
-  class AbstractExecutableFileReaderEngine;
+  class AbstractExecutableFileIoEngine;
 
   /*! \internal Helper class to instanciate a executable file I/O engine
    */
@@ -105,7 +104,7 @@ namespace Mdt{ namespace DeployUtils{
      * \pre this engine must have a file open
      * \sa isOpen()
      */
-    std::unique_ptr<AbstractExecutableFileReaderEngine> & engine() noexcept
+    std::unique_ptr<AbstractExecutableFileIoEngine> & engine() noexcept
     {
       assert( isOpen() );
 
@@ -119,7 +118,7 @@ namespace Mdt{ namespace DeployUtils{
     static
     QIODevice::OpenMode qIoDeviceOpenModeFromOpenMode(OpenMode mode) noexcept;
 
-    std::unique_ptr<AbstractExecutableFileReaderEngine> mIoEngine;
+    std::unique_ptr<AbstractExecutableFileIoEngine> mIoEngine;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
