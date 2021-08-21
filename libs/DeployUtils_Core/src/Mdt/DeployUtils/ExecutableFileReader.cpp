@@ -19,10 +19,9 @@
  **
  ****************************************************************************/
 #include "ExecutableFileReader.h"
+
 #include "AbstractExecutableFileReaderEngine.h"
-#include "ElfFileReader.h"
-#include "PeFileReader.h"
-#include "ExecutableFileFormat.h"
+
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
@@ -41,32 +40,7 @@ void ExecutableFileReader::openFile(const QFileInfo & fileInfo)
   assert( !fileInfo.filePath().isEmpty() );
   assert( !isOpen() );
 
-  const auto hostPlatform = Platform::nativePlatform();
-
-  if( !mReaderEngine ){
-    instanciateReader( hostPlatform.executableFileFormat() );
-  }
-  assert( mReaderEngine.get() != nullptr );
-
-  mReaderEngine->openFile(fileInfo);
-
-  if( hostPlatform.operatingSystem() == OperatingSystem::Linux ){
-    if( !mReaderEngine->isElfFile() ){
-      mReaderEngine->close();
-      mReaderEngine.reset();
-      instanciateReader(ExecutableFileFormat::Pe);
-      mReaderEngine->openFile(fileInfo);
-    }
-  }
-
-  if( hostPlatform.operatingSystem() == OperatingSystem::Windows ){
-    if( !mReaderEngine->isPeImageFile() ){
-      mReaderEngine->close();
-      mReaderEngine.reset();
-      instanciateReader(ExecutableFileFormat::Elf);
-      mReaderEngine->openFile(fileInfo);
-    }
-  }
+  mEngine.openFile(fileInfo, ExecutableFileIoEngine::ReadOnly);
 }
 
 void ExecutableFileReader::openFile(const QFileInfo & fileInfo, const Platform & platform)
@@ -75,105 +49,55 @@ void ExecutableFileReader::openFile(const QFileInfo & fileInfo, const Platform &
   assert( !platform.isNull() );
   assert( !isOpen() );
 
-  if( !mReaderEngine ){
-    instanciateReader( platform.executableFileFormat() );
-  }
-  assert( mReaderEngine.get() != nullptr );
-
-  if( !mReaderEngine->supportsPlatform(platform) ){
-    mReaderEngine.reset();
-    instanciateReader( platform.executableFileFormat() );
-  }
-  assert( mReaderEngine.get() != nullptr );
-
-  mReaderEngine->openFile(fileInfo);
-
-  Platform filePlatform;
-  try{
-    filePlatform = getFilePlatform();
-  }catch(const ExecutableFileReadError &){
-  }
-
-  if( filePlatform != platform ){
-    const QString message = tr("File '%1' is not of the requested platorm")
-                            .arg( fileInfo.absoluteFilePath() );
-    throw FileOpenError(message);
-  }
+  mEngine.openFile(fileInfo, ExecutableFileIoEngine::ReadOnly, platform);
 }
 
 bool ExecutableFileReader::isOpen() const noexcept
 {
-  if( !mReaderEngine ){
-    return false;
-  }
-  return mReaderEngine->isOpen();
+  return mEngine.isOpen();
 }
 
 void ExecutableFileReader::close()
 {
-  if(mReaderEngine){
-    mReaderEngine->close();
-  }
+  mEngine.close();
 }
 
 Platform ExecutableFileReader::getFilePlatform()
 {
   assert( isOpen() );
-  assert( mReaderEngine.get() != nullptr );
 
-  return mReaderEngine->getFilePlatform();
+  return mEngine.engine()->getFilePlatform();
 }
 
 bool ExecutableFileReader::isExecutableOrSharedLibrary()
 {
   assert( isOpen() );
-  assert( mReaderEngine.get() != nullptr );
 
-  return mReaderEngine->isExecutableOrSharedLibrary();
+  return mEngine.engine()->isExecutableOrSharedLibrary();
 }
 
 bool ExecutableFileReader::containsDebugSymbols()
 {
   assert( isOpen() );
   assert( isExecutableOrSharedLibrary() );
-  assert( mReaderEngine.get() != nullptr );
 
-  return mReaderEngine->containsDebugSymbols();
+  return mEngine.engine()->containsDebugSymbols();
 }
 
 QStringList ExecutableFileReader::getNeededSharedLibraries()
 {
   assert( isOpen() );
   assert( isExecutableOrSharedLibrary() );
-  assert( mReaderEngine.get() != nullptr );
 
-  return mReaderEngine->getNeededSharedLibraries();
+  return mEngine.engine()->getNeededSharedLibraries();
 }
 
 QStringList ExecutableFileReader::getRunPath()
 {
   assert( isOpen() );
   assert( isExecutableOrSharedLibrary() );
-  assert( mReaderEngine.get() != nullptr );
 
-  return mReaderEngine->getRunPath();
-}
-
-void ExecutableFileReader::instanciateReader(ExecutableFileFormat format) noexcept
-{
-  assert( mReaderEngine.get() == nullptr );
-  assert( format != ExecutableFileFormat::Unknown );
-
-  switch(format){
-    case ExecutableFileFormat::Elf:
-      mReaderEngine = std::make_unique<ElfFileReader>();
-      break;
-    case ExecutableFileFormat::Pe:
-      mReaderEngine = std::make_unique<PeFileReader>();
-      break;
-    case ExecutableFileFormat::Unknown:
-      break;
-  }
+  return mEngine.engine()->getRunPath();
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

@@ -24,15 +24,13 @@
 #include "FileOpenError.h"
 #include "ExecutableFileReadError.h"
 #include "Platform.h"
+#include "ExecutableFileIoEngine.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QFileInfo>
 #include <QStringList>
-#include <memory>
 
 namespace Mdt{ namespace DeployUtils{
-
-  class AbstractExecutableFileReaderEngine;
 
   /*! \brief Reader to extract some informations from a executable file
    *
@@ -161,9 +159,7 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
-    void instanciateReader(ExecutableFileFormat format) noexcept;
-
-    std::unique_ptr<AbstractExecutableFileReaderEngine> mReaderEngine;
+    ExecutableFileIoEngine mEngine;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
