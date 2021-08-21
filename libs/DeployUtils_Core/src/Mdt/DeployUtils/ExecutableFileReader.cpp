@@ -29,10 +29,6 @@ ExecutableFileReader::ExecutableFileReader(QObject* parent)
 {
 }
 
-ExecutableFileReader::~ExecutableFileReader() noexcept
-{
-}
-
 void ExecutableFileReader::openFile(const QFileInfo & fileInfo)
 {
   assert( !fileInfo.filePath().isEmpty() );

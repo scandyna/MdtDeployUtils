@@ -73,7 +73,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Close this file reader and free resources
      */
-    ~ExecutableFileReader() noexcept;
+    ~ExecutableFileReader() noexcept = default;
 
     /*! \brief Open a file
      *
