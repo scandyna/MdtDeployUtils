@@ -20,9 +20,9 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
-#include "ElfFileReaderTestUtils.h"
+#include "ElfFileIoTestUtils.h"
 #include "TestFileUtils.h"
-#include "Mdt/DeployUtils/ElfFileReader.h"
+#include "Mdt/DeployUtils/ElfFileIoEngine.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileReader.h"
 #include <QTemporaryDir>
 #include <QDir>
@@ -65,33 +65,33 @@ TEST_CASE("open_close")
   QTemporaryDir dir;
   REQUIRE( dir.isValid() );
 
-  ElfFileReader reader;
-  REQUIRE( !reader.isOpen() );
+  ElfFileIoEngine engine;
+  REQUIRE( !engine.isOpen() );
 
   SECTION("non existing file")
   {
     filePath = makeFilePath( dir, QLatin1String("nonExisting.so") );
-    REQUIRE_THROWS_AS( reader.openFile(filePath), FileOpenError );
-    REQUIRE( !reader.isOpen() );
+    REQUIRE_THROWS_AS( engine.openFile(filePath), FileOpenError );
+    REQUIRE( !engine.isOpen() );
   }
 }
 
 /*
- * See preconditions on ElfFileReader::getNeededSharedLibraries()
+ * See preconditions on ElfFileIoEngine::getNeededSharedLibraries()
  *
 TEST_CASE("getNeededSharedLibraries")
 {
   QTemporaryFile file;
   REQUIRE( file.open() );
 
-  ElfFileReader reader;
+  ElfFileIoEngine engine;
 
   SECTION("empty file")
   {
     file.close();
-    reader.openFile( file.fileName() );
-    REQUIRE_THROWS_AS( reader.getNeededSharedLibraries(), ExecutableFileReadError );
-    reader.close();
+    engine.openFile( file.fileName() );
+    REQUIRE_THROWS_AS( engine.getNeededSharedLibraries(), ExecutableFileReadError );
+    engine.close();
   }
 
   SECTION("text file - 64 chars")
@@ -107,9 +107,9 @@ TEST_CASE("getNeededSharedLibraries")
     );
     REQUIRE( writeTextFileUtf8( file, text ) );
     file.close();
-    reader.openFile( file.fileName() );
-    REQUIRE_THROWS_AS( reader.getNeededSharedLibraries(), ExecutableFileReadError );
-    reader.close();
+    engine.openFile( file.fileName() );
+    REQUIRE_THROWS_AS( engine.getNeededSharedLibraries(), ExecutableFileReadError );
+    engine.close();
   }
 
   SECTION("other cases")

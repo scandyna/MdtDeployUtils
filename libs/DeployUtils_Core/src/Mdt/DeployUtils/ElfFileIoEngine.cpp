@@ -18,24 +18,24 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "ElfFileReader.h"
+#include "ElfFileIoEngine.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileReader.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
 
-ElfFileReader::ElfFileReader(QObject *parent)
+ElfFileIoEngine::ElfFileIoEngine(QObject *parent)
   : AbstractExecutableFileIoEngine(parent),
     mImpl( std::make_unique<Impl::Elf::FileReader>() )
 {
 }
 
-ElfFileReader::~ElfFileReader() noexcept
+ElfFileIoEngine::~ElfFileIoEngine() noexcept
 {
 }
 
-QString ElfFileReader::getSoName()
+QString ElfFileIoEngine::getSoName()
 {
   using Impl::ByteArraySpan;
 
@@ -49,22 +49,22 @@ QString ElfFileReader::getSoName()
   return mImpl->getSoName(map);
 }
 
-void ElfFileReader::newFileOpen(const QString & fileName)
+void ElfFileIoEngine::newFileOpen(const QString & fileName)
 {
   mImpl->setFileName(fileName);
 }
 
-void ElfFileReader::fileClosed()
+void ElfFileIoEngine::fileClosed()
 {
   mImpl->clear();
 }
 
-bool ElfFileReader::doSupportsPlatform(const Platform & platform) const noexcept
+bool ElfFileIoEngine::doSupportsPlatform(const Platform & platform) const noexcept
 {
   return platform.executableFileFormat() == ExecutableFileFormat::Elf;
 }
 
-bool ElfFileReader::doIsElfFile()
+bool ElfFileIoEngine::doIsElfFile()
 {
   using Impl::ByteArraySpan;
   using Impl::Elf::Ident;
@@ -83,7 +83,7 @@ bool ElfFileReader::doIsElfFile()
   return ident.isValid();
 }
 
-Platform ElfFileReader::doGetFilePlatform()
+Platform ElfFileIoEngine::doGetFilePlatform()
 {
   using Impl::ByteArraySpan;
   using Impl::Elf::FileHeader;
@@ -132,7 +132,7 @@ Platform ElfFileReader::doGetFilePlatform()
   return Platform(os, fileFormat, fakeCompiler, cpu);
 }
 
-bool ElfFileReader::doIsExecutableOrSharedLibrary()
+bool ElfFileIoEngine::doIsExecutableOrSharedLibrary()
 {
   using Impl::ByteArraySpan;
   using Impl::Elf::FileHeader;
@@ -163,7 +163,7 @@ bool ElfFileReader::doIsExecutableOrSharedLibrary()
   return false;
 }
 
-bool ElfFileReader::doContainsDebugSymbols()
+bool ElfFileIoEngine::doContainsDebugSymbols()
 {
   using Impl::ByteArraySpan;
 
@@ -174,7 +174,7 @@ bool ElfFileReader::doContainsDebugSymbols()
   return mImpl->containsDebugSymbols(map);
 }
 
-QStringList ElfFileReader::doGetNeededSharedLibraries()
+QStringList ElfFileIoEngine::doGetNeededSharedLibraries()
 {
   using Impl::ByteArraySpan;
 
@@ -185,7 +185,7 @@ QStringList ElfFileReader::doGetNeededSharedLibraries()
   return mImpl->getNeededSharedLibraries(map);
 }
 
-QStringList ElfFileReader::doGetRunPath()
+QStringList ElfFileIoEngine::doGetRunPath()
 {
   using Impl::ByteArraySpan;
 

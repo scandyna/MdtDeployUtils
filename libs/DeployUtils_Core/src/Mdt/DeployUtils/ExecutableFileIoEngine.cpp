@@ -21,8 +21,8 @@
 #include "ExecutableFileIoEngine.h"
 #include "ExecutableFileFormat.h"
 #include "AbstractExecutableFileIoEngine.h"
+#include "ElfFileIoEngine.h"
 
-#include "ElfFileReader.h"
 #include "PeFileReader.h"
 
 #include <cassert>
@@ -133,7 +133,7 @@ void ExecutableFileIoEngine::instanciateEngine(ExecutableFileFormat format) noex
 
   switch(format){
     case ExecutableFileFormat::Elf:
-      mIoEngine = std::make_unique<ElfFileReader>();
+      mIoEngine = std::make_unique<ElfFileIoEngine>();
       break;
     case ExecutableFileFormat::Pe:
       mIoEngine = std::make_unique<PeFileReader>();

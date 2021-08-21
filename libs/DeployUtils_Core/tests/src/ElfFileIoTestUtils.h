@@ -18,8 +18,8 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef ELF_FILE_READER_TEST_UTILS_H
-#define ELF_FILE_READER_TEST_UTILS_H
+#ifndef ELF_FILE_IO_TEST_UTILS_H
+#define ELF_FILE_IO_TEST_UTILS_H
 
 #include "Mdt/DeployUtils/Impl/Elf/FileReader.h"
 
@@ -98,4 +98,4 @@ Impl::Elf::FileHeader make64BitLittleEndianFileHeader()
   return fileHeader;
 }
 
-#endif // #ifndef ELF_FILE_READER_TEST_UTILS_H
+#endif // #ifndef ELF_FILE_IO_TEST_UTILS_H

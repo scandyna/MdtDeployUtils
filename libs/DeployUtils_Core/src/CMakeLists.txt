@@ -38,7 +38,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/Elf/DynamicSection.cpp
   Mdt/DeployUtils/Impl/Elf/FileReader.cpp
   Mdt/DeployUtils/Impl/Elf/Debug.cpp
-  Mdt/DeployUtils/ElfFileReader.cpp
+  Mdt/DeployUtils/ElfFileIoEngine.cpp
   Mdt/DeployUtils/Impl/Pe/Exceptions.cpp
   Mdt/DeployUtils/Impl/Pe/SectionHeader.cpp
   Mdt/DeployUtils/Impl/Pe/ImportDirectory.cpp

@@ -160,44 +160,44 @@ mdt_add_test(
 )
 
 mdt_add_test(
-  NAME ElfFileReaderTest
-  TARGET elfFileReaderTest
+  NAME ElfFileIoEngineTest
+  TARGET elfFileIoEngineTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
-    src/ElfFileReaderTest.cpp
+    src/ElfFileIoEngineTest.cpp
 )
 
 if( UNIX AND (NOT APPLE) )
 
   mdt_add_test(
-    NAME ElfFileReaderTest_Unix
-    TARGET elfFileReaderTest_Unix
+    NAME ElfFileIoEngineTest_Unix
+    TARGET elfFileIoEngineTest_Unix
     DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
     SOURCE_FILES
-      src/ElfFileReaderTest_Unix.cpp
+      src/ElfFileIoEngineTest_Unix.cpp
   )
 
   # Make shure that the test libraries will be built before the test
-  add_dependencies(elfFileReaderTest_Unix
+  add_dependencies(elfFileIoEngineTest_Unix
     testSharedLibrary
     testStaticLibrary
     testExecutableDynamic
 #     testExecutableStatic
   )
 
-  target_compile_definitions(elfFileReaderTest_Unix PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-  target_compile_definitions(elfFileReaderTest_Unix PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
-  target_compile_definitions(elfFileReaderTest_Unix PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
-  target_compile_definitions(elfFileReaderTest_Unix PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+  target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+  target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+  target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
+  target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
 endif()
 
 mdt_add_test(
-  NAME ElfFileReaderErrorTest
-  TARGET elfFileReaderErrorTest
+  NAME ElfFileIoEngineErrorTest
+  TARGET elfFileIoEngineErrorTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
-    src/ElfFileReaderErrorTest.cpp
+    src/ElfFileIoEngineErrorTest.cpp
 )
 
 

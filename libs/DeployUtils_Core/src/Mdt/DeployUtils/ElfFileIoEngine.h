@@ -18,8 +18,8 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_ELF_FILE_READER_H
-#define MDT_DEPLOY_UTILS_ELF_FILE_READER_H
+#ifndef MDT_DEPLOY_UTILS_ELF_FILE_IO_ENGINE_H
+#define MDT_DEPLOY_UTILS_ELF_FILE_IO_ENGINE_H
 
 #include "AbstractExecutableFileIoEngine.h"
 #include "FileOpenError.h"
@@ -40,32 +40,18 @@ namespace Mdt{ namespace DeployUtils{
 
   }} // namespace Impl{ namespace Elf{
 
-  /*! \brief Minimal ELF file reader
+  /*! \brief Minimal ELF file I/O engine
    *
-   * This ELF reader can just read a minimal set of informations
-   * required for deployemnt of applications.
+   * This ELF reader and writer can just read/write a minimal set of informations
+   * required for deployement of applications.
    *
    * For other purposes, other tools
    * like objdump or readelf should be considered.
    *
-   * \todo Example wrong for RUNPATH !!
-   * Example:
-   * \code
-   * QStringList libraries;
-   * QStringList runPath;
-   * ElfFileReader reader;
-   *
-   * for(const auto & file : fileList){
-   *   reader.openFile(file);
-   *   if( reader.isDynamicLinkedExecutableOrLibrary() ){
-   *     libraries.append( reader.getNeededSharedLibraries() );
-   *   }
-   *   runPath = reader.getRunPath();
-   *   reader.close();
-   * }
-   * \endcode
+   * \sa ExecutableFileReader
+   * \sa ExecutableFileWriter
    */
-  class MDT_DEPLOYUTILSCORE_EXPORT ElfFileReader : public AbstractExecutableFileIoEngine
+  class MDT_DEPLOYUTILSCORE_EXPORT ElfFileIoEngine : public AbstractExecutableFileIoEngine
   {
     Q_OBJECT
 
@@ -73,9 +59,9 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Construct a file reader
      */
-    explicit ElfFileReader(QObject *parent = nullptr);
+    explicit ElfFileIoEngine(QObject *parent = nullptr);
 
-    ~ElfFileReader() noexcept;
+    ~ElfFileIoEngine() noexcept;
 
     /*! \brief Get the shared object name (SONAME) of the file this reader refers to
      *
@@ -103,4 +89,4 @@ namespace Mdt{ namespace DeployUtils{
 
 }} // namespace Mdt{ namespace DeployUtils{
 
-#endif // #ifndef MDT_DEPLOY_UTILS_ELF_FILE_READER_H
+#endif // #ifndef MDT_DEPLOY_UTILS_ELF_FILE_IO_ENGINE_H

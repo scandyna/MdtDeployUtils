@@ -21,7 +21,7 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "TestFileUtils.h"
-#include "ElfFileReaderTestUtils.h"
+#include "ElfFileIoTestUtils.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileReader.h"
 #include <QString>
 #include <QLatin1String>
