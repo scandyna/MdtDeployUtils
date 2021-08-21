@@ -18,8 +18,8 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_PE_FILE_READER_H
-#define MDT_DEPLOY_UTILS_PE_FILE_READER_H
+#ifndef MDT_DEPLOY_UTILS_PE_FILE_IO_ENGINE_H
+#define MDT_DEPLOY_UTILS_PE_FILE_IO_ENGINE_H
 
 #include "AbstractExecutableFileIoEngine.h"
 #include "mdt_deployutilscore_export.h"
@@ -33,25 +33,28 @@ namespace Mdt{ namespace DeployUtils{
 
   }} // namespace Impl{ namespace Pe{
 
-  /*! \brief Minimal PE file reader
+  /*! \brief Minimal PE file I/O engine
    *
-   * This PE reader can just read a minimal set of informations
+   * This PE reader and writer can just read/write a minimal set of informations
    * required for deployemnt of applications.
    *
    * For other purposes, other tools
    * like objdump or readpe should be considered.
+   *
+   * \sa ExecutableFileReader
+   * \sa ExecutableFileWriter
    */
-  class MDT_DEPLOYUTILSCORE_EXPORT PeFileReader : public AbstractExecutableFileIoEngine
+  class MDT_DEPLOYUTILSCORE_EXPORT PeFileIoEngine : public AbstractExecutableFileIoEngine
   {
     Q_OBJECT
 
    public:
 
-    /*! \brief Construct a file reader
+    /*! \brief Construct a file I/O engine
      */
-    explicit PeFileReader(QObject *parent = nullptr);
+    explicit PeFileIoEngine(QObject *parent = nullptr);
 
-    ~PeFileReader() noexcept;
+    ~PeFileIoEngine() noexcept;
 
   private:
 
@@ -71,4 +74,4 @@ namespace Mdt{ namespace DeployUtils{
 
 }} // namespace Mdt{ namespace DeployUtils{
 
-#endif // #ifndef MDT_DEPLOY_UTILS_PE_FILE_READER_H
+#endif // #ifndef MDT_DEPLOY_UTILS_PE_FILE_IO_ENGINE_H

@@ -21,7 +21,7 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "TestUtils.h"
-#include "Mdt/DeployUtils/PeFileReader.h"
+#include "Mdt/DeployUtils/PeFileIoEngine.h"
 #include <QString>
 #include <QLatin1String>
 
@@ -29,95 +29,95 @@ using namespace Mdt::DeployUtils;
 
 TEST_CASE("isPeImageFile")
 {
-  PeFileReader reader;
+    PeFileIoEngine engine;
 
   SECTION("shared library")
   {
-    reader.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
-    REQUIRE( reader.isPeImageFile() );
+    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    REQUIRE( engine.isPeImageFile() );
   }
 
   SECTION("dynamic linked executable")
   {
-    reader.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
-    REQUIRE( reader.isPeImageFile() );
+    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+    REQUIRE( engine.isPeImageFile() );
   }
 }
 
 TEST_CASE("isExecutableOrSharedLibrary")
 {
-  PeFileReader reader;
+    PeFileIoEngine engine;
 
   SECTION("shared library")
   {
-    reader.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
-    REQUIRE( reader.isExecutableOrSharedLibrary() );
-    reader.close();
+    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    REQUIRE( engine.isExecutableOrSharedLibrary() );
+    engine.close();
   }
 
   SECTION("static library")
   {
-    reader.openFile( QString::fromLocal8Bit(TEST_STATIC_LIBRARY_FILE_PATH) );
-    REQUIRE( !reader.isExecutableOrSharedLibrary() );
-    reader.close();
+    engine.openFile( QString::fromLocal8Bit(TEST_STATIC_LIBRARY_FILE_PATH) );
+    REQUIRE( !engine.isExecutableOrSharedLibrary() );
+    engine.close();
   }
 
   SECTION("dynamic linked executable")
   {
-    reader.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
-    REQUIRE( reader.isExecutableOrSharedLibrary() );
-    reader.close();
+    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+    REQUIRE( engine.isExecutableOrSharedLibrary() );
+    engine.close();
   }
 }
 
 TEST_CASE("getNeededSharedLibraries")
 {
-  PeFileReader reader;
+    PeFileIoEngine engine;
   QStringList libraries;
 
   SECTION("shared library")
   {
-    reader.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
-    libraries = reader.getNeededSharedLibraries();
+    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    libraries = engine.getNeededSharedLibraries();
     REQUIRE( !libraries.isEmpty() );
     REQUIRE( containsQt5Core(libraries) );
-    reader.close();
+    engine.close();
   }
 
   SECTION("dynamic linked executable")
   {
-    reader.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
-    libraries = reader.getNeededSharedLibraries();
+    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+    libraries = engine.getNeededSharedLibraries();
     REQUIRE( !libraries.isEmpty() );
     REQUIRE( containsTestSharedLibrary(libraries) );
     REQUIRE( containsQt5Core(libraries) );
-    reader.close();
+    engine.close();
   }
 }
 
 TEST_CASE("open_2_consecutive_files_with_1_instance")
 {
-  PeFileReader reader;
+    PeFileIoEngine engine;
 
   /*
    * Open a big library first
    */
 
-  reader.openFile( QString::fromLocal8Bit(QT5_CORE_FILE_PATH) );
-  REQUIRE( !reader.getNeededSharedLibraries().isEmpty() );
-  reader.close();
+  engine.openFile( QString::fromLocal8Bit(QT5_CORE_FILE_PATH) );
+  REQUIRE( !engine.getNeededSharedLibraries().isEmpty() );
+  engine.close();
 
-  reader.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
-  REQUIRE( !reader.getNeededSharedLibraries().isEmpty() );
-  reader.close();
+  engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+  REQUIRE( !engine.getNeededSharedLibraries().isEmpty() );
+  engine.close();
 }
 
 TEST_CASE("call_many_members_on_1_instance")
 {
-  PeFileReader reader;
+    PeFileIoEngine engine;
 
-  reader.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
-  REQUIRE( reader.isExecutableOrSharedLibrary() );
-  REQUIRE( !reader.getNeededSharedLibraries().isEmpty() );
-  reader.close();
+  engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+  REQUIRE( engine.isExecutableOrSharedLibrary() );
+  REQUIRE( !engine.getNeededSharedLibraries().isEmpty() );
+  engine.close();
 }

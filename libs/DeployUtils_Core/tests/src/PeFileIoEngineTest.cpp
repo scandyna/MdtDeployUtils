@@ -22,7 +22,7 @@
 #include "Catch2QString.h"
 #include "TestUtils.h"
 #include "TestFileUtils.h"
-#include "Mdt/DeployUtils/PeFileReader.h"
+#include "Mdt/DeployUtils/PeFileIoEngine.h"
 #include <QString>
 #include <QLatin1String>
 #include <QTemporaryFile>
@@ -33,18 +33,18 @@ using namespace Mdt::DeployUtils;
 
 TEST_CASE("supportsPlatform")
 {
-  PeFileReader reader;
+    PeFileIoEngine engine;
 
   SECTION("PE")
   {
     const Platform platform(OperatingSystem::Windows, ExecutableFileFormat::Pe, Compiler::Gcc, ProcessorISA::X86_64);
-    REQUIRE( reader.supportsPlatform(platform) );
+    REQUIRE( engine.supportsPlatform(platform) );
   }
 
   SECTION("ELF")
   {
     const Platform platform(OperatingSystem::Linux, ExecutableFileFormat::Elf, Compiler::Gcc, ProcessorISA::X86_64);
-    REQUIRE( !reader.supportsPlatform(platform) );
+    REQUIRE( !engine.supportsPlatform(platform) );
   }
 }
 
@@ -53,15 +53,15 @@ TEST_CASE("open_close")
   QTemporaryFile file;
   REQUIRE( file.open() );
 
-  PeFileReader reader;
-  REQUIRE( !reader.isOpen() );
+    PeFileIoEngine engine;
+  REQUIRE( !engine.isOpen() );
 
   SECTION("empty file")
   {
-    reader.openFile( file.fileName() );
-    REQUIRE( reader.isOpen() );
-    reader.close();
-    REQUIRE( !reader.isOpen() );
+    engine.openFile( file.fileName() );
+    REQUIRE( engine.isOpen() );
+    engine.close();
+    REQUIRE( !engine.isOpen() );
   }
 }
 
@@ -70,37 +70,37 @@ TEST_CASE("isPeImageFile")
   QTemporaryFile file;
   REQUIRE( file.open() );
 
-  PeFileReader reader;
+    PeFileIoEngine engine;
 
   SECTION("empty file")
   {
     file.close();
-    reader.openFile( file.fileName() );
-    REQUIRE( !reader.isPeImageFile() );
+    engine.openFile( file.fileName() );
+    REQUIRE( !engine.isPeImageFile() );
   }
 
   SECTION("text file - 3 chars")
   {
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABC") ) );
     file.close();
-    reader.openFile( file.fileName() );
-    REQUIRE( !reader.isPeImageFile() );
+    engine.openFile( file.fileName() );
+    REQUIRE( !engine.isPeImageFile() );
   }
 
   SECTION("text file - 60 chars (0x3C)")
   {
     REQUIRE( writeTextFileUtf8( file, generateStringWithNChars(0x3c) ) );
     file.close();
-    reader.openFile( file.fileName() );
-    REQUIRE( !reader.isPeImageFile() );
+    engine.openFile( file.fileName() );
+    REQUIRE( !engine.isPeImageFile() );
   }
 
   SECTION("text file")
   {
     REQUIRE( writeTextFileUtf8( file, generateStringWithNChars(300) ) );
     file.close();
-    reader.openFile( file.fileName() );
-    REQUIRE( !reader.isPeImageFile() );
+    engine.openFile( file.fileName() );
+    REQUIRE( !engine.isPeImageFile() );
   }
 }
 
@@ -109,40 +109,40 @@ TEST_CASE("isExecutableOrSharedLibrary")
   QTemporaryFile file;
   REQUIRE( file.open() );
 
-  PeFileReader reader;
+    PeFileIoEngine engine;
 
   SECTION("empty file")
   {
     file.close();
-    reader.openFile( file.fileName() );
-    REQUIRE( !reader.isExecutableOrSharedLibrary() );
-    reader.close();
+    engine.openFile( file.fileName() );
+    REQUIRE( !engine.isExecutableOrSharedLibrary() );
+    engine.close();
   }
 
   SECTION("text file - 3 chars")
   {
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABC") ) );
     file.close();
-    reader.openFile( file.fileName() );
-    REQUIRE( !reader.isExecutableOrSharedLibrary() );
-    reader.close();
+    engine.openFile( file.fileName() );
+    REQUIRE( !engine.isExecutableOrSharedLibrary() );
+    engine.close();
   }
 
   SECTION("text file - 4 chars")
   {
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABCD") ) );
     file.close();
-    reader.openFile( file.fileName() );
-    REQUIRE( !reader.isExecutableOrSharedLibrary() );
-    reader.close();
+    engine.openFile( file.fileName() );
+    REQUIRE( !engine.isExecutableOrSharedLibrary() );
+    engine.close();
   }
 
   SECTION("text file - 64 chars")
   {
     REQUIRE( writeTextFileUtf8( file, generateStringWithNChars(64) ) );
     file.close();
-    reader.openFile( file.fileName() );
-    REQUIRE( !reader.isExecutableOrSharedLibrary() );
-    reader.close();
+    engine.openFile( file.fileName() );
+    REQUIRE( !engine.isExecutableOrSharedLibrary() );
+    engine.close();
   }
 }

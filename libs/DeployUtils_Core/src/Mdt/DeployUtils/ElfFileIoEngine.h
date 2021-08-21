@@ -57,15 +57,15 @@ namespace Mdt{ namespace DeployUtils{
 
    public:
 
-    /*! \brief Construct a file reader
+    /*! \brief Construct a file I/O engine
      */
     explicit ElfFileIoEngine(QObject *parent = nullptr);
 
     ~ElfFileIoEngine() noexcept;
 
-    /*! \brief Get the shared object name (SONAME) of the file this reader refers to
+    /*! \brief Get the shared object name (SONAME) of the file this engine refers to
      *
-     * \pre this reader must have a open file which is a executable or a shared library
+     * \pre this engine must have a open file which is a executable or a shared library
      * \sa isOpen()
      * \sa isExecutableOrSharedLibrary()
      * \exception ExecutableFileReadError

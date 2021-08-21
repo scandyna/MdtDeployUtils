@@ -210,44 +210,44 @@ mdt_add_test(
 )
 
 mdt_add_test(
-  NAME PeFileReaderTest
-  TARGET peFileReaderTest
+  NAME PeFileIoEngineTest
+  TARGET peFileIoEngineTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
-    src/PeFileReaderTest.cpp
+    src/PeFileIoEngineTest.cpp
 )
 
 if(WIN32)
 
   mdt_add_test(
-    NAME PeFileReaderTest_Windows
-    TARGET peFileReaderTest_Windows
+    NAME PeFileIoEngineTest_Windows
+    TARGET peFileIoEngineTest_Windows
     DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
     SOURCE_FILES
-      src/PeFileReaderTest_Windows.cpp
+      src/PeFileIoEngineTest_Windows.cpp
   )
 
   # Make shure that the test libraries will be built before the test
-  add_dependencies(peFileReaderTest_Windows
+  add_dependencies(peFileIoEngineTest_Windows
     testSharedLibrary
     testStaticLibrary
     testExecutableDynamic
 #     testExecutableStatic
   )
 
-  target_compile_definitions(peFileReaderTest_Windows PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-  target_compile_definitions(peFileReaderTest_Windows PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
-  target_compile_definitions(peFileReaderTest_Windows PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
-  target_compile_definitions(peFileReaderTest_Windows PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+  target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+  target_compile_definitions(peFileIoEngineTest_Windows PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+  target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
+  target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
 endif()
 
 mdt_add_test(
-  NAME PeFileReaderErrorTest
-  TARGET peFileReaderErrorTest
+  NAME PeFileIoEngineErrorTest
+  TARGET peFileIoEngineErrorTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
-    src/PeFileReaderErrorTest.cpp
+    src/PeFileIoEngineErrorTest.cpp
 )
 
 mdt_add_test(

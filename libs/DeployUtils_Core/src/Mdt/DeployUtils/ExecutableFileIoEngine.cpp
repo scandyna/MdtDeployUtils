@@ -22,9 +22,7 @@
 #include "ExecutableFileFormat.h"
 #include "AbstractExecutableFileIoEngine.h"
 #include "ElfFileIoEngine.h"
-
-#include "PeFileReader.h"
-
+#include "PeFileIoEngine.h"
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
@@ -136,7 +134,7 @@ void ExecutableFileIoEngine::instanciateEngine(ExecutableFileFormat format) noex
       mIoEngine = std::make_unique<ElfFileIoEngine>();
       break;
     case ExecutableFileFormat::Pe:
-      mIoEngine = std::make_unique<PeFileReader>();
+      mIoEngine = std::make_unique<PeFileIoEngine>();
       break;
     case ExecutableFileFormat::Unknown:
       break;

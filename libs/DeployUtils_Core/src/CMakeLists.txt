@@ -45,7 +45,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/Pe/FileHeader.cpp
   Mdt/DeployUtils/Impl/Pe/FileReader.cpp
   Mdt/DeployUtils/Impl/Pe/Debug.cpp
-  Mdt/DeployUtils/PeFileReader.cpp
+  Mdt/DeployUtils/PeFileIoEngine.cpp
   Mdt/DeployUtils/ExecutableFileReader.cpp
   Mdt/DeployUtils/FindCompilerError.cpp
   Mdt/DeployUtils/AbstractCompilerFinderEngine.cpp

@@ -18,44 +18,44 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "PeFileReader.h"
+#include "PeFileIoEngine.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include "Mdt/DeployUtils/Impl/Pe/FileReader.h"
 #include <cstdint>
 
 namespace Mdt{ namespace DeployUtils{
 
-PeFileReader::PeFileReader(QObject *parent)
+PeFileIoEngine::PeFileIoEngine(QObject *parent)
   : AbstractExecutableFileIoEngine(parent),
     mImpl( std::make_unique<Impl::Pe::FileReader>() )
 {
 }
 
-PeFileReader::~PeFileReader() noexcept
+PeFileIoEngine::~PeFileIoEngine() noexcept
 {
 }
 
-void PeFileReader::newFileOpen(const QString & fileName)
+void PeFileIoEngine::newFileOpen(const QString & fileName)
 {
   mImpl->setFileName(fileName);
 }
 
-void PeFileReader::fileClosed()
+void PeFileIoEngine::fileClosed()
 {
   mImpl->clear();
 }
 
-bool PeFileReader::doSupportsPlatform(const Platform & platform) const noexcept
+bool PeFileIoEngine::doSupportsPlatform(const Platform & platform) const noexcept
 {
   return platform.executableFileFormat() == ExecutableFileFormat::Pe;
 }
 
-bool PeFileReader::doIsPeImageFile()
+bool PeFileIoEngine::doIsPeImageFile()
 {
   return tryExtractDosCoffAndOptionalHeader();
 }
 
-Platform PeFileReader::doGetFilePlatform()
+Platform PeFileIoEngine::doGetFilePlatform()
 {
   using Impl::Pe::CoffHeader;
   using Impl::Pe::MachineType;
@@ -85,7 +85,7 @@ Platform PeFileReader::doGetFilePlatform()
   return Platform(os, fileFormat, fakeCompiler, cpu);
 }
 
-bool PeFileReader::doIsExecutableOrSharedLibrary()
+bool PeFileIoEngine::doIsExecutableOrSharedLibrary()
 {
   if( !tryExtractDosCoffAndOptionalHeader() ){
     return false;
@@ -97,7 +97,7 @@ bool PeFileReader::doIsExecutableOrSharedLibrary()
   return true;
 }
 
-bool PeFileReader::doContainsDebugSymbols()
+bool PeFileIoEngine::doContainsDebugSymbols()
 {
   using Impl::ByteArraySpan;
 
@@ -108,7 +108,7 @@ bool PeFileReader::doContainsDebugSymbols()
   return mImpl->containsDebugSymbols(map);
 }
 
-QStringList PeFileReader::doGetNeededSharedLibraries()
+QStringList PeFileIoEngine::doGetNeededSharedLibraries()
 {
   using Impl::ByteArraySpan;
 
@@ -119,7 +119,7 @@ QStringList PeFileReader::doGetNeededSharedLibraries()
   return mImpl->getNeededSharedLibraries(map);
 }
 
-bool PeFileReader::tryExtractDosCoffAndOptionalHeader()
+bool PeFileIoEngine::tryExtractDosCoffAndOptionalHeader()
 {
   using Impl::ByteArraySpan;
 
