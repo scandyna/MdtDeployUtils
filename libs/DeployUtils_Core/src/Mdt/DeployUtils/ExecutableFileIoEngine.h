@@ -23,11 +23,11 @@
 
 #include "FileOpenError.h"
 #include "ExecutableFileReadError.h"
+#include "ExecutableFileOpenMode.h"
 #include "Platform.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QFileInfo>
-#include <QIODevice>
 #include <memory>
 #include <cassert>
 
@@ -42,14 +42,6 @@ namespace Mdt{ namespace DeployUtils{
     Q_OBJECT
 
    public:
-
-    /*! \brief File open mode
-     */
-    enum OpenMode
-    {
-      ReadOnly,   /*!< Read only */
-      ReadWrite   /*!< Read and write */
-    };
 
     /*! \brief Construct a file I/O engine
      */
@@ -67,7 +59,7 @@ namespace Mdt{ namespace DeployUtils{
      * \sa close()
      * \exception FileOpenError
      */
-    void openFile(const QFileInfo & fileInfo, OpenMode mode);
+    void openFile(const QFileInfo & fileInfo, ExecutableFileOpenMode mode);
 
     /*! \brief Open a file for a expected platform
      *
@@ -78,7 +70,7 @@ namespace Mdt{ namespace DeployUtils{
      * \sa close()
      * \exception FileOpenError
      */
-    void openFile(const QFileInfo & fileInfo, OpenMode mode, const Platform & platform);
+    void openFile(const QFileInfo & fileInfo, ExecutableFileOpenMode mode, const Platform & platform);
 
     /*! \brief Check if this engine has a open file
      *
@@ -114,9 +106,6 @@ namespace Mdt{ namespace DeployUtils{
    private:
 
     void instanciateEngine(ExecutableFileFormat format) noexcept;
-
-    static
-    QIODevice::OpenMode qIoDeviceOpenModeFromOpenMode(OpenMode mode) noexcept;
 
     std::unique_ptr<AbstractExecutableFileIoEngine> mIoEngine;
   };

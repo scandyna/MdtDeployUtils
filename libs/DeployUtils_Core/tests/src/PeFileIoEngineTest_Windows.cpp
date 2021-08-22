@@ -33,13 +33,13 @@ TEST_CASE("isPeImageFile")
 
   SECTION("shared library")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( engine.isPeImageFile() );
   }
 
   SECTION("dynamic linked executable")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( engine.isPeImageFile() );
   }
 }
@@ -50,21 +50,21 @@ TEST_CASE("isExecutableOrSharedLibrary")
 
   SECTION("shared library")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( engine.isExecutableOrSharedLibrary() );
     engine.close();
   }
 
   SECTION("static library")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_STATIC_LIBRARY_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_STATIC_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( !engine.isExecutableOrSharedLibrary() );
     engine.close();
   }
 
   SECTION("dynamic linked executable")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( engine.isExecutableOrSharedLibrary() );
     engine.close();
   }
@@ -77,7 +77,7 @@ TEST_CASE("getNeededSharedLibraries")
 
   SECTION("shared library")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     libraries = engine.getNeededSharedLibraries();
     REQUIRE( !libraries.isEmpty() );
     REQUIRE( containsQt5Core(libraries) );
@@ -86,7 +86,7 @@ TEST_CASE("getNeededSharedLibraries")
 
   SECTION("dynamic linked executable")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     libraries = engine.getNeededSharedLibraries();
     REQUIRE( !libraries.isEmpty() );
     REQUIRE( containsTestSharedLibrary(libraries) );
@@ -103,11 +103,11 @@ TEST_CASE("open_2_consecutive_files_with_1_instance")
    * Open a big library first
    */
 
-  engine.openFile( QString::fromLocal8Bit(QT5_CORE_FILE_PATH) );
+  engine.openFile( QString::fromLocal8Bit(QT5_CORE_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
   REQUIRE( !engine.getNeededSharedLibraries().isEmpty() );
   engine.close();
 
-  engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+  engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
   REQUIRE( !engine.getNeededSharedLibraries().isEmpty() );
   engine.close();
 }
@@ -116,7 +116,7 @@ TEST_CASE("call_many_members_on_1_instance")
 {
     PeFileIoEngine engine;
 
-  engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+  engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
   REQUIRE( engine.isExecutableOrSharedLibrary() );
   REQUIRE( !engine.getNeededSharedLibraries().isEmpty() );
   engine.close();

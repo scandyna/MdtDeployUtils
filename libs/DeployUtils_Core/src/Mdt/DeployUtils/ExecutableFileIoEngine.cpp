@@ -36,7 +36,7 @@ ExecutableFileIoEngine::~ExecutableFileIoEngine() noexcept
 {
 }
 
-void ExecutableFileIoEngine::openFile(const QFileInfo & fileInfo, OpenMode mode)
+void ExecutableFileIoEngine::openFile(const QFileInfo & fileInfo, ExecutableFileOpenMode mode)
 {
   assert( !fileInfo.filePath().isEmpty() );
   assert( !isOpen() );
@@ -48,14 +48,14 @@ void ExecutableFileIoEngine::openFile(const QFileInfo & fileInfo, OpenMode mode)
   }
   assert( mIoEngine.get() != nullptr );
 
-  mIoEngine->openFile(fileInfo);
+  mIoEngine->openFile(fileInfo, mode);
 
   if( hostPlatform.operatingSystem() == OperatingSystem::Linux ){
     if( !mIoEngine->isElfFile() ){
       mIoEngine->close();
       mIoEngine.reset();
       instanciateEngine(ExecutableFileFormat::Pe);
-      mIoEngine->openFile(fileInfo);
+      mIoEngine->openFile(fileInfo, mode);
     }
   }
 
@@ -64,12 +64,12 @@ void ExecutableFileIoEngine::openFile(const QFileInfo & fileInfo, OpenMode mode)
       mIoEngine->close();
       mIoEngine.reset();
       instanciateEngine(ExecutableFileFormat::Elf);
-      mIoEngine->openFile(fileInfo);
+      mIoEngine->openFile(fileInfo, mode);
     }
   }
 }
 
-void ExecutableFileIoEngine::openFile(const QFileInfo & fileInfo, OpenMode mode, const Platform & platform)
+void ExecutableFileIoEngine::openFile(const QFileInfo & fileInfo, ExecutableFileOpenMode mode, const Platform & platform)
 {
   assert( !fileInfo.filePath().isEmpty() );
   assert( !platform.isNull() );
@@ -86,7 +86,7 @@ void ExecutableFileIoEngine::openFile(const QFileInfo & fileInfo, OpenMode mode,
   }
   assert( mIoEngine.get() != nullptr );
 
-  mIoEngine->openFile(fileInfo);
+  mIoEngine->openFile(fileInfo, mode);
 
   Platform filePlatform;
   try{

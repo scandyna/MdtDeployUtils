@@ -34,7 +34,7 @@ void ExecutableFileReader::openFile(const QFileInfo & fileInfo)
   assert( !fileInfo.filePath().isEmpty() );
   assert( !isOpen() );
 
-  mEngine.openFile(fileInfo, ExecutableFileIoEngine::ReadOnly);
+  mEngine.openFile(fileInfo, ExecutableFileOpenMode::ReadOnly);
 }
 
 void ExecutableFileReader::openFile(const QFileInfo & fileInfo, const Platform & platform)
@@ -43,7 +43,7 @@ void ExecutableFileReader::openFile(const QFileInfo & fileInfo, const Platform &
   assert( !platform.isNull() );
   assert( !isOpen() );
 
-  mEngine.openFile(fileInfo, ExecutableFileIoEngine::ReadOnly, platform);
+  mEngine.openFile(fileInfo, ExecutableFileOpenMode::ReadOnly, platform);
 }
 
 bool ExecutableFileReader::isOpen() const noexcept

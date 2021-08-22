@@ -28,7 +28,7 @@ AbstractExecutableFileIoEngine::AbstractExecutableFileIoEngine(QObject* parent)
 {
 }
 
-void AbstractExecutableFileIoEngine::openFile(const QFileInfo & fileInfo)
+void AbstractExecutableFileIoEngine::openFile(const QFileInfo & fileInfo, ExecutableFileOpenMode mode)
 {
   assert( !fileInfo.filePath().isEmpty() );
   assert( !isOpen() );
@@ -108,6 +108,14 @@ QStringList AbstractExecutableFileIoEngine::getRunPath()
   return doGetRunPath();
 }
 
+void AbstractExecutableFileIoEngine::setRunPath(const QStringList & rPath)
+{
+  assert( isOpen() );
+  assert( isExecutableOrSharedLibrary() );
+
+  doSetRunPath(rPath);
+}
+
 qint64 AbstractExecutableFileIoEngine::fileSize() const noexcept
 {
   assert( isOpen() );
@@ -127,6 +135,10 @@ Impl::ByteArraySpan AbstractExecutableFileIoEngine::mapIfRequired(qint64 offset,
   assert( isOpen() );
 
   return mFileMapper.mapIfRequired(mFile, offset, size);
+}
+
+void AbstractExecutableFileIoEngine::doSetRunPath(const QStringList &)
+{
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

@@ -56,7 +56,7 @@ TEST_CASE("open_close")
 
   SECTION("empty file")
   {
-    engine.openFile( file.fileName() );
+    engine.openFile( file.fileName(), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( engine.isOpen() );
     engine.close();
     REQUIRE( !engine.isOpen() );
@@ -73,7 +73,7 @@ TEST_CASE("isElfFile")
   SECTION("empty file")
   {
     file.close();
-    engine.openFile( file.fileName() );
+    engine.openFile( file.fileName(), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( !engine.isElfFile() );
   }
 
@@ -81,7 +81,7 @@ TEST_CASE("isElfFile")
   {
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABC") ) );
     file.close();
-    engine.openFile( file.fileName() );
+    engine.openFile( file.fileName(), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( !engine.isElfFile() );
   }
 
@@ -89,7 +89,7 @@ TEST_CASE("isElfFile")
   {
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABCD") ) );
     file.close();
-    engine.openFile( file.fileName() );
+    engine.openFile( file.fileName(), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( !engine.isElfFile() );
   }
 
@@ -97,7 +97,7 @@ TEST_CASE("isElfFile")
   {
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABCDEFGHIJKLMNOPQRSTUWXYZ") ) );
     file.close();
-    engine.openFile( file.fileName() );
+    engine.openFile( file.fileName(), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( !engine.isElfFile() );
   }
 }
@@ -112,7 +112,7 @@ TEST_CASE("isExecutableOrSharedLibrary")
   SECTION("empty file")
   {
     file.close();
-    engine.openFile( file.fileName() );
+    engine.openFile( file.fileName(), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( !engine.isExecutableOrSharedLibrary() );
     engine.close();
   }
@@ -121,7 +121,7 @@ TEST_CASE("isExecutableOrSharedLibrary")
   {
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABC") ) );
     file.close();
-    engine.openFile( file.fileName() );
+    engine.openFile( file.fileName(), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( !engine.isExecutableOrSharedLibrary() );
     engine.close();
   }
@@ -130,7 +130,7 @@ TEST_CASE("isExecutableOrSharedLibrary")
   {
     REQUIRE( writeTextFileUtf8( file, QLatin1String("ABCD") ) );
     file.close();
-    engine.openFile( file.fileName() );
+    engine.openFile( file.fileName(), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( !engine.isExecutableOrSharedLibrary() );
     engine.close();
   }
@@ -148,7 +148,7 @@ TEST_CASE("isExecutableOrSharedLibrary")
     );
     REQUIRE( writeTextFileUtf8( file, text ) );
     file.close();
-    engine.openFile( file.fileName() );
+    engine.openFile( file.fileName(), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( !engine.isExecutableOrSharedLibrary() );
     engine.close();
   }

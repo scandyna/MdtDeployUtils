@@ -71,7 +71,7 @@ TEST_CASE("open_close")
   SECTION("non existing file")
   {
     filePath = makeFilePath( dir, QLatin1String("nonExisting.so") );
-    REQUIRE_THROWS_AS( engine.openFile(filePath), FileOpenError );
+    REQUIRE_THROWS_AS( engine.openFile(filePath, ExecutableFileOpenMode::ReadOnly), FileOpenError );
     REQUIRE( !engine.isOpen() );
   }
 }

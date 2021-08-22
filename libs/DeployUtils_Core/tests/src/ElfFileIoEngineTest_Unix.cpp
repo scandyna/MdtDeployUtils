@@ -34,7 +34,7 @@ TEST_CASE("isElfFile")
 
   SECTION("shared library")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( engine.isElfFile() );
   }
 
@@ -49,7 +49,7 @@ TEST_CASE("isElfFile")
 
   SECTION("dynamic linked executable")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( engine.isElfFile() );
   }
 }
@@ -60,21 +60,21 @@ TEST_CASE("isExecutableOrSharedLibrary")
 
   SECTION("shared library")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( engine.isExecutableOrSharedLibrary() );
     engine.close();
   }
 
   SECTION("static library")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_STATIC_LIBRARY_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_STATIC_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( !engine.isExecutableOrSharedLibrary() );
     engine.close();
   }
 
   SECTION("dynamic linked executable")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( engine.isExecutableOrSharedLibrary() );
     engine.close();
   }
@@ -87,7 +87,7 @@ TEST_CASE("getNeededSharedLibraries")
 
   SECTION("shared library")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     libraries = engine.getNeededSharedLibraries();
     REQUIRE( !libraries.isEmpty() );
     REQUIRE( containsQt5Core(libraries) );
@@ -96,7 +96,7 @@ TEST_CASE("getNeededSharedLibraries")
 
   SECTION("dynamic linked executable")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     libraries = engine.getNeededSharedLibraries();
     REQUIRE( !libraries.isEmpty() );
     REQUIRE( containsTestSharedLibrary(libraries) );
@@ -111,14 +111,14 @@ TEST_CASE("getRunPath")
 
   SECTION("shared library")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( !engine.getRunPath().isEmpty() );
     engine.close();
   }
 
   SECTION("dynamic linked executable")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( !engine.getRunPath().isEmpty() );
     engine.close();
   }
@@ -130,7 +130,7 @@ TEST_CASE("getSoName")
 
   SECTION("libtestSharedLibrary.so")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( engine.getSoName() == QLatin1String("libtestSharedLibrary.so") );
     engine.close();
   }
@@ -144,11 +144,11 @@ TEST_CASE("open_2_consecutive_files_with_1_instance")
    * Open a big library first
    */
 
-  engine.openFile( QString::fromLocal8Bit(QT5_CORE_FILE_PATH) );
+  engine.openFile( QString::fromLocal8Bit(QT5_CORE_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
   REQUIRE( engine.getSoName() == QLatin1String("libQt5Core.so.5") );
   engine.close();
 
-  engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+  engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
   REQUIRE( engine.getSoName() == QLatin1String("libtestSharedLibrary.so") );
   engine.close();
 }
@@ -157,7 +157,7 @@ TEST_CASE("call_many_members_one_1_instance")
 {
   ElfFileIoEngine engine;
 
-  engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+  engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
   REQUIRE( engine.isExecutableOrSharedLibrary() );
   REQUIRE( engine.getSoName() == QLatin1String("libtestSharedLibrary.so") );
   REQUIRE( !engine.getNeededSharedLibraries().isEmpty() );

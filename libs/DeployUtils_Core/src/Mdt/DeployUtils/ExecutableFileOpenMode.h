@@ -18,17 +18,19 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "catch2/catch.hpp"
-#include "Catch2QString.h"
-#include "TestUtils.h"
-#include "Mdt/DeployUtils/ExecutableFileIoEngine.h"
+#ifndef MDT_DEPLOY_UTILS_EXECUTABLE_FILE_OPEN_MODE_H
+#define MDT_DEPLOY_UTILS_EXECUTABLE_FILE_OPEN_MODE_H
 
-using namespace Mdt::DeployUtils;
+namespace Mdt{ namespace DeployUtils{
 
-TEST_CASE("open_wrong_platform_file")
-{
-  ExecutableFileIoEngine engine;
-  const QString file = QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH);
-  const Platform platform = getNonNativePlatform();
-  REQUIRE_THROWS_AS(engine.openFile(file, ExecutableFileOpenMode::ReadOnly, platform), FileOpenError);
-}
+  /*! \brief Executable file open mode
+   */
+  enum class ExecutableFileOpenMode
+  {
+    ReadOnly,   /*!< Read only */
+    ReadWrite   /*!< Read and write */
+  };
+
+}} // namespace Mdt{ namespace DeployUtils{
+
+#endif // #ifndef MDT_DEPLOY_UTILS_EXECUTABLE_FILE_OPEN_MODE_H

@@ -23,6 +23,8 @@
 
 #include "FileOpenError.h"
 #include "ExecutableFileReadError.h"
+#include "ExecutableFileWriteError.h"
+#include "ExecutableFileOpenMode.h"
 #include "Platform.h"
 #include "Mdt/DeployUtils/Impl/FileMapper.h"
 #include "mdt_deployutilscore_export.h"
@@ -63,7 +65,7 @@ namespace Mdt{ namespace DeployUtils{
      * \sa close()
      * \exception FileOpenError
      */
-    void openFile(const QFileInfo & fileInfo);
+    void openFile(const QFileInfo & fileInfo, ExecutableFileOpenMode mode);
 
     /*! \brief Check if this engine has a open file
      *
@@ -142,6 +144,18 @@ namespace Mdt{ namespace DeployUtils{
      */
     QStringList getRunPath();
 
+    /*! \brief Set the run path this engine refers to to \a rPath
+     *
+     * For executable formats that do not support RPath,
+     * this method does nothing.
+     *
+     * \pre this engine must have a open file which is a executable or a shared library
+     * \sa isOpen()
+     * \sa isExecutableOrSharedLibrary()
+     * \exception ExecutableFileWriteError
+     */
+    void setRunPath(const QStringList & rPath);
+
    protected:
 
     /*! \brief Get the size of the file
@@ -195,6 +209,11 @@ namespace Mdt{ namespace DeployUtils{
     {
       return QStringList();
     }
+
+    virtual void doSetRunPath(const QStringList & rPath);
+
+    static
+    QIODevice::OpenMode qIoDeviceOpenModeFromOpenMode(ExecutableFileOpenMode mode) noexcept;
 
     Impl::FileMapper mFileMapper;
     QFile mFile;

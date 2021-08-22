@@ -41,7 +41,7 @@ TEST_CASE("open_close")
 
   SECTION("open a executable - read only")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), ExecutableFileIoEngine::ReadOnly );
+    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( engine.isOpen() );
     engine.close();
     REQUIRE( !engine.isOpen() );
@@ -49,7 +49,7 @@ TEST_CASE("open_close")
 
   SECTION("open a native executable - read only")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), ExecutableFileIoEngine::ReadOnly, Platform::nativePlatform() );
+    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), ExecutableFileOpenMode::ReadOnly, Platform::nativePlatform() );
     REQUIRE( engine.isOpen() );
     engine.close();
     REQUIRE( !engine.isOpen() );
@@ -64,13 +64,13 @@ TEST_CASE("getFilePlatform")
 
   SECTION("executable")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), ExecutableFileIoEngine::ReadOnly );
+    engine.openFile( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( engine.getFilePlatform() == platform );
   }
 
   SECTION("shared library")
   {
-    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileIoEngine::ReadOnly );
+    engine.openFile( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), ExecutableFileOpenMode::ReadOnly );
     REQUIRE( engine.getFilePlatform() == platform );
   }
 }
