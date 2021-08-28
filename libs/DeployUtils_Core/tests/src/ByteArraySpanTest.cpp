@@ -21,6 +21,8 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
+#include <algorithm>
+#include <vector>
 
 using namespace Mdt::DeployUtils;
 using Impl::ByteArraySpan;
@@ -95,4 +97,17 @@ TEST_CASE("subSpan")
     REQUIRE( subSpan.data[1] == 3 );
     REQUIRE( subSpan.data[2] == 4 );
   }
+}
+
+TEST_CASE("std_copy")
+{
+  unsigned char array[4] = {1,2,3,4};
+  const ByteArraySpan span = spanFromArray( array, sizeof(array) );
+  std::vector<uchar> v(4);
+
+  std::copy( span.cbegin(), span.cend(), v.begin() );
+  REQUIRE( v[0] == 1 );
+  REQUIRE( v[1] == 2 );
+  REQUIRE( v[2] == 3 );
+  REQUIRE( v[3] == 4 );
 }
