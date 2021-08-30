@@ -242,17 +242,6 @@ QString toDebugString(const DynamicStruct & section, const QString & leftPad)
   return str;
 }
 
-QString toDebugString(const std::vector<DynamicStruct> & sections, const QString & leftPad)
-{
-  QString str;
-
-  for(const auto & section : sections){
-    str += QLatin1String("\n") + toDebugString(section, leftPad);
-  }
-
-  return str;
-}
-
 QString toDebugString(const DynamicSection & section, const QString & leftPad)
 {
   QString str = QLatin1String(".dynamic section:");
