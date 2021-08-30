@@ -495,25 +495,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return std::string( reinterpret_cast<const char*>(charArray.data) );
   }
 
-  /*! \internal Get a string from a array of unsigned characters
-   *
-   * The ELF specification seems not to say anything about unicode encoding.
-   * Because ELF is Unix centric, it is assumed that \a charArray
-   * represents a UTF-8 string.
-   * (note: using platform specific encoding can be problematic
-   *        for cross-compilation)
-   *
-   * \pre \a charArray must not be null
-   * \exception NotNullTerminatedStringError
-   */
-  inline
-  QString qStringFromUft8ByteArraySpan(const ByteArraySpan & charArray)
-  {
-    assert( !charArray.isNull() );
-
-    return qStringFromUft8UnsignedCharArray(charArray);
-  }
-
   /*! \brief Check if \a header is a string table section header
    */
   inline
@@ -780,45 +761,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return true;
   }
 
-  /*! \internal Extract a dynamic section for given tag
-   *
-   * \pre \a map must not be null
-   * \pre \a ident must be valid
-   * \pre \a dynamicSectionHeader must be a Dynamic section type and be named ".dynamic"
-   * \pre \a map must be big enough to read the section referenced by \a dynamicSectionHeader
-   */
-  inline
-  std::vector<DynamicStruct> extractDynamicSectionForTag(const ByteArraySpan & map, const Ident & ident,
-                                                         const SectionHeader & dynamicSectionHeader,
-                                                         DynamicSectionTagType tagType) noexcept
-  {
-    assert( !map.isNull() );
-    assert( ident.isValid() );
-    assert( headerIsDynamicSection(dynamicSectionHeader) );
-    assert( map.size >= dynamicSectionHeader.minimumSizeToReadSection() );
-
-    std::vector<DynamicStruct> dynamicSection;
-
-    const unsigned char * first = map.data + dynamicSectionHeader.offset;
-    const unsigned char * const last = first + dynamicSectionHeader.size;
-
-    while(first < last){
-      DynamicStruct sectionStruct;
-
-      sectionStruct.tag = getSignedNWord(first, ident);
-      advance4or8bytes(first, ident);
-
-      sectionStruct.val_or_ptr = getNWord(first, ident);
-      advance4or8bytes(first, ident);
-
-      if( sectionStruct.tagType() == tagType ){
-        dynamicSection.push_back(sectionStruct);
-      }
-    }
-
-    return dynamicSection;
-  }
-
   /*! \internal Check if \a dynamicSectionHeader has a valid index to a dynamic string table
    *
    * \pre \a fileHeader must be valid
@@ -911,35 +853,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     }
 
     return dynamicSection;
-  }
-
-  /*! \internal Get a char array from \a dynamicStruct pointing to \a dynamicStringTableSectionHeader
-   *
-   * \pre \a map must not be null
-   * \pre \a dynamicStringTableSectionHeader must be a string table header and be named ".dynstr"
-   * \pre \a map must be big enough to read the section referenced by \a dynamicStringTableSectionHeader
-   * \exception ExecutableFileReadError
-   */
-  inline
-  ByteArraySpan charArrayFromDynamicStringTable(const ByteArraySpan & map,
-                                                const SectionHeader & dynamicStringTableSectionHeader, const DynamicStruct & dynamicStruct)
-  {
-    assert( !map.isNull() );
-//     assert( dynamicStringTableSectionHeader.sectionType() == SectionType::StringTable );
-    assert( headerIsStringTableSection(dynamicStringTableSectionHeader) );
-    ///assert( dynamicStringTableSectionHeader.name == ".dynstr" );
-    assert( map.size >= dynamicStringTableSectionHeader.minimumSizeToReadSection() );
-
-    if( dynamicStruct.val_or_ptr > dynamicStringTableSectionHeader.size ){
-      const QString message = tr("got a invalid index to a dynamic section string table");
-      throw ExecutableFileReadError(message);
-    }
-
-    ByteArraySpan charArray;
-    charArray.data = map.data + dynamicStringTableSectionHeader.offset + dynamicStruct.val_or_ptr;
-    charArray.size = static_cast<int64_t>(dynamicStringTableSectionHeader.size - dynamicStruct.val_or_ptr);
-
-    return charArray;
   }
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
