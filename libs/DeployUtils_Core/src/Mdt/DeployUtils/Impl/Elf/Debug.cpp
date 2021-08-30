@@ -182,12 +182,16 @@ QString toDebugString(const SectionHeader & header)
 {
   QString str;
 
-  str = QLatin1String("section ") + QString::fromStdString(header.name);
+  str = QLatin1String("header for section ") + QString::fromStdString(header.name);
   str += QLatin1String("\n name index: ") + QString::number(header.nameIndex);
   str += QLatin1String("\n type: 0x") + QString::number(header.type, 16) + QLatin1String(" (") + toDebugString( header.sectionType() ) + QLatin1String(")");
   str += QLatin1String("\n offset in file: ") + QString::number(header.offset) + QLatin1String(" (0x") + QString::number(header.offset, 16) + QLatin1String(")");
   str += QLatin1String("\n size in the file: ") + QString::number(header.size);
+
   str += QLatin1String("\n link: ") + QString::number(header.link);
+  if( header.sectionType() == SectionType::Dynamic ){
+    str += QLatin1String(" (section header index of the string table used by entries in the section)");
+  }
 
   return str;
 }
@@ -231,7 +235,7 @@ QString toDebugString(const DynamicStruct & section, const QString & leftPad)
 {
   QString str;
 
-  str += leftPad + QLatin1String("dynamic section, tag: ")
+  str += leftPad + QLatin1String("tag: ")
       + QString::number(section.tag) + QLatin1String(" (") + toDebugString( section.tagType() ) + QLatin1String(")")
       + QLatin1Char('\n') + leftPad + QLatin1String(" val or ptr: ") + QString::number(section.val_or_ptr);
 
@@ -244,6 +248,17 @@ QString toDebugString(const std::vector<DynamicStruct> & sections, const QString
 
   for(const auto & section : sections){
     str += QLatin1String("\n") + toDebugString(section, leftPad);
+  }
+
+  return str;
+}
+
+QString toDebugString(const DynamicSection & section, const QString & leftPad)
+{
+  QString str = QLatin1String(".dynamic section:");
+
+  for(const auto & entry : section){
+    str += QLatin1String("\n") + toDebugString(entry, leftPad);
   }
 
   return str;

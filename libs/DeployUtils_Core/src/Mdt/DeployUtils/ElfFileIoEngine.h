@@ -36,7 +36,7 @@ namespace Mdt{ namespace DeployUtils{
 
   namespace Impl{ namespace Elf{
 
-    class FileReader;
+    class FileIoEngine;
 
   }} // namespace Impl{ namespace Elf{
 
@@ -83,8 +83,9 @@ namespace Mdt{ namespace DeployUtils{
     bool doContainsDebugSymbols() override;
     QStringList doGetNeededSharedLibraries() override;
     QStringList doGetRunPath() override;
+    void doSetRunPath(const QStringList & rPath) override;
 
-    std::unique_ptr<Impl::Elf::FileReader> mImpl;
+    std::unique_ptr<Impl::Elf::FileIoEngine> mImpl;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

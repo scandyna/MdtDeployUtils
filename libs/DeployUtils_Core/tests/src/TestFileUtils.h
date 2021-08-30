@@ -89,4 +89,15 @@ QString readTextFileUtf8(const QString & filePath)
   return content;
 }
 
+bool copyFile(const QString & source, const QString & destination)
+{
+  if( QFile::exists(destination) ){
+    if( !QFile::remove(destination) ){
+      return false;
+    }
+  }
+
+  return QFile::copy(source, destination);
+}
+
 #endif // #ifndef TEST_FILE_UTILS_H

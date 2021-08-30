@@ -19,7 +19,7 @@
  **
  ****************************************************************************/
 #include "ElfFileIoEngine.h"
-#include "Mdt/DeployUtils/Impl/Elf/FileReader.h"
+#include "Mdt/DeployUtils/Impl/Elf/FileIoEngine.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include <cassert>
 
@@ -27,7 +27,7 @@ namespace Mdt{ namespace DeployUtils{
 
 ElfFileIoEngine::ElfFileIoEngine(QObject *parent)
   : AbstractExecutableFileIoEngine(parent),
-    mImpl( std::make_unique<Impl::Elf::FileReader>() )
+    mImpl( std::make_unique<Impl::Elf::FileIoEngine>() )
 {
 }
 
@@ -194,6 +194,17 @@ QStringList ElfFileIoEngine::doGetRunPath()
   const ByteArraySpan map = mapIfRequired(0, size);
 
   return mImpl->getRunPath(map);
+}
+
+void ElfFileIoEngine::doSetRunPath(const QStringList & rPath)
+{
+  using Impl::ByteArraySpan;
+
+  const qint64 size = fileSize();
+
+  ByteArraySpan map = mapIfRequired(0, size);
+
+  mImpl->setRunPath(map, rPath);
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

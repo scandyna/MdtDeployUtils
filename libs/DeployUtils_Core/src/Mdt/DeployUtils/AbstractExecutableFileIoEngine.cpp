@@ -40,7 +40,8 @@ void AbstractExecutableFileIoEngine::openFile(const QFileInfo & fileInfo, Execut
   }
 
   mFile.setFileName( fileInfo.absoluteFilePath() );
-  if( !mFile.open(QIODevice::ReadOnly) ){
+  const auto openMode = qIoDeviceOpenModeFromOpenMode(mode);
+  if( !mFile.open(openMode) ){
     const QString message = tr("could not open file '%1': %2")
                             .arg( fileInfo.absoluteFilePath(), mFile.errorString() );
     throw FileOpenError(message);
@@ -139,6 +140,18 @@ Impl::ByteArraySpan AbstractExecutableFileIoEngine::mapIfRequired(qint64 offset,
 
 void AbstractExecutableFileIoEngine::doSetRunPath(const QStringList &)
 {
+}
+
+QIODevice::OpenMode AbstractExecutableFileIoEngine::qIoDeviceOpenModeFromOpenMode(ExecutableFileOpenMode mode) noexcept
+{
+  switch(mode){
+    case ExecutableFileOpenMode::ReadOnly:
+      return QIODevice::ReadOnly;
+    case ExecutableFileOpenMode::ReadWrite:
+      return QIODevice::ReadWrite;
+  }
+
+  return QIODevice::ReadOnly;
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

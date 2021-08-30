@@ -21,8 +21,10 @@
 #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_READER_H
 #define MDT_DEPLOY_UTILS_IMPL_ELF_FILE_READER_H
 
+#include "Exceptions.h"
 #include "FileHeader.h"
 #include "SectionHeader.h"
+#include "StringTable.h"
 #include "DynamicSection.h"
 #include "Mdt/DeployUtils/ExecutableFileReadError.h"
 #include "Mdt/DeployUtils/Algorithm.h"
@@ -40,6 +42,9 @@
 #include <vector>
 #include <algorithm>
 #include <cassert>
+
+// #include "Debug.h"
+// #include <iostream>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
@@ -509,6 +514,38 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return qStringFromUft8UnsignedCharArray(charArray);
   }
 
+  /*! \brief Check if \a header is a string table section header
+   */
+  inline
+  bool headerIsStringTableSection(const SectionHeader & header) noexcept
+  {
+    return header.sectionType() == SectionType::StringTable;
+  }
+
+  /*! \internal Extract a string table from \a map
+   *
+   * Will return a copy of the string table in \a map
+   * for the region defined by \a sectionHeader .
+   *
+   * \sa StringTable::fromCharArray()
+   * \pre \a map must not be null
+   * \pre \a sectionHeader must be the string table section header
+   * \pre \a map must be big enough to extract the string table referenced by \a sectionHeader
+   * \exception StringTableError
+   */
+  inline
+  StringTable extractStringTable(const ByteArraySpan & map, const SectionHeader & sectionHeader)
+  {
+    assert( !map.isNull() );
+    assert( headerIsStringTableSection(sectionHeader) );
+    assert( map.size >= sectionHeader.minimumSizeToReadSection() );
+
+    const int64_t offset = sectionHeader.offset;
+    const int64_t count = sectionHeader.size;
+
+    return StringTable::fromCharArray( map.subSpan(offset, count) );
+  }
+
   /*! \internal
    *
    * \pre \a stringTableSectionHeader must be the string table section header
@@ -518,7 +555,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   void setSectionHeaderName(const unsigned char * const map, const SectionHeader & stringTableSectionHeader,
                             SectionHeader & sectionHeader)
   {
-    assert( stringTableSectionHeader.sectionType() == SectionType::StringTable );
+    assert( headerIsStringTableSection(stringTableSectionHeader) );
 
     ByteArraySpan charArray;
     charArray.data = map + stringTableSectionHeader.offset + sectionHeader.nameIndex;
@@ -727,13 +764,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return findFirstSectionHeader(map, fileHeader, sectionNamesStringTableSectionHeader, type, namePredicate);
   }
 
-  /*! \brief Check if \a header is a string table section header
-   */
-  inline
-  bool headerIsStringTableSection(const SectionHeader & header) noexcept
-  {
-    return header.sectionType() == SectionType::StringTable;
-  }
 
   /*! \brief Check if \a header is a dynamic section header
    */
@@ -789,6 +819,100 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return dynamicSection;
   }
 
+  /*! \internal Check if \a dynamicSectionHeader has a valid index to a dynamic string table
+   *
+   * \pre \a fileHeader must be valid
+   * \pre \a dynamicSectionHeader must be a Dynamic section type and be named ".dynamic"
+   */
+  inline
+  bool sectionHeaderHasValidIndexToDynamicStringTable(const FileHeader & fileHeader, const SectionHeader & dynamicSectionHeader) noexcept
+  {
+    assert( fileHeader.seemsValid() );
+    assert( headerIsDynamicSection(dynamicSectionHeader) );
+
+    const uint16_t index = static_cast<uint16_t>(dynamicSectionHeader.link);
+    if( index == 0 ){
+      // SHN_UNDEF
+      return false;
+    }
+    if( index >= fileHeader.shnum ){
+      return false;
+    }
+
+    return true;
+  }
+
+  /*! \internal Extract the dynamic section
+   *
+   * \pre \a map must not be null
+   * \pre \a fileHeader must be valid
+   * \pre \a map must be big enough to read all section headers
+   * \pre \a sectionNamesStringTableSectionHeader must be the section header names string table
+   * \exception DynamicSectionReadError
+   * \exception StringTableError
+   */
+  inline
+  DynamicSection extractDynamicSection(const ByteArraySpan & map, const FileHeader & fileHeader,
+                                       const SectionHeader & sectionNamesStringTableSectionHeader)
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.seemsValid() );
+    assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
+    assert( sectionNamesStringTableSectionHeader.sectionType() == SectionType::StringTable );
+
+    DynamicSection dynamicSection;
+
+    const SectionHeader dynamicSectionHeader  = findSectionHeader(map, fileHeader, sectionNamesStringTableSectionHeader, SectionType::Dynamic, ".dynamic");
+    if( dynamicSectionHeader.sectionType() == SectionType::Null ){
+      return dynamicSection;
+    }
+
+    if( map.size < dynamicSectionHeader.minimumSizeToReadSection() ){
+      const QString msg = tr(
+        "file is to small to read the .dynamic section."
+        " required size: %1 , file size: %2"
+      ).arg( dynamicSectionHeader.minimumSizeToReadSection() ).arg(map.size);
+      throw DynamicSectionReadError(msg);
+    }
+
+    if( !sectionHeaderHasValidIndexToDynamicStringTable(fileHeader, dynamicSectionHeader) ){
+      const QString msg = tr("the dynamic section header contains a invalid index to the related string table.");
+      throw DynamicSectionReadError(msg);
+    }
+    if( dynamicSectionHeader.link >= fileHeader.shnum ){
+      const QString msg = tr(
+        "the .dynamic section header's references a string table section header that does not exist."
+        " referenced section header: %1 , number of section headers: %2"
+      ).arg(dynamicSectionHeader.link).arg(fileHeader.shnum);
+      throw DynamicSectionReadError(msg);
+    }
+
+    const SectionHeader dynamicStringTableSectionHeader = extractSectionHeaderAt( map, fileHeader, static_cast<uint16_t>(dynamicSectionHeader.link) );
+    if( !headerIsStringTableSection(dynamicStringTableSectionHeader) ){
+      const QString msg = tr("the .dynamic section header's references a string table section header that is not a string table header.");
+      throw DynamicSectionReadError(msg);
+    }
+
+    dynamicSection.setStringTable( extractStringTable(map, dynamicStringTableSectionHeader) );
+
+    const unsigned char * first = map.data + dynamicSectionHeader.offset;
+    const unsigned char * const last = first + dynamicSectionHeader.size;
+
+    while(first < last){
+      DynamicStruct entry;
+
+      entry.tag = getSignedNWord(first, fileHeader.ident);
+      advance4or8bytes(first, fileHeader.ident);
+
+      entry.val_or_ptr = getNWord(first, fileHeader.ident);
+      advance4or8bytes(first, fileHeader.ident);
+
+      dynamicSection.addEntry(entry);
+    }
+
+    return dynamicSection;
+  }
+
   /*! \internal Get a char array from \a dynamicStruct pointing to \a dynamicStringTableSectionHeader
    *
    * \pre \a map must not be null
@@ -818,28 +942,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return charArray;
   }
 
-  /*! \internal Check if \a dynamicSectionHeader has a valid index to a dynamic string table
-   *
-   * \pre \a fileHeader must be valid
-   * \pre \a dynamicSectionHeader must be a Dynamic section type and be named ".dynamic"
-   */
-  inline
-  bool sectionHeaderHasValidIndexToDynamicStringTable(const FileHeader & fileHeader, const SectionHeader & dynamicSectionHeader) noexcept
-  {
-    assert( fileHeader.seemsValid() );
-    assert( headerIsDynamicSection(dynamicSectionHeader) );
-
-    const uint16_t index = static_cast<uint16_t>(dynamicSectionHeader.link);
-    if( index == 0 ){
-      // SHN_UNDEF
-      return false;
-    }
-    if( index >= fileHeader.shnum ){
-      return false;
-    }
-
-    return true;
-  }
 
   /*! \internal Extract the so name (DT_SONAME)
    *
@@ -938,249 +1040,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     return qStringFromUft8ByteArraySpan(charArray);
   }
-
-  /*! \internal
-   */
-  class FileReader : public QObject
-  {
-    Q_OBJECT
-
-   public:
-
-    /*! \brief Set the file name
-     */
-    void setFileName(const QString & name) noexcept
-    {
-      mFileName = name;
-    }
-
-    /*! \brief Clear
-     */
-    void clear() noexcept
-    {
-      mFileHeader.clear();
-      mSectionNamesStringTableSectionHeader.clear();
-      mDynamicSectionHeader.clear();
-      mFileName.clear();
-    }
-
-    /*! \brief Get minimum size to read the file header
-     *
-     * The get the real minimum size we have to extract the Ident part first.
-     * It can be either 52 or 64 bytes.
-     * Here we simply return 64.
-     *
-     * \sa minimumSizeToReadFileHeader(const Ident &)
-     */
-    int64_t minimumSizeToReadFileHeader() const noexcept
-    {
-      return 64;
-    }
-
-    /*! \brief Get the file header
-     */
-    FileHeader getFileHeader(const ByteArraySpan & map)
-    {
-      assert( !map.isNull() );
-      assert( map.size >= minimumSizeToReadFileHeader() );
-
-      readFileHeaderIfNull(map);
-
-      return mFileHeader;
-    }
-
-    /*! \internal
-     */
-    bool containsDebugSymbols(const ByteArraySpan & map)
-    {
-      assert( !map.isNull() );
-
-      readFileHeaderIfNull(map);
-      checkFileSizeToReadSectionHeaders(map);
-      readSectionNameStringTableHeaderIfNull(map);
-
-      const auto pred = [](const std::string & currentName){
-        return Mdt::DeployUtils::stringStartsWith(currentName, ".debug");
-      };
-      const SectionHeader header  = findFirstSectionHeader(map, mFileHeader, mSectionNamesStringTableSectionHeader, SectionType::ProgramData, pred);
-
-      return header.sectionType() != SectionType::Null;
-    }
-
-    /*! \brief
-     *
-     * \pre \a map must not be null
-     * \exception ExecutableFileReadError
-     */
-    QString getSoName(const ByteArraySpan & map)
-    {
-      assert( !map.isNull() );
-
-      readFileHeaderIfNull(map);
-      checkFileSizeToReadSectionHeaders(map);
-      readSectionNameStringTableHeaderIfNull(map);
-      readDynamicSectionHeaderIfNull(map);
-      checkFileSizeToReadDynamicSection(map);
-
-      try{
-        return extractSoName(map, mFileHeader, mDynamicSectionHeader);
-      }catch(const NotNullTerminatedStringError &){
-        const QString message = tr("file '%1': encountered a not null terminated string (file is maybe corrupted or of a unsupported format)")
-                                .arg(mFileName);
-        throw ExecutableFileReadError(message);
-      }
-    }
-
-    /*! \brief
-     *
-     * \pre \a map must not be null
-     * \exception ExecutableFileReadError
-     */
-    QStringList getNeededSharedLibraries(const ByteArraySpan & map)
-    {
-      assert( !map.isNull() );
-
-      readFileHeaderIfNull(map);
-      checkFileSizeToReadSectionHeaders(map);
-      readSectionNameStringTableHeaderIfNull(map);
-      readDynamicSectionHeaderIfNull(map);
-      checkFileSizeToReadDynamicSection(map);
-
-      try{
-        return extractNeededSharedLibraries(map, mFileHeader, mDynamicSectionHeader);
-      }catch(const NotNullTerminatedStringError &){
-        const QString message = tr("file '%1': encountered a not null terminated string (file is maybe corrupted or of a unsupported format)")
-                                .arg(mFileName);
-        throw ExecutableFileReadError(message);
-      }
-    }
-
-    /*! \brief
-     *
-     * \pre \a map must not be null
-     * \exception ExecutableFileReadError
-     */
-    QStringList getRunPath(const ByteArraySpan & map)
-    {
-      assert( !map.isNull() );
-
-      readFileHeaderIfNull(map);
-      checkFileSizeToReadSectionHeaders(map);
-      readSectionNameStringTableHeaderIfNull(map);
-      readDynamicSectionHeaderIfNull(map);
-      checkFileSizeToReadDynamicSection(map);
-
-      try{
-        return extractRunPath(map, mFileHeader, mDynamicSectionHeader).split(QChar::fromLatin1(':'), QString::SkipEmptyParts);
-      }catch(const NotNullTerminatedStringError &){
-        const QString message = tr("file '%1': encountered a not null terminated string (file is maybe corrupted or of a unsupported format)")
-                                .arg(mFileName);
-        throw ExecutableFileReadError(message);
-      }
-    }
-
-   private:
-
-    void readFileHeaderIfNull(const ByteArraySpan & map)
-    {
-      assert( !map.isNull() );
-      assert( map.size >= minimumSizeToReadFileHeader() );
-
-      if( mFileHeader.seemsValid() ){
-        return;
-      }
-
-      mFileHeader = extractFileHeader(map);
-      if( !mFileHeader.seemsValid() ){
-        const QString message = tr("file '%1' does not contain a valid file header")
-                                .arg(mFileName);
-        throw ExecutableFileReadError(message);
-      }
-    }
-
-    /*! \brief
-     *
-     * \pre mFileHeader must be valid
-     */
-    void checkFileSizeToReadSectionHeaders(const ByteArraySpan & map)
-    {
-      assert( !map.isNull() );
-      assert( mFileHeader.seemsValid() );
-
-      if( map.size < mFileHeader.minimumSizeToReadAllSectionHeaders() ){
-        const QString message = tr("file '%1' is to small to read section headers")
-                                .arg(mFileName);
-        throw ExecutableFileReadError(message);
-      }
-    }
-
-    /*! \brief
-     *
-     * \pre mFileHeader must be valid
-     */
-    void readSectionNameStringTableHeaderIfNull(const ByteArraySpan & map)
-    {
-      assert( !map.isNull() );
-      assert( mFileHeader.seemsValid() );
-
-      if( headerIsStringTableSection(mSectionNamesStringTableSectionHeader) ){
-        return;
-      }
-
-      mSectionNamesStringTableSectionHeader = extractSectionNameStringTableHeader(map, mFileHeader);
-      if( mSectionNamesStringTableSectionHeader.sectionType() == SectionType::Null ){
-        const QString message = tr("file '%1' does not contain the section names string table section header")
-                                .arg(mFileName);
-        throw ExecutableFileReadError(message);
-      }
-    }
-
-    /*! \brief
-     *
-     * \pre mFileHeader must be valid
-     * \pre mSectionNamesStringTableSectionHeader must be valid
-     */
-    void readDynamicSectionHeaderIfNull(const ByteArraySpan & map)
-    {
-      assert( !map.isNull() );
-      assert( mFileHeader.seemsValid() );
-      assert( headerIsStringTableSection(mSectionNamesStringTableSectionHeader) );
-
-      if( headerIsDynamicSection(mDynamicSectionHeader) ){
-        return;
-      }
-
-      mDynamicSectionHeader  = findSectionHeader(map, mFileHeader, mSectionNamesStringTableSectionHeader, SectionType::Dynamic, ".dynamic");
-      if( mDynamicSectionHeader.sectionType() == SectionType::Null ){
-        const QString message = tr("file '%1' does not contain the .dynamic section")
-                                .arg(mFileName);
-        throw ExecutableFileReadError(message);
-      }
-    }
-
-    /*! \brief
-     *
-     * \pre mFileHeader must be valid
-     * \pre mDynamicSectionHeader must be valid
-     */
-    void checkFileSizeToReadDynamicSection(const ByteArraySpan & map)
-    {
-      assert( !map.isNull() );
-      assert( mFileHeader.seemsValid() );
-      assert( headerIsDynamicSection(mDynamicSectionHeader) );
-
-      if( map.size < mDynamicSectionHeader.minimumSizeToReadSection() ){
-        const QString message = tr("file '%1' is to small to read the .dynamic section")
-                                .arg(mFileName);
-        throw ExecutableFileReadError(message);
-      }
-    }
-
-    FileHeader mFileHeader;
-    SectionHeader mSectionNamesStringTableSectionHeader;
-    SectionHeader mDynamicSectionHeader;
-    QString mFileName;
-  };
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 

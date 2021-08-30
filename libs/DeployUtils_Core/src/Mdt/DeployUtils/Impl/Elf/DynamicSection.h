@@ -21,7 +21,15 @@
 #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_DYNAMIC_SECTION_H
 #define MDT_DEPLOY_UTILS_IMPL_ELF_DYNAMIC_SECTION_H
 
+#include "StringTable.h"
+#include "Mdt/DeployUtils/ExecutableFileReadError.h"
+#include <QString>
+#include <QStringList>
+#include <QObject>
 #include <cstdint>
+#include <vector>
+#include <algorithm>
+#include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
@@ -144,6 +152,204 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     {
       return tag == 0;
     }
+  };
+
+  /*! \internal
+   *
+   * Just some hack to have a convenient tr() function available
+   */
+  class MDT_DEPLOYUTILSCORE_EXPORT DynamicSectionValidator : public QObject
+  {
+    Q_OBJECT
+
+   public:
+
+    static
+    void validateStringTableIndex(DynamicStruct s, const StringTable & stringTable)
+    {
+      assert( !stringTable.isEmpty() );
+
+      if( !stringTable.indexIsValid(s.val_or_ptr) ){
+        const QString msg = tr(
+          "a entry in the dynamic section contains a index that is out of bound of the related string table."
+          " given index: %1 , string table size: %2"
+        ).arg( s.val_or_ptr ).arg( stringTable.byteCount() );
+        throw ExecutableFileReadError(msg);
+      }
+    }
+  };
+
+  /*! \internal
+   *
+   * From the TIS ELF specification v1.2:
+   * - Book I, Sections 1-9
+   * - Book III, Dynamic Section 2-8
+   */
+  class DynamicSection
+  {
+   public:
+
+    /*! \brief STL const iterator
+     */
+    using const_iterator = std::vector<DynamicStruct>::const_iterator;
+
+    /*! \brief Check if this section is null
+     */
+    bool isNull() const noexcept
+    {
+      return mSection.empty();
+    }
+
+    /*! \brief Add a entry to this section
+     */
+    void addEntry(DynamicStruct entry) noexcept
+    {
+      mSection.push_back(entry);
+    }
+
+    /*! \brief Get the count of entries in this section
+     */
+    int entriesCount() const noexcept
+    {
+      return static_cast<int>( mSection.size() );
+    }
+
+    /*! \brief Set the string table to this section
+     *
+     * \pre \a stringTable must not be empty
+     */
+    void setStringTable(const StringTable & stringTable) noexcept
+    {
+      assert( !stringTable.isEmpty() );
+
+      mStringTable = stringTable;
+    }
+
+    /*! \brief Get the SO name (DT_SONAME)
+     *
+     * Returns a empty string if this section
+     * does not contain a DT_SONAME entry
+     * (DT_SONAME is optional).
+     *
+     * \pre this section must not be null
+     * \pre the string table must have been set
+     * \exception ExecutableFileReadError
+     */
+    QString getSoName() const
+    {
+      assert( !isNull() );
+      assert( !mStringTable.isEmpty() );
+
+      const auto pred = [](DynamicStruct s){
+        return s.tagType() == DynamicSectionTagType::SoName;
+      };
+      const auto it = std::find_if(mSection.cbegin(), mSection.cend(), pred);
+      if( it == mSection.cend() ){
+        return QString();
+      }
+      assert( it->tagType() == DynamicSectionTagType::SoName );
+
+      DynamicSectionValidator::validateStringTableIndex(*it, mStringTable);
+
+      return mStringTable.unicodeStringAtIndex(it->val_or_ptr);
+    }
+
+    /*! \brief Get the needed shared libraries (DT_NEEDED)
+     *
+     * Returns a empty list if this section
+     * does not contain any DT_NEEDED entry
+     * (DT_NEEDED is optional).
+     *
+     * \pre this section must not be null
+     * \pre the string table must have been set
+     * \exception ExecutableFileReadError
+     */
+    QStringList getNeededSharedLibraries() const
+    {
+      assert( !isNull() );
+      assert( !mStringTable.isEmpty() );
+
+      QStringList libraries;
+
+      const auto f = [this,&libraries](DynamicStruct s){
+        if(s.tagType() == DynamicSectionTagType::Needed){
+          DynamicSectionValidator::validateStringTableIndex(s, mStringTable);
+          libraries.push_back( mStringTable.unicodeStringAtIndex(s.val_or_ptr) );
+        }
+      };
+      std::for_each(mSection.cbegin(), mSection.cend(), f);
+
+      return libraries;
+    }
+
+    /*! \brief Get the run path (DT_RUNPATH)
+     *
+     * Returns a empty string if this section
+     * does not contain a DT_RUNPATH entry
+     * (DT_RUNPATH is optional).
+     *
+     * \pre this section must not be null
+     * \pre the string table must have been set
+     * \exception ExecutableFileReadError
+     */
+    QString getRunPath() const
+    {
+      assert( !isNull() );
+      assert( !mStringTable.isEmpty() );
+
+      const auto pred = [](DynamicStruct s){
+        return s.tagType() == DynamicSectionTagType::Runpath;
+      };
+      const auto it = std::find_if(mSection.cbegin(), mSection.cend(), pred);
+      if( it == mSection.cend() ){
+        return QString();
+      }
+      assert( it->tagType() == DynamicSectionTagType::Runpath );
+
+      DynamicSectionValidator::validateStringTableIndex(*it, mStringTable);
+
+      return mStringTable.unicodeStringAtIndex(it->val_or_ptr);
+    }
+
+    /*! \brief Clear this section
+     */
+    void clear() noexcept
+    {
+      mSection.clear();
+    }
+
+    /*! \brief get the begin iterator
+     */
+    const_iterator cbegin() const noexcept
+    {
+      return mSection.cbegin();
+    }
+
+    /*! \brief get the begin iterator
+     */
+    const_iterator begin() const noexcept
+    {
+      return cbegin();
+    }
+
+    /*! \brief get the begin iterator
+     */
+    const_iterator cend() const noexcept
+    {
+      return mSection.cend();
+    }
+
+    /*! \brief get the begin iterator
+     */
+    const_iterator end() const noexcept
+    {
+      return cend();
+    }
+
+   private:
+
+    std::vector<DynamicStruct> mSection;
+    StringTable mStringTable;
   };
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{

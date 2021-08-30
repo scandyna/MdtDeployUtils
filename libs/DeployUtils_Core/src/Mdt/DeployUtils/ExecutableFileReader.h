@@ -125,6 +125,8 @@ namespace Mdt{ namespace DeployUtils{
      * a dynamicly linked executable and a shared library on some platform, like ELF.
      * For some explanations,
      * see https://unix.stackexchange.com/questions/472449/what-is-the-difference-between-lsb-executable-et-exec-and-lsb-shared-object
+     *
+     * \todo See Program Header type - PT_INTERP (see for Section Header equivalent)
      */
     bool isExecutableOrSharedLibrary();
 

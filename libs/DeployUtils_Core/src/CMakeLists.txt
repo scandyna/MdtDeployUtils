@@ -23,20 +23,24 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/LibraryNameExtension.cpp
   Mdt/DeployUtils/Impl/LibraryNameImpl.cpp
   Mdt/DeployUtils/LibraryName.cpp
-
   Mdt/DeployUtils/ExecutableFileReadError.cpp
-
+  Mdt/DeployUtils/ExecutableFileWriteError.cpp
   Mdt/DeployUtils/AbstractExecutableFileIoEngine.cpp
   Mdt/DeployUtils/ExecutableFileIoEngine.cpp
   Mdt/DeployUtils/Impl/NotNullTerminatedStringError.cpp
+  Mdt/DeployUtils/Impl/StringTableError.cpp
   Mdt/DeployUtils/Impl/ExecutableFileReaderUtils.cpp
   Mdt/DeployUtils/Impl/ByteArraySpan.cpp
   Mdt/DeployUtils/Impl/FileMapper.cpp
+  Mdt/DeployUtils/Impl/Elf/Exceptions.cpp
   Mdt/DeployUtils/Impl/Elf/Ident.cpp
   Mdt/DeployUtils/Impl/Elf/SectionHeader.cpp
   Mdt/DeployUtils/Impl/Elf/FileHeader.cpp
+  Mdt/DeployUtils/Impl/Elf/StringTable.cpp
   Mdt/DeployUtils/Impl/Elf/DynamicSection.cpp
   Mdt/DeployUtils/Impl/Elf/FileReader.cpp
+  Mdt/DeployUtils/Impl/Elf/FileWriter.cpp
+  Mdt/DeployUtils/Impl/Elf/FileIoEngine.cpp
   Mdt/DeployUtils/Impl/Elf/Debug.cpp
   Mdt/DeployUtils/ElfFileIoEngine.cpp
   Mdt/DeployUtils/Impl/Pe/Exceptions.cpp
@@ -47,6 +51,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/Pe/Debug.cpp
   Mdt/DeployUtils/PeFileIoEngine.cpp
   Mdt/DeployUtils/ExecutableFileReader.cpp
+  Mdt/DeployUtils/ExecutableFileWriter.cpp
   Mdt/DeployUtils/FindCompilerError.cpp
   Mdt/DeployUtils/AbstractCompilerFinderEngine.cpp
   Mdt/DeployUtils/MsvcVersion.cpp

@@ -150,6 +150,37 @@ endif()
 #     PROPERTIES LINK_FLAGS "-static"
 #   )
 
+mdt_add_test(
+  NAME ElfStringTableImplTest
+  TARGET elfStringTableImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfStringTableImplTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfStringTableImplErrorTest
+  TARGET elfStringTableImplErrorTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfStringTableImplErrorTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfDynamicSectionImplTest
+  TARGET elfDynamicSectionImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfDynamicSectionImplTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfDynamicSectionImplErrorTest
+  TARGET elfDynamicSectionImplErrorTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfDynamicSectionImplErrorTest.cpp
+)
 
 mdt_add_test(
   NAME ElfFileReaderImplTest
@@ -157,6 +188,14 @@ mdt_add_test(
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ElfFileReaderImplTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfFileWriterImplTest
+  TARGET elfFileWriterImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfFileWriterImplTest.cpp
 )
 
 mdt_add_test(
@@ -217,7 +256,7 @@ mdt_add_test(
     src/PeFileIoEngineTest.cpp
 )
 
-if(WIN32)
+# if(WIN32)
 
   mdt_add_test(
     NAME PeFileIoEngineTest_Windows
@@ -240,7 +279,7 @@ if(WIN32)
   target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
   target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
-endif()
+# endif()
 
 mdt_add_test(
   NAME PeFileIoEngineErrorTest
@@ -310,6 +349,24 @@ if(UNIX)
   target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
   target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 endif()
+
+mdt_add_test(
+  NAME ExecutableFileWriterTest
+  TARGET executableFileWriterTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ExecutableFileWriterTest.cpp
+)
+target_compile_definitions(executableFileWriterTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+target_compile_definitions(executableFileWriterTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+
+mdt_add_test(
+  NAME ExecutableFileWriterErrorTest
+  TARGET executableFileWriterErrorTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ExecutableFileWriterErrorTest.cpp
+)
 
 mdt_add_test(
   NAME MsvcVersionTest

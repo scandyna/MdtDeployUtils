@@ -93,8 +93,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
   /*! \internal
    */
+  [[deprecated]]
   MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const std::vector<DynamicStruct> & sections, const QString & leftPad = QLatin1String("  "));
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString toDebugString(const DynamicSection & section, const QString & leftPad = QLatin1String("  "));
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 

@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "ElfFileIoImplTestCommon.h"
 #include "TestFileUtils.h"
 #include "ElfFileIoTestUtils.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileReader.h"
@@ -32,16 +33,6 @@
 
 using namespace Mdt::DeployUtils;
 
-Impl::ByteArraySpan arraySpanFromArray(const unsigned char * const array, qint64 size)
-{
-  assert(size > 0);
-
-  Impl::ByteArraySpan span;
-  span.data = array;
-  span.size = size;
-
-  return span;
-}
 
 TEST_CASE("getAddress")
 {
