@@ -50,9 +50,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mFileHeader.clear();
       mSectionNamesStringTableSectionHeader.clear();
       mDynamicSection.clear();
-      
-      mDynamicSectionHeader.clear();
-      
       mFileName.clear();
     }
 
@@ -200,10 +197,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       readFileHeaderIfNull(map);
       checkFileSizeToReadSectionHeaders(map);
       readSectionNameStringTableHeaderIfNull(map);
-      readDynamicSectionHeaderIfNull(map);
-      checkFileSizeToReadDynamicSection(map);
+      readDynamicSectionIfNull(map);
+//       readDynamicSectionHeaderIfNull(map);
+//       checkFileSizeToReadDynamicSection(map);
 
-      setRunPathToMap( map, rPath.join( QLatin1Char(':') ), mFileHeader, mDynamicSectionHeader );
+//       setRunPathToMap( map, rPath.join( QLatin1Char(':') ), mFileHeader, mDynamicSectionHeader );
     }
 
    private:
@@ -267,23 +265,23 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * \pre mFileHeader must be valid
      * \pre mSectionNamesStringTableSectionHeader must be valid
      */
-    void readDynamicSectionHeaderIfNull(const ByteArraySpan & map)
-    {
-      assert( !map.isNull() );
-      assert( mFileHeader.seemsValid() );
-      assert( headerIsStringTableSection(mSectionNamesStringTableSectionHeader) );
-
-      if( headerIsDynamicSection(mDynamicSectionHeader) ){
-        return;
-      }
-
-      mDynamicSectionHeader  = findSectionHeader(map, mFileHeader, mSectionNamesStringTableSectionHeader, SectionType::Dynamic, ".dynamic");
-      if( mDynamicSectionHeader.sectionType() == SectionType::Null ){
-        const QString message = tr("file '%1' does not contain the .dynamic section")
-                                .arg(mFileName);
-        throw ExecutableFileReadError(message);
-      }
-    }
+//     void readDynamicSectionHeaderIfNull(const ByteArraySpan & map)
+//     {
+//       assert( !map.isNull() );
+//       assert( mFileHeader.seemsValid() );
+//       assert( headerIsStringTableSection(mSectionNamesStringTableSectionHeader) );
+// 
+//       if( headerIsDynamicSection(mDynamicSectionHeader) ){
+//         return;
+//       }
+// 
+//       mDynamicSectionHeader  = findSectionHeader(map, mFileHeader, mSectionNamesStringTableSectionHeader, SectionType::Dynamic, ".dynamic");
+//       if( mDynamicSectionHeader.sectionType() == SectionType::Null ){
+//         const QString message = tr("file '%1' does not contain the .dynamic section")
+//                                 .arg(mFileName);
+//         throw ExecutableFileReadError(message);
+//       }
+//     }
 
     /*! \brief
      */
@@ -321,25 +319,22 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * \pre mFileHeader must be valid
      * \pre mDynamicSectionHeader must be valid
      */
-    void checkFileSizeToReadDynamicSection(const ByteArraySpan & map)
-    {
-      assert( !map.isNull() );
-      assert( mFileHeader.seemsValid() );
-      assert( headerIsDynamicSection(mDynamicSectionHeader) );
-
-      if( map.size < mDynamicSectionHeader.minimumSizeToReadSection() ){
-        const QString message = tr("file '%1' is to small to read the .dynamic section")
-                                .arg(mFileName);
-        throw ExecutableFileReadError(message);
-      }
-    }
+//     void checkFileSizeToReadDynamicSection(const ByteArraySpan & map)
+//     {
+//       assert( !map.isNull() );
+//       assert( mFileHeader.seemsValid() );
+//       assert( headerIsDynamicSection(mDynamicSectionHeader) );
+// 
+//       if( map.size < mDynamicSectionHeader.minimumSizeToReadSection() ){
+//         const QString message = tr("file '%1' is to small to read the .dynamic section")
+//                                 .arg(mFileName);
+//         throw ExecutableFileReadError(message);
+//       }
+//     }
 
     FileHeader mFileHeader;
-    DynamicSection mDynamicSection;
-    
     SectionHeader mSectionNamesStringTableSectionHeader;
-    SectionHeader mDynamicSectionHeader;
-    
+    DynamicSection mDynamicSection;
     QString mFileName;
   };
 
