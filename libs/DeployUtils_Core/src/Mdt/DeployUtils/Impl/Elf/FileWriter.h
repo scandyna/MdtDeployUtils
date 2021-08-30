@@ -24,7 +24,7 @@
 #include "FileReader.h"
 
 #include "Debug.h"
-#include <iostream>
+// #include <iostream>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
@@ -52,12 +52,12 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( sectionHeaderHasValidIndexToDynamicStringTable(fileHeader, dynamicSectionHeader) );
     assert( map.size >= dynamicSectionHeader.minimumSizeToReadSection() );
 
-    const SectionHeader dynamicStringTableSectionHeader = extractSectionHeaderAt( map, fileHeader, static_cast<uint16_t>(dynamicSectionHeader.link) );
-    const std::vector<DynamicStruct> dynamicSection = extractDynamicSectionForTag(map, fileHeader.ident, dynamicSectionHeader, DynamicSectionTagType::Runpath);
+//     const SectionHeader dynamicStringTableSectionHeader = extractSectionHeaderAt( map, fileHeader, static_cast<uint16_t>(dynamicSectionHeader.link) );
+//     const std::vector<DynamicStruct> dynamicSection = extractDynamicSectionForTag(map, fileHeader.ident, dynamicSectionHeader, DynamicSectionTagType::Runpath);
 
-    std::cout << "dynamic section header: " << toDebugString(dynamicSectionHeader).toStdString() << std::endl;
-    std::cout << "dynamic string table section header: " << toDebugString(dynamicStringTableSectionHeader).toStdString() << std::endl;
-    std::cout << "dynamic section: " << toDebugString(dynamicSection).toStdString() << std::endl;
+//     std::cout << "dynamic section header: " << toDebugString(dynamicSectionHeader).toStdString() << std::endl;
+//     std::cout << "dynamic string table section header: " << toDebugString(dynamicStringTableSectionHeader).toStdString() << std::endl;
+//     std::cout << "dynamic section: " << toDebugString(dynamicSection).toStdString() << std::endl;
     
 //     if( dynamicSection.empty() ){
 //       return QString();

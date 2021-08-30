@@ -109,20 +109,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       checkFileSizeToReadSectionHeaders(map);
       readSectionNameStringTableHeaderIfNull(map);
       readDynamicSectionIfNull(map);
-//       readDynamicSectionHeaderIfNull(map);
-//       checkFileSizeToReadDynamicSection(map);
-
-      std::cout << "SONAME: " << mDynamicSection.getSoName().toStdString() << std::endl;
 
       return mDynamicSection.getSoName();
-
-//       try{
-//         return extractSoName(map, mFileHeader, mDynamicSectionHeader);
-//       }catch(const NotNullTerminatedStringError &){
-//         const QString message = tr("file '%1': encountered a not null terminated string (file is maybe corrupted or of a unsupported format)")
-//                                 .arg(mFileName);
-//         throw ExecutableFileReadError(message);
-//       }
     }
 
     /*! \brief
@@ -138,20 +126,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       checkFileSizeToReadSectionHeaders(map);
       readSectionNameStringTableHeaderIfNull(map);
       readDynamicSectionIfNull(map);
-//       readDynamicSectionHeaderIfNull(map);
-//       checkFileSizeToReadDynamicSection(map);
-
-      std::cout << "libs: " << mDynamicSection.getNeededSharedLibraries().join(QLatin1Char('\n')).toStdString() << std::endl;
 
       return mDynamicSection.getNeededSharedLibraries();
-
-//       try{
-//         return extractNeededSharedLibraries(map, mFileHeader, mDynamicSectionHeader);
-//       }catch(const NotNullTerminatedStringError &){
-//         const QString message = tr("file '%1': encountered a not null terminated string (file is maybe corrupted or of a unsupported format)")
-//                                 .arg(mFileName);
-//         throw ExecutableFileReadError(message);
-//       }
     }
 
     /*! \brief
@@ -167,21 +143,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       checkFileSizeToReadSectionHeaders(map);
       readSectionNameStringTableHeaderIfNull(map);
       readDynamicSectionIfNull(map);
-//       readDynamicSectionHeaderIfNull(map);
-//       checkFileSizeToReadDynamicSection(map);
-
-
-      std::cout << "RUNPATH: " << mDynamicSection.getRunPath().toStdString() << std::endl;
 
       return mDynamicSection.getRunPath().split(QChar::fromLatin1(':'), QString::SkipEmptyParts);
-
-//       try{
-//         return extractRunPath(map, mFileHeader, mDynamicSectionHeader).split(QChar::fromLatin1(':'), QString::SkipEmptyParts);
-//       }catch(const NotNullTerminatedStringError &){
-//         const QString message = tr("file '%1': encountered a not null terminated string (file is maybe corrupted or of a unsupported format)")
-//                                 .arg(mFileName);
-//         throw ExecutableFileReadError(message);
-//       }
     }
 
     /*! \brief
@@ -198,8 +161,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       checkFileSizeToReadSectionHeaders(map);
       readSectionNameStringTableHeaderIfNull(map);
       readDynamicSectionIfNull(map);
-//       readDynamicSectionHeaderIfNull(map);
-//       checkFileSizeToReadDynamicSection(map);
 
 //       setRunPathToMap( map, rPath.join( QLatin1Char(':') ), mFileHeader, mDynamicSectionHeader );
     }
@@ -261,29 +222,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     }
 
     /*! \brief
-     *
-     * \pre mFileHeader must be valid
-     * \pre mSectionNamesStringTableSectionHeader must be valid
-     */
-//     void readDynamicSectionHeaderIfNull(const ByteArraySpan & map)
-//     {
-//       assert( !map.isNull() );
-//       assert( mFileHeader.seemsValid() );
-//       assert( headerIsStringTableSection(mSectionNamesStringTableSectionHeader) );
-// 
-//       if( headerIsDynamicSection(mDynamicSectionHeader) ){
-//         return;
-//       }
-// 
-//       mDynamicSectionHeader  = findSectionHeader(map, mFileHeader, mSectionNamesStringTableSectionHeader, SectionType::Dynamic, ".dynamic");
-//       if( mDynamicSectionHeader.sectionType() == SectionType::Null ){
-//         const QString message = tr("file '%1' does not contain the .dynamic section")
-//                                 .arg(mFileName);
-//         throw ExecutableFileReadError(message);
-//       }
-//     }
-
-    /*! \brief
      */
     void readDynamicSectionIfNull(const ByteArraySpan & map)
     {
@@ -313,24 +251,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
         throw ExecutableFileReadError(message);
       }
     }
-
-    /*! \brief
-     *
-     * \pre mFileHeader must be valid
-     * \pre mDynamicSectionHeader must be valid
-     */
-//     void checkFileSizeToReadDynamicSection(const ByteArraySpan & map)
-//     {
-//       assert( !map.isNull() );
-//       assert( mFileHeader.seemsValid() );
-//       assert( headerIsDynamicSection(mDynamicSectionHeader) );
-// 
-//       if( map.size < mDynamicSectionHeader.minimumSizeToReadSection() ){
-//         const QString message = tr("file '%1' is to small to read the .dynamic section")
-//                                 .arg(mFileName);
-//         throw ExecutableFileReadError(message);
-//       }
-//     }
 
     FileHeader mFileHeader;
     SectionHeader mSectionNamesStringTableSectionHeader;
