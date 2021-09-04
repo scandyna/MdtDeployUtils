@@ -26,6 +26,20 @@
 
 #include <QDebug>
 
+TEST_CASE("DynamicStruct")
+{
+  SECTION("default constructed")
+  {
+    DynamicStruct ds;
+    REQUIRE( ds.tagType() == DynamicSectionTagType::Null );
+  }
+
+  SECTION("construct with a tag")
+  {
+    DynamicStruct ds(DynamicSectionTagType::Runpath);
+    REQUIRE( ds.tagType() == DynamicSectionTagType::Runpath );
+  }
+}
 
 TEST_CASE("isNull")
 {
@@ -127,5 +141,147 @@ TEST_CASE("getRunPath")
   {
     section.addEntry( makeRunPathEntry(1) );
     REQUIRE( section.getRunPath() == QLatin1String("/tmp:/path2") );
+  }
+}
+
+TEST_CASE("setRunPath")
+{
+  DynamicSection section;
+  section.addEntry( makeNullEntry() );
+
+  SECTION("there is initially no entry in the section (string table is also empty)")
+  {
+    section.setRunPath( QLatin1String("/path1:/path2") );
+    REQUIRE( section.getRunPath() == QLatin1String("/path1:/path2") );
+  }
+
+  SECTION("there is initially only a DT_NEEDED entry")
+  {
+    const uchar initialStringTable[9] = {
+      '\0',
+      'l','i','b','A','.','s','o','\0'
+    };
+    section.setStringTable( stringTableFromCharArray( initialStringTable, sizeof(initialStringTable) ) );
+    section.addEntry( makeNeededEntry(1) );
+    REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+    REQUIRE( section.getRunPath().isEmpty() );
+
+    section.setRunPath( QLatin1String("/path1:/path2") );
+    REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+    REQUIRE( section.getRunPath() == QLatin1String("/path1:/path2") );
+  }
+
+  SECTION("there is initially only the DT_RUNPATH entry (string table contains only a DT_RUNPATH string)")
+  {
+    const uchar initialStringTable[6] = {
+      '\0',
+      '/','t','m','p','\0'
+    };
+    section.setStringTable( stringTableFromCharArray( initialStringTable, sizeof(initialStringTable) ) );
+    section.addEntry( makeRunPathEntry(1) );
+    REQUIRE( section.getRunPath() == QLatin1String("/tmp") );
+
+    SECTION("set a RunPath")
+    {
+      section.setRunPath( QLatin1String("/path1:/path2") );
+      REQUIRE( section.getRunPath() == QLatin1String("/path1:/path2") );
+    }
+
+    SECTION("set a empty RunPath")
+    {
+      /** \todo Should the DT_RUNPATH entry be removed ?
+       * Also, should check that the string table does not contain the DT_RUNPATH string anymore
+       */
+      section.setRunPath( QString() );
+      REQUIRE( section.getRunPath().isEmpty() );
+    }
+  }
+
+  SECTION("there is initially a DT_NEEDED entry and the DT_RUNPATH (string table contains related strings)")
+  {
+    const uchar initialStringTable[14] = {
+      '\0',
+      'l','i','b','A','.','s','o','\0',
+      '/','t','m','p','\0'
+    };
+    section.setStringTable( stringTableFromCharArray( initialStringTable, sizeof(initialStringTable) ) );
+
+    SECTION("add DT_NEEDED then DT_RUNPATH (indexes: 1,9 -> ascending)")
+    {
+      section.addEntry( makeNeededEntry(1) );
+      section.addEntry( makeRunPathEntry(9) );
+      REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+      REQUIRE( section.getRunPath() == QLatin1String("/tmp") );
+
+      section.setRunPath( QLatin1String("/path1:/path2") );
+      REQUIRE( section.getRunPath() == QLatin1String("/path1:/path2") );
+      REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+    }
+
+    SECTION("add DT_RUNPATH then DT_NEEDED (indexes: 9,1)")
+    {
+      section.addEntry( makeRunPathEntry(9) );
+      section.addEntry( makeNeededEntry(1) );
+      REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+      REQUIRE( section.getRunPath() == QLatin1String("/tmp") );
+
+      section.setRunPath( QLatin1String("/path1:/path2") );
+      REQUIRE( section.getRunPath() == QLatin1String("/path1:/path2") );
+      REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+    }
+  }
+
+  SECTION("there is initially the DT_RUNPATH entry, then a DT_NEEDED entry (string table contains related strings)")
+  {
+    const uchar initialStringTable[14] = {
+      '\0',
+      '/','t','m','p','\0',
+      'l','i','b','A','.','s','o','\0'
+    };
+    section.setStringTable( stringTableFromCharArray( initialStringTable, sizeof(initialStringTable) ) );
+
+    SECTION("add DT_RUNPATH then DT_NEEDED (indexes: 1,6 -> ascending)")
+    {
+      section.addEntry( makeRunPathEntry(1) );
+      section.addEntry( makeNeededEntry(6) );
+      REQUIRE( section.getRunPath() == QLatin1String("/tmp") );
+      REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+
+      SECTION("set a shorter RunPath")
+      {
+        section.setRunPath( QLatin1String("/a") );
+        REQUIRE( section.getRunPath() == QLatin1String("/a") );
+        REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+      }
+
+      SECTION("set a longer RunPath")
+      {
+        section.setRunPath( QLatin1String("/path1:/path2") );
+        REQUIRE( section.getRunPath() == QLatin1String("/path1:/path2") );
+        REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+      }
+    }
+
+    SECTION("add DT_NEEDED then DT_RUNPATH (indexes: 6,1)")
+    {
+      section.addEntry( makeNeededEntry(6) );
+      section.addEntry( makeRunPathEntry(1) );
+      REQUIRE( section.getRunPath() == QLatin1String("/tmp") );
+      REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+
+      SECTION("set a shorter RunPath")
+      {
+        section.setRunPath( QLatin1String("/a") );
+        REQUIRE( section.getRunPath() == QLatin1String("/a") );
+        REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+      }
+
+      SECTION("set a longer RunPath")
+      {
+        section.setRunPath( QLatin1String("/path1:/path2") );
+        REQUIRE( section.getRunPath() == QLatin1String("/path1:/path2") );
+        REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+      }
+    }
   }
 }

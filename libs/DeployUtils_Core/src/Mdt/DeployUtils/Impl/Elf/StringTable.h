@@ -33,6 +33,22 @@
 #include <iterator>
 #include <cassert>
 
+// #include <iostream>
+
+/// \todo remove
+// inline
+// void debugStringTable(const std::vector<char> & table)
+// {
+//   for(char c : table){
+//     if(c == 0){
+//       std::cout << "\\0";
+//     }else{
+//       std::cout << c;
+//     }
+//   }
+//   std::cout << std::endl;
+// }
+
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
   /*! \internal
@@ -50,7 +66,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * From the TIS ELF specification v1.2:
      * - Book I, String Table 1-18
      *
-     * \pre \a charArray must not be null
+     * \pre \a charArray must not be empty
      * \exception StringTableError
      */
     static
@@ -96,11 +112,34 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   {
    public:
 
+    /*! \brief Construct a empty string table
+     */
+    StringTable() noexcept
+     : mTable(1, '\0')
+    {
+    }
+
+    /*! \brief Copy construct a string table from \a other
+     */
+    StringTable(const StringTable & other) = default;
+
+    /*! \brief Copy assign \a other to this string table
+     */
+    StringTable & operator=(const StringTable & other) = default;
+
+    /*! \brief Move construct a string table from \a other
+     */
+    StringTable(StringTable && other) noexcept = default;
+
+    /*! \brief Move assign \a other to this string table
+     */
+    StringTable & operator=(StringTable && other) noexcept = default;
+
     /*! \brief Get the size of this table in bytes
      */
     int64_t byteCount() const noexcept
     {
-      return mTable.size();
+      return static_cast<int64_t>( mTable.size() );
     }
 
     /*! \brief Check if this string table is empty
@@ -137,6 +176,106 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return std::string(mTable.data() + index);
     }
 
+    /*! \brief Add \a str to the end of this table
+     *
+     * Returns the index to the \a str once added
+     *
+     * \note here the name \a index is used,
+     *  which is the one used in the standrad.
+     *  In reality, it is more a offset from the start of the table
+     */
+    uint64_t appendString(const std::string & str)
+    {
+      const uint64_t index = mTable.size();
+
+      mTable.insert( mTable.cend(), str.cbegin(), str.cend() );
+      mTable.push_back('\0');
+
+      return index;
+    }
+
+    /*! \brief Set the string at \a index to \a str in this table
+     *
+     * \code
+     * int64_t offset = 0;
+     * StringTable table;
+     *
+     * // string table: \0
+     * offset = table.setStringAtIndex(1, "libA.so");
+     * // offset: 7
+     *
+     * // string table: \0libA.so\0
+     * offset = table.setStringAtIndex(1, "libB.so");
+     * // offset: 0
+     *
+     * // string table: \0libB.so\0
+     * offset = table.setStringAtIndex(1, "libQt5Core.so");
+     * // offset: 6
+     *
+     * // string table: \0libQt5Core.so\0
+     * offset = table.setStringAtIndex(1, "libC.so");
+     * // offset: -6
+     * \endcode
+     *
+     * \note here the name \a index is used,
+     *  which is the one used in the standrad.
+     *  In reality, it is more a offset from the start of the table
+     *
+     * \pre \a index must be > 0 (the first bye must allways be a null char in this table)
+     * \pre \a index must be <= byteCount() (in bound of this table, or 1 byte after the last byte, but not above)
+     */
+    int64_t setStringAtIndex(uint64_t index, const std::string & str) noexcept
+    {
+      assert( index > 0 );
+
+      const int64_t sIndex = static_cast<int64_t>(index);
+      assert( sIndex <= byteCount() );
+
+      const bool addNewString = ( sIndex >= byteCount() );
+
+      std::string currentString;
+      if( !addNewString ){
+        currentString = stringAtIndex(index);
+      }
+
+      const int64_t strSize = static_cast<int64_t>( str.size() );
+      const int64_t currentStringSize = static_cast<int64_t>( currentString.size() );
+      const int64_t offset = strSize - currentStringSize;
+
+      /*
+       * \0
+       * \0NewString\0
+       *
+       * \0Old\0
+       * \0NewString\0
+       *
+       * \0OldString\0
+       * \0NewString\0
+       *
+       * \0OldString\0
+       * \0New\0
+       */
+      if(offset > 0){
+        const auto pos = mTable.cbegin() + sIndex + currentStringSize;
+        mTable.insert(pos, static_cast<size_t>(offset), '\0');
+
+        if(addNewString){
+          mTable.push_back('\0');
+        }
+      }
+
+      if(offset < 0){
+        const auto first = mTable.cbegin() + sIndex + strSize;
+        const auto last = mTable.cbegin() + sIndex + currentStringSize;
+        mTable.erase(first, last);
+      }
+
+      auto it = mTable.begin() + sIndex;
+      std::copy(str.cbegin(), str.cend(), it);
+
+      return offset;
+    }
+
     /*! \brief Get the string at \a index in this table
      *
      * The ELF specification seems not to say anything about unicode encoding.
@@ -144,6 +283,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * represents a UTF-8 string.
      * (note: using platform specific encoding can be problematic
      *        for cross-compilation)
+     *
+     * \note here the name \a index is used,
+     *  which is the one used in the standrad.
+     *  In reality, it is more a offset from the start of the table
      *
      * \pre \a index must be valid
      * \sa indexIsValid()
@@ -155,28 +298,61 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return QString::fromUtf8(mTable.data() + index);
     }
 
+    /*! \brief Add \a str to the end of this table
+     *
+     * Returns the index to the \a str once added
+     *
+     * \note here the name \a index is used,
+     *  which is the one used in the standrad.
+     *  In reality, it is more a offset from the start of the table
+     */
+    uint64_t appendUnicodeString(const QString & str)
+    {
+      return appendString( str.toStdString() );
+    }
+
+    /*! \brief Set the string at \a index to \a str in this table
+     *
+     * \note here the name \a index is used,
+     *  which is the one used in the standrad.
+     *  In reality, it is more a offset from the start of the table
+     *
+     * \sa setStringAtIndex()
+     *
+     * \pre \a index must be > 0 (the first bye must allways be a null char in this table)
+     * \pre \a index must be <= byteCount() (in bound of this table, or 1 byte after the last byte, but not above)
+     */
+    int64_t setUnicodeStringAtIndex(uint64_t index, const QString & str) noexcept
+    {
+      assert( index > 0 );
+      assert( static_cast<int64_t>(index) <= byteCount() );
+
+      return setStringAtIndex( index, str.toStdString() );
+    }
+
     /*! \brief Extract a copy of a string table from \a map
      *
-     * \pre \a charArray must not be null
+     * \pre \a charArray must not be empty
      * \exception StringTableError
      */
     static
     StringTable fromCharArray(const ByteArraySpan & charArray)
     {
       assert( !charArray.isNull() );
+      assert( charArray.size > 0 );
 
       validateStringTableArray(charArray);
 
-      StringTable stringTable;
-
-      auto & tableRef = stringTable.mTable;
-      tableRef.reserve(charArray.size);
-      std::copy( charArray.cbegin(), charArray.cend(), std::back_inserter(tableRef) );
-
-      return stringTable;
+      return StringTable(charArray);
     }
 
    private:
+
+    StringTable(const ByteArraySpan & charArray)
+    {
+      mTable.reserve( static_cast<size_t>(charArray.size) );
+      std::copy( charArray.cbegin(), charArray.cend(), std::back_inserter(mTable) );
+    }
 
     std::vector<char> mTable;
   };

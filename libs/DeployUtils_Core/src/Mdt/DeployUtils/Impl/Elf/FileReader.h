@@ -521,8 +521,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( headerIsStringTableSection(sectionHeader) );
     assert( map.size >= sectionHeader.minimumSizeToReadSection() );
 
-    const int64_t offset = sectionHeader.offset;
-    const int64_t count = sectionHeader.size;
+    const int64_t offset = static_cast<int64_t>(sectionHeader.offset);
+    const int64_t count = static_cast<int64_t>(sectionHeader.size);
 
     return StringTable::fromCharArray( map.subSpan(offset, count) );
   }

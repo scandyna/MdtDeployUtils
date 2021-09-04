@@ -39,7 +39,8 @@ TEST_CASE("construct")
   SECTION("default constructed")
   {
     REQUIRE( table.isEmpty() );
-    REQUIRE( table.byteCount() == 0 );
+    REQUIRE( table.byteCount() == 1 );
+    REQUIRE( table.stringAtIndex(0) == "" );
   }
 }
 
@@ -152,5 +153,235 @@ TEST_CASE("unicodeStringAtIndex")
     REQUIRE( table.unicodeStringAtIndex(0).isEmpty() );
     REQUIRE( table.unicodeStringAtIndex(1) == QLatin1String("name.") );
     REQUIRE( table.unicodeStringAtIndex(7) == QLatin1String("A") );
+  }
+}
+
+TEST_CASE("appendString")
+{
+  StringTable table;
+  uint64_t index;
+
+  SECTION("add a string to a empty table")
+  {
+    index = table.appendString("libA.so");
+    REQUIRE( index == 1 );
+    REQUIRE( table.stringAtIndex(0).empty() );
+    REQUIRE( table.stringAtIndex(1) == "libA.so" );
+    REQUIRE( table.byteCount() == 1+7+1 );
+  }
+
+  SECTION("add a string to the end of a non empty table")
+  {
+    const uchar charArray[6] = {
+      '\0',
+      '/','t','m','p','\0'
+    };
+    table = stringTableFromCharArray( charArray, sizeof(charArray) );
+
+    index = table.appendString("libA.so");
+    REQUIRE( index == 6 );
+    REQUIRE( table.stringAtIndex(0).empty() );
+    REQUIRE( table.stringAtIndex(1) == "/tmp" );
+    REQUIRE( table.stringAtIndex(6) == "libA.so" );
+    REQUIRE( table.byteCount() == 1+4+1+7+1 );
+  }
+}
+
+TEST_CASE("setStringAtIndex")
+{
+  StringTable table;
+  int64_t offset;
+
+  SECTION("add a string to a empty table")
+  {
+    const uchar charArray[1] = {0};
+    table = stringTableFromCharArray( charArray, sizeof(charArray) );
+
+    offset = table.setStringAtIndex(1, "libA.so");
+    REQUIRE( offset == 7 );
+    REQUIRE( table.stringAtIndex(0).empty() );
+    REQUIRE( table.stringAtIndex(1) == "libA.so" );
+    REQUIRE( table.byteCount() == 1+7+1 );
+  }
+
+  SECTION("replace a string in a table with 1 string")
+  {
+    const uchar charArray[6] = {
+      '\0',
+      'n','a','m','e','\0'
+    };
+    table = stringTableFromCharArray( charArray, sizeof(charArray) );
+
+    SECTION("new string is shorter")
+    {
+      offset = table.setStringAtIndex(1, "abc");
+      REQUIRE( offset == -1 );
+      REQUIRE( table.stringAtIndex(0).empty() );
+      REQUIRE( table.stringAtIndex(1) == "abc" );
+      REQUIRE( table.byteCount() == 1+3+1 );
+    }
+
+    SECTION("new string is same length")
+    {
+      offset = table.setStringAtIndex(1, "abcd");
+      REQUIRE( offset == 0 );
+      REQUIRE( table.stringAtIndex(0).empty() );
+      REQUIRE( table.stringAtIndex(1) == "abcd" );
+      REQUIRE( table.byteCount() == 1+4+1 );
+    }
+
+    SECTION("new string is longer")
+    {
+      offset = table.setStringAtIndex(1, "abcde");
+      REQUIRE( offset == 1 );
+      REQUIRE( table.stringAtIndex(0).empty() );
+      REQUIRE( table.stringAtIndex(1) == "abcde" );
+      REQUIRE( table.byteCount() == 1+5+1 );
+    }
+  }
+
+  SECTION("replace a string in a table with 2 strings")
+  {
+    const uchar charArray[14] = {
+      '\0',
+      'n','a','m','e','\0',
+      'l','i','b','A','.','s','o','\0'
+    };
+    table = stringTableFromCharArray( charArray, sizeof(charArray) );
+
+    SECTION("replace first string")
+    {
+      SECTION("new string is shorter")
+      {
+        offset = table.setStringAtIndex(1, "abc");
+        REQUIRE( offset == -1 );
+        REQUIRE( table.stringAtIndex(0).empty() );
+        REQUIRE( table.stringAtIndex(1) == "abc" );
+        REQUIRE( table.stringAtIndex(6-1) == "libA.so" );
+        REQUIRE( table.byteCount() == 1+3+1+7+1 );
+      }
+
+      SECTION("new string is same length")
+      {
+        offset = table.setStringAtIndex(1, "abcd");
+        REQUIRE( offset == 0 );
+        REQUIRE( table.stringAtIndex(0).empty() );
+        REQUIRE( table.stringAtIndex(1) == "abcd" );
+        REQUIRE( table.stringAtIndex(6) == "libA.so" );
+        REQUIRE( table.byteCount() == 1+4+1+7+1 );
+      }
+
+      SECTION("new string is longer")
+      {
+        offset = table.setStringAtIndex(1, "abcde");
+        REQUIRE( offset == 1 );
+        REQUIRE( table.stringAtIndex(0).empty() );
+        REQUIRE( table.stringAtIndex(1) == "abcde" );
+        REQUIRE( table.stringAtIndex(6+1) == "libA.so" );
+        REQUIRE( table.byteCount() == 1+5+1+7+1 );
+      }
+    }
+
+    SECTION("replace second string")
+    {
+      SECTION("new string is shorter")
+      {
+        offset = table.setStringAtIndex(6, "abc");
+        REQUIRE( offset == -4 );
+        REQUIRE( table.stringAtIndex(0).empty() );
+        REQUIRE( table.stringAtIndex(1) == "name" );
+        REQUIRE( table.stringAtIndex(6) == "abc" );
+        REQUIRE( table.byteCount() == 1+4+1+3+1 );
+      }
+
+      SECTION("new string is same length")
+      {
+        offset = table.setStringAtIndex(6, "abcdefg");
+        REQUIRE( offset == 0 );
+        REQUIRE( table.stringAtIndex(0).empty() );
+        REQUIRE( table.stringAtIndex(1) == "name" );
+        REQUIRE( table.stringAtIndex(6) == "abcdefg" );
+        REQUIRE( table.byteCount() == 1+4+1+7+1 );
+      }
+
+      SECTION("new string is longer")
+      {
+        offset = table.setStringAtIndex(6, "abcdefgh");
+        REQUIRE( offset == 1 );
+        REQUIRE( table.stringAtIndex(0).empty() );
+        REQUIRE( table.stringAtIndex(1) == "name" );
+        REQUIRE( table.stringAtIndex(6) == "abcdefgh" );
+        REQUIRE( table.byteCount() == 1+4+1+8+1 );
+      }
+    }
+  }
+}
+
+/*
+ * Current implementation is a call to appendString(),
+ * we don't have to do all possible tests here
+ */
+TEST_CASE("appendUnicodeString")
+{
+  StringTable table;
+  uint64_t index;
+
+  SECTION("add a string to a empty table")
+  {
+    index = table.appendUnicodeString( QLatin1String("libA.so") );
+    REQUIRE( index == 1 );
+    REQUIRE( table.stringAtIndex(0).empty() );
+    REQUIRE( table.stringAtIndex(1) == "libA.so" );
+    REQUIRE( table.byteCount() == 1+7+1 );
+  }
+}
+
+/*
+ * Current implementation is a call to setStringAtIndex(),
+ * we don't have to do all possible tests here
+ */
+TEST_CASE("setUnicodeStringAtIndex")
+{
+  StringTable table;
+  int64_t offset;
+
+  SECTION("replace the first string in a table with 2 strings")
+  {
+    const uchar charArray[14] = {
+      '\0',
+      'n','a','m','e','\0',
+      'l','i','b','A','.','s','o','\0'
+    };
+    table = stringTableFromCharArray( charArray, sizeof(charArray) );
+
+    SECTION("new string is shorter")
+    {
+      offset = table.setUnicodeStringAtIndex( 1, QLatin1String("abc") );
+      REQUIRE( offset == -1 );
+      REQUIRE( table.stringAtIndex(0).empty() );
+      REQUIRE( table.stringAtIndex(1) == "abc" );
+      REQUIRE( table.stringAtIndex(6-1) == "libA.so" );
+      REQUIRE( table.byteCount() == 1+3+1+7+1 );
+    }
+
+    SECTION("new string is same length")
+    {
+      offset = table.setUnicodeStringAtIndex( 1, QLatin1String("abcd") );
+      REQUIRE( offset == 0 );
+      REQUIRE( table.stringAtIndex(0).empty() );
+      REQUIRE( table.stringAtIndex(1) == "abcd" );
+      REQUIRE( table.stringAtIndex(6) == "libA.so" );
+      REQUIRE( table.byteCount() == 1+4+1+7+1 );
+    }
+
+    SECTION("new string is longer")
+    {
+      offset = table.setUnicodeStringAtIndex( 1, QLatin1String("abcde") );
+      REQUIRE( offset == 1 );
+      REQUIRE( table.stringAtIndex(0).empty() );
+      REQUIRE( table.stringAtIndex(1) == "abcde" );
+      REQUIRE( table.stringAtIndex(6+1) == "libA.so" );
+      REQUIRE( table.byteCount() == 1+5+1+7+1 );
+    }
   }
 }

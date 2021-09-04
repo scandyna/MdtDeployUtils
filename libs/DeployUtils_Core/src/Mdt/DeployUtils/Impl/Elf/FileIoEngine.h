@@ -162,6 +162,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       readSectionNameStringTableHeaderIfNull(map);
       readDynamicSectionIfNull(map);
 
+      mDynamicSection.setRunPath( rPath.join( QLatin1Char(':') ) );
+
 //       setRunPathToMap( map, rPath.join( QLatin1Char(':') ), mFileHeader, mDynamicSectionHeader );
     }
 

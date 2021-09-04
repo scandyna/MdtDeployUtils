@@ -27,6 +27,8 @@
 #include <QStringList>
 #include <QObject>
 #include <cstdint>
+#include <cstdlib>
+#include <cmath>
 #include <vector>
 #include <algorithm>
 #include <cassert>
@@ -125,6 +127,33 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     int64_t tag = 0;
     uint64_t val_or_ptr;
 
+    constexpr
+    DynamicStruct() noexcept
+     : tag(0),
+       val_or_ptr(0)
+    {
+    }
+
+    constexpr
+    DynamicStruct(DynamicSectionTagType type) noexcept
+     : tag( static_cast<int64_t>(type) ),
+       val_or_ptr(0)
+    {
+    }
+
+    constexpr
+    DynamicStruct(const DynamicStruct &) noexcept = default;
+
+    constexpr
+    DynamicStruct & operator=(const DynamicStruct &) noexcept = default;
+
+    constexpr
+    DynamicStruct(DynamicStruct &&) noexcept = default;
+
+    constexpr
+    DynamicStruct & operator=(DynamicStruct &&) noexcept = default;
+
+    constexpr
     DynamicSectionTagType tagType() const noexcept
     {
       switch(tag){
@@ -151,6 +180,22 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     bool isNull() const noexcept
     {
       return tag == 0;
+    }
+
+    constexpr
+    bool isIndexToStrTab() const noexcept
+    {
+      switch( tagType() ){
+        case DynamicSectionTagType::Needed:
+        case DynamicSectionTagType::SoName:
+        case DynamicSectionTagType::RPath:
+        case DynamicSectionTagType::Runpath:
+          return true;
+        default:
+          break;
+      }
+
+      return false;
     }
   };
 
@@ -311,6 +356,29 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return mStringTable.unicodeStringAtIndex(it->val_or_ptr);
     }
 
+    /*! \brief Set the run path (DT_RUNPATH)
+     *
+     * \pre this section must not be null
+     */
+    void setRunPath(const QString & runPath)
+    {
+      assert( !isNull() );
+
+      const auto pred = [](DynamicStruct s){
+        return s.tagType() == DynamicSectionTagType::Runpath;
+      };
+      auto it = std::find_if(mSection.begin(), mSection.end(), pred);
+
+      if( it != mSection.end() ){
+        const int64_t offset = mStringTable.setUnicodeStringAtIndex(it->val_or_ptr, runPath);
+        shiftEntriesIndexingStrTabAfter(*it, offset);
+      }else{
+        DynamicStruct runPathEntry(DynamicSectionTagType::Runpath);
+        runPathEntry.val_or_ptr = mStringTable.appendUnicodeString(runPath);
+        addEntry(runPathEntry);
+      }
+    }
+
     /*! \brief Clear this section
      */
     void clear() noexcept
@@ -347,6 +415,42 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     }
 
    private:
+
+    /*
+     * Initial:
+     * string table: \0/tmp\0libA.so\0
+     * indexes: 1,6
+     *
+     * After:
+     * string table: \0/path1\0libA.so\0
+     * indexes: 1,8
+     */
+    void shiftEntriesIndexingStrTabAfter(DynamicStruct ref, int64_t offset) noexcept
+    {
+      assert( ref.isIndexToStrTab() );
+
+      const uint64_t absOffset = static_cast<uint64_t>( std::abs(offset) );
+
+      if(offset < 0){
+        for(auto & s : mSection){
+          if(s.isIndexToStrTab() && s.val_or_ptr > ref.val_or_ptr){
+            s.val_or_ptr -= absOffset;
+          }
+        }
+      }else{
+        for(auto & s : mSection){
+          if(s.isIndexToStrTab() && s.val_or_ptr > ref.val_or_ptr){
+            s.val_or_ptr += absOffset;
+          }
+        }
+      }
+
+//       for(auto & s : mSection){
+//         if(s.isIndexToStrTab() && s.val_or_ptr > ref.val_or_ptr){
+//           s.val_or_ptr += offset;
+//         }
+//       }
+    }
 
     std::vector<DynamicStruct> mSection;
     StringTable mStringTable;

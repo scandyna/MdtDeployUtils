@@ -43,34 +43,34 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    *    What about things after string table ?
    *    See patchelf source code..
    */
-  inline
-  void setRunPathToMap(ByteArraySpan & map, const QString & rPath, const FileHeader & fileHeader, const SectionHeader & dynamicSectionHeader)
-  {
-    assert( !map.isNull() );
-    assert( fileHeader.seemsValid() );
-    assert( headerIsDynamicSection(dynamicSectionHeader) );
-    assert( sectionHeaderHasValidIndexToDynamicStringTable(fileHeader, dynamicSectionHeader) );
-    assert( map.size >= dynamicSectionHeader.minimumSizeToReadSection() );
-
-//     const SectionHeader dynamicStringTableSectionHeader = extractSectionHeaderAt( map, fileHeader, static_cast<uint16_t>(dynamicSectionHeader.link) );
-//     const std::vector<DynamicStruct> dynamicSection = extractDynamicSectionForTag(map, fileHeader.ident, dynamicSectionHeader, DynamicSectionTagType::Runpath);
-
-//     std::cout << "dynamic section header: " << toDebugString(dynamicSectionHeader).toStdString() << std::endl;
-//     std::cout << "dynamic string table section header: " << toDebugString(dynamicStringTableSectionHeader).toStdString() << std::endl;
-//     std::cout << "dynamic section: " << toDebugString(dynamicSection).toStdString() << std::endl;
-    
-//     if( dynamicSection.empty() ){
-//       return QString();
-//     }
-//     if( dynamicSection.size() != 1 ){
-//       /// \todo Error
-//       return QString();
-//     }
-
-//     const ByteArraySpan charArray = charArrayFromDynamicStringTable(map, dynamicStringTableSectionHeader, dynamicSection[0]);
+//   inline
+//   void setRunPathToMap(ByteArraySpan & map, const QString & rPath, const FileHeader & fileHeader, const SectionHeader & dynamicSectionHeader)
+//   {
+//     assert( !map.isNull() );
+//     assert( fileHeader.seemsValid() );
+//     assert( headerIsDynamicSection(dynamicSectionHeader) );
+//     assert( sectionHeaderHasValidIndexToDynamicStringTable(fileHeader, dynamicSectionHeader) );
+//     assert( map.size >= dynamicSectionHeader.minimumSizeToReadSection() );
 // 
-//     return qStringFromUft8ByteArraySpan(charArray);
-  }
+// //     const SectionHeader dynamicStringTableSectionHeader = extractSectionHeaderAt( map, fileHeader, static_cast<uint16_t>(dynamicSectionHeader.link) );
+// //     const std::vector<DynamicStruct> dynamicSection = extractDynamicSectionForTag(map, fileHeader.ident, dynamicSectionHeader, DynamicSectionTagType::Runpath);
+// 
+// //     std::cout << "dynamic section header: " << toDebugString(dynamicSectionHeader).toStdString() << std::endl;
+// //     std::cout << "dynamic string table section header: " << toDebugString(dynamicStringTableSectionHeader).toStdString() << std::endl;
+// //     std::cout << "dynamic section: " << toDebugString(dynamicSection).toStdString() << std::endl;
+//     
+// //     if( dynamicSection.empty() ){
+// //       return QString();
+// //     }
+// //     if( dynamicSection.size() != 1 ){
+// //       /// \todo Error
+// //       return QString();
+// //     }
+// 
+// //     const ByteArraySpan charArray = charArrayFromDynamicStringTable(map, dynamicStringTableSectionHeader, dynamicSection[0]);
+// // 
+// //     return qStringFromUft8ByteArraySpan(charArray);
+//   }
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 

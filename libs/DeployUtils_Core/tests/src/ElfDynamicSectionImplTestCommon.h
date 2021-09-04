@@ -26,11 +26,11 @@ using namespace Mdt::DeployUtils;
 using Mdt::DeployUtils::Impl::Elf::DynamicStruct;
 using Mdt::DeployUtils::Impl::Elf::DynamicSection;
 using Mdt::DeployUtils::Impl::Elf::StringTable;
+using Mdt::DeployUtils::Impl::Elf::DynamicSectionTagType;
 
-DynamicStruct makeEntry(int64_t tag, uint64_t valOrPtr)
+DynamicStruct makeEntry(DynamicSectionTagType tag, uint64_t valOrPtr)
 {
-  DynamicStruct entry;
-  entry.tag = tag;
+  DynamicStruct entry(tag);
   entry.val_or_ptr = valOrPtr;
 
   return entry;
@@ -38,22 +38,22 @@ DynamicStruct makeEntry(int64_t tag, uint64_t valOrPtr)
 
 DynamicStruct makeNullEntry()
 {
-  return makeEntry(0, 0);
+  return makeEntry(DynamicSectionTagType::Null, 0);
 }
 
 DynamicStruct makeNeededEntry(uint64_t val = 2)
 {
-  return makeEntry(1, val);
+  return makeEntry(DynamicSectionTagType::Needed, val);
 }
 
 DynamicStruct makeSoNameEntry(uint64_t val = 2)
 {
-  return makeEntry(14, val);
+  return makeEntry(DynamicSectionTagType::SoName, val);
 }
 
 DynamicStruct makeRunPathEntry(uint64_t val = 2)
 {
-  return makeEntry(29, val);
+  return makeEntry(DynamicSectionTagType::Runpath, val);
 }
 
 StringTable stringTableFromCharArray(const unsigned char * const array, qint64 size)
