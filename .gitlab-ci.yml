@@ -247,24 +247,24 @@ test_windows_gcc7_x86_64_debug:
   extends: .test_windows
 
 
-build_windows_gcc7_x86_32_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
-  variables:
-    CONAN_PROFILE: windows_gcc7_x86
-    BUILD_TYPE: Debug
-    CMAKE_GENERATOR: "MinGW Makefiles"
-    BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
-    QT_PREFIX_PATH: "C:/Qt/5.14.2/mingw73_32"
-  extends: .build_windows
+#build_windows_gcc7_x86_32_debug:
+  #image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
+  #variables:
+    #CONAN_PROFILE: windows_gcc7_x86
+    #BUILD_TYPE: Debug
+    #CMAKE_GENERATOR: "MinGW Makefiles"
+    #BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
+    #QT_PREFIX_PATH: "C:/Qt/5.14.2/mingw73_32"
+  #extends: .build_windows
 
-test_windows_gcc7_x86_32_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
-  variables:
-    CONAN_PROFILE: windows_gcc7_x86
-    BUILD_TYPE: Debug
-  dependencies:
-    - build_windows_gcc7_x86_32_debug
-  extends: .test_windows
+#test_windows_gcc7_x86_32_debug:
+  #image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
+  #variables:
+    #CONAN_PROFILE: windows_gcc7_x86
+    #BUILD_TYPE: Debug
+  #dependencies:
+    #- build_windows_gcc7_x86_32_debug
+  #extends: .test_windows
 
 
 build_windows_msvc16_x86_64_debug:
