@@ -73,6 +73,18 @@ StringTable stringTableFromCharArray(const unsigned char * const array, qint64 s
   return StringTable::fromCharArray( arraySpanFromArray(array, size) );
 }
 
+TEST_CASE("clear")
+{
+  const uchar charArray[9] = {'\0','n','a','m','e','.','\0','A','\0'};
+  StringTable table = stringTableFromCharArray( charArray, sizeof(charArray) );
+  REQUIRE( table.byteCount() == 9 );
+
+  table.clear();
+  REQUIRE( table.byteCount() == 1 );
+  REQUIRE( table.isEmpty() );
+  REQUIRE( table.stringAtIndex(0).empty() );
+}
+
 TEST_CASE("indexIsValid")
 {
   StringTable table;
@@ -184,6 +196,58 @@ TEST_CASE("appendString")
     REQUIRE( table.stringAtIndex(1) == "/tmp" );
     REQUIRE( table.stringAtIndex(6) == "libA.so" );
     REQUIRE( table.byteCount() == 1+4+1+7+1 );
+  }
+}
+
+TEST_CASE("removeStringAtIndex")
+{
+  StringTable table;
+  int64_t offset;
+
+  SECTION("remove the only string the table contains")
+  {
+    const uchar charArray[6] = {
+      '\0',
+      '/','t','m','p','\0'
+    };
+    table = stringTableFromCharArray( charArray, sizeof(charArray) );
+
+    offset = table.removeStringAtIndex(1);
+    REQUIRE( offset == -5 );
+    REQUIRE( table.stringAtIndex(0).empty() );
+    REQUIRE( table.byteCount() == 1 );
+  }
+
+  SECTION("remove the second string")
+  {
+    const uchar charArray[14] = {
+      '\0',
+      '/','t','m','p','\0',
+      'l','i','b','A','.','s','o','\0'
+    };
+    table = stringTableFromCharArray( charArray, sizeof(charArray) );
+
+    offset = table.removeStringAtIndex(6);
+    REQUIRE( offset == -8 );
+    REQUIRE( table.stringAtIndex(0).empty() );
+    REQUIRE( table.stringAtIndex(1) == "/tmp" );
+    REQUIRE( table.byteCount() == 1+4+1 );
+  }
+
+  SECTION("remove the first string")
+  {
+    const uchar charArray[14] = {
+      '\0',
+      '/','t','m','p','\0',
+      'l','i','b','A','.','s','o','\0'
+    };
+    table = stringTableFromCharArray( charArray, sizeof(charArray) );
+
+    offset = table.removeStringAtIndex(1);
+    REQUIRE( offset == -5 );
+    REQUIRE( table.stringAtIndex(0).empty() );
+    REQUIRE( table.stringAtIndex(1) == "libA.so" );
+    REQUIRE( table.byteCount() == 1+7+1 );
   }
 }
 

@@ -72,6 +72,31 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 // //     return qStringFromUft8ByteArraySpan(charArray);
 //   }
 
+  /*! \internal Set the dynamic section
+   *
+   * \pre \a map must not be null
+   * \pre \a fileHeader must be valid
+   * \pre \a map must be big enough to read all section headers
+   * \pre \a sectionNamesStringTableSectionHeader must be the section header names string table
+   * \exception DynamicSectionReadError
+   * 
+   * \exception DynamicSectionWriteError ?
+   * 
+   * \exception StringTableError
+   */
+  inline
+  void setDynamicSection(ByteArraySpan & map, const DynamicSection & dynamicSection,
+                                       const FileHeader & fileHeader,
+                                       const SectionHeader & sectionNamesStringTableSectionHeader)
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.seemsValid() );
+    assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
+    assert( sectionNamesStringTableSectionHeader.sectionType() == SectionType::StringTable );
+
+    // find dynamic section - must be present, otherwise we don't have a dynamic linked file
+  }
+
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
 #endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_WRITER_H

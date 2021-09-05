@@ -99,7 +99,7 @@ TEST_CASE("setRunPath")
   const QString targetFilePath = makePath(dir, "targetFile");
   ExecutableFileWriter writer;
   QStringList originalRPath;
-  const QStringList expectedRPath = qStringListFromUtf8Strings({"/tmp/A","/tmp/B"});
+  QStringList expectedRPath;
 
 #ifdef Q_OS_WIN
   constexpr bool checkResult = false;
@@ -111,6 +111,7 @@ TEST_CASE("setRunPath")
   {
     REQUIRE( copyFile(QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), targetFilePath) );
     originalRPath = getFileRunPath(targetFilePath);
+    expectedRPath << dir.path() << originalRPath;
     REQUIRE(originalRPath != expectedRPath);
 
     writer.openFile(targetFilePath);
@@ -121,7 +122,6 @@ TEST_CASE("setRunPath")
     }
     
     /** \todo Should check that the executable works after modify (not corrupted) !!!
-     * - Try read again
      * - Try run
      */
     REQUIRE(false);
@@ -131,13 +131,31 @@ TEST_CASE("setRunPath")
   {
     REQUIRE( copyFile(QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH), targetFilePath) );
     originalRPath = getFileRunPath(targetFilePath);
-    REQUIRE(originalRPath != expectedRPath);
 
-    writer.openFile(targetFilePath);
-    writer.setRunPath(expectedRPath);
-    writer.close();
-    if(checkResult){
-      REQUIRE( getFileRunPath(targetFilePath) == expectedRPath );
+    SECTION("add temp dir to the original RunPath")
+    {
+      expectedRPath << dir.path() << originalRPath;
+      REQUIRE(originalRPath != expectedRPath);
+
+      writer.openFile(targetFilePath);
+      writer.setRunPath(expectedRPath);
+      writer.close();
+      if(checkResult){
+        REQUIRE( getFileRunPath(targetFilePath) == expectedRPath );
+      }
+    }
+
+    SECTION("set a empty RunPath")
+    {
+      REQUIRE( expectedRPath.isEmpty() );
+      REQUIRE(originalRPath != expectedRPath);
+
+      writer.openFile(targetFilePath);
+      writer.setRunPath(expectedRPath);
+      writer.close();
+      if(checkResult){
+        REQUIRE( getFileRunPath(targetFilePath) == expectedRPath );
+      }
     }
   }
 }

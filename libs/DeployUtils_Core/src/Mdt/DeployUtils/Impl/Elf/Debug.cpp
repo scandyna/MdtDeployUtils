@@ -19,6 +19,7 @@
  **
  ****************************************************************************/
 #include "Debug.h"
+#include "StringTable.h"
 #include <QLatin1String>
 #include <QLatin1Char>
 
@@ -202,6 +203,21 @@ QString toDebugString(const std::vector<SectionHeader> & headers)
 
   for(const auto & header : headers){
     str += QLatin1String("\n") + toDebugString(header);
+  }
+
+  return str;
+}
+
+QString toDebugString(const StringTable & table)
+{
+  QString str;
+
+  for(char c : table){
+    if(c == 0){
+      str.append( QLatin1String("\\0") );
+    }else{
+      str.append( QLatin1Char(c) );
+    }
   }
 
   return str;

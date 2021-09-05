@@ -33,6 +33,8 @@
 #include <algorithm>
 #include <cassert>
 
+// #include <iostream>
+
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
   /*! \internal
@@ -270,6 +272,16 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mStringTable = stringTable;
     }
 
+    /*! \brief Access the string table of this section
+     *
+     * Accessing the string table directly is not recommanded.
+     * Considere using dedicated getters whenever possible.
+     */
+    const StringTable & stringTable() const noexcept
+    {
+      return mStringTable;
+    }
+
     /*! \brief Get the SO name (DT_SONAME)
      *
      * Returns a empty string if this section
@@ -277,13 +289,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * (DT_SONAME is optional).
      *
      * \pre this section must not be null
-     * \pre the string table must have been set
      * \exception ExecutableFileReadError
      */
     QString getSoName() const
     {
       assert( !isNull() );
-      assert( !mStringTable.isEmpty() );
 
       const auto pred = [](DynamicStruct s){
         return s.tagType() == DynamicSectionTagType::SoName;
@@ -306,13 +316,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * (DT_NEEDED is optional).
      *
      * \pre this section must not be null
-     * \pre the string table must have been set
      * \exception ExecutableFileReadError
      */
     QStringList getNeededSharedLibraries() const
     {
       assert( !isNull() );
-      assert( !mStringTable.isEmpty() );
 
       QStringList libraries;
 
@@ -334,18 +342,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * (DT_RUNPATH is optional).
      *
      * \pre this section must not be null
-     * \pre the string table must have been set
      * \exception ExecutableFileReadError
      */
     QString getRunPath() const
     {
       assert( !isNull() );
-      assert( !mStringTable.isEmpty() );
 
-      const auto pred = [](DynamicStruct s){
-        return s.tagType() == DynamicSectionTagType::Runpath;
-      };
-      const auto it = std::find_if(mSection.cbegin(), mSection.cend(), pred);
+      const auto it = findRunPathEntry();
       if( it == mSection.cend() ){
         return QString();
       }
@@ -358,18 +361,24 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     /*! \brief Set the run path (DT_RUNPATH)
      *
+     * If \a runPath is a empty string,
+     * the run path entry will be removed.
+     *
      * \pre this section must not be null
+     * \sa removeRunPath()
      */
     void setRunPath(const QString & runPath)
     {
       assert( !isNull() );
 
-      const auto pred = [](DynamicStruct s){
-        return s.tagType() == DynamicSectionTagType::Runpath;
-      };
-      auto it = std::find_if(mSection.begin(), mSection.end(), pred);
+      if( runPath.trimmed().isEmpty() ){
+        removeRunPath();
+        return;
+      }
 
-      if( it != mSection.end() ){
+      const auto it = findRunPathEntry();
+
+      if( it != mSection.cend() ){
         const int64_t offset = mStringTable.setUnicodeStringAtIndex(it->val_or_ptr, runPath);
         shiftEntriesIndexingStrTabAfter(*it, offset);
       }else{
@@ -379,11 +388,32 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       }
     }
 
+    /*! \brief Remove the run path (DT_RUNPATH) entry
+     *
+     * \pre this section must not be null
+     */
+    void removeRunPath() noexcept
+    {
+      assert( !isNull() );
+
+      const auto it = findRunPathEntry();
+
+      if( it == mSection.cend() ){
+        return;
+      }
+
+      const int64_t offset = mStringTable.removeStringAtIndex(it->val_or_ptr);
+      shiftEntriesIndexingStrTabAfter(*it, offset);
+
+      mSection.erase(it);
+    }
+
     /*! \brief Clear this section
      */
     void clear() noexcept
     {
       mSection.clear();
+      mStringTable.clear();
     }
 
     /*! \brief get the begin iterator
@@ -415,6 +445,18 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     }
 
    private:
+
+    static
+    bool isRunPathEntry(DynamicStruct s) noexcept
+    {
+      return s.tagType() == DynamicSectionTagType::Runpath;
+    }
+
+    const_iterator findRunPathEntry() const noexcept
+    {
+      return std::find_if(mSection.cbegin(), mSection.cend(), isRunPathEntry);
+    }
+
 
     /*
      * Initial:

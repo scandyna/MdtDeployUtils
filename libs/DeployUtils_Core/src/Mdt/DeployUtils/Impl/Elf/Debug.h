@@ -31,6 +31,8 @@
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
+  class StringTable;
+
   /*! \internal
    */
   MDT_DEPLOYUTILSCORE_EXPORT
@@ -80,6 +82,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    */
   MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const std::vector<SectionHeader> & headers);
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString toDebugString(const StringTable & table);
 
   /*! \internal
    */

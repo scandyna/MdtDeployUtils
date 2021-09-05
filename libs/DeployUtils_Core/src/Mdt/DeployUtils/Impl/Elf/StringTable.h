@@ -112,6 +112,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   {
    public:
 
+    /*! \brief STL const iterator
+     */
+    using const_iterator = std::vector<char>::const_iterator;
+
     /*! \brief Construct a empty string table
      */
     StringTable() noexcept
@@ -153,6 +157,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return byteCount() <= 1;
     }
 
+    /*! \brief Clear this string table
+     */
+    void clear() noexcept
+    {
+      mTable.clear();
+      mTable.push_back('\0');
+    }
+
     /*! \brief Check if \a index is in bound in this string table
      */
     bool indexIsValid(uint64_t index) const noexcept
@@ -183,15 +195,56 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * \note here the name \a index is used,
      *  which is the one used in the standrad.
      *  In reality, it is more a offset from the start of the table
+     *
+     * \pre \a str must not be empty
      */
     uint64_t appendString(const std::string & str)
     {
+      assert( !str.empty() );
+
       const uint64_t index = mTable.size();
 
       mTable.insert( mTable.cend(), str.cbegin(), str.cend() );
       mTable.push_back('\0');
 
       return index;
+    }
+
+    /*! \brief Remove the string at \a index from this table
+     *
+     * \code
+     * int64_t offset = 0;
+     * StringTable table;
+     *
+     * // string table: \0libA.so\0
+     * offset = table.removeStringAtIndex(1);
+     * // offset: -8
+     * // string table: \0
+     * \endcode
+     *
+     * \note here the name \a index is used,
+     *  which is the one used in the standrad.
+     *  In reality, it is more a offset from the start of the table
+     *
+     * \pre \a index must be > 0 (the first bye must allways be a null char in this table)
+     * \pre \a index must be < byteCount()
+     */
+    int64_t removeStringAtIndex(uint64_t index) noexcept
+    {
+      assert( index > 0 );
+
+      const int64_t sIndex = static_cast<int64_t>(index);
+      assert( sIndex < byteCount() );
+
+      const auto first = mTable.cbegin() + sIndex;
+      const auto last = std::find(first, mTable.cend(), '\0') + 1;
+      if(first == last){
+        return 0;
+      }
+
+      mTable.erase(first, last);
+
+      return first - last;
     }
 
     /*! \brief Set the string at \a index to \a str in this table
@@ -223,9 +276,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      *
      * \pre \a index must be > 0 (the first bye must allways be a null char in this table)
      * \pre \a index must be <= byteCount() (in bound of this table, or 1 byte after the last byte, but not above)
+     * \pre \a str must not be empty
      */
     int64_t setStringAtIndex(uint64_t index, const std::string & str) noexcept
     {
+      assert( !str.empty() );
       assert( index > 0 );
 
       const int64_t sIndex = static_cast<int64_t>(index);
@@ -305,9 +360,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * \note here the name \a index is used,
      *  which is the one used in the standrad.
      *  In reality, it is more a offset from the start of the table
+     *
+     * \pre \a str must not be empty
      */
     uint64_t appendUnicodeString(const QString & str)
     {
+      assert( !str.isEmpty() );
+
       return appendString( str.toStdString() );
     }
 
@@ -321,13 +380,43 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      *
      * \pre \a index must be > 0 (the first bye must allways be a null char in this table)
      * \pre \a index must be <= byteCount() (in bound of this table, or 1 byte after the last byte, but not above)
+     * \pre \a str must not be empty
      */
     int64_t setUnicodeStringAtIndex(uint64_t index, const QString & str) noexcept
     {
+      assert( !str.isEmpty() );
       assert( index > 0 );
       assert( static_cast<int64_t>(index) <= byteCount() );
 
       return setStringAtIndex( index, str.toStdString() );
+    }
+
+    /*! \brief get the begin iterator
+     */
+    const_iterator cbegin() const noexcept
+    {
+      return mTable.cbegin();
+    }
+
+    /*! \brief get the begin iterator
+     */
+    const_iterator begin() const noexcept
+    {
+      return cbegin();
+    }
+
+    /*! \brief get the begin iterator
+     */
+    const_iterator cend() const noexcept
+    {
+      return mTable.cend();
+    }
+
+    /*! \brief get the begin iterator
+     */
+    const_iterator end() const noexcept
+    {
+      return cend();
     }
 
     /*! \brief Extract a copy of a string table from \a map

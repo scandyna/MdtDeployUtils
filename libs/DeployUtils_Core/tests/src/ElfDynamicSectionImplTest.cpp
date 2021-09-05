@@ -26,6 +26,18 @@
 
 #include <QDebug>
 
+bool sectionContainsRunPathEntry(const DynamicSection & section)
+{
+  for(DynamicStruct s : section){
+    if( s.tagType() == DynamicSectionTagType::Runpath ){
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
 TEST_CASE("DynamicStruct")
 {
   SECTION("default constructed")
@@ -60,12 +72,16 @@ TEST_CASE("isNull")
 TEST_CASE("add_entry_clear")
 {
   DynamicSection section;
+  const uchar stringTable[8] = {'\0','S','o','N','a','m','e','\0'};
+  section.setStringTable( stringTableFromCharArray( stringTable, sizeof(stringTable) ) );
+  REQUIRE( section.stringTable().byteCount() == 8 );
 
-  section.addEntry( makeNeededEntry() );
+  section.addEntry( makeSoNameEntry(1) );
   REQUIRE( section.entriesCount() == 1 );
 
   section.clear();
   REQUIRE( section.entriesCount() == 0 );
+  REQUIRE( section.stringTable().byteCount() == 1 );
   REQUIRE( section.isNull() );
 }
 
@@ -144,6 +160,55 @@ TEST_CASE("getRunPath")
   }
 }
 
+TEST_CASE("removeRunPath")
+{
+  DynamicSection section;
+  section.addEntry( makeNullEntry() );
+
+  SECTION("section does not have the DT_RUNPATH")
+  {
+    section.removeRunPath();
+    REQUIRE( !sectionContainsRunPathEntry(section) );
+    REQUIRE( section.stringTable().isEmpty() );
+  }
+
+  SECTION("section contains the DT_RUNPATH")
+  {
+    const uchar initialStringTable[6] = {
+      '\0',
+      '/','t','m','p','\0'
+    };
+    section.setStringTable( stringTableFromCharArray( initialStringTable, sizeof(initialStringTable) ) );
+    section.addEntry( makeRunPathEntry(1) );
+    REQUIRE( sectionContainsRunPathEntry(section) );
+    REQUIRE( section.getRunPath() == QLatin1String("/tmp") );
+
+    section.removeRunPath();
+    REQUIRE( !sectionContainsRunPathEntry(section) );
+    REQUIRE( section.stringTable().isEmpty() );
+  }
+
+  SECTION("section contains the DT_RUNPATH and a DT_NEEDED")
+  {
+    const uchar initialStringTable[14] = {
+      '\0',
+      '/','t','m','p','\0',
+      'l','i','b','A','.','s','o','\0'
+    };
+    section.setStringTable( stringTableFromCharArray( initialStringTable, sizeof(initialStringTable) ) );
+    section.addEntry( makeRunPathEntry(1) );
+    section.addEntry( makeNeededEntry(6) );
+    REQUIRE( sectionContainsRunPathEntry(section) );
+    REQUIRE( section.getRunPath() == QLatin1String("/tmp") );
+    REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+
+    section.removeRunPath();
+    REQUIRE( !sectionContainsRunPathEntry(section) );
+    REQUIRE( section.stringTable().byteCount() == 1+7+1 );
+    REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
+  }
+}
+
 TEST_CASE("setRunPath")
 {
   DynamicSection section;
@@ -189,10 +254,10 @@ TEST_CASE("setRunPath")
 
     SECTION("set a empty RunPath")
     {
-      /** \todo Should the DT_RUNPATH entry be removed ?
-       * Also, should check that the string table does not contain the DT_RUNPATH string anymore
-       */
+      REQUIRE( sectionContainsRunPathEntry(section) );
       section.setRunPath( QString() );
+      REQUIRE( !sectionContainsRunPathEntry(section) );
+      REQUIRE( section.stringTable().isEmpty() );
       REQUIRE( section.getRunPath().isEmpty() );
     }
   }
