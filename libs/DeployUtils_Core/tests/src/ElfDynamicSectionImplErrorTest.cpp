@@ -29,7 +29,7 @@ TEST_CASE("getSoName")
   DynamicSection section;
   section.addEntry( makeNullEntry() );
 
-  const uchar stringTable[8] = {'\0','S','o','N','a','m','e','\0'};
+  uchar stringTable[8] = {'\0','S','o','N','a','m','e','\0'};
   section.setStringTable( stringTableFromCharArray( stringTable, sizeof(stringTable) ) );
 
   SECTION("SoName string table index out of bound")
@@ -44,7 +44,7 @@ TEST_CASE("getNeededSharedLibraries")
   DynamicSection section;
   section.addEntry( makeNullEntry() );
 
-  const uchar stringTable[17] = {
+  uchar stringTable[17] = {
     '\0',
     'l','i','b','A','.','s','o','\0',
     'l','i','b','B','.','s','o','\0'
@@ -63,7 +63,7 @@ TEST_CASE("getRunPath string table index out of bound")
   DynamicSection section;
   section.addEntry( makeNullEntry() );
 
-  const uchar stringTable[13] = {
+  uchar stringTable[13] = {
     '\0',
     '/','t','m','p',':',
     '/','p','a','t','h','2','\0'

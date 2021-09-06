@@ -537,7 +537,7 @@ TEST_CASE("extractFileHeader")
 
   SECTION("32-bit big-endian")
   {
-    const uchar map[52] = {
+    uchar map[52] = {
       // e_ident
         // magic number
         0x7F,'E','L','F',
@@ -606,7 +606,7 @@ TEST_CASE("extractFileHeader")
 
   SECTION("64-bit little-endian")
   {
-    const uchar map[64] = {
+    uchar map[64] = {
       // e_ident
         // magic number
         0x7F,'E','L','F',
@@ -683,7 +683,7 @@ TEST_CASE("stringFromUnsignedCharArray")
 
   SECTION("A")
   {
-    const unsigned char array[2] = {'A','\0'};
+    unsigned char array[2] = {'A','\0'};
     span.data = array;
     span.size = 2;
     REQUIRE( stringFromUnsignedCharArray(span) == "A" );
@@ -720,7 +720,7 @@ TEST_CASE("sectionHeaderArraySizeIsBigEnough")
   Ident ident;
 
   ByteArraySpan array;
-  const unsigned char arrayData[1] = {}; // data is not important here
+  unsigned char arrayData[1] = {}; // data is not important here
   array.data = arrayData;
 
   SECTION("32-bit")
@@ -771,7 +771,7 @@ TEST_CASE("sectionHeaderFromArray")
 
   SECTION("32-bit big-endian")
   {
-    const uchar sectionHeaderArray[40] = {
+    uchar sectionHeaderArray[40] = {
       // sh_name
       0,0,0x12,0x34, // 0x1234
       // sh_type
@@ -806,7 +806,7 @@ TEST_CASE("sectionHeaderFromArray")
 
   SECTION("64-bit little-endian")
   {
-    const uchar sectionHeaderArray[64] = {
+    uchar sectionHeaderArray[64] = {
       // sh_name
       0x34,0x12,0,0, // 0x1234
       // sh_type

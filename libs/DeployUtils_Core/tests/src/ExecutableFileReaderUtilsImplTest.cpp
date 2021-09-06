@@ -30,7 +30,7 @@ TEST_CASE("containsEndOfString")
 
   SECTION("empty")
   {
-    const unsigned char array[1] = {};
+    unsigned char array[1] = {};
     span.data = array;
 
     SECTION("size: 0")
@@ -42,7 +42,7 @@ TEST_CASE("containsEndOfString")
 
   SECTION("ABC")
   {
-    const unsigned char array[4] = {'A','B','C','\0'};
+    unsigned char array[4] = {'A','B','C','\0'};
     span.data = array;
 
     SECTION("size: 3")
@@ -65,7 +65,7 @@ TEST_CASE("qStringFromUft8UnsignedCharArray")
 
   SECTION("A")
   {
-    const unsigned char array[2] = {'A','\0'};
+    unsigned char array[2] = {'A','\0'};
     span.data = array;
     span.size = 2;
     REQUIRE( qStringFromUft8UnsignedCharArray(span) == QLatin1String("A") );

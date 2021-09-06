@@ -72,7 +72,7 @@ TEST_CASE("isNull")
 TEST_CASE("add_entry_clear")
 {
   DynamicSection section;
-  const uchar stringTable[8] = {'\0','S','o','N','a','m','e','\0'};
+  uchar stringTable[8] = {'\0','S','o','N','a','m','e','\0'};
   section.setStringTable( stringTableFromCharArray( stringTable, sizeof(stringTable) ) );
   REQUIRE( section.stringTable().byteCount() == 8 );
 
@@ -90,7 +90,7 @@ TEST_CASE("getSoName")
   DynamicSection section;
   section.addEntry( makeNullEntry() );
 
-  const uchar stringTable[8] = {'\0','S','o','N','a','m','e','\0'};
+  uchar stringTable[8] = {'\0','S','o','N','a','m','e','\0'};
   section.setStringTable( stringTableFromCharArray( stringTable, sizeof(stringTable) ) );
 
   SECTION("no DT_SONAME present")
@@ -110,7 +110,7 @@ TEST_CASE("getNeededSharedLibraries")
   DynamicSection section;
   section.addEntry( makeNullEntry() );
 
-  const uchar stringTable[17] = {
+  uchar stringTable[17] = {
     '\0',
     'l','i','b','A','.','s','o','\0',
     'l','i','b','B','.','s','o','\0'
@@ -141,7 +141,7 @@ TEST_CASE("getRunPath")
   DynamicSection section;
   section.addEntry( makeNullEntry() );
 
-  const uchar stringTable[13] = {
+  uchar stringTable[13] = {
     '\0',
     '/','t','m','p',':',
     '/','p','a','t','h','2','\0'
@@ -174,7 +174,7 @@ TEST_CASE("removeRunPath")
 
   SECTION("section contains the DT_RUNPATH")
   {
-    const uchar initialStringTable[6] = {
+    uchar initialStringTable[6] = {
       '\0',
       '/','t','m','p','\0'
     };
@@ -190,7 +190,7 @@ TEST_CASE("removeRunPath")
 
   SECTION("section contains the DT_RUNPATH and a DT_NEEDED")
   {
-    const uchar initialStringTable[14] = {
+    uchar initialStringTable[14] = {
       '\0',
       '/','t','m','p','\0',
       'l','i','b','A','.','s','o','\0'
@@ -222,7 +222,7 @@ TEST_CASE("setRunPath")
 
   SECTION("there is initially only a DT_NEEDED entry")
   {
-    const uchar initialStringTable[9] = {
+    uchar initialStringTable[9] = {
       '\0',
       'l','i','b','A','.','s','o','\0'
     };
@@ -238,7 +238,7 @@ TEST_CASE("setRunPath")
 
   SECTION("there is initially only the DT_RUNPATH entry (string table contains only a DT_RUNPATH string)")
   {
-    const uchar initialStringTable[6] = {
+    uchar initialStringTable[6] = {
       '\0',
       '/','t','m','p','\0'
     };
@@ -264,7 +264,7 @@ TEST_CASE("setRunPath")
 
   SECTION("there is initially a DT_NEEDED entry and the DT_RUNPATH (string table contains related strings)")
   {
-    const uchar initialStringTable[14] = {
+    uchar initialStringTable[14] = {
       '\0',
       'l','i','b','A','.','s','o','\0',
       '/','t','m','p','\0'
@@ -298,7 +298,7 @@ TEST_CASE("setRunPath")
 
   SECTION("there is initially the DT_RUNPATH entry, then a DT_NEEDED entry (string table contains related strings)")
   {
-    const uchar initialStringTable[14] = {
+    uchar initialStringTable[14] = {
       '\0',
       '/','t','m','p','\0',
       'l','i','b','A','.','s','o','\0'

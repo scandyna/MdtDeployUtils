@@ -533,14 +533,15 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    * \exception NotNullTerminatedStringError
    */
   inline
-  void setSectionHeaderName(const unsigned char * const map, const SectionHeader & stringTableSectionHeader,
+  void setSectionHeaderName(const ByteArraySpan & map, const SectionHeader & stringTableSectionHeader,
                             SectionHeader & sectionHeader)
   {
+    assert( !map.isNull() );
     assert( headerIsStringTableSection(stringTableSectionHeader) );
 
-    ByteArraySpan charArray;
-    charArray.data = map + stringTableSectionHeader.offset + sectionHeader.nameIndex;
-    charArray.size = static_cast<int64_t>(stringTableSectionHeader.size - sectionHeader.nameIndex);
+    const int64_t offset = static_cast<int64_t>(stringTableSectionHeader.offset + sectionHeader.nameIndex);
+    const int64_t size = static_cast<int64_t>(stringTableSectionHeader.size - sectionHeader.nameIndex);
+    const ByteArraySpan charArray = map.subSpan(offset, size);
 
     sectionHeader.name = stringFromUnsignedCharArray(charArray);
   }
@@ -551,9 +552,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    * \exception NotNullTerminatedStringError
    */
   inline
-  void setSectionHeadersName(const unsigned char * const map, const SectionHeader & stringTableSectionHeader,
+  void setSectionHeadersName(const ByteArraySpan & map, const SectionHeader & stringTableSectionHeader,
                              std::vector<SectionHeader> & sectionHeaders)
   {
+    assert( !map.isNull() );
     assert( stringTableSectionHeader.sectionType() == SectionType::StringTable );
 
     for(auto & sectionHeader : sectionHeaders){
@@ -676,7 +678,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     }
 
     const SectionHeader stringTableSectionHeader = extractSectionNameStringTableHeader(map, fileHeader);
-    setSectionHeadersName(map.data, stringTableSectionHeader, sectionHeaders);
+    setSectionHeadersName(map, stringTableSectionHeader, sectionHeaders);
 
     return sectionHeaders;
   }
@@ -701,7 +703,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     for(uint16_t i = 0; i < sectionHeaderCount; ++i){
       sectionHeader = extractSectionHeaderAt(map, fileHeader, i);
       if( sectionHeader.sectionType() == type ){
-        setSectionHeaderName(map.data, sectionNamesStringTableSectionHeader, sectionHeader);
+        setSectionHeaderName(map, sectionNamesStringTableSectionHeader, sectionHeader);
         if( namePredicate(sectionHeader.name) ){
           return sectionHeader;
         }

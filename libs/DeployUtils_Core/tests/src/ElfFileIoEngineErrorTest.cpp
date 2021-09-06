@@ -51,7 +51,7 @@ TEST_CASE("stringFromUnsignedCharArray")
 
   SECTION("A (no end of string)")
   {
-    const unsigned char array[1] = {'A'};
+    unsigned char array[1] = {'A'};
     span.data = array;
     span.size = 1;
     REQUIRE_THROWS_AS( stringFromUnsignedCharArray(span), Impl::NotNullTerminatedStringError );

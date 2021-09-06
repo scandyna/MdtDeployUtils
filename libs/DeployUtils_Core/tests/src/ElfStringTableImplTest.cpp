@@ -51,7 +51,7 @@ TEST_CASE("fromCharArray")
 
   SECTION("1 null char -> empty table")
   {
-    const uchar charArray[1] = {0};
+    uchar charArray[1] = {0};
     charArraySpan = arraySpanFromArray( charArray, sizeof(charArray) );
     table = StringTable::fromCharArray(charArraySpan);
     REQUIRE( table.byteCount() == 1 );
@@ -60,7 +60,7 @@ TEST_CASE("fromCharArray")
 
   SECTION("name.")
   {
-    const uchar charArray[7] = {'\0','n','a','m','e','.','\0'};
+    uchar charArray[7] = {'\0','n','a','m','e','.','\0'};
     charArraySpan = arraySpanFromArray( charArray, sizeof(charArray) );
     table = StringTable::fromCharArray(charArraySpan);
     REQUIRE( table.byteCount() == 7 );
@@ -68,14 +68,14 @@ TEST_CASE("fromCharArray")
   }
 }
 
-StringTable stringTableFromCharArray(const unsigned char * const array, qint64 size)
+StringTable stringTableFromCharArray(unsigned char * const array, qint64 size)
 {
   return StringTable::fromCharArray( arraySpanFromArray(array, size) );
 }
 
 TEST_CASE("clear")
 {
-  const uchar charArray[9] = {'\0','n','a','m','e','.','\0','A','\0'};
+  uchar charArray[9] = {'\0','n','a','m','e','.','\0','A','\0'};
   StringTable table = stringTableFromCharArray( charArray, sizeof(charArray) );
   REQUIRE( table.byteCount() == 9 );
 
@@ -91,7 +91,7 @@ TEST_CASE("indexIsValid")
 
   SECTION("empty table")
   {
-    const uchar charArray[1] = {0};
+    uchar charArray[1] = {0};
     table = stringTableFromCharArray( charArray, sizeof(charArray) );
     REQUIRE( table.indexIsValid(0) );
     REQUIRE( !table.indexIsValid(1) );
@@ -99,7 +99,7 @@ TEST_CASE("indexIsValid")
 
   SECTION("name. A")
   {
-    const uchar charArray[9] = {'\0','n','a','m','e','.','\0','A','\0'};
+    uchar charArray[9] = {'\0','n','a','m','e','.','\0','A','\0'};
     table = stringTableFromCharArray( charArray, sizeof(charArray) );
     REQUIRE( table.indexIsValid(0) );
     REQUIRE( table.indexIsValid(1) );
@@ -114,14 +114,14 @@ TEST_CASE("stringAtIndex")
 
   SECTION("empty table")
   {
-    const uchar charArray[1] = {0};
+    uchar charArray[1] = {0};
     table = stringTableFromCharArray( charArray, sizeof(charArray) );
     REQUIRE( table.stringAtIndex(0).empty() );
   }
 
   SECTION("name.")
   {
-    const uchar charArray[7] = {'\0','n','a','m','e','.','\0'};
+    uchar charArray[7] = {'\0','n','a','m','e','.','\0'};
     table = stringTableFromCharArray( charArray, sizeof(charArray) );
     REQUIRE( table.stringAtIndex(0).empty() );
     REQUIRE( table.stringAtIndex(1) == "name." );
@@ -130,7 +130,7 @@ TEST_CASE("stringAtIndex")
 
   SECTION("name. A")
   {
-    const uchar charArray[9] = {'\0','n','a','m','e','.','\0','A','\0'};
+    uchar charArray[9] = {'\0','n','a','m','e','.','\0','A','\0'};
     table = stringTableFromCharArray( charArray, sizeof(charArray) );
     REQUIRE( table.stringAtIndex(0).empty() );
     REQUIRE( table.stringAtIndex(1) == "name." );
@@ -144,14 +144,14 @@ TEST_CASE("unicodeStringAtIndex")
 
   SECTION("empty table")
   {
-    const uchar charArray[1] = {0};
+    uchar charArray[1] = {0};
     table = stringTableFromCharArray( charArray, sizeof(charArray) );
     REQUIRE( table.unicodeStringAtIndex(0).isEmpty() );
   }
 
   SECTION("name.")
   {
-    const uchar charArray[7] = {'\0','n','a','m','e','.','\0'};
+    uchar charArray[7] = {'\0','n','a','m','e','.','\0'};
     table = stringTableFromCharArray( charArray, sizeof(charArray) );
     REQUIRE( table.unicodeStringAtIndex(0).isEmpty() );
     REQUIRE( table.unicodeStringAtIndex(1) == QLatin1String("name.") );
@@ -160,7 +160,7 @@ TEST_CASE("unicodeStringAtIndex")
 
   SECTION("name. A")
   {
-    const uchar charArray[9] = {'\0','n','a','m','e','.','\0','A','\0'};
+    uchar charArray[9] = {'\0','n','a','m','e','.','\0','A','\0'};
     table = stringTableFromCharArray( charArray, sizeof(charArray) );
     REQUIRE( table.unicodeStringAtIndex(0).isEmpty() );
     REQUIRE( table.unicodeStringAtIndex(1) == QLatin1String("name.") );
@@ -184,7 +184,7 @@ TEST_CASE("appendString")
 
   SECTION("add a string to the end of a non empty table")
   {
-    const uchar charArray[6] = {
+    uchar charArray[6] = {
       '\0',
       '/','t','m','p','\0'
     };
@@ -206,7 +206,7 @@ TEST_CASE("removeStringAtIndex")
 
   SECTION("remove the only string the table contains")
   {
-    const uchar charArray[6] = {
+    uchar charArray[6] = {
       '\0',
       '/','t','m','p','\0'
     };
@@ -220,7 +220,7 @@ TEST_CASE("removeStringAtIndex")
 
   SECTION("remove the second string")
   {
-    const uchar charArray[14] = {
+    uchar charArray[14] = {
       '\0',
       '/','t','m','p','\0',
       'l','i','b','A','.','s','o','\0'
@@ -236,7 +236,7 @@ TEST_CASE("removeStringAtIndex")
 
   SECTION("remove the first string")
   {
-    const uchar charArray[14] = {
+    uchar charArray[14] = {
       '\0',
       '/','t','m','p','\0',
       'l','i','b','A','.','s','o','\0'
@@ -258,7 +258,7 @@ TEST_CASE("setStringAtIndex")
 
   SECTION("add a string to a empty table")
   {
-    const uchar charArray[1] = {0};
+    uchar charArray[1] = {0};
     table = stringTableFromCharArray( charArray, sizeof(charArray) );
 
     offset = table.setStringAtIndex(1, "libA.so");
@@ -270,7 +270,7 @@ TEST_CASE("setStringAtIndex")
 
   SECTION("replace a string in a table with 1 string")
   {
-    const uchar charArray[6] = {
+    uchar charArray[6] = {
       '\0',
       'n','a','m','e','\0'
     };
@@ -306,7 +306,7 @@ TEST_CASE("setStringAtIndex")
 
   SECTION("replace a string in a table with 2 strings")
   {
-    const uchar charArray[14] = {
+    uchar charArray[14] = {
       '\0',
       'n','a','m','e','\0',
       'l','i','b','A','.','s','o','\0'
@@ -411,7 +411,7 @@ TEST_CASE("setUnicodeStringAtIndex")
 
   SECTION("replace the first string in a table with 2 strings")
   {
-    const uchar charArray[14] = {
+    uchar charArray[14] = {
       '\0',
       'n','a','m','e','\0',
       'l','i','b','A','.','s','o','\0'

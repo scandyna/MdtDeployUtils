@@ -25,7 +25,7 @@
 using namespace Mdt::DeployUtils;
 using Impl::ByteArraySpan;
 
-ByteArraySpan arraySpanFromArray(const unsigned char * const array, qint64 size)
+ByteArraySpan arraySpanFromArray(unsigned char * const array, qint64 size)
 {
   assert(size > 0);
 

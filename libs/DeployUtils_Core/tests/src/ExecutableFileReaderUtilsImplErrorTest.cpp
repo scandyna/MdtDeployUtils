@@ -30,7 +30,7 @@ TEST_CASE("qStringFromUft8UnsignedCharArray")
 
   SECTION("A (no end of string)")
   {
-    const unsigned char array[1] = {'A'};
+    unsigned char array[1] = {'A'};
     span.data = array;
     span.size = 1;
     REQUIRE_THROWS_AS( qStringFromUft8UnsignedCharArray(span), NotNullTerminatedStringError );

@@ -35,14 +35,14 @@ TEST_CASE("fromCharArray")
 
   SECTION("1 not null char")
   {
-    const uchar charArray[1] = {1};
+    uchar charArray[1] = {1};
     charArraySpan = arraySpanFromArray( charArray, sizeof(charArray) );
     REQUIRE_THROWS_AS(StringTable::fromCharArray(charArraySpan), StringTableError);
   }
 
   SECTION("name. not null terminated")
   {
-    const uchar charArray[6] = {'\0','n','a','m','e','.'};
+    uchar charArray[6] = {'\0','n','a','m','e','.'};
     charArraySpan = arraySpanFromArray( charArray, sizeof(charArray) );
     REQUIRE_THROWS_AS(StringTable::fromCharArray(charArraySpan), StringTableError);
   }

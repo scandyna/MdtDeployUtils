@@ -32,7 +32,7 @@ TEST_CASE("programHeaderFromArray")
 
   SECTION("32-bit big-endian")
   {
-    const uchar programHeaderArray[32] = {
+    uchar programHeaderArray[32] = {
       // p_type
       0x12,0x34,0x56,0x78, // 0x12345678
       // p_offset
@@ -66,7 +66,7 @@ TEST_CASE("programHeaderFromArray")
 
   SECTION("64-bit little-endian")
   {
-    const uchar programHeaderArray[56] = {
+    uchar programHeaderArray[56] = {
       // p_type
       0x78,0x56,0x34,0x12, // 0x12345678
       // p_flags

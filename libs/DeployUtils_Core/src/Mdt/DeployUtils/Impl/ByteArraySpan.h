@@ -34,7 +34,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
      */
     using const_iterator = const unsigned char*;
 
-    const unsigned char *data = nullptr;
+    unsigned char *data = nullptr;
     int64_t size = 0;
 
     constexpr
