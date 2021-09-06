@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_IMPL_ELF_DEBUG_H
 
 #include "FileHeader.h"
+#include "ProgramHeader.h"
 #include "SectionHeader.h"
 #include "DynamicSection.h"
 #include "mdt_deployutilscore_export.h"
@@ -67,6 +68,21 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    */
   MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const FileHeader & header);
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString toDebugString(SegmentType type);
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString toDebugString(const ProgramHeader & header);
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString toDebugString(const std::vector<ProgramHeader> & headers);
 
   /*! \internal
    */

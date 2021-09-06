@@ -22,8 +22,20 @@
 #define ELF_FILE_IO_TEST_UTILS_H
 
 #include "Mdt/DeployUtils/Impl/Elf/FileReader.h"
+#include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 
 using namespace Mdt::DeployUtils;
+
+Mdt::DeployUtils::Impl::ByteArraySpan arraySpanFromArray(const unsigned char * const array, qint64 size)
+{
+  assert(size > 0);
+
+  Mdt::DeployUtils::Impl::ByteArraySpan span;
+  span.data = array;
+  span.size = size;
+
+  return span;
+}
 
 Impl::Elf::Ident makeValidIdent(Impl::Elf::Class _class, Impl::Elf::DataFormat dataFormat)
 {

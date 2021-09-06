@@ -147,6 +147,51 @@ QString toDebugString(const FileHeader & header)
   return str;
 }
 
+QString toDebugString(SegmentType type)
+{
+  switch(type){
+    case SegmentType::Null:
+      return QLatin1String("Null: Unused program header table entry");
+    case SegmentType::Dynamic:
+      return QLatin1String("Dynamic linking information");
+    case SegmentType::Unknown:
+      return QLatin1String("Unknown");
+
+  }
+
+  return QString();
+}
+
+QString toDebugString(const ProgramHeader & header)
+{
+  QString str;
+
+  str = QLatin1String("header for segment");
+  str += QLatin1String("\n type: 0x") + QString::number(header.type, 16) + QLatin1String(" (") + toDebugString( header.segmentType() ) + QLatin1String(")");
+  str += QLatin1String("\n offset in file: ") + QString::number(header.offset) + QLatin1String(" (0x") + QString::number(header.offset, 16) + QLatin1String(")");
+  str += QLatin1String("\n virtual address in memory: ") + QString::number(header.vaddr)
+       + QLatin1String(" (0x") + QString::number(header.vaddr, 16) + QLatin1String(")");
+  str += QLatin1String("\n physical address in memory: ") + QString::number(header.paddr)
+       + QLatin1String(" (0x") + QString::number(header.paddr, 16) + QLatin1String(")");
+  str += QLatin1String("\n size in file: ") + QString::number(header.filesz) + QLatin1String(" [bytes]");
+  str += QLatin1String("\n size in memory: ") + QString::number(header.memsz) + QLatin1String(" [bytes]");
+  str += QLatin1String("\n flags: 0x") + QString::number(header.flags, 16);
+  str += QLatin1String("\n alignment in memory: ") + QString::number(header.align);
+
+  return str;
+}
+
+QString toDebugString(const std::vector<ProgramHeader> & headers)
+{
+  QString str;
+
+  for(const auto & header : headers){
+    str += QLatin1String("\n") + toDebugString(header);
+  }
+
+  return str;
+}
+
 QString toDebugString(SectionType type)
 {
   switch(type){
@@ -247,13 +292,32 @@ QString toDebugString(DynamicSectionTagType type)
   return QString();
 }
 
-QString toDebugString(const DynamicStruct & section, const QString & leftPad)
+QString dynamicStructValOrPtrToDebugString(const DynamicStruct & entry)
+{
+  switch( entry.tagType() ){
+    case DynamicSectionTagType::Null:
+    case DynamicSectionTagType::Unknown:
+      break;
+    case DynamicSectionTagType::Needed:
+    case DynamicSectionTagType::SoName:
+    case DynamicSectionTagType::Runpath:
+    case DynamicSectionTagType::RPath:
+    case DynamicSectionTagType::StringTableSize:
+      return QLatin1String("val: ") + QString::number(entry.val_or_ptr);
+    case DynamicSectionTagType::StringTable:
+      return QLatin1String("ptr: 0x") + QString::number(entry.val_or_ptr, 16) + QLatin1String(" (") + QString::number(entry.val_or_ptr) + QLatin1String(")");
+  }
+
+  return QLatin1String("val or ptr: ") + QString::number(entry.val_or_ptr);
+}
+
+QString toDebugString(const DynamicStruct & entry, const QString & leftPad)
 {
   QString str;
 
   str += leftPad + QLatin1String("tag: ")
-      + QString::number(section.tag) + QLatin1String(" (") + toDebugString( section.tagType() ) + QLatin1String(")")
-      + QLatin1Char('\n') + leftPad + QLatin1String(" val or ptr: ") + QString::number(section.val_or_ptr);
+      + QString::number(entry.tag) + QLatin1String(" (") + toDebugString( entry.tagType() ) + QLatin1String(")")
+      + QLatin1Char('\n') + leftPad + QLatin1String(" ") + dynamicStructValOrPtrToDebugString(entry);
 
   return str;
 }

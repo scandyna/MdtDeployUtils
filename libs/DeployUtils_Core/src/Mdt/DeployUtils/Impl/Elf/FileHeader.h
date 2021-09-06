@@ -102,6 +102,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       machine = Machine::None;
     }
 
+    /*! \brief Get the minimum size to read all program headers
+     */
+    constexpr
+    int64_t minimumSizeToReadAllProgramHeaders() const noexcept
+    {
+      return static_cast<int64_t>(phoff) + static_cast<int64_t>(phnum) * static_cast<int64_t>(phentsize);
+    }
+
     /*! \brief Get the minimum size to read all section headers
      */
     constexpr

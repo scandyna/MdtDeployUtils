@@ -151,6 +151,22 @@ endif()
 #   )
 
 mdt_add_test(
+  NAME ElfProgramHeaderReaderImplTest
+  TARGET elfProgramHeaderReaderImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfProgramHeaderReaderImplTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfProgramHeaderReaderImplErrorTest
+  TARGET elfProgramHeaderReaderImplErrorTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfProgramHeaderReaderImplErrorTest.cpp
+)
+
+mdt_add_test(
   NAME ElfStringTableImplTest
   TARGET elfStringTableImplTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

@@ -34,6 +34,8 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/FileMapper.cpp
   Mdt/DeployUtils/Impl/Elf/Exceptions.cpp
   Mdt/DeployUtils/Impl/Elf/Ident.cpp
+  Mdt/DeployUtils/Impl/Elf/ProgramHeader.cpp
+  Mdt/DeployUtils/Impl/Elf/ProgramHeaderReader.cpp
   Mdt/DeployUtils/Impl/Elf/SectionHeader.cpp
   Mdt/DeployUtils/Impl/Elf/FileHeader.cpp
   Mdt/DeployUtils/Impl/Elf/StringTable.cpp

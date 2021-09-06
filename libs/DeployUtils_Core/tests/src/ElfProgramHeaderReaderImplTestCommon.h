@@ -18,4 +18,9 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
+#include "catch2/catch.hpp"
+#include "Catch2QString.h"
 #include "ElfFileIoTestUtils.h"
+#include "Mdt/DeployUtils/Impl/Elf/ProgramHeaderReader.h"
+
+using Mdt::DeployUtils::Impl::ByteArraySpan;

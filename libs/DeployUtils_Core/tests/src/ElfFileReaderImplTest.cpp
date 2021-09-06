@@ -477,6 +477,19 @@ TEST_CASE("fileHeader_seemsValid")
   }
 }
 
+TEST_CASE("minimumSizeToReadAllProgramHeaders")
+{
+  using Impl::Elf::FileHeader;
+
+  FileHeader fileHeader = make64BitLittleEndianFileHeader();
+  fileHeader.phoff = 64;
+  fileHeader.phentsize = 56;
+  fileHeader.phnum = 7;
+
+  const int64_t expectedSize = 64 + 7*56;
+  REQUIRE( fileHeader.minimumSizeToReadAllProgramHeaders() == expectedSize );
+}
+
 TEST_CASE("fileHeader_minimumSizeToReadAllSectionHeaders()")
 {
   using Impl::Elf::FileHeader;
