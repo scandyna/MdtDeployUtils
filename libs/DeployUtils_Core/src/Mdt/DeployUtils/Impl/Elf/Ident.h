@@ -25,20 +25,20 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
   /*! \internal
    */
-  enum class Class
+  enum class Class : unsigned char
   {
-    ClassNone,  /*!< */
-    Class32,    /*!< */
-    Class64     /*!< */
+    ClassNone = 0,  /*!< Unknown */
+    Class32 = 1,    /*!< 32-bit */
+    Class64 = 2     /*!< 64-bit */
   };
 
   /*! \internal
    */
-  enum class DataFormat
+  enum class DataFormat : unsigned char
   {
-    DataNone, /*!< Unknown data format */
-    Data2LSB, /*!< Two's complement, little-endian */
-    Data2MSB  /*!< Two's complement, big-endian */
+    DataNone = 0, /*!< Unknown data format */
+    Data2LSB = 1, /*!< Two's complement, little-endian */
+    Data2MSB = 2  /*!< Two's complement, big-endian */
   };
 
   /*! \internal

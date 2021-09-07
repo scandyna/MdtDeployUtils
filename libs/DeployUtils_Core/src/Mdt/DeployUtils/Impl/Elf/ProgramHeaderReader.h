@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_IMPL_ELF_PROGRAM_HEADER_READER_H
 
 #include "ProgramHeader.h"
+#include "ProgramHeaderReaderWriterCommon.h"
 #include "FileHeader.h"
 #include "FileReader.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
@@ -31,26 +32,6 @@
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
-
-  /*! \internal
-   *
-   * \pre \a array must not be null
-   * \pre \a ident must be valid
-   * \sa programHeaderFromArray()
-   */
-  inline
-  bool programHeaderArraySizeIsBigEnough(const ByteArraySpan & array, const Ident & ident) noexcept
-  {
-    assert( !array.isNull() );
-    assert( ident.isValid() );
-
-    if( ident._class == Class::Class32 ){
-      return array.size >= 32;
-    }
-    assert( ident._class == Class::Class64 );
-
-    return array.size >= 56;
-  }
 
   /*! \internal
    *

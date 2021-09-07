@@ -52,9 +52,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     std::string name;
     uint32_t nameIndex;
     uint32_t type = 0;
+    uint64_t flags;
+    uint64_t addr;
     uint64_t offset;
     uint64_t size;
     uint32_t link;
+    uint32_t info;
+    uint64_t addralign;
+    uint64_t entsize;
 
     void clear() noexcept
     {

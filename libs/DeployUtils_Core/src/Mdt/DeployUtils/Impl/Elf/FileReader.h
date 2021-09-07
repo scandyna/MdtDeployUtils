@@ -23,7 +23,9 @@
 
 #include "Exceptions.h"
 #include "FileHeader.h"
+#include "FileHeaderReaderWriterCommon.h"
 #include "SectionHeader.h"
+#include "SectionHeaderReaderWriterCommon.h"
 #include "StringTable.h"
 #include "DynamicSection.h"
 #include "Mdt/DeployUtils/ExecutableFileReadError.h"
@@ -389,22 +391,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return e_machine_fromValue(value);
   }
 
-  /*! \internal
-   *
-   * \pre \a ident must be valid
-   */
-  inline
-  qint64 minimumSizeToReadFileHeader(const Ident & ident) noexcept
-  {
-    assert( ident.isValid() );
-
-    if( ident._class == Class::Class32 ){
-      return 52;
-    }
-    assert( ident._class == Class::Class64 );
-
-    return 64;
-  }
 
   /*! \internal
    *
@@ -566,26 +552,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   /*! \internal
    *
    * \pre \a array must not be null
-   * \pre \a ident must be valid
-   * \sa sectionHeaderFromArray()
-   */
-  inline
-  bool sectionHeaderArraySizeIsBigEnough(const ByteArraySpan & array, const Ident & ident) noexcept
-  {
-    assert( !array.isNull() );
-    assert( ident.isValid() );
-
-    if( ident._class == Class::Class32 ){
-      return array.size >= 40;
-    }
-    assert( ident._class == Class::Class64 );
-
-    return array.size >= 64;
-  }
-
-  /*! \internal
-   *
-   * \pre \a array must not be null
    * \pre the array referenced by \a array must have at least
    *     40 bytes for 32-bit files, 64 bytes for 64-bit files
    * \pre \a ident must be valid
@@ -608,10 +574,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     sectionHeader.type = getWord(it, ident.dataFormat);
     it += 4;
 
-    // sh_flags
+    sectionHeader.flags = getNWord(it, ident);
     advance4or8bytes(it, ident);
 
-    // sh_addr
+    sectionHeader.addr = getAddress(it, ident);
     advance4or8bytes(it, ident);
 
     sectionHeader.offset = getOffset(it, ident);
@@ -621,6 +587,15 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     advance4or8bytes(it, ident);
 
     sectionHeader.link = getWord(it, ident.dataFormat);
+    it += 4;
+
+    sectionHeader.info = getWord(it, ident.dataFormat);
+    it += 4;
+
+    sectionHeader.addralign = getNWord(it, ident);
+    advance4or8bytes(it, ident);
+
+    sectionHeader.entsize = getNWord(it, ident);
 
     return sectionHeader;
   }

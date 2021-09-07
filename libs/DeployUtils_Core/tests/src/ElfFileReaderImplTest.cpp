@@ -29,7 +29,7 @@
 #include <QTemporaryFile>
 #include <cassert>
 
-#include <QDebug>
+// #include <QDebug>
 
 using namespace Mdt::DeployUtils;
 
@@ -787,11 +787,11 @@ TEST_CASE("sectionHeaderFromArray")
       // sh_link
       0,0,0,0x56, // 0x56
       // sh_info
-      0,0,0,0x12, // 0x12
+      0x23,0x45,0x67,0x89, // 0x23456789
       // sh_addralign
-      0,0,0,0x34, // 0x34
+      0x34,0x56,0x78,0x90, // 0x34567890
       // sh_entsize
-      0,0,0,0x78  // 0x78
+      0x45,0x67,0x89,0x01  // 0x45678901
     };
 
     ident = make32BitBigEndianIdent();
@@ -800,8 +800,14 @@ TEST_CASE("sectionHeaderFromArray")
     sectionHeader = sectionHeaderFromArray(array, ident);
     REQUIRE( sectionHeader.nameIndex == 0x1234 );
     REQUIRE( sectionHeader.type == 0x03 );
+    REQUIRE( sectionHeader.flags == 0x20 );
+    REQUIRE( sectionHeader.addr == 0x12345678 );
     REQUIRE( sectionHeader.offset == 0x9123 );
     REQUIRE( sectionHeader.size == 0x1234 );
+    REQUIRE( sectionHeader.link == 0x56 );
+    REQUIRE( sectionHeader.info == 0x23456789 );
+    REQUIRE( sectionHeader.addralign == 0x34567890 );
+    REQUIRE( sectionHeader.entsize == 0x45678901 );
   }
 
   SECTION("64-bit little-endian")
@@ -822,11 +828,11 @@ TEST_CASE("sectionHeaderFromArray")
       // sh_link
       0x56,0,0,0, // 0x56
       // sh_info
-      0x12,0,0,0, // 0x12
+      0x89,0x67,0x45,0x23, // 0x23456789
       // sh_addralign
-      0x34,0,0,0,0,0,0,0, // 0x34
+      0x90,0x78,0x56,0x34,0,0,0,0, // 0x34567890
       // sh_entsize
-      0x78,0,0,0,0,0,0,0  // 0x78
+      0x01,0x89,0x67,0x45,0,0,0,0  // 0x45678901
     };
 
     ident = make64BitLittleEndianIdent();
@@ -835,7 +841,13 @@ TEST_CASE("sectionHeaderFromArray")
     sectionHeader = sectionHeaderFromArray(array, ident);
     REQUIRE( sectionHeader.nameIndex == 0x1234 );
     REQUIRE( sectionHeader.type == 0x03 );
+    REQUIRE( sectionHeader.flags == 0x20 );
+    REQUIRE( sectionHeader.addr == 0x12345678 );
     REQUIRE( sectionHeader.offset == 0x9123 );
     REQUIRE( sectionHeader.size == 0x1234 );
+    REQUIRE( sectionHeader.link == 0x56 );
+    REQUIRE( sectionHeader.info == 0x23456789 );
+    REQUIRE( sectionHeader.addralign == 0x34567890 );
+    REQUIRE( sectionHeader.entsize == 0x45678901 );
   }
 }

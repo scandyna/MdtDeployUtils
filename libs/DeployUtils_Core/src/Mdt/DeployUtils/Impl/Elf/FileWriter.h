@@ -21,80 +21,142 @@
 #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_WRITER_H
 #define MDT_DEPLOY_UTILS_IMPL_ELF_FILE_WRITER_H
 
-#include "FileReader.h"
-
-#include "Debug.h"
-// #include <iostream>
+#include "FileHeader.h"
+#include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
+#include <QtEndian>
+#include <cstdint>
+#include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
-  /*! \internal Set the runtime path (DT_RUNPATH)
+  /*! \internal
    *
-   * \pre \a map must not be null
-   * \pre \a fileHeader must be valid
-   * \pre \a dynamicSectionHeader must be a Dynamic section type and be named ".dynamic"
-   * \pre \a dynamicSectionHeader must have a valid index to a dynamic string table
-   * \pre \a map must be big enough to read the section referenced by \a dynamicSectionHeader
-   * 
-   * \exception ExecutableFileReadError
-   * 
-   * \todo Maybe have to update the section header (size f.ex.) ?
-   *    Also, should rewrite the entiere string table ?
-   *    What about things after string table ?
-   *    See patchelf source code..
-   */
-//   inline
-//   void setRunPathToMap(ByteArraySpan & map, const QString & rPath, const FileHeader & fileHeader, const SectionHeader & dynamicSectionHeader)
-//   {
-//     assert( !map.isNull() );
-//     assert( fileHeader.seemsValid() );
-//     assert( headerIsDynamicSection(dynamicSectionHeader) );
-//     assert( sectionHeaderHasValidIndexToDynamicStringTable(fileHeader, dynamicSectionHeader) );
-//     assert( map.size >= dynamicSectionHeader.minimumSizeToReadSection() );
-// 
-// //     const SectionHeader dynamicStringTableSectionHeader = extractSectionHeaderAt( map, fileHeader, static_cast<uint16_t>(dynamicSectionHeader.link) );
-// //     const std::vector<DynamicStruct> dynamicSection = extractDynamicSectionForTag(map, fileHeader.ident, dynamicSectionHeader, DynamicSectionTagType::Runpath);
-// 
-// //     std::cout << "dynamic section header: " << toDebugString(dynamicSectionHeader).toStdString() << std::endl;
-// //     std::cout << "dynamic string table section header: " << toDebugString(dynamicStringTableSectionHeader).toStdString() << std::endl;
-// //     std::cout << "dynamic section: " << toDebugString(dynamicSection).toStdString() << std::endl;
-//     
-// //     if( dynamicSection.empty() ){
-// //       return QString();
-// //     }
-// //     if( dynamicSection.size() != 1 ){
-// //       /// \todo Error
-// //       return QString();
-// //     }
-// 
-// //     const ByteArraySpan charArray = charArrayFromDynamicStringTable(map, dynamicStringTableSectionHeader, dynamicSection[0]);
-// // 
-// //     return qStringFromUft8ByteArraySpan(charArray);
-//   }
-
-  /*! \internal Set the dynamic section
-   *
-   * \pre \a map must not be null
-   * \pre \a fileHeader must be valid
-   * \pre \a map must be big enough to read all section headers
-   * \pre \a sectionNamesStringTableSectionHeader must be the section header names string table
-   * \exception DynamicSectionReadError
-   * 
-   * \exception DynamicSectionWriteError ?
-   * 
-   * \exception StringTableError
+   * \pre \a array must not be null
+   * \pre \a array size must be a least 2 bytes long
+   * \pre \a dataFormat must be valid
    */
   inline
-  void setDynamicSection(ByteArraySpan & map, const DynamicSection & dynamicSection,
-                                       const FileHeader & fileHeader,
-                                       const SectionHeader & sectionNamesStringTableSectionHeader)
+  void setHalfWord(ByteArraySpan array, uint16_t value, DataFormat dataFormat) noexcept
   {
-    assert( !map.isNull() );
-    assert( fileHeader.seemsValid() );
-    assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
-    assert( sectionNamesStringTableSectionHeader.sectionType() == SectionType::StringTable );
+    assert( !array.isNull() );
+    assert( array.size >= 2 );
+    assert( dataFormat != DataFormat::DataNone );
 
-    // find dynamic section - must be present, otherwise we don't have a dynamic linked file
+    if(dataFormat == DataFormat::Data2LSB){
+      qToLittleEndian<quint16>(value, array.data);
+    }else{
+      assert(dataFormat == DataFormat::Data2MSB);
+      qToBigEndian<quint16>(value, array.data);
+    }
+  }
+
+  /*! \internal
+   *
+   * \pre \a array must not be null
+   * \pre \a array size must be a least 4 bytes long
+   * \pre \a dataFormat must be valid
+   */
+  inline
+  void set32BitWord(ByteArraySpan array, uint32_t value, DataFormat dataFormat) noexcept
+  {
+    assert( !array.isNull() );
+    assert( array.size >= 4 );
+    assert( dataFormat != DataFormat::DataNone );
+
+    if(dataFormat == DataFormat::Data2LSB){
+      qToLittleEndian<quint32>(value, array.data);
+    }else{
+      assert(dataFormat == DataFormat::Data2MSB);
+      qToBigEndian<quint32>(value, array.data);
+    }
+  }
+
+  /*! \internal
+   *
+   * \pre \a array must not be null
+   * \pre \a array size must be a least 8 bytes long
+   * \pre \a dataFormat must be valid
+   */
+  inline
+  void set64BitWord(ByteArraySpan array, uint64_t value, DataFormat dataFormat) noexcept
+  {
+    assert( !array.isNull() );
+    assert( array.size >= 8 );
+    assert( dataFormat != DataFormat::DataNone );
+
+    if(dataFormat == DataFormat::Data2LSB){
+      qToLittleEndian<quint64>(value, array.data);
+    }else{
+      assert(dataFormat == DataFormat::Data2MSB);
+      qToBigEndian<quint64>(value, array.data);
+    }
+  }
+
+  /*! \internal Set a (unsigned) word to \a array
+   *
+   * Depending on the machine (32-bit or 64-bit), defined in \a ident ,
+   * the value will be encoded as a uint32_t or a uint64_t.
+   *
+   * The endianness, also defined in \a ident ,
+   * is also taken into account for the encoding.
+   *
+   * \pre \a array must not be null
+   * \pre \a array must be of a size that can hold the value
+   *  (at least 4 bytes for a 32-bit file, at least 8 bytes for a 64-bit file)
+   * \pre \a ident must be valid
+   *
+   * \sa https://manpages.debian.org/stretch/manpages/elf.5.en.html
+   */
+  inline
+  void setNWord(ByteArraySpan array, uint64_t value, const Ident & ident) noexcept
+  {
+    assert( !array.isNull() );
+    assert( array.size >= 4 );
+    assert( ident.isValid() );
+
+    if( ident._class == Class::Class32 ){
+        set32BitWord(array, static_cast<uint32_t>(value), ident.dataFormat);
+      return;
+    }
+
+    assert( ident._class == Class::Class64 );
+    assert( array.size >= 8 );
+
+    set64BitWord(array, value, ident.dataFormat);
+  }
+
+  /*! \internal
+   *
+   * \pre \a array must not be null
+   * \pre \a array must be of a size that can hold the value
+   *  (at least 4 bytes for a 32-bit file, at least 8 bytes for a 64-bit file)
+   * \pre \a ident must be valid
+   */
+  inline
+  void setAddress(ByteArraySpan array, uint64_t address, const Ident & ident) noexcept
+  {
+    assert( !array.isNull() );
+    assert( array.size >= 4 );
+    assert( ident.isValid() );
+
+    setNWord(array, address, ident);
+  }
+
+  /*! \internal
+   *
+   * \pre \a array must not be null
+   * \pre \a array must be of a size that can hold the value
+   *  (at least 4 bytes for a 32-bit file, at least 8 bytes for a 64-bit file)
+   * \pre \a ident must be valid
+   */
+  inline
+  void setOffset(ByteArraySpan array, uint64_t offset, const Ident & ident) noexcept
+  {
+    assert( !array.isNull() );
+    assert( array.size >= 4 );
+    assert( ident.isValid() );
+
+    setNWord(array, offset, ident);
   }
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{

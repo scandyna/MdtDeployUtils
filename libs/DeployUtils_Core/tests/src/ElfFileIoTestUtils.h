@@ -23,6 +23,8 @@
 
 #include "Mdt/DeployUtils/Impl/Elf/FileReader.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
+#include <iostream>
+#include <cassert>
 
 using namespace Mdt::DeployUtils;
 
@@ -35,6 +37,23 @@ Mdt::DeployUtils::Impl::ByteArraySpan arraySpanFromArray(unsigned char * const a
   span.size = size;
 
   return span;
+}
+
+bool arraysAreEqual(const Mdt::DeployUtils::Impl::ByteArraySpan & array, const Mdt::DeployUtils::Impl::ByteArraySpan & reference)
+{
+  assert(array.size == reference.size);
+
+  for(int64_t i = 0; i < array.size; ++i){
+    if(array.data[i] != reference.data[i]){
+      std::cout << "values differ at index " << i
+      << ": 0x" << QString::number(array.data[i], 16).toStdString()
+      << " , extected: 0x" << QString::number(reference.data[i], 16).toStdString() << std::endl;
+      return false;
+    }
+  }
+
+  return true;
+//   return std::equal( array.cbegin(), array.cend(), reference.cbegin(), reference.cend() );
 }
 
 Impl::Elf::Ident makeValidIdent(Impl::Elf::Class _class, Impl::Elf::DataFormat dataFormat)

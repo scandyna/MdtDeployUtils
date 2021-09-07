@@ -23,8 +23,12 @@
 
 #include "DynamicSection.h"
 #include "FileReader.h"
+#include "ProgramHeaderReader.h"
 #include "FileWriter.h"
 #include <QLatin1Char>
+
+#include "Debug.h"
+#include <iostream>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
@@ -162,6 +166,28 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       readSectionNameStringTableHeaderIfNull(map);
       readDynamicSectionIfNull(map);
 
+      std::cout << "****** file: " << mFileName.toStdString() << " ******" << std::endl;
+      
+      std::cout << "File header:\n" << toDebugString(mFileHeader).toStdString() << std::endl;
+      
+//       std::cout << "sectionNamesStringTableSectionHeader:\n" << toDebugString(sectionNamesStringTableSectionHeader).toStdString() << std::endl;
+
+      const auto allProgramHeaders = extractAllProgramHeaders(map, mFileHeader);
+      std::cout << "Program headers:\n" << toDebugString(allProgramHeaders).toStdString() << std::endl;
+
+      const auto allSectionHeaders = extractAllSectionHeaders(map, mFileHeader);
+      std::cout << "Section headers:\n" << toDebugString(allSectionHeaders).toStdString() << std::endl;
+            
+      std::cout << "Dynamic section:\n" << toDebugString(mDynamicSection).toStdString() << std::endl;
+      std::cout << "Dynamic section string table:\n" << toDebugString(mDynamicSection.stringTable()).toStdString() << std::endl;
+      
+      const SectionHeader dynamicSectionHeader  = findSectionHeader(map, mFileHeader, mSectionNamesStringTableSectionHeader, SectionType::Dynamic, ".dynamic");
+      std::cout << "\nDynamic section header:\n" << toDebugString(dynamicSectionHeader).toStdString() << std::endl;
+      
+      SectionHeader dynamicStringTableSectionHeader = extractSectionHeaderAt( map, mFileHeader, static_cast<uint16_t>(dynamicSectionHeader.link) );
+      setSectionHeaderName(map, mSectionNamesStringTableSectionHeader, dynamicStringTableSectionHeader);
+      std::cout << "\nDynamic section string table header:\n" << toDebugString(dynamicStringTableSectionHeader).toStdString() << std::endl;
+      
       mDynamicSection.setRunPath( rPath.join( QLatin1Char(':') ) );
 
 //       setRunPathToMap( map, rPath.join( QLatin1Char(':') ), mFileHeader, mDynamicSectionHeader );

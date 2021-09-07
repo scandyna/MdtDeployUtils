@@ -35,11 +35,18 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/Elf/Exceptions.cpp
   Mdt/DeployUtils/Impl/Elf/Ident.cpp
   Mdt/DeployUtils/Impl/Elf/ProgramHeader.cpp
+  Mdt/DeployUtils/Impl/Elf/ProgramHeaderReaderWriterCommon.cpp
   Mdt/DeployUtils/Impl/Elf/ProgramHeaderReader.cpp
+  Mdt/DeployUtils/Impl/Elf/ProgramHeaderWriter.cpp
   Mdt/DeployUtils/Impl/Elf/SectionHeader.cpp
+  Mdt/DeployUtils/Impl/Elf/SectionHeaderReaderWriterCommon.cpp
+  Mdt/DeployUtils/Impl/Elf/SectionHeaderWriter.cpp
   Mdt/DeployUtils/Impl/Elf/FileHeader.cpp
+  Mdt/DeployUtils/Impl/Elf/FileHeaderReaderWriterCommon.cpp
+  Mdt/DeployUtils/Impl/Elf/FileHeaderWriter.cpp
   Mdt/DeployUtils/Impl/Elf/StringTable.cpp
   Mdt/DeployUtils/Impl/Elf/DynamicSection.cpp
+  Mdt/DeployUtils/Impl/Elf/DynamicSectionWriter.cpp
   Mdt/DeployUtils/Impl/Elf/FileReader.cpp
   Mdt/DeployUtils/Impl/Elf/FileWriter.cpp
   Mdt/DeployUtils/Impl/Elf/FileIoEngine.cpp
