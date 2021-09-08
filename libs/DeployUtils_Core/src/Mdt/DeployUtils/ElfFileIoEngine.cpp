@@ -116,7 +116,7 @@ Platform ElfFileIoEngine::doGetFilePlatform()
   }
 
   ProcessorISA cpu;
-  switch( fileHeader.machine ){
+  switch( fileHeader.machineType() ){
     case Machine::X86:
       cpu = ProcessorISA::X86_32;
       break;
@@ -153,10 +153,10 @@ bool ElfFileIoEngine::doIsExecutableOrSharedLibrary()
     return false;
   }
 
-  if(fileHeader.type == ObjectFileType::ExecutableFile){
+  if(fileHeader.objectFileType() == ObjectFileType::ExecutableFile){
     return true;
   }
-  if(fileHeader.type == ObjectFileType::SharedObject){
+  if(fileHeader.objectFileType() == ObjectFileType::SharedObject){
     return true;
   }
 

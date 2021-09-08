@@ -87,8 +87,8 @@ TEST_CASE("fileHeaderToArray")
     header.ident.version = 1;
     header.ident.osabi = 0;
     header.ident.abiversion = 0;
-    header.type = ObjectFileType::SharedObject;
-    header.machine = Machine::X86;
+    header.setObjectFileType(ObjectFileType::SharedObject);
+    header.setMachineType(Machine::X86);
     header.version = 1;
     header.entry = 0x3210;
     header.phoff = 0x34;
@@ -161,8 +161,8 @@ TEST_CASE("fileHeaderToArray")
     header.ident.version = 1;
     header.ident.osabi = 0;
     header.ident.abiversion = 0;
-    header.type = ObjectFileType::SharedObject;
-    header.machine = Machine::X86_64;
+    header.setObjectFileType(ObjectFileType::SharedObject);
+    header.setMachineType(Machine::X86_64);
     header.version = 1;
     header.entry = 0x3210;
     header.phoff = 0x40;

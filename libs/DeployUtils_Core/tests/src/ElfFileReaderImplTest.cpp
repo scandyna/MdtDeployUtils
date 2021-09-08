@@ -322,89 +322,132 @@ TEST_CASE("extractIdent")
   }
 }
 
-TEST_CASE("e_type_fromValue")
+TEST_CASE("fileHeader_objectFileType")
 {
-  using Impl::Elf::e_type_fromValue;
+  using Impl::Elf::FileHeader;
   using Impl::Elf::ObjectFileType;
 
-  SECTION("None")
+  FileHeader fileHeader;
+
+  SECTION("default constructed")
   {
-    REQUIRE( e_type_fromValue(0) == ObjectFileType::None );
+    REQUIRE( fileHeader.objectFileType() == ObjectFileType::None );
   }
 
   SECTION("RelocatableFile")
   {
-    REQUIRE( e_type_fromValue(0x01) == ObjectFileType::RelocatableFile );
+    fileHeader.type = 0x01;
+    REQUIRE( fileHeader.objectFileType() == ObjectFileType::RelocatableFile );
   }
 
   SECTION("ExecutableFile")
   {
-    REQUIRE( e_type_fromValue(0x02) == ObjectFileType::ExecutableFile );
+    fileHeader.type = 0x02;
+    REQUIRE( fileHeader.objectFileType() == ObjectFileType::ExecutableFile );
   }
 
   SECTION("SharedObject")
   {
-    REQUIRE( e_type_fromValue(0x03) == ObjectFileType::SharedObject );
+    fileHeader.type = 0x03;
+    REQUIRE( fileHeader.objectFileType() == ObjectFileType::SharedObject );
   }
 
   SECTION("CoreFile")
   {
-    REQUIRE( e_type_fromValue(0x04) == ObjectFileType::CoreFile );
+    fileHeader.type = 0x04;
+    REQUIRE( fileHeader.objectFileType() == ObjectFileType::CoreFile );
   }
 
   SECTION("Unknown 0x05")
   {
-    REQUIRE( e_type_fromValue(0x05) == ObjectFileType::Unknown );
+    fileHeader.type = 0x05;
+    REQUIRE( fileHeader.objectFileType() == ObjectFileType::Unknown );
   }
 
   SECTION("Unknown 0x1FFF")
   {
-    REQUIRE( e_type_fromValue(0x1FFF) == ObjectFileType::Unknown );
+    fileHeader.type = 0x1FFF;
+    REQUIRE( fileHeader.objectFileType() == ObjectFileType::Unknown );
+  }
+}
+
+TEST_CASE("fileHeader_setObjectFileType")
+{
+  using Impl::Elf::FileHeader;
+  using Impl::Elf::ObjectFileType;
+
+  FileHeader fileHeader;
+
+  SECTION("SharedObject")
+  {
+    fileHeader.setObjectFileType(ObjectFileType::SharedObject);
+    REQUIRE( fileHeader.type == 0x03 );
+    REQUIRE( fileHeader.objectFileType() == ObjectFileType::SharedObject );
   }
 }
 
 TEST_CASE("extract_e_type")
 {
   using Impl::Elf::extract_e_type;
-  using Impl::Elf::ObjectFileType;
   using Impl::Elf::DataFormat;
 
   SECTION("SharedObject little-endian")
   {
     uchar valueArray[2] = {0x03,0x00};
-    REQUIRE( extract_e_type(valueArray, DataFormat::Data2LSB) == ObjectFileType::SharedObject );
+    REQUIRE( extract_e_type(valueArray, DataFormat::Data2LSB) == 0x03 );
   }
 
   SECTION("SharedObject big-endian")
   {
     uchar valueArray[2] = {0x00,0x03};
-    REQUIRE( extract_e_type(valueArray, DataFormat::Data2MSB) == ObjectFileType::SharedObject );
+    REQUIRE( extract_e_type(valueArray, DataFormat::Data2MSB) == 0x03 );
   }
 }
 
-TEST_CASE("e_machine_fromValue")
+TEST_CASE("fileHeader_machineType")
 {
-  using Impl::Elf::e_machine_fromValue;
+  using Impl::Elf::FileHeader;
   using Impl::Elf::Machine;
+
+  FileHeader fileHeader;
 
   SECTION("None")
   {
-    REQUIRE( e_machine_fromValue(0x00) == Machine::None );
+    fileHeader.machine = 0x00;
+    REQUIRE( fileHeader.machineType() == Machine::None );
   }
 
   SECTION("x86")
   {
-    REQUIRE( e_machine_fromValue(0x03) == Machine::X86 );
+    fileHeader.machine = 0x03;
+    REQUIRE( fileHeader.machineType() == Machine::X86 );
   }
 
   SECTION("x86-64")
   {
-    REQUIRE( e_machine_fromValue(0x3E) == Machine::X86_64 );
+    fileHeader.machine = 0x3E;
+    REQUIRE( fileHeader.machineType() == Machine::X86_64 );
   }
 
   SECTION("unknown, value 0x1234")
   {
-    REQUIRE( e_machine_fromValue(0x1234) == Machine::Unknown );
+    fileHeader.machine = 0x1234;
+    REQUIRE( fileHeader.machineType() == Machine::Unknown );
+  }
+}
+
+TEST_CASE("fileHeader_setMachineType")
+{
+  using Impl::Elf::FileHeader;
+  using Impl::Elf::Machine;
+
+  FileHeader fileHeader;
+
+  SECTION("x86-64")
+  {
+    fileHeader.setMachineType(Machine::X86_64);
+    REQUIRE( fileHeader.machine == 0x3E );
+    REQUIRE( fileHeader.machineType() == Machine::X86_64 );
   }
 }
 
@@ -417,13 +460,13 @@ TEST_CASE("extract_e_machine")
   SECTION("x86-64 little-endian")
   {
     uchar valueArray[2] = {0x3E,0x00};
-    REQUIRE( extract_e_machine(valueArray, DataFormat::Data2LSB) == Machine::X86_64 );
+    REQUIRE( extract_e_machine(valueArray, DataFormat::Data2LSB) == 0x3E );
   }
 
   SECTION("x86-64 big-endian")
   {
     uchar valueArray[2] = {0x00,0x3E};
-    REQUIRE( extract_e_machine(valueArray, DataFormat::Data2MSB) == Machine::X86_64 );
+    REQUIRE( extract_e_machine(valueArray, DataFormat::Data2MSB) == 0x3E );
   }
 }
 
@@ -435,8 +478,8 @@ TEST_CASE("fileHeader_seemsValid")
 
   FileHeader fileHeader;
   fileHeader.ident = make64BitLittleEndianIdent();
-  fileHeader.type = ObjectFileType::SharedObject;
-  fileHeader.machine = Machine::X86_64;
+  fileHeader.setObjectFileType(ObjectFileType::SharedObject);
+  fileHeader.setMachineType(Machine::X86_64);
   fileHeader.version = 1;
   REQUIRE( fileHeader.seemsValid() );
 
@@ -448,19 +491,19 @@ TEST_CASE("fileHeader_seemsValid")
 
   SECTION("e_type: ET_NONE")
   {
-    fileHeader.type = ObjectFileType::None;
+    fileHeader.setObjectFileType(ObjectFileType::None);
     REQUIRE( !fileHeader.seemsValid() );
   }
 
   SECTION("e_machine: ET_NONE")
   {
-    fileHeader.machine = Machine::None;
+    fileHeader.setMachineType(Machine::None);
     REQUIRE( !fileHeader.seemsValid() );
   }
 
   SECTION("e_machine: Unknown")
   {
-    fileHeader.machine = Machine::Unknown;
+    fileHeader.setMachineType(Machine::Unknown);
     REQUIRE( !fileHeader.seemsValid() );
   }
 
@@ -477,7 +520,7 @@ TEST_CASE("fileHeader_seemsValid")
   }
 }
 
-TEST_CASE("minimumSizeToReadAllProgramHeaders")
+TEST_CASE("fileHeader_minimumSizeToReadAllProgramHeaders")
 {
   using Impl::Elf::FileHeader;
 
@@ -589,8 +632,8 @@ TEST_CASE("extractFileHeader")
     REQUIRE( header.ident.version == 1 );
     REQUIRE( header.ident.osabi == 0 );
     REQUIRE( header.ident.abiversion == 0 );
-    REQUIRE( header.type == ObjectFileType::SharedObject );
-    REQUIRE( header.machine == Machine::X86 );
+    REQUIRE( header.objectFileType() == ObjectFileType::SharedObject );
+    REQUIRE( header.machineType() == Machine::X86 );
     REQUIRE( header.version == 1 );
     REQUIRE( header.entry == 0x3210 );
     REQUIRE( header.phoff == 0x34 );
@@ -658,8 +701,8 @@ TEST_CASE("extractFileHeader")
     REQUIRE( header.ident.version == 1 );
     REQUIRE( header.ident.osabi == 0 );
     REQUIRE( header.ident.abiversion == 0 );
-    REQUIRE( header.type == ObjectFileType::SharedObject );
-    REQUIRE( header.machine == Machine::X86_64 );
+    REQUIRE( header.objectFileType() == ObjectFileType::SharedObject );
+    REQUIRE( header.machineType() == Machine::X86_64 );
     REQUIRE( header.version == 1 );
     REQUIRE( header.entry == 0x3210 );
     REQUIRE( header.phoff == 0x40 );

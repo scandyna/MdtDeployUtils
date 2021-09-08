@@ -29,7 +29,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
   /*! \internal e_type from the header
    */
-  enum class ObjectFileType
+  enum class ObjectFileType : uint16_t
   {
     None = 0x00,            /*!< An unknown type */
     RelocatableFile = 0x01, /*!< A relocatable file */
@@ -41,7 +41,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
   /*! \internal e_machine from the header
    */
-  enum class Machine
+  enum class Machine : uint16_t
   {
     None = 0x00,      /*!< No specific instruction set */
     X86 = 0x03,       /*!< x86 */
@@ -54,8 +54,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   struct FileHeader
   {
     Ident ident;
-    ObjectFileType type;
-    Machine machine;
+    uint16_t type;
+    uint16_t machine;
     uint32_t version;
     uint64_t entry;
     uint64_t phoff;
@@ -68,6 +68,60 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     uint16_t shnum;
     uint16_t shstrndx;
 
+    /*! \brief
+     */
+    constexpr
+    void setObjectFileType(ObjectFileType t) noexcept
+    {
+      type = static_cast<uint16_t>(t);
+    }
+
+    /*! \brief
+     */
+    constexpr
+    ObjectFileType objectFileType() const noexcept
+    {
+      switch(type){
+        case 0x00:
+          return ObjectFileType::None;
+        case 0x01:
+          return ObjectFileType::RelocatableFile;
+        case 0x02:
+          return ObjectFileType::ExecutableFile;
+        case 0x03:
+          return ObjectFileType::SharedObject;
+        case 0x04:
+          return ObjectFileType::CoreFile;
+      }
+
+      return ObjectFileType::Unknown;
+    }
+
+    /*! \brief
+     */
+    constexpr
+    Machine machineType() const noexcept
+    {
+      switch(machine){
+        case 0x00:
+          return Machine::None;
+        case 0x03:
+          return Machine::X86;
+        case 0x3E:
+          return Machine::X86_64;
+      }
+
+      return Machine::Unknown;
+    }
+
+    /*! \brief
+     */
+    constexpr
+    void setMachineType(Machine m) noexcept
+    {
+      machine = static_cast<uint16_t>(m);
+    }
+
     /*! \brief Return true if this file header seems valid
      */
     constexpr
@@ -76,13 +130,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       if( !ident.isValid() ){
         return false;
       }
-      if( type == ObjectFileType::None ){
+      if( objectFileType() == ObjectFileType::None ){
         return false;
       }
-      if( machine == Machine::None ){
+      if( machineType() == Machine::None ){
         return false;
       }
-      if( machine == Machine::Unknown ){
+      if( machineType() == Machine::Unknown ){
         return false;
       }
       if( version != 1 ){
@@ -98,8 +152,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     void clear() noexcept
     {
       ident.clear();
-      type = ObjectFileType::None;
-      machine = Machine::None;
+      type = 0;
+      machine = 0;
+//       machine = Machine::None;
     }
 
     /*! \brief Get the minimum size to read all program headers

@@ -130,8 +130,8 @@ QString toDebugString(const FileHeader & header)
 {
   QString str = toDebugString(header.ident);
 
-  str += QLatin1String("\nObject file type: ") + toDebugString(header.type);
-  str += QLatin1String("\nMachine: ") + toDebugString(header.machine);
+  str += QLatin1String("\nObject file type: ") + toDebugString( header.objectFileType() );
+  str += QLatin1String("\nMachine: ") + toDebugString( header.machineType() );
   str += QLatin1String("\nVersion: ") + QString::number(header.version);
   str += QLatin1String("\nEntry point: 0x") + QString::number(header.entry, 16);
   str += QLatin1String("\nProgram header offset: ") + QString::number(header.phoff) + QLatin1String(" (bytes in the file)");

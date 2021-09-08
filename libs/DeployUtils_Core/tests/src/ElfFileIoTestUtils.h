@@ -112,8 +112,8 @@ Impl::Elf::FileHeader make64BitLittleEndianFileHeader()
   Impl::Elf::FileHeader fileHeader;
 
   fileHeader.ident = make64BitLittleEndianIdent();
-  fileHeader.type = ObjectFileType::SharedObject;
-  fileHeader.machine = Machine::X86_64;
+  fileHeader.setObjectFileType(ObjectFileType::SharedObject);
+  fileHeader.setMachineType(Machine::X86_64);
   fileHeader.version = 1;
   fileHeader.entry = 100;
   fileHeader.phoff = 0x40;

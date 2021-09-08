@@ -320,24 +320,18 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   }
 
   /*! \internal
+   *
+   * \pre \a valueArray must not be a nullptr
+   * \pre the array referenced by \a valueArray must have at least 2 bytes
+   * \pre \a dataFormat must be valid
    */
   inline
-  ObjectFileType e_type_fromValue(uint16_t value) noexcept
+  uint16_t extract_e_type(const uchar * const valueArray, DataFormat dataFormat) noexcept
   {
-    switch(value){
-      case 0x00:
-        return ObjectFileType::None;
-      case 0x01:
-        return ObjectFileType::RelocatableFile;
-      case 0x02:
-        return ObjectFileType::ExecutableFile;
-      case 0x03:
-        return ObjectFileType::SharedObject;
-      case 0x04:
-        return ObjectFileType::CoreFile;
-    }
+    assert( valueArray != nullptr );
+    assert( dataFormat != DataFormat::DataNone );
 
-    return ObjectFileType::Unknown;
+    return getHalfWord(valueArray, dataFormat);
   }
 
   /*! \internal
@@ -347,48 +341,12 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    * \pre \a dataFormat must be valid
    */
   inline
-  ObjectFileType extract_e_type(const uchar * const valueArray, DataFormat dataFormat) noexcept
+  uint16_t extract_e_machine(const uchar * const valueArray, DataFormat dataFormat) noexcept
   {
     assert( valueArray != nullptr );
     assert( dataFormat != DataFormat::DataNone );
 
-    const uint16_t value = getHalfWord(valueArray, dataFormat);
-
-    return e_type_fromValue(value);
-  }
-
-  /*! \internal
-   */
-  inline
-  Machine e_machine_fromValue(uint16_t value) noexcept
-  {
-    switch(value){
-      case 0x00:
-        return Machine::None;
-      case 0x03:
-        return Machine::X86;
-      case 0x3E:
-        return Machine::X86_64;
-    }
-
-    return Machine::Unknown;
-  }
-
-  /*! \internal
-   *
-   * \pre \a valueArray must not be a nullptr
-   * \pre the array referenced by \a valueArray must have at least 2 bytes
-   * \pre \a dataFormat must be valid
-   */
-  inline
-  Machine extract_e_machine(const uchar * const valueArray, DataFormat dataFormat) noexcept
-  {
-    assert( valueArray != nullptr );
-    assert( dataFormat != DataFormat::DataNone );
-
-    const uint16_t value = getHalfWord(valueArray, dataFormat);
-
-    return e_machine_fromValue(value);
+    return getHalfWord(valueArray, dataFormat);
   }
 
 
