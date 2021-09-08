@@ -140,6 +140,11 @@ if(MSVC)
   )
 endif()
 
+add_executable(
+  testSimpleExecutableDynamic
+  src/TestSimpleExecutableDynamic.cpp
+)
+
   # -static cannot be used with some sanitizers
   # requires some work to make this somewhat clean
 #   add_executable(
@@ -237,6 +242,25 @@ mdt_add_test(
   SOURCE_FILES
     src/ElfFileWriterImplTest.cpp
 )
+
+if( UNIX AND (NOT APPLE) )
+
+  mdt_add_test(
+    NAME ElfFileWriterImplTest_Unix
+    TARGET elfFileWriterImplTest_Unix
+    DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+    SOURCE_FILES
+      src/ElfFileWriterImplTest_Unix.cpp
+  )
+
+  # Make shure that the test libraries will be built before the test
+  add_dependencies(elfFileWriterImplTest_Unix
+    testSimpleExecutableDynamic
+  )
+
+  target_compile_definitions(elfFileWriterImplTest_Unix PRIVATE TEST_SIMPLE_EXECUTABLE_DYNAMIC_FILE_PATH="$<TARGET_FILE:testSimpleExecutableDynamic>")
+
+endif()
 
 mdt_add_test(
   NAME ElfFileIoEngineTest

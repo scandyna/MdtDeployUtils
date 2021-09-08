@@ -26,6 +26,8 @@
 #include <QTextStream>
 #include <QTemporaryDir>
 #include <QDir>
+#include <QProcess>
+#include <QDebug>
 #include <cassert>
 
 QString makePath(const QTemporaryDir & dir, const char * const subPath)
@@ -98,6 +100,32 @@ bool copyFile(const QString & source, const QString & destination)
   }
 
   return QFile::copy(source, destination);
+}
+
+bool runExecutable(const QString & executableFilePath)
+{
+  QProcess process;
+
+  process.start(executableFilePath);
+  if( !process.waitForStarted() ){
+    qDebug() << "starting process for executable '" << executableFilePath << "' failed: " << process.errorString();
+    return false;
+  }
+  if( !process.waitForFinished() ){
+    qDebug() << "error occured for executable '" << executableFilePath << "' failed: " << process.errorString();
+    return false;
+  }
+  if(process.exitStatus() != QProcess::NormalExit){
+    qDebug() << "executable '" << executableFilePath << "' probably crashed";
+    return false;
+  }
+  if(process.exitCode() != 0){
+    qDebug() << "executable '" << executableFilePath << "' returned a error code: " << process.exitCode();
+    return false;
+  }
+  qDebug() << "output for executable '" << executableFilePath << "': " << process.readAllStandardOutput();
+
+  return true;
 }
 
 #endif // #ifndef TEST_FILE_UTILS_H
