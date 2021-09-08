@@ -23,7 +23,7 @@
 
 #include "FileHeader.h"
 #include "FileHeaderReaderWriterCommon.h"
-#include "FileWriter.h"
+#include "FileWriterUtils.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include <cassert>
 

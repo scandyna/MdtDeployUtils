@@ -24,7 +24,7 @@
 #include "ProgramHeaderReaderWriterCommon.h"
 #include "ProgramHeader.h"
 #include "FileHeader.h"
-#include "FileWriter.h"
+#include "FileWriterUtils.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include <cassert>
 

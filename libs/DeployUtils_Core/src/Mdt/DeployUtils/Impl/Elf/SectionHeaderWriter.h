@@ -24,7 +24,7 @@
 #include "SectionHeader.h"
 #include "SectionHeaderReaderWriterCommon.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
-#include "FileWriter.h"
+#include "FileWriterUtils.h"
 #include "FileHeader.h"
 #include <cassert>
 

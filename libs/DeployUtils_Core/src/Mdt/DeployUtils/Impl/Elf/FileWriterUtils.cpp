@@ -18,26 +18,4 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_WRITER_H
-#define MDT_DEPLOY_UTILS_IMPL_ELF_FILE_WRITER_H
-
-#include "FileHeader.h"
-#include "FileHeaderWriter.h"
-#include "ProgramHeader.h"
-#include "ProgramHeaderWriter.h"
-#include "SectionHeader.h"
-#include "SectionHeaderWriter.h"
-#include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
-#include <QtEndian>
-#include <cstdint>
-#include <cassert>
-
-namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
-
-  /*! \internal
-   */
-  
-
-}}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
-
-#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_WRITER_H
+#include "FileWriterUtils.h"

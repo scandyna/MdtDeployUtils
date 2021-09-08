@@ -142,4 +142,6 @@ TEST_CASE("simpleReadWrite")
 
   unmapAndCloseFile(file, map);
   REQUIRE( runExecutable(targetFilePath) );
+  
+  REQUIRE( false);
 }

@@ -34,6 +34,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/FileMapper.cpp
   Mdt/DeployUtils/Impl/Elf/Exceptions.cpp
   Mdt/DeployUtils/Impl/Elf/Ident.cpp
+  Mdt/DeployUtils/Impl/Elf/FileWriterUtils.cpp
   Mdt/DeployUtils/Impl/Elf/ProgramHeader.cpp
   Mdt/DeployUtils/Impl/Elf/ProgramHeaderReaderWriterCommon.cpp
   Mdt/DeployUtils/Impl/Elf/ProgramHeaderReader.cpp
