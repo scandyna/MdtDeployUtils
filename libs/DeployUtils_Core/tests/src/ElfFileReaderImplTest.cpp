@@ -757,10 +757,10 @@ TEST_CASE("sectionHeaderArraySizeIsBigEnough")
 {
   using Impl::Elf::sectionHeaderArraySizeIsBigEnough;
   using Impl::Elf::SectionHeader;
-  using Impl::Elf::Ident;
+  using Impl::Elf::FileHeader;
   using Impl::ByteArraySpan;
 
-  Ident ident;
+  FileHeader fileHeader;
 
   ByteArraySpan array;
   unsigned char arrayData[1] = {}; // data is not important here
@@ -768,35 +768,35 @@ TEST_CASE("sectionHeaderArraySizeIsBigEnough")
 
   SECTION("32-bit")
   {
-    ident = make32BitLittleEndianIdent();
+    fileHeader = make32BitBigEndianFileHeader();
 
     SECTION("to small (39 bytes)")
     {
       array.size = 39;
-      REQUIRE( !sectionHeaderArraySizeIsBigEnough(array, ident) );
+      REQUIRE( !sectionHeaderArraySizeIsBigEnough(array, fileHeader) );
     }
 
     SECTION("ok (40 bytes)")
     {
       array.size = 40;
-      REQUIRE( sectionHeaderArraySizeIsBigEnough(array, ident) );
+      REQUIRE( sectionHeaderArraySizeIsBigEnough(array, fileHeader) );
     }
   }
 
   SECTION("64-bit")
   {
-    ident = make64BitLittleEndianIdent();
+    fileHeader = make64BitLittleEndianFileHeader();
 
     SECTION("to small (63 bytes)")
     {
       array.size = 63;
-      REQUIRE( !sectionHeaderArraySizeIsBigEnough(array, ident) );
+      REQUIRE( !sectionHeaderArraySizeIsBigEnough(array, fileHeader) );
     }
 
     SECTION("ok (64 bytes)")
     {
       array.size = 64;
-      REQUIRE( sectionHeaderArraySizeIsBigEnough(array, ident) );
+      REQUIRE( sectionHeaderArraySizeIsBigEnough(array, fileHeader) );
     }
   }
 }
@@ -805,11 +805,11 @@ TEST_CASE("sectionHeaderFromArray")
 {
   using Impl::Elf::sectionHeaderFromArray;
   using Impl::Elf::SectionHeader;
-  using Impl::Elf::Ident;
+  using Impl::Elf::FileHeader;
   using Impl::ByteArraySpan;
 
   SectionHeader sectionHeader;
-  Ident ident;
+  FileHeader fileHeader;
   ByteArraySpan array;
 
   SECTION("32-bit big-endian")
@@ -837,10 +837,10 @@ TEST_CASE("sectionHeaderFromArray")
       0x45,0x67,0x89,0x01  // 0x45678901
     };
 
-    ident = make32BitBigEndianIdent();
+    fileHeader = make32BitBigEndianFileHeader();
     array.data = sectionHeaderArray;
     array.size = sizeof(sectionHeaderArray);
-    sectionHeader = sectionHeaderFromArray(array, ident);
+    sectionHeader = sectionHeaderFromArray(array, fileHeader);
     REQUIRE( sectionHeader.nameIndex == 0x1234 );
     REQUIRE( sectionHeader.type == 0x03 );
     REQUIRE( sectionHeader.flags == 0x20 );
@@ -878,10 +878,10 @@ TEST_CASE("sectionHeaderFromArray")
       0x01,0x89,0x67,0x45,0,0,0,0  // 0x45678901
     };
 
-    ident = make64BitLittleEndianIdent();
+    fileHeader = make64BitLittleEndianFileHeader();
     array.data = sectionHeaderArray;
     array.size = sizeof(sectionHeaderArray);
-    sectionHeader = sectionHeaderFromArray(array, ident);
+    sectionHeader = sectionHeaderFromArray(array, fileHeader);
     REQUIRE( sectionHeader.nameIndex == 0x1234 );
     REQUIRE( sectionHeader.type == 0x03 );
     REQUIRE( sectionHeader.flags == 0x20 );

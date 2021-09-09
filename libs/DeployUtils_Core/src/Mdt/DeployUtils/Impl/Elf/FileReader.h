@@ -512,18 +512,19 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    * \pre \a array must not be null
    * \pre the array referenced by \a array must have at least
    *     40 bytes for 32-bit files, 64 bytes for 64-bit files
-   * \pre \a ident must be valid
+   * \pre \a fileHeader must be valid
    * \note this function will not set the section header name
    * \sa setSectionHeaderName()
    */
   inline
-  SectionHeader sectionHeaderFromArray(const ByteArraySpan & array, const Ident & ident) noexcept
+  SectionHeader sectionHeaderFromArray(const ByteArraySpan & array, const FileHeader & fileHeader) noexcept
   {
     assert( !array.isNull() );
-    assert( ident.isValid() );
-    assert( sectionHeaderArraySizeIsBigEnough(array, ident) );
+    assert( fileHeader.seemsValid() );
+    assert( sectionHeaderArraySizeIsBigEnough(array, fileHeader) );
 
     SectionHeader sectionHeader;
+    const Ident ident = fileHeader.ident;
     const unsigned char *it = array.data;
 
     sectionHeader.nameIndex = getWord(it, ident.dataFormat);
@@ -575,7 +576,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     sectionArray.data = map.data + fileHeader.shoff + index * fileHeader.shentsize;
     sectionArray.size = fileHeader.shentsize;
 
-    return sectionHeaderFromArray(sectionArray, fileHeader.ident);
+    return sectionHeaderFromArray(sectionArray, fileHeader);
   }
 
   /*! \internal

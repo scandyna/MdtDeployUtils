@@ -104,6 +104,31 @@ Impl::Elf::Ident make64BitBigEndianIdent()
   return makeValidIdent(Class::Class64, DataFormat::Data2MSB);
 }
 
+Impl::Elf::FileHeader make32BitBigEndianFileHeader()
+{
+  using Impl::Elf::ObjectFileType;
+  using Impl::Elf::Machine;
+
+  Impl::Elf::FileHeader fileHeader;
+
+  fileHeader.ident = make32BitBigEndianIdent();
+  fileHeader.setObjectFileType(ObjectFileType::SharedObject);
+  fileHeader.setMachineType(Machine::X86);
+  fileHeader.version = 1;
+  fileHeader.entry = 100;
+  fileHeader.phoff = 0x34;
+  fileHeader.shoff = 1000;
+  fileHeader.flags = 0;
+  fileHeader.ehsize = 52;
+  fileHeader.phentsize = 32;
+  fileHeader.phnum = 9;
+  fileHeader.shentsize = 40;
+  fileHeader.shnum = 10;
+  fileHeader.shstrndx = 9;
+
+  return fileHeader;
+}
+
 Impl::Elf::FileHeader make64BitLittleEndianFileHeader()
 {
   using Impl::Elf::ObjectFileType;

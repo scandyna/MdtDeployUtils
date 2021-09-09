@@ -37,18 +37,20 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    * 
    * \todo some preconditions on \a sectionHeader ?
    * 
-   * \pre \a ident must be valid
+   * \pre \a fileHeader must be valid
    * \sa sectionHeaderArraySizeIsBigEnough()
    *
    * \todo what about section names in string table ?
    */
   inline
-  void sectionHeaderToArray(ByteArraySpan array, const SectionHeader & sectionHeader, const Ident & ident) noexcept
+  void sectionHeaderToArray(ByteArraySpan array, const SectionHeader & sectionHeader, const FileHeader & fileHeader) noexcept
   {
     assert( !array.isNull() );
-    assert( ident.isValid() );
+    assert( fileHeader.seemsValid() );
     
-    assert( sectionHeaderArraySizeIsBigEnough(array, ident) );
+    assert( sectionHeaderArraySizeIsBigEnough(array, fileHeader) );
+
+    const Ident ident = fileHeader.ident;
 
     set32BitWord(array.subSpan(0, 4), sectionHeader.nameIndex, ident.dataFormat);
     set32BitWord(array.subSpan(0x04, 4), sectionHeader.type, ident.dataFormat);

@@ -29,7 +29,7 @@
 
 using Mdt::DeployUtils::Impl::ByteArraySpan;
 using Mdt::DeployUtils::Impl::Elf::SectionHeader;
-using Mdt::DeployUtils::Impl::Elf::Ident;
+using Mdt::DeployUtils::Impl::Elf::FileHeader;
 
 
 TEST_CASE("sectionHeaderToArray")
@@ -37,7 +37,7 @@ TEST_CASE("sectionHeaderToArray")
   using Mdt::DeployUtils::Impl::Elf::sectionHeaderToArray;
 
   SectionHeader sectionHeader;
-  Ident ident;
+  FileHeader fileHeader;
   ByteArraySpan array;
   ByteArraySpan expectedArray;
 
@@ -78,11 +78,11 @@ TEST_CASE("sectionHeaderToArray")
     };
     expectedArray = arraySpanFromArray( expectedArrayData, sizeof(expectedArrayData) );
 
-    ident = make32BitBigEndianIdent();
+    fileHeader = make32BitBigEndianFileHeader();
     uchar arrayData[40] = {0};
     array = arraySpanFromArray( arrayData, sizeof(arrayData) );
 
-    sectionHeaderToArray(array, sectionHeader, ident);
+    sectionHeaderToArray(array, sectionHeader, fileHeader);
     REQUIRE( arraysAreEqual(array, expectedArray) );
   }
 
@@ -123,11 +123,11 @@ TEST_CASE("sectionHeaderToArray")
     };
     expectedArray = arraySpanFromArray( expectedArrayData, sizeof(expectedArrayData) );
 
-    ident = make64BitLittleEndianIdent();
+    fileHeader = make64BitLittleEndianFileHeader();
     uchar arrayData[64] = {0};
     array = arraySpanFromArray( arrayData, sizeof(arrayData) );
 
-    sectionHeaderToArray(array, sectionHeader, ident);
+    sectionHeaderToArray(array, sectionHeader, fileHeader);
     REQUIRE( arraysAreEqual(array, expectedArray) );
   }
 }

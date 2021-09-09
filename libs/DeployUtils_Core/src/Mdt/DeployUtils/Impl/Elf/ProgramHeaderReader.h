@@ -37,17 +37,18 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    *
    * \pre \a array must not be null
    * \pre \a array must be big enough to hold a program header
-   * \pre \a ident must be valid
+   * \pre \a fileHeader must be valid
    * \sa programHeaderArraySizeIsBigEnough()
    */
   inline
-  ProgramHeader programHeaderFromArray(const ByteArraySpan & array, const Ident & ident) noexcept
+  ProgramHeader programHeaderFromArray(const ByteArraySpan & array, const FileHeader & fileHeader) noexcept
   {
     assert( !array.isNull() );
-    assert( ident.isValid() );
-    assert( programHeaderArraySizeIsBigEnough(array, ident) );
+    assert( fileHeader.seemsValid() );
+    assert( programHeaderArraySizeIsBigEnough(array, fileHeader) );
 
     ProgramHeader programHeader;
+    const Ident ident = fileHeader.ident;
     const unsigned char *it = array.data;
 
     programHeader.type = getWord(it, ident.dataFormat);
@@ -117,7 +118,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     const ByteArraySpan headerArray = map.subSpan(static_cast<int64_t>(fileHeader.phoff) + index * fileHeader.phentsize, fileHeader.phentsize);
 
-    return programHeaderFromArray(headerArray, fileHeader.ident);
+    return programHeaderFromArray(headerArray, fileHeader);
   }
 
   /*! \internal

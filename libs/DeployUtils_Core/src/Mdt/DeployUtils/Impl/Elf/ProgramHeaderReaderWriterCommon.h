@@ -23,6 +23,7 @@
 
 #include "FileHeader.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
+#include <cstdint>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
@@ -30,20 +31,15 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   /*! \internal
    *
    * \pre \a array must not be null
-   * \pre \a ident must be valid
+   * \pre \a fileHeader must be valid
    */
   inline
-  bool programHeaderArraySizeIsBigEnough(const ByteArraySpan & array, const Ident & ident) noexcept
+  bool programHeaderArraySizeIsBigEnough(const ByteArraySpan & array, const FileHeader & fileHeader) noexcept
   {
     assert( !array.isNull() );
-    assert( ident.isValid() );
+    assert( fileHeader.seemsValid() );
 
-    if( ident._class == Class::Class32 ){
-      return array.size >= 32;
-    }
-    assert( ident._class == Class::Class64 );
-
-    return array.size >= 56;
+    return array.size >= fileHeader.phentsize;
   }
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{

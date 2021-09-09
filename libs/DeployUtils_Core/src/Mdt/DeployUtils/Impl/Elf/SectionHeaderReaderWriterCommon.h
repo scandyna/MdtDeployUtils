@@ -30,20 +30,15 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   /*! \internal
    *
    * \pre \a array must not be null
-   * \pre \a ident must be valid
+   * \pre \a fileHeader must be valid
    */
   inline
-  bool sectionHeaderArraySizeIsBigEnough(const ByteArraySpan & array, const Ident & ident) noexcept
+  bool sectionHeaderArraySizeIsBigEnough(const ByteArraySpan & array, const FileHeader & fileHeader) noexcept
   {
     assert( !array.isNull() );
-    assert( ident.isValid() );
+    assert( fileHeader.seemsValid() );
 
-    if( ident._class == Class::Class32 ){
-      return array.size >= 40;
-    }
-    assert( ident._class == Class::Class64 );
-
-    return array.size >= 64;
+    return array.size >= fileHeader.shentsize;
   }
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{

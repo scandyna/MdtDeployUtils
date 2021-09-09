@@ -37,16 +37,18 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    * 
    * \todo some preconditions on \a programHeader ?
    * 
-   * \pre \a ident must be valid
+   * \pre \a fileHeader must be valid
    * \sa programHeaderArraySizeIsBigEnough()
    */
   inline
-  void programHeaderToArray(ByteArraySpan & array, const ProgramHeader & programHeader, const Ident & ident) noexcept
+  void programHeaderToArray(ByteArraySpan & array, const ProgramHeader & programHeader, const FileHeader & fileHeader) noexcept
   {
     assert( !array.isNull() );
-    assert( ident.isValid() );
+    assert( fileHeader.seemsValid() );
     
-    assert( programHeaderArraySizeIsBigEnough(array, ident) );
+    assert( programHeaderArraySizeIsBigEnough(array, fileHeader) );
+
+    const Ident ident = fileHeader.ident;
 
     set32BitWord(array.subSpan(0, 4), programHeader.type, ident.dataFormat);
 

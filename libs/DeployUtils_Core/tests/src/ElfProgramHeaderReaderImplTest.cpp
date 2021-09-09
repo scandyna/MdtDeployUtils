@@ -24,10 +24,10 @@ TEST_CASE("programHeaderFromArray")
 {
   using Impl::Elf::programHeaderFromArray;
   using Impl::Elf::ProgramHeader;
-  using Impl::Elf::Ident;
+  using Impl::Elf::FileHeader;
 
   ProgramHeader programHeader;
-  Ident ident;
+  FileHeader fileHeader;
   ByteArraySpan array;
 
   SECTION("32-bit big-endian")
@@ -51,9 +51,9 @@ TEST_CASE("programHeaderFromArray")
       0x67,0x89,0x01,0x23  // 0x67890123
     };
 
-    ident = make32BitBigEndianIdent();
+    fileHeader = make32BitBigEndianFileHeader();
     array = arraySpanFromArray( programHeaderArray, sizeof(programHeaderArray) );
-    programHeader = programHeaderFromArray(array, ident);
+    programHeader = programHeaderFromArray(array, fileHeader);
     REQUIRE( programHeader.type == 0x12345678 );
     REQUIRE( programHeader.flags == 0x56789012 );
     REQUIRE( programHeader.offset == 0x90123456 );
@@ -85,9 +85,9 @@ TEST_CASE("programHeaderFromArray")
       0x45,0x23,0x01,0x89,0,0,0,0  // 0x89012345
     };
 
-    ident = make64BitLittleEndianIdent();
+    fileHeader = make64BitLittleEndianFileHeader();
     array = arraySpanFromArray( programHeaderArray, sizeof(programHeaderArray) );
-    programHeader = programHeaderFromArray(array, ident);
+    programHeader = programHeaderFromArray(array, fileHeader);
     REQUIRE( programHeader.type == 0x12345678 );
     REQUIRE( programHeader.flags == 0x23456789 );
     REQUIRE( programHeader.offset == 0x34567890 );
