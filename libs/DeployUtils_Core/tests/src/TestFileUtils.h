@@ -116,7 +116,7 @@ bool runExecutable(const QString & executableFilePath)
     return false;
   }
   if(process.exitStatus() != QProcess::NormalExit){
-    qDebug() << "executable '" << executableFilePath << "' probably crashed";
+    qDebug() << "executable '" << executableFilePath << "' probably crashed: " << process.readAllStandardError();
     return false;
   }
   if(process.exitCode() != 0){

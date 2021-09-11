@@ -183,3 +183,52 @@ TEST_CASE("setOffset")
     REQUIRE( arraysAreEqual(array, {0xF0,0xDE,0xBC,0x9A,0x78,0x56,0x34,0x12}) );
   }
 }
+
+TEST_CASE("setSignedNWord")
+{
+  using Impl::Elf::setSignedNWord;
+  using Impl::Elf::DataFormat;
+  using Impl::Elf::Ident;
+
+  Ident ident;
+
+  SECTION("32-bit little-endian")
+  {
+    ident = make32BitLittleEndianIdent();
+    uchar charArray[4] = {};
+    ByteArraySpan array = arraySpanFromArray( charArray, sizeof(charArray) );
+
+    setSignedNWord(array, 0x12345678, ident);
+    REQUIRE( arraysAreEqual(array, {0x78,0x56,0x34,0x12}) );
+  }
+
+  SECTION("32-bit big-endian")
+  {
+    ident = make32BitBigEndianIdent();
+    uchar charArray[4] = {};
+    ByteArraySpan array = arraySpanFromArray( charArray, sizeof(charArray) );
+
+    setSignedNWord(array, 0x12345678, ident);
+    REQUIRE( arraysAreEqual(array, {0x12,0x34,0x56,0x78}) );
+  }
+
+  SECTION("64-bit little-endian")
+  {
+    ident = make64BitLittleEndianIdent();
+    uchar charArray[8] = {};
+    ByteArraySpan array = arraySpanFromArray( charArray, sizeof(charArray) );
+
+    setSignedNWord(array, 0x123456789ABCDEF0, ident);
+    REQUIRE( arraysAreEqual(array, {0xF0,0xDE,0xBC,0x9A,0x78,0x56,0x34,0x12}) );
+  }
+
+  SECTION("64-bit big-endian")
+  {
+    ident = make64BitBigEndianIdent();
+    uchar charArray[8] = {};
+    ByteArraySpan array = arraySpanFromArray( charArray, sizeof(charArray) );
+
+    setSignedNWord(array, 0x123456789ABCDEF0, ident);
+    REQUIRE( arraysAreEqual(array, {0x12,0x34,0x56,0x78,0x9A,0xBC,0xDE,0xF0}) );
+  }
+}

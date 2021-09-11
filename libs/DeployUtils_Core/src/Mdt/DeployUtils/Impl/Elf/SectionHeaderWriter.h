@@ -77,6 +77,36 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     }
   }
 
+  /*! \internal Check that the count of headers matches the one set in \a fileHeader
+   */
+  inline
+  bool fileHeaderMatchesSectionHeadersCounts(const FileHeader & fileHeader, const std::vector<SectionHeader> & sectionHeaders) noexcept
+  {
+    assert( fileHeader.seemsValid() );
+
+    return fileHeader.shnum == sectionHeaders.size();
+  }
+
+  /*! \internal
+   */
+  inline
+  void setSectionHeadersToMap(ByteArraySpan map, const std::vector<SectionHeader> & sectionHeaders, const FileHeader & fileHeader) noexcept
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.seemsValid() );
+    assert( fileHeaderMatchesSectionHeadersCounts(fileHeader, sectionHeaders) );
+    assert( map.size >= fileHeader.minimumSizeToReadAllProgramHeaders() );
+
+    const uint16_t sectionHeaderCount = fileHeader.shnum;
+    const int64_t start = fileHeader.shoff;
+
+    for(uint16_t i = 0; i < sectionHeaderCount; ++i){
+      const int64_t offset = start + i * fileHeader.shentsize;
+      const int64_t size = fileHeader.shentsize;
+      sectionHeaderToArray(map.subSpan(offset, size), sectionHeaders[i], fileHeader);
+    }
+  }
+
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
 #endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_SECTION_HEADER_WRITER_H

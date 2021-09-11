@@ -256,9 +256,39 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     /*! \brief Get the count of entries in this section
      */
-    int entriesCount() const noexcept
+    int64_t entriesCount() const noexcept
     {
-      return static_cast<int>( mSection.size() );
+      return static_cast<int64_t>( mSection.size() );
+    }
+
+    /*! \brief Get the entry at \a index
+     *
+     * \pre \a index must be in valid range ( 0 <= \a index < entriesCount() )
+     */
+    const DynamicStruct & entryAt(int64_t index) const noexcept
+    {
+      assert( index >= 0 );
+      assert( index < entriesCount() );
+
+      return mSection[index];
+    }
+
+    /*! \brief Set the index, in the section headers table, of the section header describing this dynamic section
+     *
+     * \pre \a index must be > 0
+     */
+    void setIndexOfSectionHeader(uint16_t index) noexcept
+    {
+      assert( index > 0 );
+
+      mIndexOfSectionHeader = index;
+    }
+
+    /*! \brief Get the index, in the section headers table, of the section header describing this dynamic section
+     */
+    uint16_t indexOfSectionHeader() const noexcept
+    {
+      return mIndexOfSectionHeader;
     }
 
     /*! \brief Set the string table to this section
@@ -494,6 +524,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 //       }
     }
 
+    uint16_t mIndexOfSectionHeader = 0;
     std::vector<DynamicStruct> mSection;
     StringTable mStringTable;
   };

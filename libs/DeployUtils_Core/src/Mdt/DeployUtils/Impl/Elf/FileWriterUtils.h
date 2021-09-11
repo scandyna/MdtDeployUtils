@@ -159,6 +159,47 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     setNWord(array, offset, ident);
   }
 
+  /*! \internal Set a signed word to \a array
+   *
+   * Depending on the machine (32-bit or 64-bit), defined in \a ident ,
+   * the value will be encoded as a Elf32_Sword (int32_t)
+   * or a Elf64_Sxword (int64_t).
+   *
+   * The endianness, also defined in \a ident ,
+   * is also taken into account for the encoding.
+   *
+   * \pre \a array must not be null
+   * \pre \a array must be of a size that can hold the value
+   *  (at least 4 bytes for a 32-bit file, at least 8 bytes for a 64-bit file)
+   * \pre \a ident must be valid
+   *
+   * \sa https://manpages.debian.org/stretch/manpages/elf.5.en.html
+   */
+  inline
+  void setSignedNWord(ByteArraySpan array, int64_t value, const Ident & ident) noexcept
+  {
+    assert( !array.isNull() );
+    assert( ident.isValid() );
+
+    if( ident._class == Class::Class32 ){
+      assert( array.size >= 4 );
+      if( ident.dataFormat == DataFormat::Data2MSB ){
+        qToBigEndian<qint32>(static_cast<qint32>(value), array.data);
+      }else{
+        assert( ident.dataFormat == DataFormat::Data2LSB );
+        qToLittleEndian<qint32>(static_cast<qint32>(value), array.data);
+      }
+    }else{
+      assert( ident._class == Class::Class64 );
+      assert( array.size >= 8 );
+      if( ident.dataFormat == DataFormat::Data2MSB ){
+        qToBigEndian<qint64>(value, array.data);
+      }else{
+        assert( ident.dataFormat == DataFormat::Data2LSB );
+        qToLittleEndian<qint64>(value, array.data);
+      }
+    }
+  }
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
 #endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_WRITER_UTILS_H

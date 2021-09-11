@@ -165,6 +165,24 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mTable.push_back('\0');
     }
 
+    /*! \brief Set the index, in the section headers table, of the section header describing this string table
+     *
+     * \pre \a index must be > 0
+     */
+    void setIndexOfSectionHeader(uint16_t index) noexcept
+    {
+      assert( index > 0 );
+
+      mIndexOfSectionHeader = index;
+    }
+
+    /*! \brief Get the index, in the section headers table, of the section header describing this string table
+     */
+    uint16_t indexOfSectionHeader() const noexcept
+    {
+      return mIndexOfSectionHeader;
+    }
+
     /*! \brief Check if \a index is in bound in this string table
      */
     bool indexIsValid(uint64_t index) const noexcept
@@ -443,6 +461,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       std::copy( charArray.cbegin(), charArray.cend(), std::back_inserter(mTable) );
     }
 
+    uint16_t mIndexOfSectionHeader;
     std::vector<char> mTable;
   };
 

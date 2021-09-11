@@ -580,6 +580,22 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   }
 
   /*! \internal
+   */
+  inline
+  SectionHeader extractSectionHeaderAt(const ByteArraySpan & map, const FileHeader & fileHeader, uint16_t index,
+                                       const SectionHeader & sectionNamesStringTableSectionHeader) noexcept
+  {
+    assert( !map.isNull() );
+    assert( index < fileHeader.shnum );
+    assert( sectionNamesStringTableSectionHeader.sectionType() == SectionType::StringTable );
+
+    SectionHeader sectionHeader = extractSectionHeaderAt(map, fileHeader, index);
+    setSectionHeaderName(map, sectionNamesStringTableSectionHeader, sectionHeader);
+
+    return sectionHeader;
+  }
+
+  /*! \internal
    *
    * \pre \a map must not be null
    */
@@ -617,6 +633,39 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return sectionHeaders;
   }
 
+  /*! \internal Find the index of the first section of a type and for which its name matches \a namePredicate
+   *
+   * If the requested section header does not exist,
+   * 0 is returned (which the correspnds to a null section header)
+   */
+  template<typename UnaryPredicate>
+  inline
+  uint16_t findFirstSectionHeaderIndex(const ByteArraySpan & map, const FileHeader & fileHeader,
+                                       const SectionHeader & sectionNamesStringTableSectionHeader,
+                                       SectionType type, UnaryPredicate namePredicate)
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.seemsValid() );
+    assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
+    assert( sectionNamesStringTableSectionHeader.sectionType() == SectionType::StringTable );
+    assert( type != SectionType::Null );
+
+    SectionHeader sectionHeader;
+    const uint16_t sectionHeaderCount = fileHeader.shnum;
+
+    for(uint16_t i = 0; i < sectionHeaderCount; ++i){
+      sectionHeader = extractSectionHeaderAt(map, fileHeader, i);
+      if( sectionHeader.sectionType() == type ){
+        setSectionHeaderName(map, sectionNamesStringTableSectionHeader, sectionHeader);
+        if( namePredicate(sectionHeader.name) ){
+          return i;
+        }
+      }
+    }
+
+    return 0;
+  }
+
   /*! \internal Find the first section header for which its name matches \a namePredicate
    */
   template<typename UnaryPredicate>
@@ -647,6 +696,30 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     sectionHeader.type = 0;
 
     return sectionHeader;
+  }
+
+  /*! \internal Find the index of a section header by type and name
+   *
+   * If the requested section header does not exist,
+   * 0 is returned (which the correspnds to a null section header)
+   */
+  inline
+  uint16_t findSectionHeaderIndex(const ByteArraySpan & map, const FileHeader & fileHeader,
+                                  const SectionHeader & sectionNamesStringTableSectionHeader,
+                                  SectionType type, const std::string & name)
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.seemsValid() );
+    assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
+    assert( sectionNamesStringTableSectionHeader.sectionType() == SectionType::StringTable );
+    assert( type != SectionType::Null );
+    assert( !name.empty() );
+
+    const auto namePredicate = [&name](const std::string & currentName){
+      return currentName == name;
+    };
+
+    return findFirstSectionHeaderIndex(map, fileHeader, sectionNamesStringTableSectionHeader, type, namePredicate);
   }
 
   /*! \internal Find a section header by a type and a name
@@ -740,10 +813,19 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     DynamicSection dynamicSection;
 
-    const SectionHeader dynamicSectionHeader  = findSectionHeader(map, fileHeader, sectionNamesStringTableSectionHeader, SectionType::Dynamic, ".dynamic");
-    if( dynamicSectionHeader.sectionType() == SectionType::Null ){
+    const uint16_t dynamicSectionHeaderIndex = findSectionHeaderIndex(map, fileHeader, sectionNamesStringTableSectionHeader, SectionType::Dynamic, ".dynamic");
+    if(dynamicSectionHeaderIndex == 0){
       return dynamicSection;
     }
+    dynamicSection.setIndexOfSectionHeader(dynamicSectionHeaderIndex);
+
+    const SectionHeader dynamicSectionHeader  = extractSectionHeaderAt(map, fileHeader, dynamicSectionHeaderIndex, sectionNamesStringTableSectionHeader);
+    assert( dynamicSectionHeader.sectionType() == SectionType::Dynamic );
+
+//     const SectionHeader dynamicSectionHeader  = findSectionHeader(map, fileHeader, sectionNamesStringTableSectionHeader, SectionType::Dynamic, ".dynamic");
+//     if( dynamicSectionHeader.sectionType() == SectionType::Null ){
+//       return dynamicSection;
+//     }
 
     if( map.size < dynamicSectionHeader.minimumSizeToReadSection() ){
       const QString msg = tr(
@@ -765,13 +847,16 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       throw DynamicSectionReadError(msg);
     }
 
-    const SectionHeader dynamicStringTableSectionHeader = extractSectionHeaderAt( map, fileHeader, static_cast<uint16_t>(dynamicSectionHeader.link) );
+    const uint16_t dynamicStringTableSectionHeaderIndex = static_cast<uint16_t>(dynamicSectionHeader.link);
+    const SectionHeader dynamicStringTableSectionHeader = extractSectionHeaderAt(map, fileHeader, dynamicStringTableSectionHeaderIndex);
     if( !headerIsStringTableSection(dynamicStringTableSectionHeader) ){
       const QString msg = tr("the .dynamic section header's references a string table section header that is not a string table header.");
       throw DynamicSectionReadError(msg);
     }
 
-    dynamicSection.setStringTable( extractStringTable(map, dynamicStringTableSectionHeader) );
+    StringTable dynamicStringTableSection = extractStringTable(map, dynamicStringTableSectionHeader);
+    dynamicStringTableSection.setIndexOfSectionHeader(dynamicStringTableSectionHeaderIndex);
+    dynamicSection.setStringTable(dynamicStringTableSection);
 
     const unsigned char * first = map.data + dynamicSectionHeader.offset;
     const unsigned char * const last = first + dynamicSectionHeader.size;

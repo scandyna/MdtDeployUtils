@@ -26,6 +26,8 @@
 #include "FileHeader.h"
 #include "FileWriterUtils.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
+#include <cstdint>
+#include <vector>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
@@ -41,7 +43,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    * \sa programHeaderArraySizeIsBigEnough()
    */
   inline
-  void programHeaderToArray(ByteArraySpan & array, const ProgramHeader & programHeader, const FileHeader & fileHeader) noexcept
+  void programHeaderToArray(ByteArraySpan array, const ProgramHeader & programHeader, const FileHeader & fileHeader) noexcept
   {
     assert( !array.isNull() );
     assert( fileHeader.seemsValid() );
@@ -69,6 +71,36 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       setNWord(array.subSpan(0x20, 8), programHeader.filesz, ident);
       setNWord(array.subSpan(0x28, 8), programHeader.memsz, ident);
       setNWord(array.subSpan(0x30, 8), programHeader.align, ident);
+    }
+  }
+
+  /*! \internal Check that the count of headers matches the one set in \a fileHeader
+   */
+  inline
+  bool fileHeaderMatchesProgramHeadersCounts(const FileHeader & fileHeader, const std::vector<ProgramHeader> & programHeaders) noexcept
+  {
+    assert( fileHeader.seemsValid() );
+
+    return fileHeader.phnum == programHeaders.size();
+  }
+
+  /*! \internal
+   */
+  inline
+  void setProgramHeadersToMap(ByteArraySpan map, const std::vector<ProgramHeader> & programHeaders, const FileHeader & fileHeader) noexcept
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.seemsValid() );
+    assert( fileHeaderMatchesProgramHeadersCounts(fileHeader, programHeaders) );
+    assert( map.size >= fileHeader.minimumSizeToReadAllProgramHeaders() );
+
+    const uint16_t programHeaderCount = fileHeader.phnum;
+    const int64_t start = fileHeader.phoff;
+
+    for(uint16_t i = 0; i < programHeaderCount; ++i){
+      const int64_t offset = start + i * fileHeader.phentsize;
+      const int64_t size = fileHeader.phentsize;
+      programHeaderToArray(map.subSpan(offset, size), programHeaders[i], fileHeader);
     }
   }
 

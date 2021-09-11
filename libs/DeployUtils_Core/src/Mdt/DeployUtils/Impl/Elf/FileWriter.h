@@ -30,13 +30,70 @@
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include <QtEndian>
 #include <cstdint>
+#include <vector>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
+  /*! \internal Check that the count of headers matches the one set in \a fileHeader
+   */
+  inline
+  bool fileHeaderMatchesHeadersCounts(const FileHeader & fileHeader,
+                                      const std::vector<ProgramHeader> & programHeaders,
+                                      const std::vector<SectionHeader> & sectionHeaders) noexcept
+  {
+    assert( fileHeader.seemsValid() );
+
+    if( !fileHeaderMatchesProgramHeadersCounts(fileHeader, programHeaders) ){
+      return false;
+    }
+    if( !fileHeaderMatchesSectionHeadersCounts(fileHeader, sectionHeaders) ){
+      return false;
+    }
+//     if( fileHeader.shnum != sectionHeaders.size() ){
+//       return false;
+//     }
+
+    return true;
+  }
+
   /*! \internal
    */
-  
+  inline
+  bool mapIsBigEnoughToSetHeaders(const ByteArraySpan & map, const FileHeader & fileHeader,
+                                  const std::vector<ProgramHeader> & programHeaders,
+                                  const std::vector<SectionHeader> & sectionHeaders) noexcept
+  {
+    assert( fileHeader.seemsValid() );
+    assert( fileHeaderMatchesHeadersCounts(fileHeader, programHeaders, sectionHeaders) );
+
+    if( map.size < fileHeader.minimumSizeToReadAllProgramHeaders() ){
+      return false;
+    }
+    if( map.size < fileHeader.minimumSizeToReadAllSectionHeaders() ){
+      return false;
+    }
+
+    return true;
+  }
+
+  /*! \internal
+   *
+   * \todo precondition that the headres are correct ?
+   */
+  inline
+  void setHeadersToMap(ByteArraySpan map, const FileHeader & fileHeader,
+                                  const std::vector<ProgramHeader> & programHeaders,
+                                  const std::vector<SectionHeader> & sectionHeaders)
+  {
+    assert( fileHeader.seemsValid() );
+    assert( fileHeaderMatchesHeadersCounts(fileHeader, programHeaders, sectionHeaders) );
+    assert( mapIsBigEnoughToSetHeaders(map, fileHeader, programHeaders, sectionHeaders) );
+
+    fileHeaderToArray(map, fileHeader);
+    setProgramHeadersToMap(map, programHeaders, fileHeader);
+    setSectionHeadersToMap(map, sectionHeaders, fileHeader);
+  }
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 

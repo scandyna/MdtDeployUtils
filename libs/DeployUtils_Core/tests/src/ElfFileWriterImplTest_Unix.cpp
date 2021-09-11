@@ -27,6 +27,8 @@
 #include "Mdt/DeployUtils/Impl/Elf/FileHeaderWriter.h"
 #include "Mdt/DeployUtils/Impl/Elf/ProgramHeaderWriter.h"
 #include "Mdt/DeployUtils/Impl/Elf/SectionHeaderWriter.h"
+#include "Mdt/DeployUtils/Impl/Elf/DynamicSectionWriter.h"
+#include "Mdt/DeployUtils/Impl/Elf/FileWriter.h"
 #include "Mdt/DeployUtils/QRuntimeError.h"
 #include <QTemporaryDir>
 #include <QFile>
@@ -35,11 +37,15 @@
 #include <vector>
 #include <cassert>
 
+#include "Mdt/DeployUtils/Impl/Elf/Debug.h"
+#include <iostream>
+
 using namespace Mdt::DeployUtils;
 using Impl::ByteArraySpan;
 using Impl::Elf::FileHeader;
 using Impl::Elf::ProgramHeader;
 using Impl::Elf::SectionHeader;
+using Impl::Elf::DynamicSection;
 
 ByteArraySpan openAndMapFile(QFile & file, const QString & executableFilePath, QIODevice::OpenMode mode)
 {
@@ -101,6 +107,82 @@ bool unmapAndCloseFile(QFile & file, ByteArraySpan & map)
   return true;
 }
 
+struct TestElfFile
+{
+  FileHeader fileHeader;
+  std::vector<ProgramHeader> programHeaders;
+  std::vector<SectionHeader> sectionHeaders;
+  DynamicSection dynamicSection;
+
+  const SectionHeader & dynamicSectionHeader() const noexcept
+  {
+    assert( dynamicSection.indexOfSectionHeader() < sectionHeaders.size() );
+
+    return sectionHeaders[dynamicSection.indexOfSectionHeader()];
+  }
+};
+
+/** \todo Maybe alo check back patched ELF with a tool, or readers
+ *
+ * Section headers may not be important when running the executable..
+ */
+
+TestElfFile readElfFile(const QString & filePath)
+{
+  using Impl::Elf::extractFileHeader;
+  using Impl::Elf::extractAllProgramHeaders;
+  using Impl::Elf::extractAllSectionHeaders;
+  using Impl::Elf::extractDynamicSection;
+
+  TestElfFile elfFile;
+  QFile file(filePath);
+  ByteArraySpan map;
+
+  map = openAndMapFileForRead(file, filePath);
+
+  elfFile.fileHeader = extractFileHeader(map);
+  if( !elfFile.fileHeader.seemsValid() ){
+    const QString msg = QLatin1String("file does not contain a valid file header");
+    throw QRuntimeError(msg);
+  }
+  elfFile.programHeaders = extractAllProgramHeaders(map, elfFile.fileHeader);
+  elfFile.sectionHeaders = extractAllSectionHeaders(map, elfFile.fileHeader);
+  elfFile.dynamicSection = extractDynamicSection(map, elfFile.fileHeader, elfFile.sectionHeaders[elfFile.fileHeader.shstrndx]);
+
+  if( !unmapAndCloseFile(file, map) ){
+    const QString msg = QLatin1String("unmap/close file filed");
+    throw QRuntimeError(msg);
+  }
+
+  return elfFile;
+}
+
+bool readExecutable(const QString & filePath)
+{
+  using Impl::Elf::toDebugString;
+
+  const TestElfFile elfFile = readElfFile(filePath);
+  if( !elfFile.fileHeader.seemsValid() ){
+    return false;
+  }
+
+  std::cout << "File header:\n" << toDebugString(elfFile.fileHeader).toStdString() << std::endl;
+  std::cout << "Program headers:\n" << toDebugString(elfFile.programHeaders).toStdString() << std::endl;
+  std::cout << "Section headers:\n" << toDebugString(elfFile.sectionHeaders).toStdString() << std::endl;
+
+  std::cout << "Dynamic section:\n" << toDebugString(elfFile.dynamicSection).toStdString() << std::endl;
+  std::cout << "Dynamic section string table:\n" << toDebugString(elfFile.dynamicSection.stringTable()).toStdString() << std::endl;
+
+  std::cout << "Section header associated with the dynamic section:\n"
+            << toDebugString(elfFile.sectionHeaders[elfFile.dynamicSection.indexOfSectionHeader()]).toStdString() << std::endl;
+
+  std::cout << "Section header associated with the string table used by the dynamic section:\n"
+            << toDebugString(elfFile.sectionHeaders[elfFile.dynamicSection.stringTable().indexOfSectionHeader()]).toStdString() << std::endl;
+
+
+  return true;
+}
+
 /*
  * Here we simply read a ELF executable
  * then write it back, without changing anything.
@@ -109,39 +191,76 @@ bool unmapAndCloseFile(QFile & file, ByteArraySpan & map)
  */
 TEST_CASE("simpleReadWrite")
 {
-  using Impl::Elf::extractFileHeader;
-  using Impl::Elf::extractAllProgramHeaders;
-  using Impl::Elf::extractAllSectionHeaders;
+  using Impl::Elf::setHeadersToMap;
 
   QTemporaryDir dir;
   REQUIRE( dir.isValid() );
   dir.setAutoRemove(true);
 
+  TestElfFile elfFile;
   QFile file;
   ByteArraySpan map;
-  FileHeader fileHeader;
-  std::vector<ProgramHeader> programHeaders;
-  std::vector<SectionHeader> sectionHeaders;
 
   const QString targetFilePath = makePath(dir, "targetFile");
   REQUIRE( copyFile(QString::fromLocal8Bit(TEST_SIMPLE_EXECUTABLE_DYNAMIC_FILE_PATH), targetFilePath) );
   REQUIRE( runExecutable(targetFilePath) );
 
-  map = openAndMapFileForRead(file, targetFilePath);
-  REQUIRE( !map.isNull() );
+  elfFile = readElfFile(targetFilePath);
+  REQUIRE( elfFile.fileHeader.seemsValid() );
 
-  fileHeader = extractFileHeader(map);
-  REQUIRE( fileHeader.seemsValid() );
-  programHeaders = extractAllProgramHeaders(map, fileHeader);
-  sectionHeaders = extractAllSectionHeaders(map, fileHeader);
+//   std::cout << "File header:\n" << toDebugString(elfFile.fileHeader).toStdString() << std::endl;
 
-  unmapAndCloseFile(file, map);
+//   std::cout << "Programe headers count: " << elfFile.programHeaders.size() << std::endl;
+//   std::cout << "Section headers count: " << elfFile.sectionHeaders.size() << std::endl;
+//   fileHeader.phnum = 3;
+//   fileHeader.shstrndx = 30;
 
   map = openAndMapFileForWrite(file, targetFilePath);
   REQUIRE( !map.isNull() );
 
+  setHeadersToMap(map, elfFile.fileHeader, elfFile.programHeaders, elfFile.sectionHeaders);
+
   unmapAndCloseFile(file, map);
   REQUIRE( runExecutable(targetFilePath) );
-  
-  REQUIRE( false);
+
+  /// \todo create a function that takes expected headers and reads the file back
+  /*
+   * Read the file again
+   * (Sections are not used for execution)
+   */
+  REQUIRE( readExecutable(targetFilePath) );
+}
+
+TEST_CASE("DynamicSection")
+{
+  using Impl::Elf::setDynamicSectionToMap;
+  using Impl::Elf::setHeadersToMap;
+
+  QTemporaryDir dir;
+  REQUIRE( dir.isValid() );
+  dir.setAutoRemove(true);
+
+  TestElfFile elfFile;
+  QFile file;
+  ByteArraySpan map;
+
+  const QString targetFilePath = makePath(dir, "targetFile");
+  REQUIRE( copyFile(QString::fromLocal8Bit(TEST_SIMPLE_EXECUTABLE_DYNAMIC_FILE_PATH), targetFilePath) );
+  REQUIRE( runExecutable(targetFilePath) );
+
+  elfFile = readElfFile(targetFilePath);
+  REQUIRE( elfFile.fileHeader.seemsValid() );
+
+  SECTION("dynamic section does not change")
+  {
+    map = openAndMapFileForWrite(file, targetFilePath);
+    REQUIRE( !map.isNull() );
+
+    setDynamicSectionToMap(map, elfFile.dynamicSectionHeader(), elfFile.dynamicSection, elfFile.fileHeader);
+    setHeadersToMap(map, elfFile.fileHeader, elfFile.programHeaders, elfFile.sectionHeaders);
+
+    unmapAndCloseFile(file, map);
+    REQUIRE( runExecutable(targetFilePath) );
+    REQUIRE( readExecutable(targetFilePath) );
+  }
 }

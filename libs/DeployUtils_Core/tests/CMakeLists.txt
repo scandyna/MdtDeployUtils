@@ -228,6 +228,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME ElfDynamicSectionWriterImplTest
+  TARGET elfDynamicSectionWriterImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfDynamicSectionWriterImplTest.cpp
+)
+
+mdt_add_test(
   NAME ElfFileReaderImplTest
   TARGET elfFileReaderImplTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
