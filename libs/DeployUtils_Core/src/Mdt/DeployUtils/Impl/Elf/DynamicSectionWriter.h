@@ -169,7 +169,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    *   Maybe also write the string table, but calling a dedicated function
    */
   inline
-  void setDynamicSectionToMap(ByteArraySpan & map, const SectionHeader & dynamicSectionHeader, const DynamicSection & dynamicSection, const FileHeader & fileHeader)
+  void setDynamicSectionToMap(ByteArraySpan map, const SectionHeader & dynamicSectionHeader, const DynamicSection & dynamicSection, const FileHeader & fileHeader)
   {
     assert( !map.isNull() );
     assert( dynamicSectionHeader.sectionType() == SectionType::Dynamic );

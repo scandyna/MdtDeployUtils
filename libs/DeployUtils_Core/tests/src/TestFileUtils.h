@@ -121,6 +121,7 @@ bool runExecutable(const QString & executableFilePath)
   }
   if(process.exitCode() != 0){
     qDebug() << "executable '" << executableFilePath << "' returned a error code: " << process.exitCode();
+    qDebug() << process.readAllStandardError();
     return false;
   }
   qDebug() << "output for executable '" << executableFilePath << "': " << process.readAllStandardOutput();

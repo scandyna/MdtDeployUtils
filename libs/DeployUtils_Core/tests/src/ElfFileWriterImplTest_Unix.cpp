@@ -28,6 +28,7 @@
 #include "Mdt/DeployUtils/Impl/Elf/ProgramHeaderWriter.h"
 #include "Mdt/DeployUtils/Impl/Elf/SectionHeaderWriter.h"
 #include "Mdt/DeployUtils/Impl/Elf/DynamicSectionWriter.h"
+#include "Mdt/DeployUtils/Impl/Elf/StringTableWriter.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileWriter.h"
 #include "Mdt/DeployUtils/QRuntimeError.h"
 #include <QTemporaryDir>
@@ -119,6 +120,13 @@ struct TestElfFile
     assert( dynamicSection.indexOfSectionHeader() < sectionHeaders.size() );
 
     return sectionHeaders[dynamicSection.indexOfSectionHeader()];
+  }
+
+  const SectionHeader & dynamicStringTableSectionHeader() const noexcept
+  {
+    assert( dynamicSection.stringTable().indexOfSectionHeader() < sectionHeaders.size() );
+
+    return sectionHeaders[dynamicSection.stringTable().indexOfSectionHeader()];
   }
 };
 
@@ -234,6 +242,7 @@ TEST_CASE("simpleReadWrite")
 TEST_CASE("DynamicSection")
 {
   using Impl::Elf::setDynamicSectionToMap;
+  using Impl::Elf::setStringTableToMap;
   using Impl::Elf::setHeadersToMap;
 
   QTemporaryDir dir;
@@ -257,10 +266,39 @@ TEST_CASE("DynamicSection")
     REQUIRE( !map.isNull() );
 
     setDynamicSectionToMap(map, elfFile.dynamicSectionHeader(), elfFile.dynamicSection, elfFile.fileHeader);
+    setStringTableToMap( map, elfFile.dynamicStringTableSectionHeader(), elfFile.dynamicSection.stringTable() );
     setHeadersToMap(map, elfFile.fileHeader, elfFile.programHeaders, elfFile.sectionHeaders);
 
     unmapAndCloseFile(file, map);
     REQUIRE( runExecutable(targetFilePath) );
     REQUIRE( readExecutable(targetFilePath) );
+  }
+
+  SECTION("change RUNPATH")
+  {
+    elfFile.dynamicSection.setRunPath( QLatin1String("/tmp") );
+
+//     std::cout << "********** string table: " << toDebugString(elfFile.dynamicSection.stringTable()).toStdString() << " *******" << std::endl;
+
+    map = openAndMapFileForWrite(file, targetFilePath);
+    REQUIRE( !map.isNull() );
+
+    setDynamicSectionToMap(map, elfFile.dynamicSectionHeader(), elfFile.dynamicSection, elfFile.fileHeader);
+    setStringTableToMap( map, elfFile.dynamicStringTableSectionHeader(), elfFile.dynamicSection.stringTable() );
+    setHeadersToMap(map, elfFile.fileHeader, elfFile.programHeaders, elfFile.sectionHeaders);
+
+    unmapAndCloseFile(file, map);
+    REQUIRE( runExecutable(targetFilePath) );
+    REQUIRE( readExecutable(targetFilePath) );
+  }
+
+  SECTION("remove RUNPATH")
+  {
+    REQUIRE(false);
+  }
+
+  SECTION("set a very long RUNPATH")
+  {
+    REQUIRE(false);
   }
 }

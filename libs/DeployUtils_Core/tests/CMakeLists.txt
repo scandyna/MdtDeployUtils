@@ -212,6 +212,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME ElfStringTableWriterImplTest
+  TARGET elfStringTableWriterImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfStringTableWriterImplTest.cpp
+)
+
+mdt_add_test(
   NAME ElfDynamicSectionImplTest
   TARGET elfDynamicSectionImplTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

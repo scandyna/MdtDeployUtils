@@ -46,6 +46,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/Elf/FileHeaderReaderWriterCommon.cpp
   Mdt/DeployUtils/Impl/Elf/FileHeaderWriter.cpp
   Mdt/DeployUtils/Impl/Elf/StringTable.cpp
+  Mdt/DeployUtils/Impl/Elf/StringTableWriter.cpp
   Mdt/DeployUtils/Impl/Elf/DynamicSection.cpp
   Mdt/DeployUtils/Impl/Elf/DynamicSectionWriter.cpp
   Mdt/DeployUtils/Impl/Elf/FileReader.cpp
