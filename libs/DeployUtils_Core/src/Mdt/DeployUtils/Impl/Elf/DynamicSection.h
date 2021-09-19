@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_IMPL_ELF_DYNAMIC_SECTION_H
 
 #include "StringTable.h"
+#include "Ident.h"
 #include "Mdt/DeployUtils/ExecutableFileReadError.h"
 #include <QString>
 #include <QStringList>
@@ -247,6 +248,22 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return mSection.empty();
     }
 
+    /*! \brief Get the size of this section in bytes
+     *
+     * \pre the given class must not be \a ClassNone
+     */
+    int64_t byteCount(Class c) const noexcept
+    {
+      assert(c != Class::ClassNone);
+
+      if(c == Class::Class32){
+        return 2 * sizeof(uint32_t) * entriesCount();
+      }
+      assert(c == Class::Class64);
+
+      return 2 * sizeof(uint64_t) * entriesCount();
+    }
+
     /*! \brief Add a entry to this section
      */
     void addEntry(DynamicStruct entry) noexcept
@@ -271,24 +288,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       assert( index < entriesCount() );
 
       return mSection[index];
-    }
-
-    /*! \brief Set the index, in the section headers table, of the section header describing this dynamic section
-     *
-     * \pre \a index must be > 0
-     */
-    void setIndexOfSectionHeader(uint16_t index) noexcept
-    {
-      assert( index > 0 );
-
-      mIndexOfSectionHeader = index;
-    }
-
-    /*! \brief Get the index, in the section headers table, of the section header describing this dynamic section
-     */
-    uint16_t indexOfSectionHeader() const noexcept
-    {
-      return mIndexOfSectionHeader;
     }
 
     /*! \brief Set the string table to this section
@@ -524,7 +523,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 //       }
     }
 
-    uint16_t mIndexOfSectionHeader = 0;
     std::vector<DynamicStruct> mSection;
     StringTable mStringTable;
   };
