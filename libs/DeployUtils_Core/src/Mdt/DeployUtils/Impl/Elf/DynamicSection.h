@@ -46,8 +46,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   {
     Null = 0,             /*!< Marks the end of the _DYNAMIC array */
     Needed = 1,           /*!< This element holds the string table offset to get the needed library name */
-    StringTable = 5,      /*!< This element holds the address to the string table */
-    StringTableSize = 10, /*!< This element holds the size, in bytes, of the string table */
+    StringTable = 5,      /*!< This element holds the address to the string table (DT_STRTAB) */
+    StringTableSize = 10, /*!< This element holds the size, in bytes, of the string table (DT_STRSZ) */
     SoName = 14,          /*!< This element holds the string table offset to get the sahred object name */
     RPath = 15,           /*!< This element holds the string table offset to get the search path (deprecated) */
     Runpath = 29,         /*!< This element holds the string table offset to get the search path */
@@ -241,6 +241,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      */
     using const_iterator = std::vector<DynamicStruct>::const_iterator;
 
+    /*! \brief STL iterator
+     */
+    using iterator = std::vector<DynamicStruct>::iterator;
+
     /*! \brief Check if this section is null
      */
     bool isNull() const noexcept
@@ -293,12 +297,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     /*! \brief Set the string table to this section
      *
      * \pre \a stringTable must not be empty
+     * \pre this section must have the DT_STRSZ entry
      */
     void setStringTable(const StringTable & stringTable) noexcept
     {
       assert( !stringTable.isEmpty() );
 
       mStringTable = stringTable;
+      updateStringTableSizeEntry();
     }
 
     /*! \brief Access the string table of this section
@@ -309,6 +315,39 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     const StringTable & stringTable() const noexcept
     {
       return mStringTable;
+    }
+
+    /*! \brief Get the dynamic string table address (DT_STRTAB)
+     *
+     * \pre the DT_STRTAB entry must exist
+     * (DT_STRTAB is mandadtory)
+     */
+    uint64_t getStringTableAddress() const noexcept
+    {
+      const auto it = findEntryForTag(DynamicSectionTagType::StringTable);
+      assert( it != cend() );
+
+      return it->val_or_ptr;
+    }
+
+    /*! \brief Check if the string table size entry exists
+     */
+    bool containsStringTableSizeEntry() const noexcept
+    {
+      return findEntryForTag(DynamicSectionTagType::StringTableSize) != cend();
+    }
+
+    /*! \brief Get the string table size (DT_STRSZ)
+     *
+     * \pre the DT_STRSZ entry must exist
+     * (DT_STRSZ is mandadtory)
+     */
+    uint64_t getStringTableSize() const noexcept
+    {
+      const auto it = findEntryForTag(DynamicSectionTagType::StringTableSize);
+      assert( it != cend() );
+
+      return it->val_or_ptr;
     }
 
     /*! \brief Get the SO name (DT_SONAME)
@@ -324,10 +363,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     {
       assert( !isNull() );
 
-      const auto pred = [](DynamicStruct s){
-        return s.tagType() == DynamicSectionTagType::SoName;
-      };
-      const auto it = std::find_if(mSection.cbegin(), mSection.cend(), pred);
+      const auto it = findEntryForTag(DynamicSectionTagType::SoName);
       if( it == mSection.cend() ){
         return QString();
       }
@@ -395,6 +431,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      *
      * \pre this section must not be null
      * \sa removeRunPath()
+     * \pre this section must have the DT_STRSZ entry
      */
     void setRunPath(const QString & runPath)
     {
@@ -415,11 +452,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
         runPathEntry.val_or_ptr = mStringTable.appendUnicodeString(runPath);
         addEntry(runPathEntry);
       }
+
+      updateStringTableSizeEntry();
     }
 
     /*! \brief Remove the run path (DT_RUNPATH) entry
      *
      * \pre this section must not be null
+     * \pre this section must have the DT_STRSZ entry
      */
     void removeRunPath() noexcept
     {
@@ -435,6 +475,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       shiftEntriesIndexingStrTabAfter(*it, offset);
 
       mSection.erase(it);
+
+      updateStringTableSizeEntry();
     }
 
     /*! \brief Clear this section
@@ -481,6 +523,24 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return s.tagType() == DynamicSectionTagType::Runpath;
     }
 
+    const_iterator findEntryForTag(DynamicSectionTagType tag) const noexcept
+    {
+      const auto pred = [tag](DynamicStruct s){
+        return s.tagType() == tag;
+      };
+
+      return std::find_if(mSection.cbegin(), mSection.cend(), pred);
+    }
+
+    iterator findMutableEntryForTag(DynamicSectionTagType tag) noexcept
+    {
+      const auto pred = [tag](DynamicStruct s){
+        return s.tagType() == tag;
+      };
+
+      return std::find_if(mSection.begin(), mSection.end(), pred);
+    }
+
     const_iterator findRunPathEntry() const noexcept
     {
       return std::find_if(mSection.cbegin(), mSection.cend(), isRunPathEntry);
@@ -521,6 +581,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 //           s.val_or_ptr += offset;
 //         }
 //       }
+    }
+
+    void updateStringTableSizeEntry() noexcept
+    {
+      const auto it = findMutableEntryForTag(DynamicSectionTagType::StringTableSize);
+      assert( it != mSection.end() );
+      assert( mStringTable.byteCount() > 0 );
+      it->val_or_ptr = mStringTable.byteCount();
     }
 
     std::vector<DynamicStruct> mSection;

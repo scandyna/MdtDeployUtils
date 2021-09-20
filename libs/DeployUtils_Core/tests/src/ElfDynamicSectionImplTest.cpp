@@ -69,15 +69,69 @@ TEST_CASE("isNull")
   }
 }
 
+TEST_CASE("byteCount")
+{
+  using Mdt::DeployUtils::Impl::Elf::Class;
+
+  DynamicSection section;
+
+  SECTION("default constructed")
+  {
+    SECTION("32-bit")
+    {
+      REQUIRE( section.byteCount(Class::Class32) == 0 );
+    }
+
+    SECTION("64-bit")
+    {
+      REQUIRE( section.byteCount(Class::Class64) == 0 );
+    }
+  }
+
+  SECTION("1 entry")
+  {
+    section.addEntry( makeNullEntry() );
+
+    SECTION("32-bit")
+    {
+      REQUIRE( section.byteCount(Class::Class32) == 8 );
+    }
+
+    SECTION("64-bit")
+    {
+      REQUIRE( section.byteCount(Class::Class64) == 16 );
+    }
+  }
+
+  SECTION("2 entries")
+  {
+    section.addEntry( makeNullEntry() );
+    section.addEntry( makeNeededEntry(5) );
+
+    SECTION("32-bit")
+    {
+      REQUIRE( section.byteCount(Class::Class32) == 16 );
+    }
+
+    SECTION("64-bit")
+    {
+      REQUIRE( section.byteCount(Class::Class64) == 32 );
+    }
+  }
+}
+
 TEST_CASE("add_entry_clear")
 {
   DynamicSection section;
+
+  REQUIRE( !section.containsStringTableSizeEntry() );
+  section.addEntry( makeStringTableSizeEntry(1) );
+  REQUIRE( section.entriesCount() == 1 );
+  REQUIRE( section.containsStringTableSizeEntry() );
+
   uchar stringTable[8] = {'\0','S','o','N','a','m','e','\0'};
   section.setStringTable( stringTableFromCharArray( stringTable, sizeof(stringTable) ) );
   REQUIRE( section.stringTable().byteCount() == 8 );
-
-  section.addEntry( makeSoNameEntry(1) );
-  REQUIRE( section.entriesCount() == 1 );
 
   section.clear();
   REQUIRE( section.entriesCount() == 0 );
@@ -85,10 +139,47 @@ TEST_CASE("add_entry_clear")
   REQUIRE( section.isNull() );
 }
 
+TEST_CASE("getStringTableAddress")
+{
+  DynamicSection section;
+  section.addEntry( makeStringTableAddressEntry(1000) );
+
+  SECTION("get from existing entry")
+  {
+    REQUIRE( section.getStringTableAddress() == 1000 );
+  }
+}
+
+TEST_CASE("getStringTableSize")
+{
+  DynamicSection section;
+  section.addEntry( makeStringTableSizeEntry(20) );
+
+  SECTION("get from existing entry")
+  {
+    REQUIRE( section.getStringTableSize() == 20 );
+  }
+}
+
+TEST_CASE("setStringTable")
+{
+  DynamicSection section;
+  uchar stringTableArray[8] = {'\0','S','o','N','a','m','e','\0'};
+  const StringTable stringTable = stringTableFromCharArray( stringTableArray, sizeof(stringTableArray) );
+
+  section.addEntry( makeStringTableAddressEntry(1000) );
+  section.addEntry( makeStringTableSizeEntry(1) );
+
+  section.setStringTable(stringTable);
+
+  REQUIRE( section.getStringTableAddress() == 1000 );
+  REQUIRE( section.getStringTableSize() == 8 );
+}
+
 TEST_CASE("getSoName")
 {
   DynamicSection section;
-  section.addEntry( makeNullEntry() );
+  section.addEntry( makeStringTableSizeEntry(1) );
 
   uchar stringTable[8] = {'\0','S','o','N','a','m','e','\0'};
   section.setStringTable( stringTableFromCharArray( stringTable, sizeof(stringTable) ) );
@@ -108,7 +199,7 @@ TEST_CASE("getSoName")
 TEST_CASE("getNeededSharedLibraries")
 {
   DynamicSection section;
-  section.addEntry( makeNullEntry() );
+  section.addEntry( makeStringTableSizeEntry(1) );
 
   uchar stringTable[17] = {
     '\0',
@@ -139,7 +230,7 @@ TEST_CASE("getNeededSharedLibraries")
 TEST_CASE("getRunPath")
 {
   DynamicSection section;
-  section.addEntry( makeNullEntry() );
+  section.addEntry( makeStringTableSizeEntry(1) );
 
   uchar stringTable[13] = {
     '\0',
@@ -163,13 +254,14 @@ TEST_CASE("getRunPath")
 TEST_CASE("removeRunPath")
 {
   DynamicSection section;
-  section.addEntry( makeNullEntry() );
+  section.addEntry( makeStringTableSizeEntry(1) );
 
   SECTION("section does not have the DT_RUNPATH")
   {
     section.removeRunPath();
     REQUIRE( !sectionContainsRunPathEntry(section) );
     REQUIRE( section.stringTable().isEmpty() );
+    REQUIRE( section.getStringTableSize() == 1 );
   }
 
   SECTION("section contains the DT_RUNPATH")
@@ -186,6 +278,7 @@ TEST_CASE("removeRunPath")
     section.removeRunPath();
     REQUIRE( !sectionContainsRunPathEntry(section) );
     REQUIRE( section.stringTable().isEmpty() );
+    REQUIRE( section.getStringTableSize() == 1 );
   }
 
   SECTION("section contains the DT_RUNPATH and a DT_NEEDED")
@@ -205,6 +298,7 @@ TEST_CASE("removeRunPath")
     section.removeRunPath();
     REQUIRE( !sectionContainsRunPathEntry(section) );
     REQUIRE( section.stringTable().byteCount() == 1+7+1 );
+    REQUIRE( section.getStringTableSize() == 1+7+1 );
     REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so"}) );
   }
 }
@@ -212,12 +306,14 @@ TEST_CASE("removeRunPath")
 TEST_CASE("setRunPath")
 {
   DynamicSection section;
-  section.addEntry( makeNullEntry() );
+  section.addEntry( makeStringTableSizeEntry(1) );
 
   SECTION("there is initially no entry in the section (string table is also empty)")
   {
     section.setRunPath( QLatin1String("/path1:/path2") );
     REQUIRE( section.getRunPath() == QLatin1String("/path1:/path2") );
+    REQUIRE( section.stringTable().byteCount() == 1+13+1 );
+    REQUIRE( section.getStringTableSize() == 1+13+1 );
   }
 
   SECTION("there is initially only a DT_NEEDED entry")

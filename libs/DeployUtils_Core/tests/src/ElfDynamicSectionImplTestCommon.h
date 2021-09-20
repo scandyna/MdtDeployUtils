@@ -56,6 +56,16 @@ DynamicStruct makeRunPathEntry(uint64_t val = 2)
   return makeEntry(DynamicSectionTagType::Runpath, val);
 }
 
+DynamicStruct makeStringTableAddressEntry(uint64_t address)
+{
+  return makeEntry(DynamicSectionTagType::StringTable, address);
+}
+
+DynamicStruct makeStringTableSizeEntry(uint64_t size)
+{
+  return makeEntry(DynamicSectionTagType::StringTableSize, size);
+}
+
 StringTable stringTableFromCharArray(unsigned char * const array, qint64 size)
 {
   return StringTable::fromCharArray( arraySpanFromArray(array, size) );
