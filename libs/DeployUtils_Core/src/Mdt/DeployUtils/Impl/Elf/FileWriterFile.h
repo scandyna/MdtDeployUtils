@@ -147,6 +147,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mDynamicSection.setRunPath(runPath);
 
       mHeaders.setDynamicSectionFileSize( mDynamicSection.byteCount(fileHeader().ident._class) );
+      mHeaders.setDynamicStringTableFileSize( mDynamicSection.stringTable().byteCount() );
 
 //       const uint64_t dynamicSectionSize = mDynamicSection.byteCount(fileHeader().ident._class);
 // 
@@ -156,12 +157,12 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 //       SectionHeader _dynamicSectionHeader = dynamicSectionHeader();
 //       _dynamicSectionHeader.size = dynamicSectionSize;
 
-      SectionHeader _dynamicStringTableSectionHeader = mHeaders.dynamicStringTableSectionHeader();
-      _dynamicStringTableSectionHeader.size = mDynamicSection.stringTable().byteCount();
+//       SectionHeader _dynamicStringTableSectionHeader = mHeaders.dynamicStringTableSectionHeader();
+//       _dynamicStringTableSectionHeader.size = mDynamicSection.stringTable().byteCount();
 
 //       mHeaders.setDynamicProgramHeader(_dynamicProgramHeader);
 //       mHeaders.setDynamicSectionHeader(_dynamicSectionHeader);
-      mHeaders.setDynamicStringTableSectionHeader(_dynamicStringTableSectionHeader);
+//       mHeaders.setDynamicStringTableSectionHeader(_dynamicStringTableSectionHeader);
 
       if( dynamicSectionIsAfterDynamicStringTable() ){
         /*
@@ -329,16 +330,32 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return mHeaders.dynamicStringTableSectionHeader();
     }
 
+    /*! \brief Get the file offsets range for this file
+     */
+//     OffsetRange globalOffsetRange() const noexcept
+//     {
+//       uint64_t dynamicSectionEnd = 0;
+//       if( mHeaders.containsDynamicProgramHeader() ){
+//         dynamicSectionEnd = mHeaders.dynamicProgramHeader().offset + mHeaders.dynamicProgramHeader().filesz;
+//       }
+// 
+//       uint64_t dynamicStringTableEnd = 0;
+//       if( mHeaders.containsDynamicStringTableSectionHeader() ){
+//         dynamicStringTableEnd = mHeaders.dynamicStringTableSectionHeader().offset + mHeaders.dynamicStringTableSectionHeader().size;
+//       }
+// 
+//       uint64_t lastHeaderEnd = static_cast<uint64_t>( mHeaders.minimumSizeToAccessAllHeaders() );
+// 
+//       uint64_t fileEnd = std::max({dynamicSectionEnd, dynamicStringTableEnd, lastHeaderEnd});
+// 
+//       return OffsetRange::fromBeginAndEndOffsets(0, fileEnd);
+//     }
+
     /*! \brief Get the minimum size required to write this file
      */
     int64_t minimumSizeToWriteFile() const noexcept
     {
-      assert( containsDynamicSection() );
-
-      const int64_t dynamicSectionPastEnd = dynamicSectionOffset() + dynamicSectionSize();
-      const int64_t dynamicStringTableSectionPastEnd = dynamicStringTableOffset() + dynamicStringTableSize();
-
-      return std::max({dynamicSectionPastEnd, dynamicStringTableSectionPastEnd, mHeaders.minimumSizeToAccessAllHeaders()});
+      return mHeaders.globalFileOffsetRange().minimumSizeToAccessRange();
     }
 
     /*! \brief Get the file offset of the dynamic section
@@ -367,12 +384,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      */
     bool dynamicSectionMovesToEnd() const noexcept
     {
+      return dynamicProgramHeader().offset >= mOriginalLayout.globalOffsetRange().end();
     }
 
     /*! \brief Check if the dynamic string table moves to the end of this file
      */
     bool dynamicStringTableMovesToEnd() const noexcept
     {
+      return dynamicStringTableSectionHeader().offset >= mOriginalLayout.globalOffsetRange().end();
     }
 
     /*! \brief Get the file offset range of the dynamic string table

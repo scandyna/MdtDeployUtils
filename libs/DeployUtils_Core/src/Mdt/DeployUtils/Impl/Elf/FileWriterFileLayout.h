@@ -21,6 +21,7 @@
 #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_WRITER_FILE_LAYOUT_H
 #define MDT_DEPLOY_UTILS_IMPL_ELF_FILE_WRITER_FILE_LAYOUT_H
 
+#include "OffsetRange.h"
 #include "FileAllHeaders.h"
 #include "DynamicSection.h"
 #include <cstdint>
@@ -34,40 +35,59 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   {
   public:
 
-    uint64_t dynamicSectionOffset() const noexcept
+    OffsetRange dynamicSectionOffsetRange() const noexcept
     {
-      return mDynamicSectionOffset;
+      return mDynamicSectionOffsetRange;
     }
 
-    uint64_t dynamicSectionEndOffset() const noexcept
+    uint64_t dynamicSectionOffset() const noexcept
     {
-      if(mDynamicSectionSize == 0){
-        return mDynamicSectionOffset;
-      }
-      return mDynamicSectionOffset + mDynamicSectionSize - 1;
+      return mDynamicSectionOffsetRange.begin();
+//       return mDynamicSectionOffset;
     }
+
+//     uint64_t dynamicSectionEndOffset() const noexcept
+//     {
+//       if(mDynamicSectionSize == 0){
+//         return mDynamicSectionOffset;
+//       }
+//       return mDynamicSectionOffset + mDynamicSectionSize - 1;
+//     }
 
     uint64_t dynamicSectionSize() const noexcept
     {
-      return mDynamicSectionSize;
+      return mDynamicSectionOffsetRange.byteCount();
+//       return mDynamicSectionSize;
+    }
+
+    OffsetRange dynamicStringTableOffsetRange() const noexcept
+    {
+      return mDynamicStringTableOffsetRange;
     }
 
     uint64_t dynamicStringTableOffset() const noexcept
     {
-      return mDynamicStringTableOffset;
+      return mDynamicStringTableOffsetRange.begin();
+//       return mDynamicStringTableOffset;
     }
 
-    uint64_t dynamicStringTableEndOffset() const noexcept
-    {
-      if(mDynamicStringTableSize == 0){
-        return mDynamicStringTableOffset;
-      }
-      return mDynamicStringTableOffset + mDynamicStringTableSize - 1;
-    }
+//     uint64_t dynamicStringTableEndOffset() const noexcept
+//     {
+//       if(mDynamicStringTableSize == 0){
+//         return mDynamicStringTableOffset;
+//       }
+//       return mDynamicStringTableOffset + mDynamicStringTableSize - 1;
+//     }
 
     uint64_t dynamicStringTableSize() const noexcept
     {
-      return mDynamicStringTableSize;
+      return mDynamicStringTableOffsetRange.byteCount();
+//       return mDynamicStringTableSize;
+    }
+
+    OffsetRange globalOffsetRange() const noexcept
+    {
+      return mGlobalOffsetRange;
     }
 
     /*! \brief Get a file layout from a file
@@ -87,20 +107,26 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       assert( headers.containsDynamicStringTableSectionHeader() );
 
       FileWriterFileLayout layout;
-      layout.mDynamicSectionOffset = headers.dynamicProgramHeader().offset;
-      layout.mDynamicSectionSize = headers.dynamicProgramHeader().filesz;
-      layout.mDynamicStringTableOffset = headers.dynamicStringTableSectionHeader().offset;
-      layout.mDynamicStringTableSize = headers.dynamicStringTableSectionHeader().size;
+      layout.mDynamicSectionOffsetRange = OffsetRange::fromProgrameHeader( headers.dynamicProgramHeader() );
+      layout.mDynamicStringTableOffsetRange = OffsetRange::fromSectionHeader( headers.dynamicStringTableSectionHeader() );
+      layout.mGlobalOffsetRange = headers.globalFileOffsetRange();
+//       layout.mDynamicSectionOffset = headers.dynamicProgramHeader().offset;
+//       layout.mDynamicSectionSize = headers.dynamicProgramHeader().filesz;
+//       layout.mDynamicStringTableOffset = headers.dynamicStringTableSectionHeader().offset;
+//       layout.mDynamicStringTableSize = headers.dynamicStringTableSectionHeader().size;
 
       return layout;
     }
 
   private:
 
-    uint64_t mDynamicSectionOffset = 0;
-    uint64_t mDynamicSectionSize = 0;
-    uint64_t mDynamicStringTableOffset = 0;
-    uint64_t mDynamicStringTableSize = 0;
+    OffsetRange mDynamicSectionOffsetRange;
+    OffsetRange mDynamicStringTableOffsetRange;
+    OffsetRange mGlobalOffsetRange;
+//     uint64_t mDynamicSectionOffset = 0;
+//     uint64_t mDynamicSectionSize = 0;
+//     uint64_t mDynamicStringTableOffset = 0;
+//     uint64_t mDynamicStringTableSize = 0;
   };
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{

@@ -168,6 +168,7 @@ TEST_CASE("FileWriterFileLayout")
     REQUIRE( layout.dynamicStringTableOffset() == 0 );
     REQUIRE( layout.dynamicStringTableSize() == 0 );
 //     REQUIRE( layout.dynamicStringTableEndOffset() == 0 );
+    REQUIRE( layout.globalOffsetRange().isEmpty() );
   }
 
   SECTION("from a file")
@@ -183,6 +184,7 @@ TEST_CASE("FileWriterFileLayout")
     layout = makeFileLayoutFromFile(file);
 
     uint64_t expectedDynamicSectionSize = file.dynamicSection().byteCount(Class::Class64);
+    int64_t expectedMinimumFileSize = file.fileHeader().minimumSizeToReadAllSectionHeaders();
 
     REQUIRE( layout.dynamicSectionOffset() == 100 );
     REQUIRE( layout.dynamicSectionSize() == expectedDynamicSectionSize );
@@ -190,6 +192,7 @@ TEST_CASE("FileWriterFileLayout")
     REQUIRE( layout.dynamicStringTableOffset() == 1'000 );
     REQUIRE( layout.dynamicStringTableSize() == 1 );
 //     REQUIRE( layout.dynamicStringTableEndOffset() == 1'000 );
+    REQUIRE( layout.globalOffsetRange().minimumSizeToAccessRange() == expectedMinimumFileSize );
   }
 }
 
@@ -353,93 +356,150 @@ TEST_CASE("setRunPath_fileLayout")
     {
       file.setRunPath( QLatin1String("/opt/libB") );
 
-      SECTION("check dynamic string table")
+      SECTION("the dynamic section will not change")
       {
+        REQUIRE( file.dynamicProgramHeader().offset == setup.dynamicSectionOffset );
+        REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
+        REQUIRE( file.dynamicSectionHeader().offset == setup.dynamicSectionOffset );
+        REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
+        REQUIRE( !file.dynamicSectionMovesToEnd() );
+      }
+
+      SECTION("the dynamic string table will not change in term of layout")
+      {
+        REQUIRE( file.dynamicStringTableSectionHeader().offset == setup.dynamicStringTableOffset );
+        REQUIRE( file.dynamicStringTableSectionHeader().size == setup.stringTableByteCount() );
         REQUIRE( file.originalDynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
         REQUIRE( file.originalDynamicStringTableOffsetRange().byteCount() == setup.stringTableByteCount() );
         REQUIRE( file.dynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
         REQUIRE( file.dynamicStringTableOffsetRange().byteCount() == setup.stringTableByteCount() );
+        REQUIRE( !file.dynamicStringTableMovesToEnd() );
+      }
+
+      SECTION("the program header table does not change")
+      {
+        REQUIRE( file.fileHeader().phoff == setup.programHeaderTableOffset );
+      }
+
+      SECTION("the section header table does not change")
+      {
+        REQUIRE( file.fileHeader().shoff == setup.sectionHeaderTableOffset );
       }
     }
   }
 
-  SECTION(".dynamic before .dynstr - DEPRECATED")
-  {
-    setup.programHeaderTableOffset = 50;
-    setup.dynamicSectionOffset = 100;
-    setup.dynamicStringTableOffset = 1'000;
-    setup.sectionNameStringTableOffset = 5'000;
-    setup.sectionHeaderTableOffset = 10'000;
+//   SECTION(".dynamic before .dynstr - DEPRECATED")
+//   {
+//     setup.programHeaderTableOffset = 50;
+//     setup.dynamicSectionOffset = 100;
+//     setup.dynamicStringTableOffset = 1'000;
+//     setup.sectionNameStringTableOffset = 5'000;
+//     setup.sectionHeaderTableOffset = 10'000;
+// 
+//     SECTION("there is initially no RUNPATH")
+//     {
+//       file = makeWriterFile(setup);
+//       REQUIRE( !file.dynamicSection().containsRunPathEntry() );
+//       originalLayout = makeFileLayoutFromFile(file);
+// 
+//       file.setRunPath( QLatin1String("/tmp") );
+//       REQUIRE( file.containsDynamicSection() );
+//       REQUIRE( !file.dynamicSectionIsAfterDynamicStringTable() );
+// //       REQUIRE( file.originalDynamicSectionEndOffset() == originalLayout.dynamicSectionEndOffset() );
+// //       REQUIRE( file.originalDynamicStringTableEndOffset() == originalLayout.dynamicStringTableEndOffset() );
+//       // We added the DT_RUNPATH entry + /tmp\0 string
+//       REQUIRE( file.dynamicSectionChangesOffset() == dynamicEntrySize );
+//       REQUIRE( file.dynamicStringTableChangesOffset() == 4+1 );
+//       REQUIRE( file.globalChangesOffset() == dynamicEntrySize + 4+1 );
+//       REQUIRE( file.dynamicProgramHeader().offset == 100 );
+//       REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
+//       REQUIRE( file.dynamicSectionHeader().offset == 100 );
+//       REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
+//       // .dynstr shifts the size of the new entry
+//       REQUIRE( file.headers().dynamicStringTableSectionHeader().size == file.dynamicSection().stringTable().byteCount() );
+//       REQUIRE( file.headers().dynamicStringTableSectionHeader().offset == 1000 + dynamicEntrySize );
+//       REQUIRE( file.dynamicStringTableOffset() == file.headers().dynamicStringTableSectionHeader().offset );
+//       REQUIRE( file.fileHeader().phoff == 50 );
+//       // section name string table is after dynamic section and dynamic string table
+//       REQUIRE( file.headers().sectionNameStringTableHeader().offset == 5'000 + dynamicEntrySize + 4+1 );
+//       // section header table is at end, so it shifts the size of the new entry + new string
+//       REQUIRE( file.fileHeader().shoff == 10'000 + dynamicEntrySize + 4+1 );
+//     }
+//   }
 
-    SECTION("there is initially no RUNPATH")
-    {
-      file = makeWriterFile(setup);
-      REQUIRE( !file.dynamicSection().containsRunPathEntry() );
-      originalLayout = makeFileLayoutFromFile(file);
-
-      file.setRunPath( QLatin1String("/tmp") );
-      REQUIRE( file.containsDynamicSection() );
-      REQUIRE( !file.dynamicSectionIsAfterDynamicStringTable() );
-//       REQUIRE( file.originalDynamicSectionEndOffset() == originalLayout.dynamicSectionEndOffset() );
-//       REQUIRE( file.originalDynamicStringTableEndOffset() == originalLayout.dynamicStringTableEndOffset() );
-      // We added the DT_RUNPATH entry + /tmp\0 string
-      REQUIRE( file.dynamicSectionChangesOffset() == dynamicEntrySize );
-      REQUIRE( file.dynamicStringTableChangesOffset() == 4+1 );
-      REQUIRE( file.globalChangesOffset() == dynamicEntrySize + 4+1 );
-      REQUIRE( file.dynamicProgramHeader().offset == 100 );
-      REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
-      REQUIRE( file.dynamicSectionHeader().offset == 100 );
-      REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
-      // .dynstr shifts the size of the new entry
-      REQUIRE( file.headers().dynamicStringTableSectionHeader().size == file.dynamicSection().stringTable().byteCount() );
-      REQUIRE( file.headers().dynamicStringTableSectionHeader().offset == 1000 + dynamicEntrySize );
-      REQUIRE( file.dynamicStringTableOffset() == file.headers().dynamicStringTableSectionHeader().offset );
-      REQUIRE( file.fileHeader().phoff == 50 );
-      // section name string table is after dynamic section and dynamic string table
-      REQUIRE( file.headers().sectionNameStringTableHeader().offset == 5'000 + dynamicEntrySize + 4+1 );
-      // section header table is at end, so it shifts the size of the new entry + new string
-      REQUIRE( file.fileHeader().shoff == 10'000 + dynamicEntrySize + 4+1 );
-    }
-  }
-
-  SECTION(".dynamic afetr .dynstr - DEPRECATED")
-  {
-    setup.programHeaderTableOffset = 50;
-    setup.dynamicStringTableOffset = 100;
-    setup.dynamicSectionOffset = 1'000;
-    setup.sectionNameStringTableOffset = 5'000;
-    setup.sectionHeaderTableOffset = 10'000;
-
-    SECTION("there is initially no RUNPATH")
-    {
-      file = makeWriterFile(setup);
-      REQUIRE( !file.dynamicSection().containsRunPathEntry() );
-      originalLayout = makeFileLayoutFromFile(file);
-
-      file.setRunPath( QLatin1String("/tmp") );
-      REQUIRE( file.containsDynamicSection() );
-      REQUIRE( file.dynamicSectionIsAfterDynamicStringTable() );
-//       REQUIRE( file.originalDynamicSectionEndOffset() == originalLayout.dynamicSectionEndOffset() );
-//       REQUIRE( file.originalDynamicStringTableEndOffset() == originalLayout.dynamicStringTableEndOffset() );
-      // We added the DT_RUNPATH entry + /tmp\0 string
-      REQUIRE( file.dynamicSectionChangesOffset() == dynamicEntrySize );
-      REQUIRE( file.dynamicStringTableChangesOffset() == 4+1 );
-      REQUIRE( file.globalChangesOffset() == dynamicEntrySize + 4+1 );
-      REQUIRE( file.dynamicProgramHeader().offset == 1'000 + 4+1 );
-      REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
-      REQUIRE( file.dynamicSectionHeader().offset == 1'000 + 4+1 );
-      REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
-      REQUIRE( file.headers().dynamicStringTableSectionHeader().size == file.dynamicSection().stringTable().byteCount() );
-      REQUIRE( file.headers().dynamicStringTableSectionHeader().offset == 100 );
-      REQUIRE( file.dynamicStringTableOffset() == file.headers().dynamicStringTableSectionHeader().offset );
-      REQUIRE( file.fileHeader().phoff == 50 );
-      // section name string table is after dynamic section and dynamic string table
-      REQUIRE( file.headers().sectionNameStringTableHeader().offset == 5'000 + dynamicEntrySize + 4+1 );
-      // section header table is at end, so it shifts the size of the new entry + new string
-      REQUIRE( file.fileHeader().shoff == 10'000 + dynamicEntrySize + 4+1 );
-    }
-  }
+//   SECTION(".dynamic afetr .dynstr - DEPRECATED")
+//   {
+//     setup.programHeaderTableOffset = 50;
+//     setup.dynamicStringTableOffset = 100;
+//     setup.dynamicSectionOffset = 1'000;
+//     setup.sectionNameStringTableOffset = 5'000;
+//     setup.sectionHeaderTableOffset = 10'000;
+// 
+//     SECTION("there is initially no RUNPATH")
+//     {
+//       file = makeWriterFile(setup);
+//       REQUIRE( !file.dynamicSection().containsRunPathEntry() );
+//       originalLayout = makeFileLayoutFromFile(file);
+// 
+//       file.setRunPath( QLatin1String("/tmp") );
+//       REQUIRE( file.containsDynamicSection() );
+//       REQUIRE( file.dynamicSectionIsAfterDynamicStringTable() );
+// //       REQUIRE( file.originalDynamicSectionEndOffset() == originalLayout.dynamicSectionEndOffset() );
+// //       REQUIRE( file.originalDynamicStringTableEndOffset() == originalLayout.dynamicStringTableEndOffset() );
+//       // We added the DT_RUNPATH entry + /tmp\0 string
+//       REQUIRE( file.dynamicSectionChangesOffset() == dynamicEntrySize );
+//       REQUIRE( file.dynamicStringTableChangesOffset() == 4+1 );
+//       REQUIRE( file.globalChangesOffset() == dynamicEntrySize + 4+1 );
+//       REQUIRE( file.dynamicProgramHeader().offset == 1'000 + 4+1 );
+//       REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
+//       REQUIRE( file.dynamicSectionHeader().offset == 1'000 + 4+1 );
+//       REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
+//       REQUIRE( file.headers().dynamicStringTableSectionHeader().size == file.dynamicSection().stringTable().byteCount() );
+//       REQUIRE( file.headers().dynamicStringTableSectionHeader().offset == 100 );
+//       REQUIRE( file.dynamicStringTableOffset() == file.headers().dynamicStringTableSectionHeader().offset );
+//       REQUIRE( file.fileHeader().phoff == 50 );
+//       // section name string table is after dynamic section and dynamic string table
+//       REQUIRE( file.headers().sectionNameStringTableHeader().offset == 5'000 + dynamicEntrySize + 4+1 );
+//       // section header table is at end, so it shifts the size of the new entry + new string
+//       REQUIRE( file.fileHeader().shoff == 10'000 + dynamicEntrySize + 4+1 );
+//     }
+//   }
 }
+
+// TEST_CASE("globalOffsetRange")
+// {
+//   TestFileSetup setup;
+//   FileWriterFile file;
+//   int64_t expectedMinimumSize;
+// 
+//   SECTION("section header table is at the end of the file (the common case)")
+//   {
+//     setup.programHeaderTableOffset = 50;
+//     setup.dynamicSectionOffset = 100;
+//     setup.dynamicStringTableOffset = 1'000;
+//     setup.sectionHeaderTableOffset = 10'000;
+//     file = makeWriterFile(setup);
+// 
+//     expectedMinimumSize = file.fileHeader().minimumSizeToReadAllSectionHeaders();
+// 
+//     REQUIRE( file.globalOffsetRange().begin() == 0 );
+//     REQUIRE( file.globalOffsetRange().minimumSizeToAccessRange() == expectedMinimumSize );
+//   }
+// 
+//   SECTION("the dynamic section string table is at the end of the file")
+//   {
+//     setup.programHeaderTableOffset = 50;
+//     setup.dynamicSectionOffset = 100;
+//     setup.dynamicStringTableOffset = 10'000;
+//     setup.sectionHeaderTableOffset = 2'000;
+//     file = makeWriterFile(setup);
+// 
+//     expectedMinimumSize = setup.dynamicStringTableOffset + setup.stringTableByteCount();
+// 
+//     REQUIRE( file.globalOffsetRange().begin() == 0 );
+//     REQUIRE( file.globalOffsetRange().minimumSizeToAccessRange() == expectedMinimumSize );
+//   }
+// }
 
 TEST_CASE("minimumSizeToWriteFile")
 {
