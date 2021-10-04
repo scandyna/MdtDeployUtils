@@ -81,6 +81,14 @@ struct TestFileSetup
   uint64_t dynamicStringTableAddress;
   QString runPath;
   uint64_t sectionNameStringTableOffset;
+
+  uint64_t stringTableByteCount() const
+  {
+    if( runPath.isEmpty() ){
+      return 1;
+    }
+    return 1 + static_cast<uint64_t>( runPath.size() ) + 1;
+  }
 };
 
 FileWriterFile makeWriterFile(const TestFileSetup & setup)
@@ -156,10 +164,10 @@ TEST_CASE("FileWriterFileLayout")
   {
     REQUIRE( layout.dynamicSectionOffset() == 0 );
     REQUIRE( layout.dynamicSectionSize() == 0 );
-    REQUIRE( layout.dynamicSectionEndOffset() == 0 );
+//     REQUIRE( layout.dynamicSectionEndOffset() == 0 );
     REQUIRE( layout.dynamicStringTableOffset() == 0 );
     REQUIRE( layout.dynamicStringTableSize() == 0 );
-    REQUIRE( layout.dynamicStringTableEndOffset() == 0 );
+//     REQUIRE( layout.dynamicStringTableEndOffset() == 0 );
   }
 
   SECTION("from a file")
@@ -178,10 +186,10 @@ TEST_CASE("FileWriterFileLayout")
 
     REQUIRE( layout.dynamicSectionOffset() == 100 );
     REQUIRE( layout.dynamicSectionSize() == expectedDynamicSectionSize );
-    REQUIRE( layout.dynamicSectionEndOffset() == 100 + expectedDynamicSectionSize -1 );
+//     REQUIRE( layout.dynamicSectionEndOffset() == 100 + expectedDynamicSectionSize -1 );
     REQUIRE( layout.dynamicStringTableOffset() == 1'000 );
     REQUIRE( layout.dynamicStringTableSize() == 1 );
-    REQUIRE( layout.dynamicStringTableEndOffset() == 1'000 );
+//     REQUIRE( layout.dynamicStringTableEndOffset() == 1'000 );
   }
 }
 
@@ -287,11 +295,75 @@ TEST_CASE("setRunPath_fileLayout")
   TestFileSetup setup;
   FileWriterFileLayout originalLayout;
   FileWriterFile file;
+  uint64_t stringTableSize;
 
   // This is the case for 64-bit architecture
   const uint64_t dynamicEntrySize = sizeof(DynamicStruct);
 
-  SECTION(".dynamic before .dynstr")
+  SECTION("there is initially a RUNPATH")
+  {
+    setup.programHeaderTableOffset = 50;
+    setup.dynamicStringTableOffset = 100;
+    setup.dynamicSectionOffset = 1'000;
+    setup.sectionNameStringTableOffset = 5'000;
+    setup.sectionHeaderTableOffset = 10'000;
+    setup.runPath = QLatin1String("/opt/libA");
+
+    file = makeWriterFile(setup);
+    REQUIRE( file.containsDynamicSection() );
+    REQUIRE( file.containsDynamicStringTableSectionHeader() );
+
+    SECTION("replace RUNPATH with a other one that is shorter")
+    {
+      file.setRunPath( QLatin1String("/opt") );
+      stringTableSize = 1+4+1;
+
+      SECTION("the dynamic section will not change")
+      {
+        REQUIRE( file.dynamicProgramHeader().offset == setup.dynamicSectionOffset );
+        REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
+        REQUIRE( file.dynamicSectionHeader().offset == setup.dynamicSectionOffset );
+        REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
+        REQUIRE( !file.dynamicSectionMovesToEnd() );
+      }
+
+      SECTION("the dynamic string table shrinks but stays at the same place")
+      {
+        REQUIRE( file.dynamicStringTableSectionHeader().offset == setup.dynamicStringTableOffset );
+        REQUIRE( file.dynamicStringTableSectionHeader().size == stringTableSize );
+        REQUIRE( file.originalDynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
+        REQUIRE( file.originalDynamicStringTableOffsetRange().byteCount() == setup.stringTableByteCount() );
+        REQUIRE( file.dynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
+        REQUIRE( file.dynamicStringTableOffsetRange().byteCount() == stringTableSize );
+        REQUIRE( !file.dynamicStringTableMovesToEnd() );
+      }
+
+      SECTION("the program header table does not change")
+      {
+        REQUIRE( file.fileHeader().phoff == setup.programHeaderTableOffset );
+      }
+
+      SECTION("the section header table does not change")
+      {
+        REQUIRE( file.fileHeader().shoff == setup.sectionHeaderTableOffset );
+      }
+    }
+
+    SECTION("replace RUNPATH with a other one that is the same length")
+    {
+      file.setRunPath( QLatin1String("/opt/libB") );
+
+      SECTION("check dynamic string table")
+      {
+        REQUIRE( file.originalDynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
+        REQUIRE( file.originalDynamicStringTableOffsetRange().byteCount() == setup.stringTableByteCount() );
+        REQUIRE( file.dynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
+        REQUIRE( file.dynamicStringTableOffsetRange().byteCount() == setup.stringTableByteCount() );
+      }
+    }
+  }
+
+  SECTION(".dynamic before .dynstr - DEPRECATED")
   {
     setup.programHeaderTableOffset = 50;
     setup.dynamicSectionOffset = 100;
@@ -308,8 +380,8 @@ TEST_CASE("setRunPath_fileLayout")
       file.setRunPath( QLatin1String("/tmp") );
       REQUIRE( file.containsDynamicSection() );
       REQUIRE( !file.dynamicSectionIsAfterDynamicStringTable() );
-      REQUIRE( file.originalDynamicSectionEndOffset() == originalLayout.dynamicSectionEndOffset() );
-      REQUIRE( file.originalDynamicStringTableEndOffset() == originalLayout.dynamicStringTableEndOffset() );
+//       REQUIRE( file.originalDynamicSectionEndOffset() == originalLayout.dynamicSectionEndOffset() );
+//       REQUIRE( file.originalDynamicStringTableEndOffset() == originalLayout.dynamicStringTableEndOffset() );
       // We added the DT_RUNPATH entry + /tmp\0 string
       REQUIRE( file.dynamicSectionChangesOffset() == dynamicEntrySize );
       REQUIRE( file.dynamicStringTableChangesOffset() == 4+1 );
@@ -330,7 +402,7 @@ TEST_CASE("setRunPath_fileLayout")
     }
   }
 
-  SECTION(".dynamic afetr .dynstr")
+  SECTION(".dynamic afetr .dynstr - DEPRECATED")
   {
     setup.programHeaderTableOffset = 50;
     setup.dynamicStringTableOffset = 100;
@@ -347,8 +419,8 @@ TEST_CASE("setRunPath_fileLayout")
       file.setRunPath( QLatin1String("/tmp") );
       REQUIRE( file.containsDynamicSection() );
       REQUIRE( file.dynamicSectionIsAfterDynamicStringTable() );
-      REQUIRE( file.originalDynamicSectionEndOffset() == originalLayout.dynamicSectionEndOffset() );
-      REQUIRE( file.originalDynamicStringTableEndOffset() == originalLayout.dynamicStringTableEndOffset() );
+//       REQUIRE( file.originalDynamicSectionEndOffset() == originalLayout.dynamicSectionEndOffset() );
+//       REQUIRE( file.originalDynamicStringTableEndOffset() == originalLayout.dynamicStringTableEndOffset() );
       // We added the DT_RUNPATH entry + /tmp\0 string
       REQUIRE( file.dynamicSectionChangesOffset() == dynamicEntrySize );
       REQUIRE( file.dynamicStringTableChangesOffset() == 4+1 );
@@ -387,7 +459,7 @@ TEST_CASE("minimumSizeToWriteFile")
     REQUIRE( file.minimumSizeToWriteFile() == expectedMinimumSize );
   }
 
-  SECTION("the dynamic section string table is at the end of the file (just for test)")
+  SECTION("the dynamic section string table is at the end of the file")
   {
     setup.programHeaderTableOffset = 50;
     setup.dynamicSectionOffset = 100;
