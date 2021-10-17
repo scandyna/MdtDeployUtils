@@ -22,6 +22,7 @@
 #include "StringTable.h"
 #include <QLatin1String>
 #include <QLatin1Char>
+#include <algorithm>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
@@ -152,11 +153,57 @@ QString toDebugString(SegmentType type)
   switch(type){
     case SegmentType::Null:
       return QLatin1String("Null: Unused program header table entry");
+    case SegmentType::Load:
+      return QLatin1String("PT_LOAD: Loadable segment");
     case SegmentType::Dynamic:
-      return QLatin1String("Dynamic linking information");
+      return QLatin1String("PT_DYNAMIC: Dynamic linking information");
+    case SegmentType::Interpreter:
+      return QLatin1String("PT_INTERP: Interpreter information");
+    case SegmentType::Note:
+      return QLatin1String("PT_NOTE: Auxiliary information");
+    case SegmentType::ProgramHeaderTable:
+      return QLatin1String("PT_PHDR: Program header table");
+    case SegmentType::Tls:
+      return QLatin1String("PT_TLS: Thread-Local Storage template");
+    case SegmentType::GnuEhFrame:
+      return QLatin1String("PT_GNU_EH_FRAME");
+    case SegmentType::GnuStack:
+      return QLatin1String("PT_GNU_STACK");
+    case SegmentType::GnuRelo:
+      return QLatin1String("PT_GNU_RELRO");
+
     case SegmentType::Unknown:
       return QLatin1String("Unknown");
+  }
 
+  return QString();
+}
+
+QString segmentTypeName(SegmentType type)
+{
+  switch(type){
+    case SegmentType::Null:
+      return QLatin1String("PT_NULL");
+    case SegmentType::Load:
+      return QLatin1String("PT_LOAD");
+    case SegmentType::Dynamic:
+      return QLatin1String("PT_DYNAMIC");
+    case SegmentType::Interpreter:
+      return QLatin1String("PT_INTERP");
+    case SegmentType::Note:
+      return QLatin1String("PT_NOTE");
+    case SegmentType::ProgramHeaderTable:
+      return QLatin1String("PT_PHDR");
+    case SegmentType::Tls:
+      return QLatin1String("PT_TLS");
+    case SegmentType::GnuEhFrame:
+      return QLatin1String("PT_GNU_EH_FRAME");
+    case SegmentType::GnuStack:
+      return QLatin1String("PT_GNU_STACK");
+    case SegmentType::GnuRelo:
+      return QLatin1String("PT_GNU_RELRO");
+    case SegmentType::Unknown:
+      return QLatin1String("Unknown");
   }
 
   return QString();
@@ -176,12 +223,12 @@ QString toDebugString(const ProgramHeader & header)
   str += QLatin1String("\n size in file: ") + QString::number(header.filesz) + QLatin1String(" [bytes]");
   str += QLatin1String("\n size in memory: ") + QString::number(header.memsz) + QLatin1String(" [bytes]");
   str += QLatin1String("\n flags: 0x") + QString::number(header.flags, 16);
-  str += QLatin1String("\n alignment in memory: ") + QString::number(header.align);
+  str += QLatin1String("\n alignment in memory: ") + QString::number(header.align) + QLatin1String(" (0x") + QString::number(header.align, 16) + QLatin1String(")");
 
   return str;
 }
 
-QString toDebugString(const std::vector<ProgramHeader> & headers)
+QString toDebugString(const ProgramHeaderTable & headers)
 {
   QString str;
 
@@ -231,6 +278,8 @@ QString toDebugString(const SectionHeader & header)
   str = QLatin1String("header for section ") + QString::fromStdString(header.name);
   str += QLatin1String("\n name index: ") + QString::number(header.nameIndex);
   str += QLatin1String("\n type: 0x") + QString::number(header.type, 16) + QLatin1String(" (") + toDebugString( header.sectionType() ) + QLatin1String(")");
+  str += QLatin1String("\n address: ") + QString::number(header.addr) + QLatin1String(" (0x") + QString::number(header.addr, 16) + QLatin1String(")");
+  str += QLatin1String("\n address alignment: ") + QString::number(header.addralign) + QLatin1String(" (0x") + QString::number(header.addralign, 16) + QLatin1String(")");
   str += QLatin1String("\n offset in file: ") + QString::number(header.offset) + QLatin1String(" (0x") + QString::number(header.offset, 16) + QLatin1String(")");
   str += QLatin1String("\n size in the file: ") + QString::number(header.size);
 
@@ -248,6 +297,26 @@ QString toDebugString(const std::vector<SectionHeader> & headers)
 
   for(const auto & header : headers){
     str += QLatin1String("\n") + toDebugString(header);
+  }
+
+  return str;
+}
+
+QString sectionSegmentMappingToDebugString(const ProgramHeaderTable & programHeaderTable, const std::vector<SectionHeader> & sectionHeaderTable)
+{
+  QString str = QLatin1String("Section to segment mapping:");
+
+  for(size_t i = 0; i < programHeaderTable.headerCount(); ++i){
+    const QString index = QString( QLatin1String("%1") ).arg(i, 2);
+    const QString segmentName = QString( QLatin1String("%1") ).arg(segmentTypeName( programHeaderTable.headerAt(i).segmentType() ), 16);
+
+    str += QLatin1Char('\n') + index + QLatin1String(" ") + segmentName;
+
+    for(const auto & sectionHeader : sectionHeaderTable){
+      if( sectionIsInSegmentStrict( sectionHeader, programHeaderTable.headerAt(i) ) ){
+        str += QLatin1String(" ") + QString::fromStdString(sectionHeader.name);
+      }
+    }
   }
 
   return str;
@@ -329,6 +398,129 @@ QString toDebugString(const DynamicSection & section, const QString & leftPad)
   for(const auto & entry : section){
     str += QLatin1String("\n") + toDebugString(entry, leftPad);
   }
+
+  return str;
+}
+
+QString toDebugString(SymbolType type)
+{
+  switch(type){
+    case SymbolType::NoType:
+      return QLatin1String("No type");
+    case SymbolType::Object:
+      return QLatin1String("Object");
+    case SymbolType::Function:
+      return QLatin1String("Function");
+    case SymbolType::Section:
+      return QLatin1String("Section");
+    case SymbolType::File:
+      return QLatin1String("File");
+    case SymbolType::LowProc:
+      return QLatin1String("Low proc");
+    case SymbolType::HighProc:
+      return QLatin1String("Hi proc");
+
+  }
+
+  return QLatin1String("??");
+}
+
+QString toDebugString(const SymbolTableEntry & entry, const QString & leftPad)
+{
+  QString str = leftPad;
+
+  str += QLatin1String("name index: ") + QString::number(entry.name)
+       + QLatin1String(", value: ") + QString::number(entry.value) + QLatin1String(" (0x") + QString::number(entry.value, 16)
+       + QLatin1String("), size: ") + QString::number(entry.size)
+//        + QLatin1String(", info: ") + QString::number(entry.info)
+       + QLatin1String(",  type: ") + toDebugString( entry.symbolType() )
+//        + QLatin1String(", other: ") + QString::number(entry.other)
+       + QLatin1String(", shndx: ") + QString::number(entry.shndx);
+
+  return str;
+}
+
+QString toDebugString(const PartialSymbolTable & table, const QString & leftPad)
+{
+  QString str;
+
+  for(size_t i=0; i < table.entriesCount(); ++i){
+    str += QLatin1String("\n") + toDebugString(table.entryAt(i), leftPad);
+  }
+
+  return str;
+}
+
+void sortProgramHeadersByFileOffset(ProgramHeaderTable & programHeaders)
+{
+  const auto cmp = [](const ProgramHeader & a, const ProgramHeader & b){
+    return a.offset < b.offset;
+  };
+
+  std::sort(programHeaders.begin(), programHeaders.end(), cmp);
+}
+
+void sortSectionHeadersByFileOffset(std::vector<SectionHeader> & sectionHeaders)
+{
+  const auto cmp = [](const SectionHeader & a, const SectionHeader & b){
+    return a.offset < b.offset;
+  };
+
+  std::sort(sectionHeaders.begin(), sectionHeaders.end(), cmp);
+}
+
+QString fileLayoutToDebugString(const FileHeader & fileHeader, ProgramHeaderTable programHeaders, std::vector<SectionHeader> sectionHeaders)
+{
+  QString str = QLatin1String("from 0 to 0x") + QString::number(fileHeader.ehsize-1, 16) + QLatin1String(": file header");
+
+  str += QLatin1String("\nfrom 0x") + QString::number(fileHeader.phoff, 16)
+       + QLatin1String(" to 0x") + QString::number(fileHeader.minimumSizeToReadAllProgramHeaders()-1, 16)
+       + QLatin1String(": program headers table");
+
+  sortProgramHeadersByFileOffset(programHeaders);
+  for(const auto & programHeader : programHeaders){
+    uint64_t last;
+    if(programHeader.filesz > 0){
+      last = programHeader.offset + programHeader.filesz - 1;
+    }else{
+      last = programHeader.offset;
+    }
+    uint64_t lastVaddr;
+    if(programHeader.memsz > 0){
+      lastVaddr = programHeader.vaddr + programHeader.memsz - 1;
+    }else{
+      lastVaddr = programHeader.vaddr;
+    }
+    str += QLatin1String("\nfrom 0x") + QString::number(programHeader.offset, 16)
+        + QLatin1String(" to 0x") + QString::number(last, 16)
+        + QLatin1String(" (vaddr 0x") + QString::number(programHeader.vaddr, 16)
+        + QLatin1String(" to 0x") + QString::number(lastVaddr, 16)
+        + QLatin1String("): segment of type ") + toDebugString(programHeader.segmentType());
+  }
+
+  sortSectionHeadersByFileOffset(sectionHeaders);
+  for(const auto & sectionHeader : sectionHeaders){
+    uint64_t last;
+    uint64_t lastAddr;
+    if(sectionHeader.size > 0){
+      last = sectionHeader.offset + sectionHeader.size - 1;
+      lastAddr = sectionHeader.addr + sectionHeader.size - 1;
+    }else{
+      last = sectionHeader.offset;
+      lastAddr = sectionHeader.addr;
+    }
+    str += QLatin1String("\nfrom 0x") + QString::number(sectionHeader.offset, 16)
+        + QLatin1String(" to 0x") + QString::number(last, 16);
+        if(sectionHeader.addr > 0){
+          str += QLatin1String(" (addr 0x") + QString::number(sectionHeader.addr, 16)
+               + QLatin1String(" to 0x") + QString::number(lastAddr, 16) + QLatin1Char(')');
+        }
+        str += QLatin1String(": section ") + QString::fromStdString(sectionHeader.name);
+  }
+
+  str += QLatin1String("\nfrom 0x") + QString::number(fileHeader.shoff, 16)
+       + QLatin1String(" to 0x") + QString::number(fileHeader.minimumSizeToReadAllSectionHeaders()-1, 16)
+       + QLatin1String(": section headers table");
 
   return str;
 }

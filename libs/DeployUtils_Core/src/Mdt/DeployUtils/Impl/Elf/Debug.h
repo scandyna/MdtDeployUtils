@@ -23,8 +23,11 @@
 
 #include "FileHeader.h"
 #include "ProgramHeader.h"
+#include "ProgramHeaderTable.h"
+#include "FileAllHeaders.h"
 #include "SectionHeader.h"
 #include "DynamicSection.h"
+#include "SymbolTable.h"
 #include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QLatin1String>
@@ -82,7 +85,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   /*! \internal
    */
   MDT_DEPLOYUTILSCORE_EXPORT
-  QString toDebugString(const std::vector<ProgramHeader> & headers);
+  QString toDebugString(const ProgramHeaderTable & headers);
 
   /*! \internal
    */
@@ -98,6 +101,24 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    */
   MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const std::vector<SectionHeader> & headers);
+
+  /** \internal Get the sections / segments mapping
+   *
+   * \code
+   * 00 PT_PHDR
+   * 01 PT_INTERP .interp
+   * \endcode
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString sectionSegmentMappingToDebugString(const ProgramHeaderTable & programHeaderTable, const std::vector<SectionHeader> & sectionHeaderTable);
+
+  /*! \internal
+   */
+  inline
+  QString sectionSegmentMappingToDebugString(const FileAllHeaders & headers)
+  {
+    return sectionSegmentMappingToDebugString( headers.programHeaderTable(), headers.sectionHeaderTable() );
+  }
 
   /*! \internal
    */
@@ -118,6 +139,31 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    */
   MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const DynamicSection & section, const QString & leftPad = QLatin1String("  "));
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString toDebugString(const SymbolTableEntry & entry, const QString & leftPad = QLatin1String("  "));
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString toDebugString(const PartialSymbolTable & table, const QString & leftPad = QLatin1String("  "));
+
+  /** \internal Print the file layout regarding all headers (File, Programm, Section)
+   *
+   * \code
+   * from 0x0000 to 0x1111 : file header
+   * from 0x1112 to 0x1133 : program header table
+   * from 0x1134 to 0x2000 : XY segment type
+   * from 0x2001 to 0x3000 : XY segment type
+   * from 0x3001 to 0x4000 : .xy section
+   * from 0x4001 to 0x5000 : .xy section
+   * from 0x5001 to 0x6000 : section header table
+   * \endcode
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString fileLayoutToDebugString(const FileHeader & fileHeader, ProgramHeaderTable programHeaders, std::vector<SectionHeader> sectionHeaders);
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
