@@ -30,6 +30,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
    */
   struct ByteArraySpan
   {
+    /*! \brief STL iterator
+     */
+    using iterator = unsigned char*;
+
     /*! \brief STL const iterator
      */
     using const_iterator = const unsigned char*;
@@ -105,6 +109,22 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     /*! \brief Get a iterator to the beginning of this span
      */
     constexpr
+    iterator begin() const noexcept
+    {
+      return data;
+    }
+
+    /*! \brief Get a iterator past the end of this span
+     */
+    constexpr
+    iterator end() const noexcept
+    {
+      return data + size;
+    }
+
+    /*! \brief Get a iterator to the beginning of this span
+     */
+    constexpr
     const_iterator cbegin() const noexcept
     {
       return data;
@@ -117,7 +137,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     {
       return data + size;
     }
-
   };
 
 }}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{
