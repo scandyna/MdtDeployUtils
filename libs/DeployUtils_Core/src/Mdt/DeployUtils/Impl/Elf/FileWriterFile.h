@@ -29,8 +29,11 @@
 #include "OffsetRange.h"
 #include "FileAllHeaders.h"
 #include "DynamicSection.h"
+#include "SymbolTable.h"
 #include "FileOffsetChanges.h"
 #include "StringTable.h"
+#include "Algorithm.h"
+#include <QCoreApplication>
 #include <QString>
 #include <algorithm>
 #include <cstdint>
@@ -45,6 +48,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    */
   class FileWriterFile
   {
+    Q_DECLARE_TR_FUNCTIONS(FileWriterFile)
+
    public:
 
     /*! \brief Construct a empty file
@@ -149,56 +154,176 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mHeaders.setDynamicSectionFileSize( mDynamicSection.byteCount(fileHeader().ident._class) );
       mHeaders.setDynamicStringTableFileSize( mDynamicSection.stringTable().byteCount() );
 
-//       const uint64_t dynamicSectionSize = mDynamicSection.byteCount(fileHeader().ident._class);
-// 
-//       ProgramHeader _dynamicProgramHeader = dynamicProgramHeader();
-//       _dynamicProgramHeader.filesz = dynamicSectionSize;
-// 
-//       SectionHeader _dynamicSectionHeader = dynamicSectionHeader();
-//       _dynamicSectionHeader.size = dynamicSectionSize;
+      /*
+       * If we move .dynstr:
+       *
+       * EOF (maybe section header table)
+       * program header table
+       * .dynstr section
+       *
+       * PT_PHDR segment must cover the program header table
+       * PT_LOAD new segment that covers the program header table and .dynstr
+       *
+       *
+       * If we move .dynamic:
+       *
+       * EOF (maybe section header table)
+       * program header table
+       * .dynamic section
+       *
+       * PT_PHDR segment must cover the program header table
+       * PT_LOAD new segment that covers the program header table and .dynamic
+       * PT_DYNAMIC segment must cover .dynamic
+       *
+       *
+       * If we move both .dynamic and .dynstr:
+       *
+       * EOF (maybe section header table)
+       * program header table
+       * .dynamic section
+       * .dynstr section
+       *
+       * PT_PHDR segment must cover the program header table
+       * PT_LOAD new segment that covers the program header table, .dynamic and .dynstr
+       * PT_DYNAMIC segment must cover .dynamic
+       */
 
-//       SectionHeader _dynamicStringTableSectionHeader = mHeaders.dynamicStringTableSectionHeader();
-//       _dynamicStringTableSectionHeader.size = mDynamicSection.stringTable().byteCount();
+      const bool mustMoveDynamicSection = mFileOffsetChanges.dynamicSectionChangesOffset(mDynamicSection) > 0;
+      const bool mustMoveDynamicStringTable = mFileOffsetChanges.dynamicStringTableChangesOffset(mDynamicSection) > 0;
+      const bool mustMoveAnySection = mustMoveDynamicSection || mustMoveDynamicStringTable;
 
-//       mHeaders.setDynamicProgramHeader(_dynamicProgramHeader);
-//       mHeaders.setDynamicSectionHeader(_dynamicSectionHeader);
-//       mHeaders.setDynamicStringTableSectionHeader(_dynamicStringTableSectionHeader);
+      /*
+       * If we move any section to the end,
+       * a new PT_LOAD segment must be created.
+       * Because of this, the program header table also moves to the end.
+       * This new load segment covers also the program header table.
+       * This segment should also be aligned in memory
+       */
+      
+      /** \todo Sandbox
+       */
+//       mHeaders.moveProgramHeaderTableToNextPageAfterEnd();
+//       ProgramHeader & loadSegmentHeader = mHeaders.appendNullLoadSegment();
+//       loadSegmentHeader.setPermissions(SegmentPermission::Read);
+//       loadSegmentHeader.vaddr = mHeaders.programHeaderTableProgramHeader().vaddr;
+//       loadSegmentHeader.paddr = loadSegmentHeader.vaddr;
+//       loadSegmentHeader.align = mHeaders.fileHeader().pageSize();
+// //       loadSegmentHeader.align = 0x200000;
+//       loadSegmentHeader.offset = mHeaders.programHeaderTableProgramHeader().offset;
+//       loadSegmentHeader.memsz = mHeaders.programHeaderTableProgramHeader().memsz;
+//       loadSegmentHeader.filesz = mHeaders.programHeaderTableProgramHeader().filesz;
+// //       loadSegmentHeader.filesz = 0x1000;
 
-      if( dynamicSectionIsAfterDynamicStringTable() ){
-        /*
-         * We have .dynstr then .dynamic
+      
+      if(mustMoveAnySection){
+
+        mHeaders.moveProgramHeaderTableToNextPageAfterEnd();
+
+        const QString msg = tr("the new rpath is to long, will have to move sections to the end.");
+        /** \todo emit a warning (that will be used by the message logger)
+         * Will have to do it in a other place, because we cannot inherit QObject here
          */
-        mHeaders.shiftProgramHeadersOffsetAfter( mHeaders.dynamicStringTableSectionHeader().offset, dynamicStringTableChangesOffset() );
-        mHeaders.shiftSectionHeadersOffsetAfter( mHeaders.dynamicStringTableSectionHeader(), dynamicStringTableChangesOffset() );
-        
-        mHeaders.shiftProgramHeadersOffsetAfter( mHeaders.dynamicProgramHeader(), dynamicSectionChangesOffset() );
-        mHeaders.shiftSectionHeadersOffsetAfter( mHeaders.dynamicSectionHeader(), dynamicSectionChangesOffset() );
-      }else{
-        /*
-         * We have .dynamic then .dynstr
-         */
-//         const uint64_t newOffsetAfterDynamicSection = mOriginalLayout.dynamicStringTableOffset() + dynamicSectionChangesOffset();
-        mHeaders.shiftProgramHeadersOffsetAfter( dynamicProgramHeader(), dynamicSectionChangesOffset() );
-        mHeaders.shiftSectionHeadersOffsetAfter( dynamicSectionHeader(), dynamicSectionChangesOffset() );
-//         mDynamicSection.setStringTableAddress(newOffsetAfterDynamicSection);
-        
-//         const uint64_t newOffsetAfterDynamicStringTable = mOriginalLayout.dynamicStringTableOffset() + dynamicStringTableChangesOffset();
-        mHeaders.shiftProgramHeadersOffsetAfter( mHeaders.dynamicStringTableSectionHeader().offset, dynamicStringTableChangesOffset() );
-        mHeaders.shiftSectionHeadersOffsetAfter( mHeaders.dynamicStringTableSectionHeader(), dynamicStringTableChangesOffset() );
+        qDebug() << msg;
 
-//         _dynamicStringTableSectionHeader.offset = newOffset;
+        ProgramHeader & loadSegmentHeader = mHeaders.appendNullLoadSegment();
+        ///loadSegmentHeader.setPermissions(SegmentPermission::Read | SegmentPermission::Write);
+        ///loadSegmentHeader.setPermissions(SegmentPermission::Read | SegmentPermission::Execute);
+        loadSegmentHeader.setPermissions(SegmentPermission::Read);
+        loadSegmentHeader.vaddr = mHeaders.programHeaderTableProgramHeader().vaddr;
+        loadSegmentHeader.paddr = loadSegmentHeader.vaddr;
+        loadSegmentHeader.align = mHeaders.fileHeader().pageSize();
+        loadSegmentHeader.offset = mHeaders.programHeaderTableProgramHeader().offset;
+
+        uint64_t loadSegmentSize = mHeaders.programHeaderTableProgramHeader().memsz;
+
+        if(mustMoveDynamicSection){
+          mHeaders.moveDynamicSectionToEnd();
+          mSectionSymbolTable.setDynamicSectionVirtualAddress( mHeaders.dynamicSectionHeader().addr );
+          loadSegmentSize += mHeaders.dynamicProgramHeader().memsz;
+        }
+
+        if(mustMoveDynamicStringTable){
+          mHeaders.moveDynamicStringTableToEnd();
+          mDynamicSection.setStringTableAddress( mHeaders.dynamicStringTableSectionHeader().addr );
+          mSectionSymbolTable.setDynamicStringTableVirtualAddress( mHeaders.dynamicStringTableSectionHeader().addr );
+          loadSegmentSize += mHeaders.dynamicStringTableSectionHeader().size;
+        }
+        
+        loadSegmentHeader.memsz = loadSegmentSize;
+        loadSegmentHeader.filesz = loadSegmentHeader.memsz;
+        
+//         const uint64_t pageSize = 0x1000; /// \todo get from header !!!
+//         const uint64_t virtualAddess = findAddressOfNextPage(mHeaders.findLastSegmentVirtualAddressEnd(), pageSize);
+//         const uint64_t fileOffset = findNextFileOffset(mHeaders.findGlobalFileOffsetEnd(), virtualAddess, pageSize);
+        
+        
+        
+        
+//         loadSegmentHeader.setSegmentType(SegmentType::Load);
+//         loadSegmentHeader.offset = fileOffset;
+//         loadSegmentHeader.vaddr = virtualAddess;
+//         loadSegmentHeader.paddr = virtualAddess;
+//         ///loadSegmentHeader.filesz = ??
+//         ///loadSegmentHeader.memsz = ??
+//         loadSegmentHeader.setPermissions(SegmentPermission::Read | SegmentPermission::Write);
+//         loadSegmentHeader.align = pageSize;
+        
       }
+      
+//       if(  ){
+//         mHeaders.moveDynamicSectionToEnd();
+//       }
+
+//       if(  ){
+//         mHeaders.moveDynamicStringTableToEnd();
+//       }
+
+      
+      /** \todo If we have to move a section to the end:
+       *
+       * - 
+       * 
+       * - the first section that is moved to the end must be at the next page after end of virtual memory of this file
+       * - the next section must be just after in virtual memory, but start at power of 2
+       *   Note: align constraint ?
+       * - calcualte file offsets for the moved segments, past this file, ragrding virtual addresses
+       * - create a load segment that covers moved section(s) and program header table \todo see PT_PHDR
+       * - move program header table to the end of the file (yes.., no choice)
+       */
+
+//       if( dynamicSectionIsAfterDynamicStringTable() ){
+//         /*
+//          * We have .dynstr then .dynamic
+//          */
+//         mHeaders.shiftProgramHeadersOffsetAfter( mHeaders.dynamicStringTableSectionHeader().offset, dynamicStringTableChangesOffset() );
+//         mHeaders.shiftSectionHeadersOffsetAfter( mHeaders.dynamicStringTableSectionHeader(), dynamicStringTableChangesOffset() );
+//         
+//         mHeaders.shiftProgramHeadersOffsetAfter( mHeaders.dynamicProgramHeader(), dynamicSectionChangesOffset() );
+//         mHeaders.shiftSectionHeadersOffsetAfter( mHeaders.dynamicSectionHeader(), dynamicSectionChangesOffset() );
+//       }else{
+//         /*
+//          * We have .dynamic then .dynstr
+//          */
+// //         const uint64_t newOffsetAfterDynamicSection = mOriginalLayout.dynamicStringTableOffset() + dynamicSectionChangesOffset();
+//         mHeaders.shiftProgramHeadersOffsetAfter( dynamicProgramHeader(), dynamicSectionChangesOffset() );
+//         mHeaders.shiftSectionHeadersOffsetAfter( dynamicSectionHeader(), dynamicSectionChangesOffset() );
+// //         mDynamicSection.setStringTableAddress(newOffsetAfterDynamicSection);
+//         
+// //         const uint64_t newOffsetAfterDynamicStringTable = mOriginalLayout.dynamicStringTableOffset() + dynamicStringTableChangesOffset();
+//         mHeaders.shiftProgramHeadersOffsetAfter( mHeaders.dynamicStringTableSectionHeader().offset, dynamicStringTableChangesOffset() );
+//         mHeaders.shiftSectionHeadersOffsetAfter( mHeaders.dynamicStringTableSectionHeader(), dynamicStringTableChangesOffset() );
+// 
+// //         _dynamicStringTableSectionHeader.offset = newOffset;
+//       }
 
 //       mDynamicSection.setStringTableAddress( mHeaders.dynamicStringTableSectionHeader().offset );
 
-      /// \todo have to shift offsets for what is after .dynamic and after .dynstr
-      
       /// \todo use OffsetChange
       
-      if( sectionHeaderTableIsAfterDynamicSectionAndStringTable() ){
-        const uint64_t newOffset = mHeaders.fileHeader().shoff + globalChangesOffset();
-        mHeaders.setSectionHeaderTableOffset(newOffset);
-      }
+//       if( sectionHeaderTableIsAfterDynamicSectionAndStringTable() ){
+//         const uint64_t newOffset = mHeaders.fileHeader().shoff + globalChangesOffset();
+//         mHeaders.setSectionHeaderTableOffset(newOffset);
+//       }
 
       /// \todo wrong
 //       if( sectionNameStringTableIsAfterDynamicSectionAndStringTable() ){
@@ -329,6 +454,34 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       return mHeaders.dynamicStringTableSectionHeader();
     }
+
+    /*! \brief Set the section symbol table from file (from .symtab)
+     */
+    void setSectionSymbolTableFromFile(const PartialSymbolTable & table) noexcept
+    {
+      mSectionSymbolTable = table;
+    }
+
+    /*! \brief Get the section symbol table (from .symtab)
+     */
+    const PartialSymbolTable & sectionSymbolTable() const noexcept
+    {
+      return mSectionSymbolTable;
+    }
+
+    /*! \brief Set the section symbol table from file (from .dynsym)
+     */
+//     void setSectionDynamicSymbolTableFromFile(const PartialSymbolTable & table) noexcept
+//     {
+//       mSectionDynamicSymbolTable = table;
+//     }
+
+    /*! \brief Get the section symbol table (from .dynsym)
+     */
+//     const PartialSymbolTable & sectionDynamicSymbolTable() const noexcept
+//     {
+//       return mSectionDynamicSymbolTable;
+//     }
 
     /*! \brief Get the file offsets range for this file
      */
@@ -545,6 +698,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     FileOffsetChanges mFileOffsetChanges;
     FileAllHeaders mHeaders;
     DynamicSection mDynamicSection;
+    PartialSymbolTable mSectionSymbolTable;
+//     PartialSymbolTable mSectionDynamicSymbolTable;
   };
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
