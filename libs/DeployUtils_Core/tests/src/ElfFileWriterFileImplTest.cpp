@@ -24,6 +24,7 @@
 #include "ElfFileIoTestUtils.h"
 #include "ElfDynamicSectionImplTestCommon.h"
 #include "ElfProgramHeaderTestUtils.h"
+#include "ElfSymbolTableTestUtils.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileWriterFile.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileOffsetChanges.h"
 #include <QLatin1String>
@@ -36,6 +37,7 @@ using Mdt::DeployUtils::Impl::Elf::FileHeader;
 using Mdt::DeployUtils::Impl::Elf::ProgramHeader;
 using Mdt::DeployUtils::Impl::Elf::ProgramHeaderTable;
 using Mdt::DeployUtils::Impl::Elf::SectionHeader;
+using Mdt::DeployUtils::Impl::Elf::PartialSymbolTable;
 
 FileAllHeaders makeBasicFileAllHeaders()
 {
@@ -83,6 +85,7 @@ struct TestFileSetup
   uint64_t dynamicSectionAddress = 0;
   uint64_t dynamicStringTableOffset = 0;
   uint64_t dynamicStringTableAddress = 0;
+  int64_t dynSymOffset = 0;
   QString runPath;
   uint64_t sectionNameStringTableOffset = 0;
 
@@ -97,6 +100,8 @@ struct TestFileSetup
 
 FileWriterFile makeWriterFile(const TestFileSetup & setup)
 {
+  using Mdt::DeployUtils::Impl::Elf::symbolTableEntrySize;
+
   FileHeader fileHeader = make64BitLittleEndianFileHeader();
   fileHeader.phoff = setup.programHeaderTableOffset;
   fileHeader.shoff = setup.sectionHeaderTableOffset;
@@ -155,6 +160,17 @@ FileWriterFile makeWriterFile(const TestFileSetup & setup)
   sectionHeaderTable.push_back(dynamicStringTableSectionHeader);
   sectionHeaderTable.push_back(sectionNameStringTableHeader);
 
+  PartialSymbolTable symbolTable;
+  int64_t dynSymEntryOffset = setup.dynSymOffset;
+  PartialSymbolTableEntry dynamicSectionSymTabEntry = makeSectionAssociationSymbolTableEntryWithFileOffset(dynSymEntryOffset);
+  dynamicSectionSymTabEntry.entry.shndx = 1;
+  dynSymEntryOffset += symbolTableEntrySize(fileHeader.ident._class);
+  PartialSymbolTableEntry dynStrSymTabEntry = makeSectionAssociationSymbolTableEntryWithFileOffset(dynSymEntryOffset);
+  dynStrSymTabEntry.entry.shndx = 2;
+  symbolTable.addEntryFromFile(dynamicSectionSymTabEntry);
+  symbolTable.addEntryFromFile(dynStrSymTabEntry);
+  symbolTable.indexAssociationsKnownSections(sectionHeaderTable);
+
   fileHeader.shstrndx = 3;
 
   FileAllHeaders allHeaders;
@@ -162,7 +178,10 @@ FileWriterFile makeWriterFile(const TestFileSetup & setup)
   allHeaders.setProgramHeaderTable(programHeaderTable);
   allHeaders.setSectionHeaderTable(sectionHeaderTable);
 
-  return FileWriterFile::fromOriginalFile(allHeaders, dynamicSection);
+  FileWriterFile file = FileWriterFile::fromOriginalFile(allHeaders, dynamicSection);
+  file.setSectionSymbolTableFromFile(symbolTable);
+
+  return file;
 }
 
 FileWriterFileLayout makeFileLayoutFromFile(const FileWriterFile & file)
@@ -331,14 +350,12 @@ TEST_CASE("setRunPath_fileLayout")
   FileWriterFile file;
   uint64_t stringTableSize;
 
-  // This is the case for 64-bit architecture
-  const uint64_t dynamicEntrySize = sizeof(DynamicStruct);
-
   setup.programHeaderTableOffset = 50;
   setup.dynamicStringTableOffset = 100;
   setup.dynamicStringTableAddress = 200;
   setup.dynamicSectionOffset = 1'000;
   setup.dynamicSectionAddress = 1'200;
+  setup.dynSymOffset = 500;
   setup.sectionNameStringTableOffset = 5'000;
   setup.sectionHeaderTableOffset = 10'000;
 
@@ -496,11 +513,6 @@ TEST_CASE("setRunPath_fileLayout")
         REQUIRE( file.dynamicSection().getStringTableAddress() == file.headers().dynamicStringTableSectionHeader().addr );
         REQUIRE( file.dynamicSection().getStringTableSize() == stringTableSize );
       }
-
-      SECTION("TODO check that PT_LOAD and PT_PHDR covers correctly what it should")
-      {
-        REQUIRE(false);
-      }
     }
   }
 
@@ -656,49 +668,20 @@ TEST_CASE("minimumSizeToWriteFile")
 TEST_CASE("seemsValid")
 {
   FileWriterFile file;
-  FileAllHeaders headers;
-  DynamicSection dynamicSection;
-  std::vector<ProgramHeader> programHeaderTable;
-  std::vector<SectionHeader> sectionHeaderTable;
+//   FileAllHeaders headers;
+//   DynamicSection dynamicSection;
+//   std::vector<ProgramHeader> programHeaderTable;
+//   std::vector<SectionHeader> sectionHeaderTable;
 
-  FileHeader fileHeader = make64BitLittleEndianFileHeader();
-  fileHeader.phnum = 0;
-  fileHeader.shnum = 0;
-  REQUIRE( fileHeader.seemsValid() );
+//   FileHeader fileHeader = make64BitLittleEndianFileHeader();
+//   fileHeader.phnum = 0;
+//   fileHeader.shnum = 0;
+//   REQUIRE( fileHeader.seemsValid() );
 
-  headers.setFileHeader(fileHeader);
+//   headers.setFileHeader(fileHeader);
 
   SECTION("default constructed")
   {
     REQUIRE( !file.seemsValid() );
-  }
-
-  SECTION("no dynamic segment and no dynamic headers")
-  {
-    file.setHeaders(headers);
-    REQUIRE( file.seemsValid() );
-  }
-
-  SECTION("no dynamic segment but dynamic section header is present")
-  {
-  }
-
-  SECTION("no dynamic segment but dynamic program header is present")
-  {
-  }
-
-  /// also check index validity
-
-  SECTION("dynamic section size")
-  {
-    dynamicSection.addEntry( makeNullEntry() );
-
-    SECTION("header declares the correct bytes count")
-    {
-    }
-
-    SECTION("header declares a wrong bytes count")
-    {
-    }
   }
 }
