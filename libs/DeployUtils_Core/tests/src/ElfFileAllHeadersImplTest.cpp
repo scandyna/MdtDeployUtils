@@ -25,8 +25,6 @@
 #include "Mdt/DeployUtils/Impl/Elf/FileAllHeaders.h"
 #include <cassert>
 
-// #include <iostream>
-
 using Mdt::DeployUtils::Impl::Elf::FileAllHeaders;
 using Mdt::DeployUtils::Impl::Elf::FileHeader;
 using Mdt::DeployUtils::Impl::Elf::ProgramHeader;
@@ -214,13 +212,6 @@ TEST_CASE("ProgramHeaderTable")
     allHeaders.setProgramHeaderTable(programHeaderTable);
     REQUIRE( allHeaders.containsDynamicProgramHeader() );
     REQUIRE( allHeaders.dynamicProgramHeader().offset == 46 );
-
-//     SECTION("edit the dynamic program header")
-//     {
-//       dynamicSectionProgramHeader.offset = 88;
-//       allHeaders.setDynamicProgramHeader(dynamicSectionProgramHeader);
-//       REQUIRE( allHeaders.dynamicProgramHeader().offset == 88 );
-//     }
   }
 
   SECTION("also contains the program header table program header (PT_PHD)")
@@ -305,20 +296,6 @@ TEST_CASE("SectionHeaderTable")
     REQUIRE( allHeaders.dynamicSectionHeader().offset == 72 );
     REQUIRE( allHeaders.containsDynamicStringTableSectionHeader() );
     REQUIRE( allHeaders.dynamicStringTableSectionHeader().offset == 48 );
-
-    SECTION("edit the dynamic section header")
-    {
-      dynamicSectionHeader.offset = 80;
-      allHeaders.setDynamicSectionHeader(dynamicSectionHeader);
-      REQUIRE( allHeaders.dynamicSectionHeader().offset == 80 );
-    }
-
-    SECTION("edit the dynamic string table section header")
-    {
-      dynamicStringTableSectionHeader.offset = 90;
-      allHeaders.setDynamicStringTableSectionHeader(dynamicStringTableSectionHeader);
-      REQUIRE( allHeaders.dynamicStringTableSectionHeader().offset == 90 );
-    }
   }
 }
 

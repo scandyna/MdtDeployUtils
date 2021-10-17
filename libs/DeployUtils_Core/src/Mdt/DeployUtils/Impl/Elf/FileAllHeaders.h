@@ -34,7 +34,7 @@
 #include <algorithm>
 #include <cassert>
 
-#include <iostream>
+// #include <iostream>
 // #include <QDebug>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
@@ -318,7 +318,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       mProgramHeaderTable = table;
       mFileHeader.phnum = static_cast<uint16_t>( table.headerCount() );
-//       setIndexOfDynamicSectionProgramHeader();
     }
 
     /*! \brief Add a new load segment to the end of the program header table
@@ -409,37 +408,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       assert( containsDynamicProgramHeader() );
 
       return mProgramHeaderTable.dynamicSectionHeader();
-//       const size_t index = mIndexOfDynamicSectionProgramHeader;
-//       assert( index < mProgramHeaderTable.size() );
-//       assert( mProgramHeaderTable[index].segmentType() == SegmentType::Dynamic );
-// 
-//       return mProgramHeaderTable[index];
     }
-
-    /*! \brief Set the dynamic program header
-     *
-     * Because current implementation does not support creating
-     * correct program headers,
-     * it must be readen from the file first and be set before.
-     * \todo what ? and it is replaced in the implementation..
-     *
-     * \pre the dynamic program header must exist
-     * \sa containsDynamicProgramHeader()
-     */
-//     [[deprecated]]
-//     void setDynamicProgramHeader(const ProgramHeader & header) noexcept
-//     {
-//       assert( containsDynamicProgramHeader() );
-//       assert( header.segmentType() == SegmentType::Dynamic );
-// 
-//       /**
-//       const size_t index = mIndexOfDynamicSectionProgramHeader;
-//       assert( index < mProgramHeaderTable.size() );
-//       assert( mProgramHeaderTable[index].segmentType() == SegmentType::Dynamic );
-// 
-//       mProgramHeaderTable[index] = header;
-//       */
-//     }
 
     /*! \brief Check if the section name string table header exists
      */
@@ -502,29 +471,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return mSectionHeaderTable[index];
     }
 
-    /*! \brief Set the dynamic section header
-     *
-     * Because current implementation does not support creating
-     * correct section headers,
-     * it must be readen from the file first and be set before.
-     *
-     * \pre the dynamic section header must exist
-     * \sa containsDynamicSectionHeader()
-     * \pre the link must not change
-     */
-    void setDynamicSectionHeader(const SectionHeader & header) noexcept
-    {
-      assert( containsDynamicSectionHeader() );
-      assert( header.sectionType() == SectionType::Dynamic );
-      assert( header.link == dynamicSectionHeader().link );
-
-      const size_t index = mIndexOfDynamicSectionHeader;
-      assert( index < mSectionHeaderTable.size() );
-      assert( mSectionHeaderTable[index].sectionType() == SectionType::Dynamic );
-
-      mSectionHeaderTable[index] = header;
-    }
-
     /*! \brief Check if the dynamic string table section header exists
      */
     bool containsDynamicStringTableSectionHeader() const noexcept
@@ -546,27 +492,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       assert( mSectionHeaderTable[index].sectionType() == SectionType::StringTable );
 
       return mSectionHeaderTable[index];
-    }
-
-    /*! \brief Set the dynamic string table section header
-     *
-     * Because current implementation does not support creating
-     * correct section headers,
-     * it must be readen from the file first and be set before.
-     *
-     * \pre the dynamic string table section header must exist
-     * \sa containsDynamicStringTableSectionHeader()
-     */
-    void setDynamicStringTableSectionHeader(const SectionHeader & header) noexcept
-    {
-      assert( containsDynamicStringTableSectionHeader() );
-      assert( header.sectionType() == SectionType::StringTable );
-
-      const size_t index = mIndexOfDynamicStringTableSectionHeader;
-      assert( index < mSectionHeaderTable.size() );
-      assert( mSectionHeaderTable[index].sectionType() == SectionType::StringTable );
-
-      mSectionHeaderTable[index] = header;
     }
 
     /*! \brief Set the size of the dynamic section
@@ -663,7 +588,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       const uint64_t pageSize = mFileHeader.pageSize();
 
-//       const uint64_t pageSize = 0x200000;
       const uint64_t lastVirtualAddress = findLastSegmentVirtualAddressEnd();
       const uint64_t lastFileOffset = findGlobalFileOffsetEnd();
 
@@ -680,78 +604,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
        * - https://github.com/NixOS/patchelf/blob/master/BUGS
        * - https://github.com/NixOS/patchelf/pull/117
        */
-      ///const uint64_t fileOffset = findNextFileOffset(findGlobalFileOffsetEnd(), virtualAddess, pageSize);
-      /** \todo comment file offset !!!
-       * See: https://github.com/NixOS/patchelf/pull/117
-       *
-       * Maybe:
-       * - try to not move section (see if headroom exists)
-       * - warn when sections have to be moved (and tell to compile with some RunPath first)
-       * - option to fail if sections have to be moved ?
-       * Document this story in the README !!!
-       */
       const uint64_t fileOffset = virtualAddess;
-
-      std::cout << "new PT_PHDR file offset: " << fileOffset << std::endl;
 
       mProgramHeaderTable.setProgramHeaderTableHeaderVirtualAddressAndFileOffset(virtualAddess, fileOffset);
       mFileHeader.phoff = fileOffset;
-    }
-
-    /*! \brief Shift the offset of program hedares after \a refOffset by \a offset
-     *
-     * \todo use OffsetChange
-     */
-    void shiftProgramHeadersOffsetAfter(uint64_t refOffset, int64_t offset) noexcept
-    {
-      mProgramHeaderTable.shiftHeadersOffsetAfter(refOffset, offset);
-//       qDebug() << "shift program headers by " << offset;
-//       for(auto & header : mProgramHeaderTable){
-//         if(header.offset > refOffset){
-// //           qDebug() << " shift " << header.offset;
-//           header.offset += offset;
-// //           qDebug() << "  new: " << header.offset;
-//         }
-//       }
-    }
-
-    /*! \brief Shift the offset of program hedares after \a ref by \a offset
-     *
-     * \todo use OffsetChange
-     */
-    void shiftProgramHeadersOffsetAfter(const ProgramHeader & ref, int64_t offset) noexcept
-    {
-      shiftProgramHeadersOffsetAfter(ref.offset, offset);
-//       qDebug() << "shift program headers by " << offset;
-//       
-//       for(auto & header : mProgramHeaderTable){
-//         if(header.offset > ref.offset){
-//           qDebug() << " shift " << header.offset;
-//           header.offset += offset;
-//           qDebug() << "  new: " << header.offset;
-//         }
-//       }
-    }
-
-    /*! \brief Shift the offset of section hedares after \a ref by \a offset
-     *
-     * \todo use OffsetChange
-     */
-    void shiftSectionHeadersOffsetAfter(const SectionHeader & ref, int64_t offset) noexcept
-    {
-//       qDebug() << "shift section headers by " << offset;
-      
-      for(auto & header : mSectionHeaderTable){
-        if(header.offset > ref.offset){
-//           qDebug() << " shift " << header.offset << " (" << QString::fromStdString(header.name) << ")";
-          header.offset += offset;
-//           qDebug() << "  new: " << header.offset;
-        }
-      }
-      
-//       for(const auto & header : mSectionHeaderTable){
-//         qDebug() << QString::fromStdString(header.name) << ": " << header.offset;
-//       }
     }
 
     /*! \brief Get the virtual address of the end of the last segment of the file represented by this headers
@@ -839,20 +695,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
    private:
 
-//     void setIndexOfDynamicSectionProgramHeader() noexcept
-//     {
-//       const auto pred = [](const ProgramHeader & header){
-//         return header.segmentType() == SegmentType::Dynamic;
-//       };
-// 
-//       const auto it = std::find_if(mProgramHeaderTable.cbegin(), mProgramHeaderTable.cend(), pred);
-//       if( it == mProgramHeaderTable.cend() ){
-//         mIndexOfDynamicSectionProgramHeader = -1;
-//       }else{
-//         mIndexOfDynamicSectionProgramHeader = static_cast<int>( std::distance(mProgramHeaderTable.cbegin(), it) );
-//       }
-//     }
-
     void setIndexOfDynamicSectionHeader() noexcept
     {
       const auto pred = [](const SectionHeader & header){
@@ -874,7 +716,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       }
     }
 
-//     int mIndexOfDynamicSectionProgramHeader = -1;
     int mIndexOfDynamicSectionHeader = 0;
     int mIndexOfDynamicStringTableSectionHeader = 0;
     FileHeader mFileHeader;
