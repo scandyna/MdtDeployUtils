@@ -317,6 +317,19 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return mStringTable;
     }
 
+    /*! \brief Set the dynamic string table address (DT_STRTAB)
+     *
+     * \pre the DT_STRTAB entry must exist
+     * (DT_STRTAB is mandadtory)
+     */
+    void setStringTableAddress(uint64_t address) noexcept
+    {
+      auto it = findMutableEntryForTag(DynamicSectionTagType::StringTable);
+      assert( it != end() );
+
+      it->val_or_ptr = address;
+    }
+
     /*! \brief Get the dynamic string table address (DT_STRTAB)
      *
      * \pre the DT_STRTAB entry must exist
@@ -398,6 +411,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       std::for_each(mSection.cbegin(), mSection.cend(), f);
 
       return libraries;
+    }
+
+    /*! \brief Check if this section contains the run path (DT_RUNPATH) entry
+     */
+    bool containsRunPathEntry() const noexcept
+    {
+      return findRunPathEntry() != cend();
     }
 
     /*! \brief Get the run path (DT_RUNPATH)
@@ -547,6 +567,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     }
 
 
+    /// \todo use OffsetChange
     /*
      * Initial:
      * string table: \0/tmp\0libA.so\0

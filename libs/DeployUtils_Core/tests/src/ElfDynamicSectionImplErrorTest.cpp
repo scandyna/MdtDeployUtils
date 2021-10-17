@@ -27,7 +27,7 @@ using Mdt::DeployUtils::ExecutableFileReadError;
 TEST_CASE("getSoName")
 {
   DynamicSection section;
-  section.addEntry( makeNullEntry() );
+  section.addEntry( makeStringTableSizeEntry(1) );
 
   uchar stringTable[8] = {'\0','S','o','N','a','m','e','\0'};
   section.setStringTable( stringTableFromCharArray( stringTable, sizeof(stringTable) ) );
@@ -42,7 +42,7 @@ TEST_CASE("getSoName")
 TEST_CASE("getNeededSharedLibraries")
 {
   DynamicSection section;
-  section.addEntry( makeNullEntry() );
+  section.addEntry( makeStringTableSizeEntry(1) );
 
   uchar stringTable[17] = {
     '\0',
@@ -61,7 +61,7 @@ TEST_CASE("getNeededSharedLibraries")
 TEST_CASE("getRunPath string table index out of bound")
 {
   DynamicSection section;
-  section.addEntry( makeNullEntry() );
+  section.addEntry( makeStringTableSizeEntry(1) );
 
   uchar stringTable[13] = {
     '\0',

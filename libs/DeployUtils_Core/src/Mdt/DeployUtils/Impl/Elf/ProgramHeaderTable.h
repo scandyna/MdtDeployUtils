@@ -156,19 +156,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mTable[mProgramHeaderTableHeaderIndex].offset = fileOffset;
     }
 
-    /*! \brief Shift the offset of program hedares after \a refOffset by \a offset
-     *
-     * \todo use OffsetChange
-     */
-    void shiftHeadersOffsetAfter(uint64_t refOffset, int64_t offset) noexcept
-    {
-      for(auto & header : mTable){
-        if(header.offset > refOffset){
-          header.shiftOffset(offset);
-        }
-      }
-    }
-
     /*! \brief Check if this table contains the program header of the dynamic section
      */
     bool containsDynamicSectionHeader() const noexcept

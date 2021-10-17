@@ -617,6 +617,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   std::vector<SectionHeader> extractAllSectionHeaders(const ByteArraySpan & map, const FileHeader & fileHeader)
   {
     assert( !map.isNull() );
+    assert( fileHeader.seemsValid() );
     assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
 
     std::vector<SectionHeader> sectionHeaders;
@@ -817,15 +818,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     if(dynamicSectionHeaderIndex == 0){
       return dynamicSection;
     }
-    dynamicSection.setIndexOfSectionHeader(dynamicSectionHeaderIndex);
 
     const SectionHeader dynamicSectionHeader  = extractSectionHeaderAt(map, fileHeader, dynamicSectionHeaderIndex, sectionNamesStringTableSectionHeader);
     assert( dynamicSectionHeader.sectionType() == SectionType::Dynamic );
-
-//     const SectionHeader dynamicSectionHeader  = findSectionHeader(map, fileHeader, sectionNamesStringTableSectionHeader, SectionType::Dynamic, ".dynamic");
-//     if( dynamicSectionHeader.sectionType() == SectionType::Null ){
-//       return dynamicSection;
-//     }
 
     if( map.size < dynamicSectionHeader.minimumSizeToReadSection() ){
       const QString msg = tr(
@@ -854,10 +849,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       throw DynamicSectionReadError(msg);
     }
 
-    StringTable dynamicStringTableSection = extractStringTable(map, dynamicStringTableSectionHeader);
-    dynamicStringTableSection.setIndexOfSectionHeader(dynamicStringTableSectionHeaderIndex);
-    dynamicSection.setStringTable(dynamicStringTableSection);
-
     const unsigned char * first = map.data + dynamicSectionHeader.offset;
     const unsigned char * const last = first + dynamicSectionHeader.size;
 
@@ -872,6 +863,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       dynamicSection.addEntry(entry);
     }
+
+    if( !dynamicSection.containsStringTableSizeEntry() ){
+      const QString msg = tr("the .dynamic section does not contain the string table size entry (DT_STRSZ).");
+      throw DynamicSectionReadError(msg);
+    }
+
+    StringTable dynamicStringTableSection = extractStringTable(map, dynamicStringTableSectionHeader);
+    dynamicSection.setStringTable(dynamicStringTableSection);
 
     return dynamicSection;
   }

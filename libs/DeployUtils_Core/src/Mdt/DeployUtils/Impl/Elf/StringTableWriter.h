@@ -55,12 +55,23 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   /*! \internal
    */
   inline
+  bool mapIsBigEnoughToSetDynamicStringTable(const ByteArraySpan & map, const SectionHeader & sectionHeader) noexcept
+  {
+    assert( sectionHeader.sectionType() == SectionType::StringTable );
+
+    return map.size >= minimumSizeToAccessStringTable(sectionHeader);
+  }
+
+  /*! \internal
+   */
+  inline
   void setStringTableToMap(ByteArraySpan map, const SectionHeader & sectionHeader, const StringTable & stringTable) noexcept
   {
     assert( !map.isNull() );
     assert( sectionHeader.sectionType() == SectionType::StringTable );
     assert( static_cast<int64_t>(sectionHeader.size) == stringTable.byteCount() );
-    assert( map.size >= minimumSizeToAccessStringTable(sectionHeader) );
+    assert( mapIsBigEnoughToSetDynamicStringTable(map, sectionHeader) );
+//     assert( map.size >= minimumSizeToAccessStringTable(sectionHeader) );
 
     const int64_t offset = sectionHeader.offset;
     const int64_t size = sectionHeader.size;

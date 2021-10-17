@@ -145,23 +145,6 @@ TEST_CASE("requiresAlignment")
   }
 }
 
-TEST_CASE("shiftOffset")
-{
-  ProgramHeader header;
-
-  SECTION("1 byte up")
-  {
-    header.offset = 124;
-    header.shiftOffset(1);
-    REQUIRE( header.offset == 125 );
-  }
-
-  SECTION("test incomplete - vaddr etc")
-  {
-    REQUIRE( false );
-  }
-}
-
 TEST_CASE("segmentVirtualAddressEnd")
 {
   ProgramHeader header;

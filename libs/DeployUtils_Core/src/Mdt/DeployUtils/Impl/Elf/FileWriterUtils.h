@@ -200,6 +200,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       }
     }
   }
+
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
 #endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_WRITER_UTILS_H

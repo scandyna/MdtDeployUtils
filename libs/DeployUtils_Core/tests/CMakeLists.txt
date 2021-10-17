@@ -156,11 +156,35 @@ add_executable(
 #   )
 
 mdt_add_test(
+  NAME ElfAlgorithmImplTest
+  TARGET elfAlgorithmImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfAlgorithmImplTest.cpp
+)
+
+mdt_add_test(
   NAME ElfFileHeaderWriterImplTest
   TARGET elfFileHeaderWriterImplTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ElfFileHeaderWriterImplTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfProgramHeaderImplTest
+  TARGET elfProgramHeaderImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfProgramHeaderImplTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfProgramHeaderTableImplTest
+  TARGET elfProgramHeaderTableImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfProgramHeaderTableImplTest.cpp
 )
 
 mdt_add_test(
@@ -188,11 +212,51 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME ElfSectionHeaderImplTest
+  TARGET elfSectionHeaderImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfSectionHeaderImplTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfSectionHeaderTableImplTest
+  TARGET elfSectionHeaderTableImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfSectionHeaderTableImplTest.cpp
+)
+
+mdt_add_test(
   NAME ElfSectionHeaderWriterImplTest
   TARGET elfSectionHeaderWriterImplTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ElfSectionHeaderWriterImplTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfOffsetRangeImplTest
+  TARGET elfOffsetRangeImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfOffsetRangeImplTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfFileAllHeadersImplTest
+  TARGET elfFileAllHeadersImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfFileAllHeadersImplTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfFileWriterFileImplTest
+  TARGET elfFileWriterFileImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfFileWriterFileImplTest.cpp
 )
 
 mdt_add_test(
@@ -241,6 +305,22 @@ mdt_add_test(
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/ElfDynamicSectionWriterImplTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfSymbolTableImplTest
+  TARGET elfSymbolTableImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfSymbolTableImplTest.cpp
+)
+
+mdt_add_test(
+  NAME ElfSymbolTableReaderWriterImplTest
+  TARGET elfSymbolTableReaderWriterImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ElfSymbolTableReaderWriterImplTest.cpp
 )
 
 mdt_add_test(

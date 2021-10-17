@@ -66,7 +66,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     uint16_t phnum;
     uint16_t shentsize;
     uint16_t shnum;
-    uint16_t shstrndx;
+    uint16_t shstrndx = 0;
 
     /*! \brief
      */
@@ -122,6 +122,27 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       machine = static_cast<uint16_t>(m);
     }
 
+    /*! \brief Get the page size
+     *
+     * This is extracted from GNU's Gold source code (abi_pagesize),
+     * as patchelf does.
+     *
+     * \pre this file header must be valid
+     */
+    constexpr
+    uint64_t pageSize() const noexcept
+    {
+      switch( machineType() ){
+        case Machine::X86:
+        case Machine::X86_64:
+          return 0x1000;
+        default:
+          break;
+      }
+
+      return 0;
+    }
+
     /*! \brief Return true if this file header seems valid
      */
     constexpr
@@ -168,7 +189,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     /*! \brief Get the minimum size to read all section headers
      */
     constexpr
-    qint64 minimumSizeToReadAllSectionHeaders() const noexcept
+    int64_t minimumSizeToReadAllSectionHeaders() const noexcept
     {
       return static_cast<qint64>(shoff) + static_cast<qint64>(shnum) * static_cast<qint64>(shentsize);
     }

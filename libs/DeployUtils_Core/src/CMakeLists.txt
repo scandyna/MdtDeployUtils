@@ -33,9 +33,11 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/ByteArraySpan.cpp
   Mdt/DeployUtils/Impl/FileMapper.cpp
   Mdt/DeployUtils/Impl/Elf/Exceptions.cpp
+  Mdt/DeployUtils/Impl/Elf/Algorithm.cpp
   Mdt/DeployUtils/Impl/Elf/Ident.cpp
   Mdt/DeployUtils/Impl/Elf/FileWriterUtils.cpp
   Mdt/DeployUtils/Impl/Elf/ProgramHeader.cpp
+  Mdt/DeployUtils/Impl/Elf/ProgramHeaderTable.cpp
   Mdt/DeployUtils/Impl/Elf/ProgramHeaderReaderWriterCommon.cpp
   Mdt/DeployUtils/Impl/Elf/ProgramHeaderReader.cpp
   Mdt/DeployUtils/Impl/Elf/ProgramHeaderWriter.cpp
@@ -45,10 +47,21 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/Elf/FileHeader.cpp
   Mdt/DeployUtils/Impl/Elf/FileHeaderReaderWriterCommon.cpp
   Mdt/DeployUtils/Impl/Elf/FileHeaderWriter.cpp
+  Mdt/DeployUtils/Impl/Elf/FileAllHeaders.cpp
+  Mdt/DeployUtils/Impl/Elf/FileAllHeadersReaderWriterCommon.cpp
+  Mdt/DeployUtils/Impl/Elf/FileAllHeadersReader.cpp
+  Mdt/DeployUtils/Impl/Elf/FileAllHeadersWriter.cpp
+  Mdt/DeployUtils/Impl/Elf/FileWriterFileLayout.cpp
+  Mdt/DeployUtils/Impl/Elf/FileWriterFile.cpp
   Mdt/DeployUtils/Impl/Elf/StringTable.cpp
   Mdt/DeployUtils/Impl/Elf/StringTableWriter.cpp
   Mdt/DeployUtils/Impl/Elf/DynamicSection.cpp
   Mdt/DeployUtils/Impl/Elf/DynamicSectionWriter.cpp
+  Mdt/DeployUtils/Impl/Elf/SymbolTable.cpp
+  Mdt/DeployUtils/Impl/Elf/SymbolTableReader.cpp
+  Mdt/DeployUtils/Impl/Elf/SymbolTableWriter.cpp
+  Mdt/DeployUtils/Impl/Elf/OffsetRange.cpp
+  Mdt/DeployUtils/Impl/Elf/FileOffsetChanges.cpp
   Mdt/DeployUtils/Impl/Elf/FileReader.cpp
   Mdt/DeployUtils/Impl/Elf/FileWriter.cpp
   Mdt/DeployUtils/Impl/Elf/FileIoEngine.cpp

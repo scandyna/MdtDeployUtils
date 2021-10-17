@@ -733,26 +733,6 @@ TEST_CASE("stringFromUnsignedCharArray")
   }
 }
 
-TEST_CASE("SectionHeaderType")
-{
-  using Impl::Elf::SectionHeader;
-  using Impl::Elf::SectionType;
-
-  SectionHeader header;
-
-  SECTION("Null")
-  {
-    header.type = 0;
-    REQUIRE( header.sectionType() == SectionType::Null );
-  }
-
-  SECTION("StringTable")
-  {
-    header.type = 3;
-    REQUIRE( header.sectionType() == SectionType::StringTable );
-  }
-}
-
 TEST_CASE("sectionHeaderArraySizeIsBigEnough")
 {
   using Impl::Elf::sectionHeaderArraySizeIsBigEnough;

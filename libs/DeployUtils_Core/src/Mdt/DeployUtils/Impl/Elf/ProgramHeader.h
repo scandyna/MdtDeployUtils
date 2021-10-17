@@ -50,6 +50,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   };
 
   /*! \internal
+   *
+   * \sa SegmentPermissions
    */
   enum class SegmentPermission : uint32_t
   {
@@ -61,6 +63,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   };
 
   /*! \internal
+   *
+   * \sa SegmentPermission
+   * \note We cannot use QFlags, because it can't be initialzed from a uint32_t
    */
   class SegmentPermissions
   {
@@ -206,17 +211,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     bool requiresAlignment() const noexcept
     {
       return align > 1;
-    }
-
-    /*! \brief Shift this header by \a sOffset
-     *
-     * \todo use OffsetChange
-     * \todo precondition for alignment ?
-     * \todo vaddr, maybe align ?
-     */
-    void shiftOffset(int64_t sOffset) noexcept
-    {
-      offset += sOffset;
     }
 
     /*! \brief Get the virtual address of the end of the segment represented by this header

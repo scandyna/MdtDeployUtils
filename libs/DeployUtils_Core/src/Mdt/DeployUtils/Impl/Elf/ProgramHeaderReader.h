@@ -22,13 +22,13 @@
 #define MDT_DEPLOY_UTILS_IMPL_ELF_PROGRAM_HEADER_READER_H
 
 #include "ProgramHeader.h"
+#include "ProgramHeaderTable.h"
 #include "ProgramHeaderReaderWriterCommon.h"
 #include "FileHeader.h"
 #include "FileReader.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include "Mdt/DeployUtils/Impl/Elf/Exceptions.h"
 #include <cstdint>
-#include <vector>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
@@ -127,17 +127,17 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    * \pre \a map must be big enough to read all program headers
    */
   inline
-  std::vector<ProgramHeader> extractAllProgramHeaders(const ByteArraySpan & map, const FileHeader & fileHeader)
+  ProgramHeaderTable extractAllProgramHeaders(const ByteArraySpan & map, const FileHeader & fileHeader)
   {
     assert( !map.isNull() );
     assert( map.size >= fileHeader.minimumSizeToReadAllProgramHeaders() );
 
-    std::vector<ProgramHeader> programHeaders;
+    ProgramHeaderTable programHeaders;
 
     const uint16_t programHeaderCount = fileHeader.phnum;
 
     for(uint16_t i = 0; i < programHeaderCount; ++i){
-      programHeaders.emplace_back( extractProgramHeaderAt(map, fileHeader, i) );
+      programHeaders.addHeaderFromFile( extractProgramHeaderAt(map, fileHeader, i) );
     }
 
     return programHeaders;

@@ -139,6 +139,22 @@ TEST_CASE("add_entry_clear")
   REQUIRE( section.isNull() );
 }
 
+TEST_CASE("containsRunPathEntry")
+{
+  DynamicSection section;
+
+  SECTION("default constructed")
+  {
+    REQUIRE( !section.containsRunPathEntry() );
+  }
+
+  SECTION("with DT_RUNPATH entry")
+  {
+    section.addEntry( makeRunPathEntry(1) );
+    REQUIRE( section.containsRunPathEntry() );
+  }
+}
+
 TEST_CASE("getStringTableAddress")
 {
   DynamicSection section;
@@ -148,6 +164,15 @@ TEST_CASE("getStringTableAddress")
   {
     REQUIRE( section.getStringTableAddress() == 1000 );
   }
+}
+
+TEST_CASE("setStringTableAddress")
+{
+  DynamicSection section;
+  section.addEntry( makeStringTableAddressEntry(1000) );
+
+  section.setStringTableAddress(150);
+  REQUIRE( section.getStringTableAddress() == 150 );
 }
 
 TEST_CASE("getStringTableSize")

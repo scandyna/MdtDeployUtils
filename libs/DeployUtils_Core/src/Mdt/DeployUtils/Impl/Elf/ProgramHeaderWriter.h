@@ -23,11 +23,11 @@
 
 #include "ProgramHeaderReaderWriterCommon.h"
 #include "ProgramHeader.h"
+#include "ProgramHeaderTable.h"
 #include "FileHeader.h"
 #include "FileWriterUtils.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include <cstdint>
-#include <vector>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
@@ -77,17 +77,17 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   /*! \internal Check that the count of headers matches the one set in \a fileHeader
    */
   inline
-  bool fileHeaderMatchesProgramHeadersCounts(const FileHeader & fileHeader, const std::vector<ProgramHeader> & programHeaders) noexcept
+  bool fileHeaderMatchesProgramHeadersCounts(const FileHeader & fileHeader, const ProgramHeaderTable & programHeaders) noexcept
   {
     assert( fileHeader.seemsValid() );
 
-    return fileHeader.phnum == programHeaders.size();
+    return fileHeader.phnum == programHeaders.headerCount();
   }
 
   /*! \internal
    */
   inline
-  void setProgramHeadersToMap(ByteArraySpan map, const std::vector<ProgramHeader> & programHeaders, const FileHeader & fileHeader) noexcept
+  void setProgramHeadersToMap(ByteArraySpan map, const ProgramHeaderTable & programHeaders, const FileHeader & fileHeader) noexcept
   {
     assert( !map.isNull() );
     assert( fileHeader.seemsValid() );
@@ -100,7 +100,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     for(uint16_t i = 0; i < programHeaderCount; ++i){
       const int64_t offset = start + i * fileHeader.phentsize;
       const int64_t size = fileHeader.phentsize;
-      programHeaderToArray(map.subSpan(offset, size), programHeaders[i], fileHeader);
+      programHeaderToArray(map.subSpan(offset, size), programHeaders.headerAt(i), fileHeader);
     }
   }
 

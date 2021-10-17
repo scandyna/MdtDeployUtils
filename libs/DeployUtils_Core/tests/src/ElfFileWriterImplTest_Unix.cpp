@@ -24,6 +24,7 @@
 #include "TestFileUtils.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileReader.h"
 #include "Mdt/DeployUtils/Impl/Elf/ProgramHeaderReader.h"
+#include "Mdt/DeployUtils/Impl/Elf/SymbolTableReader.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileHeaderWriter.h"
 #include "Mdt/DeployUtils/Impl/Elf/ProgramHeaderWriter.h"
 #include "Mdt/DeployUtils/Impl/Elf/SectionHeaderWriter.h"
@@ -171,6 +172,9 @@ FileWriterFile readElfFile(const QString & filePath)
   using Impl::Elf::extractFileHeader;
   using Impl::Elf::extractAllHeaders;
   using Impl::Elf::extractDynamicSection;
+  using Impl::Elf::extractSectionsAssociationsSymTab;
+  
+  using Impl::Elf::SectionType;
 
   FileWriterFile elfFile;
   QFile file(filePath);
@@ -192,12 +196,37 @@ FileWriterFile readElfFile(const QString & filePath)
 
   elfFile = FileWriterFile::fromOriginalFile( headers, extractDynamicSection( map, fileHeader, headers.sectionNameStringTableHeader() ) );
 
+  /// \todo fix !
+//   const auto symTabPred = [](const SectionHeader & header){
+//     return header.sectionType() == SectionType::SymbolTable;
+//   };
+//   const auto dynSymHdrIt = std::find_if( elfFile.sectionHeaderTable().cbegin(), elfFile.sectionHeaderTable().cend(), symTabPred );
+//   elfFile.setPartialSymbolTableFromFile( extractPartialSymbolTable(map, *dynSymHdrIt, headers.fileHeader().ident) );
+
+  elfFile.setSectionSymbolTableFromFile( extractSectionsAssociationsSymTab( map, headers.fileHeader(), headers.sectionHeaderTable() ) );
+//   elfFile.setSectionDynamicSymbolTableFromFile( extractSectionsAssociationsDynSym( map, headers.fileHeader(), headers.sectionHeaderTable() ) );
+
   if( !unmapAndCloseFile(file, map) ){
     const QString msg = QLatin1String("unmap/close file filed");
     throw QRuntimeError(msg);
   }
 
   return elfFile;
+}
+
+FileWriterFile copyAndReadElfFile(const QString & targetFilePath)
+{
+  if( !copyFile(QString::fromLocal8Bit(TEST_SIMPLE_EXECUTABLE_DYNAMIC_FILE_PATH), targetFilePath) ){
+    const QString msg = QLatin1String("copy the file failed");
+    throw QRuntimeError(msg);
+  }
+
+  if( !runExecutable(targetFilePath) ){
+    const QString msg = QLatin1String("executing copied file failed");
+    throw QRuntimeError(msg);
+  }
+
+  return readElfFile(targetFilePath);
 }
 
 bool readExecutable(const QString & filePath)
@@ -209,12 +238,14 @@ bool readExecutable(const QString & filePath)
     return false;
   }
 
-//   std::cout << "File header:\n" << toDebugString(elfFile.fileHeader).toStdString() << std::endl;
-//   std::cout << "Program headers:\n" << toDebugString(elfFile.programHeaderTable()).toStdString() << std::endl;
+  std::cout << "File header:\n" << toDebugString(elfFile.fileHeader()).toStdString() << std::endl;
+  std::cout << "Program headers:\n" << toDebugString(elfFile.programHeaderTable()).toStdString() << std::endl;
 //   std::cout << "Section headers:\n" << toDebugString(elfFile.sectionHeaderTable()).toStdString() << std::endl;
-  std::cout << "Dynamic section:\n" << toDebugString( elfFile.dynamicSection() ).toStdString() << std::endl;
-  std::cout << "Dynamic section string table:\n" << toDebugString( elfFile.dynamicSection().stringTable() ).toStdString() << std::endl;
+//   std::cout << "Dynamic section:\n" << toDebugString( elfFile.dynamicSection() ).toStdString() << std::endl;
+//   std::cout << "Dynamic section string table:\n" << toDebugString( elfFile.dynamicSection().stringTable() ).toStdString() << std::endl;
 
+//   std::cout << "partial symbol table .symtab:\n" << toDebugString( elfFile.sectionSymbolTable() ).toStdString() << std::endl;
+//   std::cout << "partial symbol table .dynsym:\n" << toDebugString( elfFile.sectionDynamicSymbolTable() ).toStdString() << std::endl;
 //   std::cout << "Section header associated with the dynamic section:\n"
 //             << toDebugString(elfFile.sectionHeaders[elfFile.dynamicSection.indexOfSectionHeader()]).toStdString() << std::endl;
 
@@ -224,6 +255,8 @@ bool readExecutable(const QString & filePath)
   std::cout << "File layout:\n" << fileLayoutToDebugString( elfFile.fileHeader(), elfFile.programHeaderTable(), elfFile.sectionHeaderTable() ).toStdString() << std::endl;
 
   std::cout << sectionSegmentMappingToDebugString( elfFile.headers() ).toStdString() << std::endl;
+  
+  std::cout << "RunPath: " << elfFile.dynamicSection().getRunPath().toStdString() << std::endl;
 
   return true;
 }
@@ -289,13 +322,22 @@ TEST_CASE("simpleReadWrite")
   REQUIRE( readExecutable(targetFilePath) );
 }
 
-TEST_CASE("DynamicSection")
-{
-//   using Impl::Elf::setDynamicSectionToMap;
-//   using Impl::Elf::setStringTableToMap;
-//   using Impl::Elf::adjustedStringTableSectionHeader;
-//   using Impl::Elf::setAllHeadersToMap;
+/// \todo try: eu-elflint --gnu-ld --strict target
 
+/// \todo see LD_BIN_NOW env var for tests
+
+/** \todo see: alignment and paging / page size:
+ *
+ * A) https://fr.wikipedia.org/wiki/M%C3%A9moire_virtuelle
+ * B) https://fr.wikipedia.org/wiki/Alignement_en_m%C3%A9moire
+ *
+ */
+
+/// \todo see: https://stackoverflow.com/questions/46117065/required-alignment-of-text-versus-data
+
+
+TEST_CASE("editRunPath")
+{
   using Impl::Elf::setFileToMap;
 
   QTemporaryDir dir;
@@ -305,24 +347,17 @@ TEST_CASE("DynamicSection")
   FileWriterFile elfFile;
   QFile file;
   ByteArraySpan map;
-//   int64_t fileSizeChange;
-
-  const QString targetFilePath = makePath(dir, "targetFile");
-  REQUIRE( copyFile(QString::fromLocal8Bit(TEST_SIMPLE_EXECUTABLE_DYNAMIC_FILE_PATH), targetFilePath) );
-  REQUIRE( runExecutable(targetFilePath) );
-
-  elfFile = readElfFile(targetFilePath);
-  REQUIRE( elfFile.seemsValid() );
 
   SECTION("dynamic section does not change")
   {
+    const QString targetFilePath = makePath(dir, "no_changes");
+    elfFile = copyAndReadElfFile(targetFilePath);
+    REQUIRE( elfFile.seemsValid() );
+
     map = openAndMapFileForWrite(file, targetFilePath);
     REQUIRE( !map.isNull() );
 
     setFileToMap(map, elfFile);
-//     setDynamicSectionToMap( map, elfFile.dynamicSectionHeader(), elfFile.dynamicSection(), elfFile.fileHeader() );
-//     setStringTableToMap( map, elfFile.headers().dynamicStringTableSectionHeader(), elfFile.dynamicSection().stringTable() );
-//     setAllHeadersToMap( map, elfFile.headers() );
 
     unmapAndCloseFile(file, map);
     REQUIRE( runExecutable(targetFilePath) );
@@ -331,19 +366,21 @@ TEST_CASE("DynamicSection")
 
   SECTION("change RUNPATH")
   {
-//     DynamicSection dynamicSection = elfFile.dynamicSection();
-//     dynamicSection.setRunPath( QLatin1String("/tmp") );
-//     fileSizeChange = elfFile.setDynamicSectionAndStringTable(dynamicSection);
+    const QString targetFilePath = makePath(dir, "change_runpath");
+    elfFile = copyAndReadElfFile(targetFilePath);
+    REQUIRE( elfFile.seemsValid() );
 
     elfFile.setRunPath( QLatin1String("/tmp") );
 
-    map = openAndMapFileForWrite(file, targetFilePath);
+    /// \todo sandbox
+    ///map = openAndMapFileForWrite(file, targetFilePath);
+    ///REQUIRE( !map.isNull() );
+    openFileForWrite(file, targetFilePath);
+    resizeFile( file, elfFile.minimumSizeToWriteFile() );
+    map = mapFile(file);
     REQUIRE( !map.isNull() );
 
     setFileToMap(map, elfFile);
-//     setDynamicSectionToMap( map, elfFile.dynamicSectionHeader(), elfFile.dynamicSection(), elfFile.fileHeader() );
-//     setStringTableToMap( map, elfFile.headers().dynamicStringTableSectionHeader(), elfFile.dynamicSection().stringTable() );
-//     setAllHeadersToMap( map, elfFile.headers() );
 
     unmapAndCloseFile(file, map);
     REQUIRE( runExecutable(targetFilePath) );
@@ -353,23 +390,22 @@ TEST_CASE("DynamicSection")
 
   SECTION("remove RUNPATH")
   {
-//     DynamicSection dynamicSection = elfFile.dynamicSection();
-//     dynamicSection.removeRunPath();
-//     fileSizeChange = elfFile.setDynamicSectionAndStringTable(dynamicSection);
-//     REQUIRE( fileSizeChange < 0 );
+    const QString targetFilePath = makePath(dir, "remove_runpath");
+    elfFile = copyAndReadElfFile(targetFilePath);
+    REQUIRE( elfFile.seemsValid() );
 
     elfFile.setRunPath( QString() );
-    REQUIRE( elfFile.globalChangesOffset() < 0 );
+//     REQUIRE( elfFile.globalChangesOffset() < 0 );
 
-    map = openAndMapFileForWrite(file, targetFilePath);
+    /// \todo sandbox
+    ///map = openAndMapFileForWrite(file, targetFilePath);
+    ///REQUIRE( !map.isNull() );
+    openFileForWrite(file, targetFilePath);
+    resizeFile( file, elfFile.minimumSizeToWriteFile() );
+    map = mapFile(file);
     REQUIRE( !map.isNull() );
 
     setFileToMap(map, elfFile);
-//     setDynamicSectionToMap( map, elfFile.dynamicSectionHeader(), elfFile.dynamicSection(), elfFile.fileHeader() );
-//     setStringTableToMap( map, elfFile.headers().dynamicStringTableSectionHeader(), elfFile.dynamicSection().stringTable() );
-//     setAllHeadersToMap( map, elfFile.headers() );
-
-    /// \todo resize the file
 
     unmapAndCloseFile(file, map);
     REQUIRE( runExecutable(targetFilePath) );
@@ -379,10 +415,14 @@ TEST_CASE("DynamicSection")
 
   SECTION("set a very long RUNPATH")
   {
-    
+    const QString targetFilePath = makePath(dir, "set_very_long_runpath");
+    elfFile = copyAndReadElfFile(targetFilePath);
+    REQUIRE( elfFile.seemsValid() );
+
     qDebug() << "set very long RUNPATH, file: " << targetFilePath;
     
     const QString runPath = generateStringWithNChars(10000);
+    ///const QString runPath = elfFile.dynamicSection().getRunPath() + QLatin1String(":") + generateStringWithNChars(10000);
     
 //     qDebug() << "RUNPATH: " << runPath;
 //     DynamicSection dynamicSection = elfFile.dynamicSection();
@@ -396,7 +436,7 @@ TEST_CASE("DynamicSection")
     qDebug() << "*************************************************************************" ;
     
     elfFile.setRunPath(runPath);
-    REQUIRE( elfFile.globalChangesOffset() > 0 );
+    ///REQUIRE( elfFile.globalChangesOffset() > 0 );
 
     openFileForWrite(file, targetFilePath);
     resizeFile( file, elfFile.minimumSizeToWriteFile() );

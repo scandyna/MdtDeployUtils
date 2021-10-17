@@ -24,6 +24,7 @@
 #include "Mdt/DeployUtils/Impl/Elf/FileReader.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include <iostream>
+#include <vector>
 #include <cassert>
 
 using namespace Mdt::DeployUtils;
@@ -41,7 +42,11 @@ Mdt::DeployUtils::Impl::ByteArraySpan arraySpanFromArray(unsigned char * const a
 
 bool arraysAreEqual(const Mdt::DeployUtils::Impl::ByteArraySpan & array, const Mdt::DeployUtils::Impl::ByteArraySpan & reference)
 {
-  assert(array.size == reference.size);
+  if(array.size != reference.size){
+    std::cout << "sizes differ: " << QString::number(array.size).toStdString()
+              << " , expected: " << QString::number(reference.size).toStdString() << std::endl;
+    return false;
+  }
 
   for(int64_t i = 0; i < array.size; ++i){
     if(array.data[i] != reference.data[i]){
@@ -54,6 +59,15 @@ bool arraysAreEqual(const Mdt::DeployUtils::Impl::ByteArraySpan & array, const M
 
   return true;
 //   return std::equal( array.cbegin(), array.cend(), reference.cbegin(), reference.cend() );
+}
+
+bool arraysAreEqual(const Mdt::DeployUtils::Impl::ByteArraySpan & array, std::vector<unsigned char> reference)
+{
+  Mdt::DeployUtils::Impl::ByteArraySpan referenceArray;
+  referenceArray.data = reference.data();
+  referenceArray.size = reference.size();
+
+  return arraysAreEqual(array, referenceArray);
 }
 
 Impl::Elf::Ident makeValidIdent(Impl::Elf::Class _class, Impl::Elf::DataFormat dataFormat)

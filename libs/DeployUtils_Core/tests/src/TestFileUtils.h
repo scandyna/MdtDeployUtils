@@ -23,11 +23,13 @@
 
 #include <QFile>
 #include <QString>
+#include <QStringList>
 #include <QTextStream>
 #include <QTemporaryDir>
 #include <QDir>
 #include <QProcess>
 #include <QDebug>
+#include <iostream>
 #include <cassert>
 
 QString makePath(const QTemporaryDir & dir, const char * const subPath)
@@ -102,11 +104,11 @@ bool copyFile(const QString & source, const QString & destination)
   return QFile::copy(source, destination);
 }
 
-bool runExecutable(const QString & executableFilePath)
+bool runExecutable( const QString & executableFilePath, const QStringList & arguments = QStringList() )
 {
   QProcess process;
 
-  process.start(executableFilePath);
+  process.start(executableFilePath, arguments);
   if( !process.waitForStarted() ){
     qDebug() << "starting process for executable '" << executableFilePath << "' failed: " << process.errorString();
     return false;
@@ -124,7 +126,16 @@ bool runExecutable(const QString & executableFilePath)
     qDebug() << process.readAllStandardError();
     return false;
   }
-  qDebug() << "output for executable '" << executableFilePath << "': " << process.readAllStandardOutput();
+
+  const QString stdOut = QString::fromLocal8Bit( process.readAllStandardOutput() );
+  if( !stdOut.isEmpty() ){
+    std::cout << "output for executable '" << executableFilePath.toStdString() << "': " << stdOut.toStdString() << std::endl;
+  }
+
+  const QString stdErr = QString::fromLocal8Bit( process.readAllStandardError() );
+  if( !stdErr.isEmpty() ){
+    std::cout << "(std err) output for executable '" << executableFilePath.toStdString() << "': " << stdErr.toStdString() << std::endl;
+  }
 
   return true;
 }
