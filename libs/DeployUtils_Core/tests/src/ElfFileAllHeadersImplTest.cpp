@@ -25,41 +25,21 @@
 #include "Mdt/DeployUtils/Impl/Elf/FileAllHeaders.h"
 #include <cassert>
 
+// #include <iostream>
+
 using Mdt::DeployUtils::Impl::Elf::FileAllHeaders;
 using Mdt::DeployUtils::Impl::Elf::FileHeader;
 using Mdt::DeployUtils::Impl::Elf::ProgramHeader;
+using Mdt::DeployUtils::Impl::Elf::SegmentType;
 using Mdt::DeployUtils::Impl::Elf::ProgramHeaderTable;
 using Mdt::DeployUtils::Impl::Elf::SectionHeader;
-
-
-// ProgramHeader makeNullProgramHeader()
-// {
-//   ProgramHeader header;
-//   header.type = 0;
-// 
-//   return header;
-// }
-
-// ProgramHeader makeDynamicSectionProgramHeader()
-// {
-//   ProgramHeader header;
-//   header.type = 2;
-// 
-//   return header;
-// }
-
-
-// std::vector<ProgramHeader> makeProgramHeaderTable(int n)
-// {
-//   assert(n > 0);
-// 
-//   return std::vector<ProgramHeader>( n, makeNullProgramHeader() );
-// }
 
 SectionHeader makeNullSectionHeader()
 {
   SectionHeader header;
   header.type = 0;
+  header.offset = 0;
+  header.size = 0;
 
   return header;
 }
@@ -92,10 +72,11 @@ struct TestHeadersSetup
   uint64_t programHeaderTableOffset = 0;
   uint64_t sectionHeaderTableOffset = 0;
   uint64_t dynamicSectionOffset = 0;
-  uint64_t dynamicSectionFileSize = 0;
+  uint64_t dynamicSectionSize = 0;
   uint64_t dynamicSectionAddress = 0;
+  uint64_t dynamicSectionAlignment = 0;
   uint64_t dynamicStringTableOffset = 0;
-  uint64_t dynamicStringTableFileSize = 0;
+  uint64_t dynamicStringTableSize = 0;
   uint64_t dynamicStringTableAddress = 0;
   uint64_t sectionNameStringTableOffset = 0;
 };
@@ -109,28 +90,40 @@ FileAllHeaders makeTestHeaders(const TestHeadersSetup & setup)
 
   ProgramHeader dynamicSectionProgramHeader = makeDynamicSectionProgramHeader();
   dynamicSectionProgramHeader.offset = setup.dynamicSectionOffset;
-  dynamicSectionProgramHeader.filesz = setup.dynamicSectionFileSize;
+  dynamicSectionProgramHeader.filesz = setup.dynamicSectionSize;
   dynamicSectionProgramHeader.vaddr = setup.dynamicSectionAddress;
+  dynamicSectionProgramHeader.align = setup.dynamicSectionAlignment;
   dynamicSectionProgramHeader.paddr = setup.dynamicSectionAddress;
+  dynamicSectionProgramHeader.memsz = setup.dynamicSectionSize;
 
   SectionHeader dynamicSectionHeader = makeDynamicSectionHeader();
   dynamicSectionHeader.name = ".dynamic";
   dynamicSectionHeader.offset = setup.dynamicSectionOffset;
-  dynamicSectionHeader.size = setup.dynamicSectionFileSize;
+  dynamicSectionHeader.size = setup.dynamicSectionSize;
   dynamicSectionHeader.addr = setup.dynamicSectionAddress;
+  dynamicSectionHeader.addralign = setup.dynamicSectionAlignment;
   dynamicSectionHeader.link = 2;
 
   SectionHeader dynamicStringTableSectionHeader = makeStringTableSectionHeader();
   dynamicStringTableSectionHeader.name = ".dynstr";
   dynamicStringTableSectionHeader.offset = setup.dynamicStringTableOffset;
-  dynamicStringTableSectionHeader.size = setup.dynamicStringTableFileSize;
+  dynamicStringTableSectionHeader.size = setup.dynamicStringTableSize;
   dynamicStringTableSectionHeader.addr = setup.dynamicStringTableAddress;
+  dynamicStringTableSectionHeader.addralign = 1;
 
   SectionHeader sectionNameStringTableHeader = makeStringTableSectionHeader();
   sectionNameStringTableHeader.name = "shstrtab";
   sectionNameStringTableHeader.offset = setup.sectionNameStringTableOffset;
+  sectionNameStringTableHeader.size = 100;
+
+  ProgramHeader programHeaderTableProgramHeader = makeProgramHeaderTableProgramHeader();
+  programHeaderTableProgramHeader.offset = setup.programHeaderTableOffset;
+  programHeaderTableProgramHeader.filesz = 2*56;
+  programHeaderTableProgramHeader.vaddr = setup.programHeaderTableOffset;
+  programHeaderTableProgramHeader.memsz = 2*56;
 
   ProgramHeaderTable programHeaderTable;
+  programHeaderTable.addHeaderFromFile(programHeaderTableProgramHeader);
   programHeaderTable.addHeaderFromFile(dynamicSectionProgramHeader);
 
   std::vector<SectionHeader> sectionHeaderTable;
@@ -182,6 +175,7 @@ TEST_CASE("ProgramHeaderTable")
   {
     REQUIRE( !allHeaders.containsProgramHeaderTable() );
     REQUIRE( !allHeaders.containsDynamicProgramHeader() );
+    REQUIRE( !allHeaders.containsProgramHeaderTableProgramHeader() );
   }
 
   SECTION("2 program headers")
@@ -227,6 +221,15 @@ TEST_CASE("ProgramHeaderTable")
 //       allHeaders.setDynamicProgramHeader(dynamicSectionProgramHeader);
 //       REQUIRE( allHeaders.dynamicProgramHeader().offset == 88 );
 //     }
+  }
+
+  SECTION("also contains the program header table program header (PT_PHD)")
+  {
+    programHeaderTable.addHeaderFromFile( makeProgramHeaderTableProgramHeader() );
+    allHeaders.setProgramHeaderTable(programHeaderTable);
+
+    REQUIRE( allHeaders.containsProgramHeaderTableProgramHeader() );
+    REQUIRE( allHeaders.programHeaderTableProgramHeader().segmentType() == SegmentType::ProgramHeaderTable );
   }
 }
 
@@ -346,17 +349,171 @@ TEST_CASE("setDynamicSectionFileSize")
   REQUIRE( allHeaders.dynamicSectionHeader().size == 120 );
 }
 
+TEST_CASE("moveProgramHeaderTableToNextPageAfterEnd")
+{
+  TestHeadersSetup setup;
+  setup.programHeaderTableOffset = 0x40;
+  setup.dynamicSectionOffset = 100;
+  setup.dynamicSectionSize = 10;
+  setup.sectionHeaderTableOffset = 1'000;
+
+  FileAllHeaders headers = makeTestHeaders(setup);
+  const uint64_t originalVirtualMemoryEnd = headers.findLastSegmentVirtualAddressEnd();
+  const uint64_t originalFileEnd = headers.findGlobalFileOffsetEnd();
+
+  headers.moveProgramHeaderTableToNextPageAfterEnd();
+
+  REQUIRE( headers.programHeaderTableProgramHeader().vaddr >= originalVirtualMemoryEnd );
+  REQUIRE( (headers.programHeaderTableProgramHeader().vaddr % 2) == 0 );
+  REQUIRE( headers.programHeaderTableProgramHeader().offset >= originalFileEnd );
+  REQUIRE( headers.fileHeader().phoff == headers.programHeaderTableProgramHeader().offset );
+}
+
+TEST_CASE("moveDynamicSectionToEnd")
+{
+  TestHeadersSetup setup;
+  setup.dynamicSectionOffset = 100;
+  setup.dynamicSectionAddress = 200;
+  setup.dynamicSectionAlignment = 8;
+  setup.dynamicSectionSize = 10;
+  setup.sectionHeaderTableOffset = 1'000;
+
+  FileAllHeaders headers = makeTestHeaders(setup);
+  const uint64_t originalVirtualAddressEnd = headers.findLastSegmentVirtualAddressEnd();
+  const uint64_t originalFileEnd = headers.findGlobalFileOffsetEnd();
+
+  headers.moveDynamicSectionToEnd();
+
+  SECTION("the new virtual address must be at end and aligned (dynamic section has its own segment)")
+  {
+    REQUIRE( headers.dynamicProgramHeader().vaddr >= originalVirtualAddressEnd );
+    REQUIRE( (headers.dynamicProgramHeader().vaddr % setup.dynamicSectionAlignment) == 0 );
+  }
+
+  SECTION("the new file offset must be at least at end and congruent to the virtual address modulo page size")
+  {
+    REQUIRE( headers.dynamicProgramHeader().offset >= originalFileEnd );
+
+    const uint64_t pageSize = headers.fileHeader().pageSize();
+    const uint64_t virtualAddressRemainder = headers.dynamicProgramHeader().vaddr % pageSize;
+    const uint64_t fileOffsetRemainder = headers.dynamicProgramHeader().offset % pageSize;
+    REQUIRE( fileOffsetRemainder == virtualAddressRemainder );
+  }
+
+  SECTION("section header and program header must be in sync")
+  {
+    REQUIRE( headers.dynamicSectionHeader().addr == headers.dynamicProgramHeader().vaddr );
+    REQUIRE( headers.dynamicSectionHeader().offset == headers.dynamicSectionHeader().offset );
+  }
+}
+
+TEST_CASE("moveDynamicStringTableToEnd")
+{
+  TestHeadersSetup setup;
+  setup.dynamicStringTableOffset = 100;
+  setup.dynamicStringTableAddress = 200;
+  setup.dynamicStringTableSize = 10;
+  setup.dynamicSectionOffset = 300;
+  setup.dynamicSectionAddress = 500;
+  setup.dynamicSectionSize = 15;
+  setup.sectionHeaderTableOffset = 1'000;
+
+  FileAllHeaders headers = makeTestHeaders(setup);
+  const uint64_t originalVirtualAddressEnd = headers.findLastSegmentVirtualAddressEnd();
+  const uint64_t originalFileEnd = headers.findGlobalFileOffsetEnd();
+
+  headers.moveDynamicStringTableToEnd();
+
+  SECTION("the new virtual address must be at end and modulo 2")
+  {
+    REQUIRE( headers.dynamicStringTableSectionHeader().addr >= originalVirtualAddressEnd );
+    REQUIRE( (headers.dynamicStringTableSectionHeader().addr % 2) == 0 );
+  }
+
+  SECTION("the new file offset must be at least at end")
+  {
+    REQUIRE( headers.dynamicStringTableSectionHeader().offset >= originalFileEnd );
+  }
+}
+
 TEST_CASE("setDynamicStringTableFileSize")
 {
   TestHeadersSetup setup;
-  setup.dynamicStringTableAddress = 100;
-  setup.dynamicStringTableFileSize = 10;
+  setup.dynamicStringTableOffset = 100;
+  setup.dynamicStringTableSize = 10;
 
   FileAllHeaders allHeaders = makeTestHeaders(setup);
 
   allHeaders.setDynamicStringTableFileSize(25);
 
   REQUIRE( allHeaders.dynamicStringTableSectionHeader().size == 25 );
+}
+
+TEST_CASE("findLastSegmentVirtualAddressEnd")
+{
+  TestHeadersSetup setup;
+  FileAllHeaders allHeaders;
+
+  SECTION("section header table is at the end of the file but it is not loaded into memory")
+  {
+    setup.programHeaderTableOffset = 50;
+    setup.sectionHeaderTableOffset = 15'000;
+
+    SECTION("the dynamic section is at the end of the file")
+    {
+      setup.dynamicStringTableOffset = 200;
+      setup.dynamicStringTableSize = 10;
+      setup.dynamicStringTableAddress = 2000;
+      setup.dynamicSectionOffset = 300;
+      setup.dynamicSectionSize = 20;
+      setup.dynamicSectionAddress = 3000;
+
+      allHeaders = makeTestHeaders(setup);
+      REQUIRE( allHeaders.seemsValid() );
+
+      const uint64_t expectedLastAddress = 3020;
+
+      REQUIRE( allHeaders.findLastSegmentVirtualAddressEnd() == expectedLastAddress );
+    }
+  }
+}
+
+TEST_CASE("findGlobalFileOffsetEnd")
+{
+  TestHeadersSetup setup;
+  FileAllHeaders allHeaders;
+
+  SECTION("section header table is at the end of the file (the common case)")
+  {
+    setup.programHeaderTableOffset = 50;
+    setup.dynamicSectionOffset = 100;
+    setup.dynamicSectionSize = 10;
+    setup.dynamicStringTableOffset = 1'000;
+    setup.dynamicStringTableSize = 100;
+    setup.sectionHeaderTableOffset = 10'000;
+    allHeaders = makeTestHeaders(setup);
+    REQUIRE( allHeaders.seemsValid() );
+
+    const uint64_t expectedEnd = static_cast<uint64_t>( allHeaders.fileHeader().minimumSizeToReadAllSectionHeaders() );
+
+    REQUIRE( allHeaders.findGlobalFileOffsetEnd() == expectedEnd );
+  }
+
+  SECTION("the dynamic string table is at the end of the file")
+  {
+    setup.programHeaderTableOffset = 50;
+    setup.dynamicSectionOffset = 100;
+    setup.dynamicSectionSize = 10;
+    setup.dynamicStringTableOffset = 10'000;
+    setup.dynamicStringTableSize = 100;
+    setup.sectionHeaderTableOffset = 2'000;
+    allHeaders = makeTestHeaders(setup);
+    REQUIRE( allHeaders.seemsValid() );
+
+    const uint64_t expectedEnd = setup.dynamicStringTableOffset + setup.dynamicStringTableSize;
+
+    REQUIRE( allHeaders.findGlobalFileOffsetEnd() == expectedEnd );
+  }
 }
 
 TEST_CASE("globalFileOffsetRange")
@@ -368,9 +525,9 @@ TEST_CASE("globalFileOffsetRange")
   {
     setup.programHeaderTableOffset = 50;
     setup.dynamicSectionOffset = 100;
-    setup.dynamicSectionFileSize = 10;
+    setup.dynamicSectionSize = 10;
     setup.dynamicStringTableOffset = 1'000;
-    setup.dynamicStringTableFileSize = 100;
+    setup.dynamicStringTableSize = 100;
     setup.sectionHeaderTableOffset = 10'000;
     allHeaders = makeTestHeaders(setup);
     REQUIRE( allHeaders.seemsValid() );
@@ -385,14 +542,14 @@ TEST_CASE("globalFileOffsetRange")
   {
     setup.programHeaderTableOffset = 50;
     setup.dynamicSectionOffset = 100;
-    setup.dynamicSectionFileSize = 10;
+    setup.dynamicSectionSize = 10;
     setup.dynamicStringTableOffset = 10'000;
-    setup.dynamicStringTableFileSize = 100;
+    setup.dynamicStringTableSize = 100;
     setup.sectionHeaderTableOffset = 2'000;
     allHeaders = makeTestHeaders(setup);
     REQUIRE( allHeaders.seemsValid() );
 
-    const uint64_t expectedEnd = setup.dynamicStringTableOffset + setup.dynamicStringTableFileSize;
+    const uint64_t expectedEnd = setup.dynamicStringTableOffset + setup.dynamicStringTableSize;
 
     REQUIRE( allHeaders.globalFileOffsetRange().begin() == 0 );
     REQUIRE( allHeaders.globalFileOffsetRange().end() == expectedEnd );

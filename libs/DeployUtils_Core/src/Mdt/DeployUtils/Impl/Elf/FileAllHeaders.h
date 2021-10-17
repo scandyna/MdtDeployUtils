@@ -26,6 +26,7 @@
 #include "ProgramHeaderTable.h"
 #include "SectionHeader.h"
 #include "OffsetRange.h"
+#include "Algorithm.h"
 #include <vector>
 #include <cstdint>
 #include <limits>
@@ -33,6 +34,7 @@
 #include <algorithm>
 #include <cassert>
 
+#include <iostream>
 // #include <QDebug>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
@@ -319,11 +321,42 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 //       setIndexOfDynamicSectionProgramHeader();
     }
 
+    /*! \brief Add a new load segment to the end of the program header table
+     */
+    ProgramHeader & appendNullLoadSegment() noexcept
+    {
+      assert( fileHeaderSeemsValid() );
+
+      ProgramHeader & header = mProgramHeaderTable.appendNullLoadSegment(fileHeader().phentsize);
+      ++mFileHeader.phnum;
+
+      return header;
+    }
+
     /*! \brief Get the program header table
      */
     const ProgramHeaderTable & programHeaderTable() const noexcept
     {
       return mProgramHeaderTable;
+    }
+
+    /*! \brief Check if the program header for the program header table exists (PT_PHDR)
+     */
+    bool containsProgramHeaderTableProgramHeader() const noexcept
+    {
+      return mProgramHeaderTable.containsProgramHeaderTableHeader();
+    }
+
+    /*! \brief Get the program header table program header (PT_PHDR)
+     *
+     * \pre the program header table program header must exist
+     * \sa containsProgramHeaderTableProgramHeader()
+     */
+    const ProgramHeader & programHeaderTableProgramHeader() const noexcept
+    {
+      assert( containsProgramHeaderTableProgramHeader() );
+
+      return mProgramHeaderTable.programHeaderTableHeader();
     }
 
     /*! \brief Check if the section header table exists
@@ -552,6 +585,31 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mSectionHeaderTable[mIndexOfDynamicSectionHeader].size = size;
     }
 
+    /*! \brief Move the dynamic section to the end
+     *
+     * \pre the file header must be valid
+     * \pre the dynamic program header must exist
+     * \sa containsDynamicProgramHeader()
+     * \pre the dynamic section header must exist
+     * \sa containsDynamicSectionHeader()
+     */
+    void moveDynamicSectionToEnd() noexcept
+    {
+      assert( fileHeaderSeemsValid() );
+      assert( containsDynamicProgramHeader() );
+      assert( containsDynamicSectionHeader() );
+
+      /// \todo does the dynamic section allways require alignment ?
+      assert( dynamicProgramHeader().align > 0 );
+
+      const uint64_t virtualAddess = findNextAlignedAddress(findLastSegmentVirtualAddressEnd(), dynamicProgramHeader().align);
+      const uint64_t fileOffset = findNextFileOffset( findGlobalFileOffsetEnd(), virtualAddess, fileHeader().pageSize() );
+
+      mProgramHeaderTable.setDynamicSectionVirtualAddressAndFileOffset(virtualAddess, fileOffset);
+      mSectionHeaderTable[mIndexOfDynamicSectionHeader].addr = virtualAddess;
+      mSectionHeaderTable[mIndexOfDynamicSectionHeader].offset = fileOffset;
+    }
+
     /*! \brief Set the file size of the dynamic string table
      *
      * \pre the dynamic string table section header must exist
@@ -562,6 +620,82 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       assert( containsDynamicStringTableSectionHeader() );
 
       mSectionHeaderTable[mIndexOfDynamicStringTableSectionHeader].size = size;
+    }
+
+    /*! \brief Move the dynamic string table to the end
+     *
+     * \pre the dynamic string table section header must exist
+     * \sa containsDynamicStringTableSectionHeader()
+     */
+    void moveDynamicStringTableToEnd() noexcept
+    {
+      assert( containsDynamicStringTableSectionHeader() );
+
+      /// \todo can dynamic string table require alignment ?
+      assert( dynamicStringTableSectionHeader().addralign < 2 );
+
+      uint64_t virtualAddess = findLastSegmentVirtualAddressEnd();
+      if( (virtualAddess % 2) != 0){
+        ++virtualAddess;
+      }
+      const uint64_t fileOffset = globalFileOffsetRange().end();
+
+      mSectionHeaderTable[mIndexOfDynamicStringTableSectionHeader].addr = virtualAddess;
+      mSectionHeaderTable[mIndexOfDynamicStringTableSectionHeader].offset = fileOffset;
+    }
+
+    /*! \brief Move the program header table to the end
+     *
+     * The virtual address of the program header table
+     * will be aligned to the next page past the end.
+     * Its file offset will also be updated.
+     *
+     * \pre the file header must be valid
+     * \pre the program header table, and also its related segment, must exist
+     * \sa containsProgramHeaderTable()
+     * \sa containsProgramHeaderTableProgramHeader()
+     */
+    void moveProgramHeaderTableToNextPageAfterEnd() noexcept
+    {
+      assert( fileHeaderSeemsValid() );
+      assert( containsProgramHeaderTable() );
+      assert( containsProgramHeaderTableProgramHeader() );
+
+      const uint64_t pageSize = mFileHeader.pageSize();
+
+//       const uint64_t pageSize = 0x200000;
+      const uint64_t lastVirtualAddress = findLastSegmentVirtualAddressEnd();
+      const uint64_t lastFileOffset = findGlobalFileOffsetEnd();
+
+      const uint64_t virtualAddess = findAddressOfNextPage(std::max(lastVirtualAddress, lastFileOffset), pageSize);
+      /*
+       * We could place the program header table to the end of the file,
+       * to a offset that is congruent to the virtual addres modulo page size:
+       * const uint64_t fileOffset = findNextFileOffset(findGlobalFileOffsetEnd(), virtualAddess, pageSize);
+       *
+       * Sadly, this will not work.
+       * The file offset must be the same as the virtual address for the program header table.
+       *
+       * See also:
+       * - https://github.com/NixOS/patchelf/blob/master/BUGS
+       * - https://github.com/NixOS/patchelf/pull/117
+       */
+      ///const uint64_t fileOffset = findNextFileOffset(findGlobalFileOffsetEnd(), virtualAddess, pageSize);
+      /** \todo comment file offset !!!
+       * See: https://github.com/NixOS/patchelf/pull/117
+       *
+       * Maybe:
+       * - try to not move section (see if headroom exists)
+       * - warn when sections have to be moved (and tell to compile with some RunPath first)
+       * - option to fail if sections have to be moved ?
+       * Document this story in the README !!!
+       */
+      const uint64_t fileOffset = virtualAddess;
+
+      std::cout << "new PT_PHDR file offset: " << fileOffset << std::endl;
+
+      mProgramHeaderTable.setProgramHeaderTableHeaderVirtualAddressAndFileOffset(virtualAddess, fileOffset);
+      mFileHeader.phoff = fileOffset;
     }
 
     /*! \brief Shift the offset of program hedares after \a refOffset by \a offset
@@ -620,6 +754,45 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 //       }
     }
 
+    /*! \brief Get the virtual address of the end of the last segment of the file represented by this headers
+     *
+     * \note the returned address is 1 byte past the last virtual address of the last segment
+     */
+    uint64_t findLastSegmentVirtualAddressEnd() const noexcept
+    {
+      return mProgramHeaderTable.findLastSegmentVirtualAddressEnd();
+    }
+
+    /*! \brief Get the global file offset end
+     *
+     * \pre the file header must be valid
+     */
+    uint64_t findGlobalFileOffsetEnd() const noexcept
+    {
+      assert( fileHeaderSeemsValid() );
+
+      uint64_t segmentsOffsetEnd = 0;
+      if( !mProgramHeaderTable.isEmpty() ){
+        segmentsOffsetEnd = mProgramHeaderTable.findLastSegmentFileOffsetEnd();
+      }
+
+      uint64_t sectionsOffsetEnd = 0;
+      if( !mSectionHeaderTable.empty() ){
+        const auto cmp = [](const SectionHeader & a, const SectionHeader & b){
+          return a.fileOffsetEnd() < b.fileOffsetEnd();
+        };
+
+        const auto it = std::max_element(mSectionHeaderTable.cbegin(), mSectionHeaderTable.cend(), cmp);
+        assert( it != mSectionHeaderTable.cend() );
+
+        sectionsOffsetEnd = it->fileOffsetEnd();
+      }
+
+      const uint64_t lastHeaderEnd = static_cast<uint64_t>( minimumSizeToAccessAllHeaders() );
+
+      return std::max({segmentsOffsetEnd, sectionsOffsetEnd, lastHeaderEnd});
+    }
+
     /*! \brief Get the global file offsets range
      *
      * \pre the file header must be valid
@@ -628,19 +801,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     {
       assert( fileHeaderSeemsValid() );
 
-      uint64_t dynamicSectionEnd = 0;
-      if( containsDynamicProgramHeader() ){
-        dynamicSectionEnd = dynamicProgramHeader().offset + dynamicProgramHeader().filesz;
-      }
-
-      uint64_t dynamicStringTableEnd = 0;
-      if( containsDynamicStringTableSectionHeader() ){
-        dynamicStringTableEnd = dynamicStringTableSectionHeader().offset + dynamicStringTableSectionHeader().size;
-      }
-
-      uint64_t lastHeaderEnd = static_cast<uint64_t>( minimumSizeToAccessAllHeaders() );
-
-      uint64_t fileEnd = std::max({dynamicSectionEnd, dynamicStringTableEnd, lastHeaderEnd});
+      const uint64_t fileEnd  = findGlobalFileOffsetEnd();
 
       return OffsetRange::fromBeginAndEndOffsets(0, fileEnd);
     }
