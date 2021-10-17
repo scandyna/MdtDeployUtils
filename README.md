@@ -188,6 +188,82 @@ Build your project:
 make -j4
 ```
 
+# Notes about RPath
+
+## Context
+
+On systems that support rpath,
+the rpath informations will be changed during install.
+For Linux shared libraries, it will probably be set to `$ORIGIN`.
+More details are described in the
+[MdtSharedLibrariesDepencyHelpers](https://scandyna.gitlab.io/mdtdeployutils/cmake-api/Modules/MdtSharedLibrariesDepencyHelpers.html)
+module.
+
+If the target (a shared library or a executable) was initially compiled with long enougth rpath informations,
+the new rpath will become smaller, which does not change the binary file layout
+(only leaves some null bytes in the file).
+
+If the rpath informations becomes bigger, the file layout will change.
+
+## Technical explanation
+
+For ELF files (Unix binaries), the rpath informations are encoded in the `.dynstr` section.
+Just after this section, a other section starts.
+Shifting or moving most of the sections is far to complex for a tool like `MdtDeployUtils`,
+only the linker of the compiler knows all the details required to write a working ELF file.
+
+The solution is to move the `.dynstr` (and maybe the `.dynamic`) section to the end.
+Because those sections need to be loaded into memory at runtime,
+a load segment (PT_LOAD) that covers them must be added.
+By adding a segment, the program header table will grow,
+requiring to also move it tos the end of the file.
+The program header table must also be covered by the new load segment.
+Also, the new load segment has to be aligned to the next page
+after the end of the last virtual address of the mapped file in memory,
+which can be for example at 2MB for a simple `hello wrold` executable.
+Example:
+```
+Virtual address of the end of the last segment: 0x201fff
+Virtual address of the new load segment,
+which covers the program header table
+and the .dynstr section (page size is 0x1000): 0x203000
+File offset of the end of the last section: 0x24ff
+```
+In this example, the program header table
+will start at the virtual address `0x203000` in memory.
+We could place it in the file to a offset,
+that is congruent to the virtual address modulo page size,
+after the last section, which would be `0xd000`.
+
+And this does not work (segfault)!
+
+For the particular case of the program header table,
+the file offset must be the same as the virtual address.
+For this reason, a binary that was originally about a size of 90kB
+can grow to a size of 2MB.
+
+In the [patchelf](https://github.com/NixOS/patchelf) project,
+this is documented [as a kernel bug](https://github.com/NixOS/patchelf/blob/master/BUGS).
+
+## Recommandation
+
+If you build from the source code of the target to deploy,
+compile it with some rpath informations that is at least as long as the final rpath.
+
+When using `CMake`, this will probably be the case
+for targets that depends on shared libraries.
+
+Notice: if the `INSTALL_RPATH` property is set for a target,
+and this target has no dependencies to any shared libraries,
+CMake will tell the linker to add fake rpath informations
+of the correct size once the target is installed.
+Example of a generated `link.txt` for gcc:
+```
+-rpath,:::::::
+```
+which will be replaced by `$ORIGIN` at install time by CMake,
+which I find clever.
+
 # Install MdtDeployUtils
 
 To install MdtDeployUtils see [INSTALL](INSTALL.md).
