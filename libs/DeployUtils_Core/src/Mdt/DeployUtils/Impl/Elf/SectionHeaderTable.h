@@ -240,8 +240,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       totalSize += sectionIt->offset - previousSectionEnd;
       std::cout << " total size: " << totalSize << " , section count: " << sectionCount << std::endl;
       if(requestedSize <= totalSize){
-//         return sectionCount - 1;
-        return sectionCount;
+        return sectionCount - 1;
+//         return sectionCount;
       }
 //       ++sectionCount;
       // Accumulate section size
