@@ -30,7 +30,7 @@
 #include <cassert>
 #include <map>
 
-#include <iostream>
+// #include <iostream>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
@@ -178,10 +178,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert(size > 0);
     assert( sectionHeadersAreSortedByFileOffset(headers) );
 
-//     if( headers.empty() ){
-//       return 1;
-//     }
-
     /*
      * Sections should start after file header
      * and, most of the case, after the program header table.
@@ -207,12 +203,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      */
 
     const uint64_t requestedSize = size;
-//     auto sectionIt = headers.cbegin();
-//     size_t sectionCount = 0;
     size_t sectionCount = static_cast<size_t>( std::distance(headers.cbegin(), sectionIt) ) + 1;
     uint64_t totalSize = 0;
-
-    std::cout << "requested size: " << requestedSize << std::endl;
 
     /*
      * There is a gap between the beginning of the file
@@ -226,28 +218,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     uint64_t previousSectionEnd = sectionIt->offset;
 
     while( sectionIt != headers.cend() ){
-      std::cout << " current section offset: " << sectionIt->offset << " , size: " << sectionIt->size << std::endl;
       // Accumulate the hole (if any)
-      std::cout << " accumalating hole...\n";
-//       const uint64_t holeSize = sectionIt->offset - previousSectionEnd;
-//       std::cout << "  hole size: " << holeSize << std::endl;
-//       if(holeSize > 0){
-//         totalSize += holeSize;
-//         if(requestedSize <= totalSize){
-//           return sectionCount - 1;
-//         }
-//       }
       totalSize += sectionIt->offset - previousSectionEnd;
-      std::cout << " total size: " << totalSize << " , section count: " << sectionCount << std::endl;
       if(requestedSize <= totalSize){
         return sectionCount - 1;
-//         return sectionCount;
       }
-//       ++sectionCount;
       // Accumulate section size
-      std::cout << " accumalating section size...\n";
       totalSize += sectionIt->size;
-      std::cout << " total size: " << totalSize << " , section count: " << sectionCount << std::endl;
       if(requestedSize <= totalSize){
         return sectionCount;
       }
