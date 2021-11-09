@@ -63,13 +63,68 @@ TEST_CASE("findIndexOfFirstSectionHeader")
   }
 }
 
+TEST_CASE("makeSectionIndexChangeMap")
+{
+  std::vector<SectionHeader> headers;
+  SectionIndexChangeMap indexChangeMap;
+
+  SECTION("empty table")
+  {
+    indexChangeMap = makeSectionIndexChangeMap(headers);
+
+    REQUIRE( indexChangeMap.entriesCount() == 0 );
+    REQUIRE( indexChangeMap.isEmpty() );
+  }
+
+  SECTION("1 section")
+  {
+    headers.push_back( makeNullSectionHeader() );
+
+    indexChangeMap = makeSectionIndexChangeMap(headers);
+
+    REQUIRE( indexChangeMap.entriesCount() == 1 );
+    REQUIRE( !indexChangeMap.isEmpty() );
+    REQUIRE( indexChangeMap.indexForOldIndex(0) == 0 );
+  }
+
+  SECTION("2 sections")
+  {
+    headers.push_back( makeNullSectionHeader() );
+    headers.push_back( makeDynamicSectionHeader() );
+
+    indexChangeMap = makeSectionIndexChangeMap(headers);
+
+    REQUIRE( indexChangeMap.entriesCount() == 2 );
+    REQUIRE( indexChangeMap.indexForOldIndex(0) == 0 );
+    REQUIRE( indexChangeMap.indexForOldIndex(1) == 1 );
+  }
+}
+
+/// \todo Maybe move to its own test file ?
+TEST_CASE("SectionIndexChangeMap_swapIndexes")
+{
+  SectionIndexChangeMap map(4);
+
+  SECTION("swap 0 and 3")
+  {
+    map.swapIndexes(0, 3);
+
+    REQUIRE( map.indexForOldIndex(0) == 3 );
+    REQUIRE( map.indexForOldIndex(1) == 1 );
+    REQUIRE( map.indexForOldIndex(2) == 2 );
+    REQUIRE( map.indexForOldIndex(3) == 0 );
+  }
+}
+
 TEST_CASE("sortSectionHeadersByFileOffset")
 {
   std::vector<SectionHeader> headers;
+  SectionIndexChangeMap indexChangeMap;
 
   SECTION("empty collection")
   {
-    sortSectionHeadersByFileOffset(headers);
+    indexChangeMap = sortSectionHeadersByFileOffset(headers);
+    REQUIRE( indexChangeMap.isEmpty() );
   }
 
   SECTION("1 section")
@@ -80,9 +135,11 @@ TEST_CASE("sortSectionHeadersByFileOffset")
 
     headers.push_back(dynStr);
 
-    sortSectionHeadersByFileOffset(headers);
+    indexChangeMap = sortSectionHeadersByFileOffset(headers);
 
     REQUIRE( headers[0].offset == 50 );
+    REQUIRE( !indexChangeMap.isEmpty() );
+    REQUIRE( indexChangeMap.indexForOldIndex(0) == 0 );
   }
 
   SECTION(".dynamic , .dynstr")
@@ -94,36 +151,43 @@ TEST_CASE("sortSectionHeadersByFileOffset")
     SectionHeader dynamic = makeDynamicSectionHeader();
     dynamic.offset = 100;
 
-    headers.push_back( makeNullSectionHeader() );
-
     SECTION("headers are allready sorted")
     {
       dynamic.link = 1;
 
+      headers.push_back( makeNullSectionHeader() );
       headers.push_back(dynStr);
       headers.push_back(dynamic);
 
-      sortSectionHeadersByFileOffset(headers);
+      indexChangeMap = sortSectionHeadersByFileOffset(headers);
 
       REQUIRE( headers[1].name == ".dynstr" );
       REQUIRE( headers[1].link == 0 );
       REQUIRE( headers[2].name == ".dynamic" );
       REQUIRE( headers[2].link == 1 );
+      REQUIRE( !indexChangeMap.isEmpty() );
+      REQUIRE( indexChangeMap.indexForOldIndex(0) == 0 );
+      REQUIRE( indexChangeMap.indexForOldIndex(1) == 1 );
+      REQUIRE( indexChangeMap.indexForOldIndex(2) == 2 );
     }
 
     SECTION("headers must be sorted")
     {
       dynamic.link = 2;
 
+      headers.push_back( makeNullSectionHeader() );
       headers.push_back(dynamic);
       headers.push_back(dynStr);
 
-      sortSectionHeadersByFileOffset(headers);
+      indexChangeMap = sortSectionHeadersByFileOffset(headers);
 
       REQUIRE( headers[1].name == ".dynstr" );
       REQUIRE( headers[1].link == 0 );
       REQUIRE( headers[2].name == ".dynamic" );
       REQUIRE( headers[2].link == 1 );
+      REQUIRE( indexChangeMap.indexForOldIndex(0) == 0 );
+      REQUIRE( indexChangeMap.indexForOldIndex(1) == 2 );
+      REQUIRE( indexChangeMap.indexForOldIndex(2) == 1 );
     }
   }
 
@@ -141,12 +205,15 @@ TEST_CASE("sortSectionHeadersByFileOffset")
     headers.push_back(dynSym);
     headers.push_back(interp);
 
-    sortSectionHeadersByFileOffset(headers);
+    indexChangeMap = sortSectionHeadersByFileOffset(headers);
 
     REQUIRE( headers[1].name == ".interp" );
     REQUIRE( headers[1].info == 0 );
     REQUIRE( headers[2].name == ".dynsym" );
     REQUIRE( headers[2].info == 2 );
+    REQUIRE( indexChangeMap.indexForOldIndex(0) == 0 );
+    REQUIRE( indexChangeMap.indexForOldIndex(1) == 2 );
+    REQUIRE( indexChangeMap.indexForOldIndex(2) == 1 );
   }
 
   SECTION(".symtab , .strtab")
@@ -163,7 +230,7 @@ TEST_CASE("sortSectionHeadersByFileOffset")
     headers.push_back(strtab);
     headers.push_back(symtab);
 
-    sortSectionHeadersByFileOffset(headers);
+    indexChangeMap = sortSectionHeadersByFileOffset(headers);
 
     REQUIRE( headers[1].name == ".symtab" );
     REQUIRE( headers[1].link == 2 );
@@ -171,6 +238,9 @@ TEST_CASE("sortSectionHeadersByFileOffset")
     REQUIRE( headers[2].name == ".strtab" );
     REQUIRE( headers[2].link == 0 );
     REQUIRE( headers[2].info == 0 );
+    REQUIRE( indexChangeMap.indexForOldIndex(0) == 0 );
+    REQUIRE( indexChangeMap.indexForOldIndex(1) == 2 );
+    REQUIRE( indexChangeMap.indexForOldIndex(2) == 1 );
   }
 
   SECTION(".rela.plt , .got , .dynsym")
@@ -191,7 +261,7 @@ TEST_CASE("sortSectionHeadersByFileOffset")
     headers.push_back(relaPlt);
     headers.push_back(dynsym);
 
-    sortSectionHeadersByFileOffset(headers);
+    indexChangeMap = sortSectionHeadersByFileOffset(headers);
 
     REQUIRE( headers[1].name == ".dynsym" );
     REQUIRE( headers[1].link == 0 );
@@ -202,6 +272,10 @@ TEST_CASE("sortSectionHeadersByFileOffset")
     REQUIRE( headers[3].name == ".got" );
     REQUIRE( headers[3].link == 0 );
     REQUIRE( headers[3].info == 0 );
+    REQUIRE( indexChangeMap.indexForOldIndex(0) == 0 );
+    REQUIRE( indexChangeMap.indexForOldIndex(1) == 3 );
+    REQUIRE( indexChangeMap.indexForOldIndex(2) == 2 );
+    REQUIRE( indexChangeMap.indexForOldIndex(3) == 1 );
   }
 }
 

@@ -22,15 +22,17 @@
 #define MDT_DEPLOY_UTILS_IMPL_ELF_SECTION_HEADER_TABLE_H
 
 #include "SectionHeader.h"
+#include "SectionIndexChangeMap.h"
 #include <vector>
 #include <string>
 #include <iterator>
+#include <utility>
 #include <algorithm>
 #include <cstdint>
 #include <cassert>
 #include <map>
 
-// #include <iostream>
+#include <iostream>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
@@ -103,6 +105,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return static_cast<uint16_t>( std::distance(sectionHeaderTable.cbegin(), it) );
   }
 
+  /*! \internal
+   */
+  inline
+  SectionIndexChangeMap makeSectionIndexChangeMap(const std::vector<SectionHeader> & headers) noexcept
+  {
+    return SectionIndexChangeMap( static_cast<uint16_t>( headers.size() ) );
+  }
+
   /*! \internal Check if \a headers are sorted by file offset
    */
   inline
@@ -118,10 +128,12 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   /*! \internal Sort a collection of section headers by file offset
    */
   inline
-  void sortSectionHeadersByFileOffset(std::vector<SectionHeader> & headers) noexcept
+  SectionIndexChangeMap sortSectionHeadersByFileOffset(std::vector<SectionHeader> & headers) noexcept
   {
+    SectionIndexChangeMap indexChangeMap = makeSectionIndexChangeMap(headers);
+
     if( sectionHeadersAreSortedByFileOffset(headers) ){
-      return;
+      return indexChangeMap;
     }
 
     /*
@@ -144,11 +156,53 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       }
     }
 
-    const auto cmp = [](const SectionHeader & a, const SectionHeader & b){
+    const auto aLessThanB = [](const SectionHeader & a, const SectionHeader & b){
       return a.offset < b.offset;
     };
+    /*
+     * If we use std::sort(), we loose track of index changes.
+     * A section header table has about 50 entries,
+     * so a O(N^2) sort should be ok.
+     */
+    
+    /** see https://stackoverflow.com/questions/24650626/how-to-implement-classic-sorting-algorithms-in-modern-c
+     *
+     * Selection sort
+     * 
+     * With std::distance() etc we could get back indexes
+     */
+    
+    for(auto it = headers.begin(); it != headers.end(); ++it){
+      const auto selectionIt = std::min_element(it, headers.end(), aLessThanB);
+      assert( selectionIt != headers.end() );
+      
+      if( aLessThanB(*selectionIt, *it) ){
+        const uint16_t itIndex = static_cast<uint16_t>( std::distance(headers.begin(), selectionIt) );
+        const uint16_t selectionIndex = static_cast<uint16_t>( std::distance(headers.begin(), it) );
 
-    std::sort(headers.begin(), headers.end(), cmp);
+        std::cout << "will swap " << it->name << " / " << selectionIt->name;
+        std::cout << ": " << itIndex << " -> " << selectionIndex << " and " << selectionIndex << " -> " << itIndex << std::endl;
+        
+        indexChangeMap.swapIndexes(itIndex, selectionIndex);
+        
+        std::swap(*it, *selectionIt);
+      }
+      
+//       const uint16_t currentIndex = static_cast<uint16_t>( std::distance(headers.begin(), it) );
+//       const uint16_t newIndex = static_cast<uint16_t>( std::distance(headers.begin(), selectionIt) );
+//       
+//       std::cout << "current section: " << it->name << " , index: " << currentIndex << " / selection: " << selectionIt->name << " , new index: " << newIndex << std::endl;
+      
+//       std::swap(*it, *selectionIt);
+      
+    }
+    
+//     for(size_t i = 1; i < headers.size(); ++i){
+//       if( aLessThanB(headers[i], headers[i-1]) ){
+//         std::swap(headers[i], headers[i-1]);
+//       }
+//     }
+    ///std::sort(headers.begin(), headers.end(), aLessThanB);
 
     /*
      * Restore the links
@@ -161,6 +215,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
         header.info = findIndexOfFirstSectionHeader( headers, sectionInfoMap[header.name] );
       }
     }
+
+    return indexChangeMap;
   }
 
   /*! \internal Find the count of sections to move to free given \a size in \a headers
