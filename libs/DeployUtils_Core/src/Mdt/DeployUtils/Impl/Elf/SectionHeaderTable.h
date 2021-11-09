@@ -30,9 +30,8 @@
 #include <algorithm>
 #include <cstdint>
 #include <cassert>
-#include <map>
 
-#include <iostream>
+// #include <iostream>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
@@ -136,26 +135,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return indexChangeMap;
     }
 
-    /*
-     * Some sections have a index to a other.
-     * This can be represented by sh_link, bust also by sh_info .
-     * Sorting the headers will invalid them,
-     * so map them so we can restore after sort
-     */
-    std::map<std::string,std::string> sectionLinkMap;
-    std::map<std::string,std::string> sectionInfoMap;
-
-    for(const SectionHeader & header : headers){
-      if( header.linkIsIndexInSectionHeaderTable() ){
-        assert( header.link < headers.size() );
-        sectionLinkMap[header.name] = headers[header.link].name;
-      }
-      if( header.infoIsIndexInSectionHeaderTable() ){
-        assert( header.info < headers.size() );
-        sectionInfoMap[header.name] = headers[header.info].name;
-      }
-    }
-
     const auto aLessThanB = [](const SectionHeader & a, const SectionHeader & b){
       return a.offset < b.offset;
     };
@@ -164,55 +143,31 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * A section header table has about 50 entries,
      * so a O(N^2) sort should be ok.
      */
-    
-    /** see https://stackoverflow.com/questions/24650626/how-to-implement-classic-sorting-algorithms-in-modern-c
-     *
-     * Selection sort
-     * 
-     * With std::distance() etc we could get back indexes
-     */
-    
     for(auto it = headers.begin(); it != headers.end(); ++it){
       const auto selectionIt = std::min_element(it, headers.end(), aLessThanB);
       assert( selectionIt != headers.end() );
-      
+
       if( aLessThanB(*selectionIt, *it) ){
         const uint16_t itIndex = static_cast<uint16_t>( std::distance(headers.begin(), selectionIt) );
         const uint16_t selectionIndex = static_cast<uint16_t>( std::distance(headers.begin(), it) );
-
-        std::cout << "will swap " << it->name << " / " << selectionIt->name;
-        std::cout << ": " << itIndex << " -> " << selectionIndex << " and " << selectionIndex << " -> " << itIndex << std::endl;
-        
         indexChangeMap.swapIndexes(itIndex, selectionIndex);
-        
+
         std::swap(*it, *selectionIt);
       }
-      
-//       const uint16_t currentIndex = static_cast<uint16_t>( std::distance(headers.begin(), it) );
-//       const uint16_t newIndex = static_cast<uint16_t>( std::distance(headers.begin(), selectionIt) );
-//       
-//       std::cout << "current section: " << it->name << " , index: " << currentIndex << " / selection: " << selectionIt->name << " , new index: " << newIndex << std::endl;
-      
-//       std::swap(*it, *selectionIt);
-      
     }
-    
-//     for(size_t i = 1; i < headers.size(); ++i){
-//       if( aLessThanB(headers[i], headers[i-1]) ){
-//         std::swap(headers[i], headers[i-1]);
-//       }
-//     }
-    ///std::sort(headers.begin(), headers.end(), aLessThanB);
 
     /*
-     * Restore the links
+     * Some sections have a index to a other.
+     * This can be represented by sh_link, but also by sh_info .
+     * Sorting the headers will invalid them,
+     * so we have to restore them.
      */
     for(SectionHeader & header : headers){
       if( header.linkIsIndexInSectionHeaderTable() ){
-        header.link = findIndexOfFirstSectionHeader( headers, sectionLinkMap[header.name] );
+        header.link = indexChangeMap.indexForOldIndex(header.link);
       }
       if( header.infoIsIndexInSectionHeaderTable() ){
-        header.info = findIndexOfFirstSectionHeader( headers, sectionInfoMap[header.name] );
+        header.info = indexChangeMap.indexForOldIndex(header.info);
       }
     }
 
