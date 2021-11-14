@@ -54,6 +54,17 @@ TEST_CASE("makeTestHeaders")
     REQUIRE( !headers.containsDynamicStringTableSectionHeader() );
   }
 
+  SECTION(".dynstr")
+  {
+    setup.dynamicStringTableOffset = 10;
+    setup.dynamicStringTableAddress = 100;
+    setup.dynamicStringTableSize = 15;
+
+    headers = makeTestHeaders(setup);
+
+    REQUIRE( headers.containsDynamicStringTableSectionHeader() );
+  }
+
   SECTION("contains .dynamic and .dynstr")
   {
     setup.dynamicSectionOffset = 10;
@@ -69,4 +80,5 @@ TEST_CASE("makeTestHeaders")
     REQUIRE( headers.containsDynamicSectionHeader() );
     REQUIRE( headers.containsDynamicStringTableSectionHeader() );
   }
+
 }

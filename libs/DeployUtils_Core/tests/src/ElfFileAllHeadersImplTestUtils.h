@@ -63,6 +63,20 @@ struct TestHeadersSetup
     return true;
   }
 
+  bool containsDynamicSection() const noexcept
+  {
+    if(dynamicSectionOffset == 0){
+      return false;
+    }
+    if(dynamicSectionAddress == 0){
+      return false;
+    }
+    if(dynamicSectionSize == 0){
+      return false;
+    }
+    return true;
+  }
+
   bool containsDynamicStringTable() const noexcept
   {
     if(dynamicStringTableOffset == 0){
@@ -143,6 +157,61 @@ Mdt::DeployUtils::Impl::Elf::SectionHeader makeProgramInterpreterSectionHeader(c
 }
 
 inline
+Mdt::DeployUtils::Impl::Elf::ProgramHeader makeDynamicSectionProgramHeader(const TestHeadersSetup & setup)
+{
+  using Mdt::DeployUtils::Impl::Elf::ProgramHeader;
+
+  assert( setup.containsDynamicSection() );
+//   assert( setup.dynamicSectionAlignment > 0 );
+
+  ProgramHeader header = makeDynamicSectionProgramHeader();
+  header.offset = setup.dynamicSectionOffset;
+  header.filesz = setup.dynamicSectionSize;
+  header.vaddr = setup.dynamicSectionAddress;
+  header.align = setup.dynamicSectionAlignment;
+  header.paddr = setup.dynamicSectionAddress;
+  header.memsz = setup.dynamicSectionSize;
+
+  return header;
+}
+
+inline
+Mdt::DeployUtils::Impl::Elf::SectionHeader makeDynamicSectionHeader(const TestHeadersSetup & setup)
+{
+  using Mdt::DeployUtils::Impl::Elf::SectionHeader;
+
+  assert( setup.containsDynamicSection() );
+//   assert( setup.dynamicSectionAlignment > 0 );
+
+  SectionHeader header = makeDynamicSectionHeader();
+  header.name = ".dynamic";
+  header.offset = setup.dynamicSectionOffset;
+  header.size = setup.dynamicSectionSize;
+  header.addr = setup.dynamicSectionAddress;
+  header.addralign = setup.dynamicSectionAlignment;
+
+  return header;
+}
+
+inline
+Mdt::DeployUtils::Impl::Elf::SectionHeader makeDynamicStringTableSectionHeader(const TestHeadersSetup & setup)
+{
+  using Mdt::DeployUtils::Impl::Elf::SectionHeader;
+
+  assert( setup.containsDynamicStringTable() );
+
+  SectionHeader header = makeStringTableSectionHeader();
+  header.name = ".dynstr";
+  header.offset = setup.dynamicStringTableOffset;
+  header.size = setup.dynamicStringTableSize;
+  header.addr = setup.dynamicStringTableAddress;
+  header.addralign = 1;
+
+  return header;
+}
+
+
+inline
 Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSetup & setup)
 {
   using Mdt::DeployUtils::Impl::Elf::MoveSectionAlignment;
@@ -159,30 +228,6 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
   fileHeader.phoff = setup.programHeaderTableOffset;
   fileHeader.shoff = setup.sectionHeaderTableOffset;
 
-//   ProgramHeaderTable programHeaderTable;
-//   std::vector<SectionHeader> sectionHeaderTable;
-
-//   if( setup.containsProgramInterpreter() ){
-//     makeAndAddProgramInterpreterToTables(setup, programHeaderTable, sectionHeaderTable);
-//   }
-//   ProgramHeader programInterpreterSectionProgramHeader = makeProgramInterpreterProgramHeader();
-//   programInterpreterSectionProgramHeader.offset = setup.programInterpreterSectionOffset;
-//   programInterpreterSectionProgramHeader.filesz = setup.programInterpreterSectionSize;
-//   programInterpreterSectionProgramHeader.vaddr = setup.programInterpreterSectionAddress;
-//   programInterpreterSectionProgramHeader.align = 1;
-//   programInterpreterSectionProgramHeader.paddr = setup.programInterpreterSectionAddress;
-//   programInterpreterSectionProgramHeader.memsz = setup.programInterpreterSectionSize;
-// 
-//   SectionHeader programInterpreterSectionHeader = makeProgramInterpreterSectionHeader();
-//   programInterpreterSectionHeader.name = ".interp";
-//   programInterpreterSectionHeader.offset = setup.programInterpreterSectionOffset;
-//   programInterpreterSectionHeader.size = setup.programInterpreterSectionSize;
-//   programInterpreterSectionHeader.addr = setup.programInterpreterSectionAddress;
-//   programInterpreterSectionHeader.addralign = 1;
-
-//   const ProgramHeader programInterpreterSectionProgramHeader = makeProgramInterpreterProgramHeader(setup);
-//   const SectionHeader programInterpreterSectionHeader = makeProgramInterpreterSectionHeader(setup);
-
   SectionHeader noteAbiTagSectionHeader = makeNoteSectionHeader(".note.ABI-tag");
   noteAbiTagSectionHeader.offset = setup.noteAbiTagSectionOffset;
   noteAbiTagSectionHeader.size = setup.noteAbiTagSectionSize;
@@ -197,29 +242,6 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
 
   ProgramHeader noteProgramHeader = makeNoteProgramHeaderCoveringSections({noteAbiTagSectionHeader, noteGnuBuildIdSectionHeader});
 
-  ProgramHeader dynamicSectionProgramHeader = makeDynamicSectionProgramHeader();
-  dynamicSectionProgramHeader.offset = setup.dynamicSectionOffset;
-  dynamicSectionProgramHeader.filesz = setup.dynamicSectionSize;
-  dynamicSectionProgramHeader.vaddr = setup.dynamicSectionAddress;
-  dynamicSectionProgramHeader.align = setup.dynamicSectionAlignment;
-  dynamicSectionProgramHeader.paddr = setup.dynamicSectionAddress;
-  dynamicSectionProgramHeader.memsz = setup.dynamicSectionSize;
-
-  SectionHeader dynamicSectionHeader = makeDynamicSectionHeader();
-  dynamicSectionHeader.name = ".dynamic";
-  dynamicSectionHeader.offset = setup.dynamicSectionOffset;
-  dynamicSectionHeader.size = setup.dynamicSectionSize;
-  dynamicSectionHeader.addr = setup.dynamicSectionAddress;
-  dynamicSectionHeader.addralign = setup.dynamicSectionAlignment;
-  dynamicSectionHeader.link = 5;
-
-  SectionHeader dynamicStringTableSectionHeader = makeStringTableSectionHeader();
-  dynamicStringTableSectionHeader.name = ".dynstr";
-  dynamicStringTableSectionHeader.offset = setup.dynamicStringTableOffset;
-  dynamicStringTableSectionHeader.size = setup.dynamicStringTableSize;
-  dynamicStringTableSectionHeader.addr = setup.dynamicStringTableAddress;
-  dynamicStringTableSectionHeader.addralign = 1;
-
   SectionHeader sectionNameStringTableHeader = makeStringTableSectionHeader();
   sectionNameStringTableHeader.name = "shstrtab";
   sectionNameStringTableHeader.offset = setup.sectionNameStringTableOffset;
@@ -227,17 +249,18 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
 
   ProgramHeader programHeaderTableProgramHeader = makeProgramHeaderTableProgramHeader();
   programHeaderTableProgramHeader.offset = setup.programHeaderTableOffset;
-  programHeaderTableProgramHeader.filesz = 2*56;
   programHeaderTableProgramHeader.vaddr = setup.programHeaderTableOffset;
-  programHeaderTableProgramHeader.memsz = 2*56;
 
+  const uint16_t programHeaderSize = 56;
   ProgramHeaderTable programHeaderTable;
-  programHeaderTable.addHeaderFromFile(programHeaderTableProgramHeader);
+  programHeaderTable.addHeader(programHeaderTableProgramHeader, programHeaderSize);
   if( setup.containsProgramInterpreter() ){
-    programHeaderTable.addHeaderFromFile( makeProgramInterpreterProgramHeader(setup) );
+    programHeaderTable.addHeader(makeProgramInterpreterProgramHeader(setup), programHeaderSize);
   }
-  programHeaderTable.addHeaderFromFile(noteProgramHeader);
-  programHeaderTable.addHeaderFromFile(dynamicSectionProgramHeader);
+  programHeaderTable.addHeader(noteProgramHeader, programHeaderSize);
+  if( setup.containsDynamicSection() ){
+    programHeaderTable.addHeader(makeDynamicSectionProgramHeader(setup), programHeaderSize);
+  }
 
   std::vector<SectionHeader> sectionHeaderTable;
   sectionHeaderTable.push_back( makeNullSectionHeader() );
@@ -246,16 +269,22 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
   }
   sectionHeaderTable.push_back(noteAbiTagSectionHeader);
   sectionHeaderTable.push_back(noteGnuBuildIdSectionHeader);
-  if( setup.containsDynamicStringTable() ){
-    dynamicSectionHeader.link = sectionHeaderTable.size()+1;
-  }else{
-    dynamicSectionHeader.link = 0;
+  if( setup.containsDynamicSection() ){
+    SectionHeader dynamicSectionHeader = makeDynamicSectionHeader(setup);
+    if( setup.containsDynamicStringTable() ){
+      dynamicSectionHeader.link = static_cast<uint32_t>(sectionHeaderTable.size()+1);
+    }else{
+      dynamicSectionHeader.link = 0;
+    }
+    sectionHeaderTable.push_back(dynamicSectionHeader);
   }
-  sectionHeaderTable.push_back(dynamicSectionHeader);
-  sectionHeaderTable.push_back(dynamicStringTableSectionHeader);
+  if( setup.containsDynamicStringTable() ){
+    sectionHeaderTable.push_back( makeDynamicStringTableSectionHeader(setup) );
+  }
   sectionHeaderTable.push_back(sectionNameStringTableHeader);
 
-  fileHeader.shstrndx = 6;
+  assert( !sectionHeaderTable.empty() );
+  fileHeader.shstrndx = static_cast<uint16_t>( sectionHeaderTable.size() - 1 );
 
   headers.setFileHeader(fileHeader);
   headers.setProgramHeaderTable(programHeaderTable);
