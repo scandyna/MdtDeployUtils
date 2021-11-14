@@ -20,43 +20,21 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "ElfFileAllHeadersImplTestUtils.h"
 #include "ElfFileIoTestUtils.h"
 #include "ElfProgramHeaderTestUtils.h"
+#include "ElfSectionHeaderTestUtils.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileAllHeaders.h"
+#include "Mdt/DeployUtils/Impl/Elf/SectionSegmentUtils.h"
 #include <cassert>
 
 using Mdt::DeployUtils::Impl::Elf::FileAllHeaders;
+using Mdt::DeployUtils::Impl::Elf::MoveSectionAlignment;
 using Mdt::DeployUtils::Impl::Elf::FileHeader;
 using Mdt::DeployUtils::Impl::Elf::ProgramHeader;
 using Mdt::DeployUtils::Impl::Elf::SegmentType;
 using Mdt::DeployUtils::Impl::Elf::ProgramHeaderTable;
 using Mdt::DeployUtils::Impl::Elf::SectionHeader;
-
-SectionHeader makeNullSectionHeader()
-{
-  SectionHeader header;
-  header.type = 0;
-  header.offset = 0;
-  header.size = 0;
-
-  return header;
-}
-
-SectionHeader makeDynamicSectionHeader()
-{
-  SectionHeader header;
-  header.type = 6;
-
-  return header;
-}
-
-SectionHeader makeStringTableSectionHeader()
-{
-  SectionHeader header;
-  header.type = 3;
-
-  return header;
-}
 
 std::vector<SectionHeader> makeSectionHeaderTable(int n)
 {
@@ -65,79 +43,124 @@ std::vector<SectionHeader> makeSectionHeaderTable(int n)
   return std::vector<SectionHeader>( n, makeNullSectionHeader() );
 }
 
-struct TestHeadersSetup
-{
-  uint64_t programHeaderTableOffset = 0;
-  uint64_t sectionHeaderTableOffset = 0;
-  uint64_t dynamicSectionOffset = 0;
-  uint64_t dynamicSectionSize = 0;
-  uint64_t dynamicSectionAddress = 0;
-  uint64_t dynamicSectionAlignment = 0;
-  uint64_t dynamicStringTableOffset = 0;
-  uint64_t dynamicStringTableSize = 0;
-  uint64_t dynamicStringTableAddress = 0;
-  uint64_t sectionNameStringTableOffset = 0;
-};
+// struct TestHeadersSetup
+// {
+//   uint64_t programHeaderTableOffset = 0;
+//   uint64_t sectionHeaderTableOffset = 0;
+//   uint64_t programInterpreterSectionOffset = 0;
+//   uint64_t programInterpreterSectionAddress = 0;
+//   uint64_t programInterpreterSectionSize = 0;
+//   uint64_t noteAbiTagSectionOffset = 50;
+//   uint64_t noteAbiTagSectionAddress = 50;
+//   uint64_t noteAbiTagSectionSize = 10;
+//   uint64_t noteGnuBuilIdSectionOffset = 60;
+//   uint64_t noteGnuBuilIdSectionAddress = 60;
+//   uint64_t noteGnuBuilIdSectionSize = 10;
+//   uint64_t dynamicSectionOffset = 0;
+//   uint64_t dynamicSectionSize = 0;
+//   uint64_t dynamicSectionAddress = 0;
+//   uint64_t dynamicSectionAlignment = 0;
+//   uint64_t dynamicStringTableOffset = 0;
+//   uint64_t dynamicStringTableSize = 0;
+//   uint64_t dynamicStringTableAddress = 0;
+//   uint64_t sectionNameStringTableOffset = 0;
+// };
 
-FileAllHeaders makeTestHeaders(const TestHeadersSetup & setup)
-{
-  FileAllHeaders headers;
-  FileHeader fileHeader = make64BitLittleEndianFileHeader();
-  fileHeader.phoff = setup.programHeaderTableOffset;
-  fileHeader.shoff = setup.sectionHeaderTableOffset;
-
-  ProgramHeader dynamicSectionProgramHeader = makeDynamicSectionProgramHeader();
-  dynamicSectionProgramHeader.offset = setup.dynamicSectionOffset;
-  dynamicSectionProgramHeader.filesz = setup.dynamicSectionSize;
-  dynamicSectionProgramHeader.vaddr = setup.dynamicSectionAddress;
-  dynamicSectionProgramHeader.align = setup.dynamicSectionAlignment;
-  dynamicSectionProgramHeader.paddr = setup.dynamicSectionAddress;
-  dynamicSectionProgramHeader.memsz = setup.dynamicSectionSize;
-
-  SectionHeader dynamicSectionHeader = makeDynamicSectionHeader();
-  dynamicSectionHeader.name = ".dynamic";
-  dynamicSectionHeader.offset = setup.dynamicSectionOffset;
-  dynamicSectionHeader.size = setup.dynamicSectionSize;
-  dynamicSectionHeader.addr = setup.dynamicSectionAddress;
-  dynamicSectionHeader.addralign = setup.dynamicSectionAlignment;
-  dynamicSectionHeader.link = 2;
-
-  SectionHeader dynamicStringTableSectionHeader = makeStringTableSectionHeader();
-  dynamicStringTableSectionHeader.name = ".dynstr";
-  dynamicStringTableSectionHeader.offset = setup.dynamicStringTableOffset;
-  dynamicStringTableSectionHeader.size = setup.dynamicStringTableSize;
-  dynamicStringTableSectionHeader.addr = setup.dynamicStringTableAddress;
-  dynamicStringTableSectionHeader.addralign = 1;
-
-  SectionHeader sectionNameStringTableHeader = makeStringTableSectionHeader();
-  sectionNameStringTableHeader.name = "shstrtab";
-  sectionNameStringTableHeader.offset = setup.sectionNameStringTableOffset;
-  sectionNameStringTableHeader.size = 100;
-
-  ProgramHeader programHeaderTableProgramHeader = makeProgramHeaderTableProgramHeader();
-  programHeaderTableProgramHeader.offset = setup.programHeaderTableOffset;
-  programHeaderTableProgramHeader.filesz = 2*56;
-  programHeaderTableProgramHeader.vaddr = setup.programHeaderTableOffset;
-  programHeaderTableProgramHeader.memsz = 2*56;
-
-  ProgramHeaderTable programHeaderTable;
-  programHeaderTable.addHeaderFromFile(programHeaderTableProgramHeader);
-  programHeaderTable.addHeaderFromFile(dynamicSectionProgramHeader);
-
-  std::vector<SectionHeader> sectionHeaderTable;
-  sectionHeaderTable.push_back( makeNullSectionHeader() );
-  sectionHeaderTable.push_back(dynamicSectionHeader);
-  sectionHeaderTable.push_back(dynamicStringTableSectionHeader);
-  sectionHeaderTable.push_back(sectionNameStringTableHeader);
-
-  fileHeader.shstrndx = 3;
-
-  headers.setFileHeader(fileHeader);
-  headers.setProgramHeaderTable(programHeaderTable);
-  headers.setSectionHeaderTable(sectionHeaderTable);
-
-  return headers;
-}
+// FileAllHeaders makeTestHeaders(const TestHeadersSetup & setup)
+// {
+//   using Mdt::DeployUtils::Impl::Elf::makeNoteProgramHeaderCoveringSections;
+//
+//   FileAllHeaders headers;
+//   FileHeader fileHeader = make64BitLittleEndianFileHeader();
+//   fileHeader.phoff = setup.programHeaderTableOffset;
+//   fileHeader.shoff = setup.sectionHeaderTableOffset;
+//
+//   ProgramHeader programInterpreterSectionProgramHeader = makeProgramInterpreterProgramHeader();
+//   programInterpreterSectionProgramHeader.offset = setup.programInterpreterSectionOffset;
+//   programInterpreterSectionProgramHeader.filesz = setup.programInterpreterSectionSize;
+//   programInterpreterSectionProgramHeader.vaddr = setup.programInterpreterSectionAddress;
+//   programInterpreterSectionProgramHeader.align = 1;
+//   programInterpreterSectionProgramHeader.paddr = setup.programInterpreterSectionAddress;
+//   programInterpreterSectionProgramHeader.memsz = setup.programInterpreterSectionSize;
+//
+//   SectionHeader programInterpreterSectionHeader = makeProgramInterpreterSectionHeader();
+//   programInterpreterSectionHeader.name = ".interp";
+//   programInterpreterSectionHeader.offset = setup.programInterpreterSectionOffset;
+//   programInterpreterSectionHeader.size = setup.programInterpreterSectionSize;
+//   programInterpreterSectionHeader.addr = setup.programInterpreterSectionAddress;
+//   programInterpreterSectionHeader.addralign = 1;
+//
+//   SectionHeader noteAbiTagSectionHeader = makeNoteSectionHeader(".note.ABI-tag");
+//   noteAbiTagSectionHeader.offset = setup.noteAbiTagSectionOffset;
+//   noteAbiTagSectionHeader.size = setup.noteAbiTagSectionSize;
+//   noteAbiTagSectionHeader.addr = setup.noteAbiTagSectionAddress;
+//   noteAbiTagSectionHeader.addralign = 4;
+//
+//   SectionHeader noteGnuBuildIdSectionHeader = makeNoteSectionHeader(".note.gnu.build-id");
+//   noteGnuBuildIdSectionHeader.offset = setup.noteGnuBuilIdSectionOffset;
+//   noteGnuBuildIdSectionHeader.size = setup.noteGnuBuilIdSectionSize;
+//   noteGnuBuildIdSectionHeader.addr = setup.noteGnuBuilIdSectionAddress;
+//   noteGnuBuildIdSectionHeader.addralign = 4;
+//
+//   ProgramHeader noteProgramHeader = makeNoteProgramHeaderCoveringSections({noteAbiTagSectionHeader, noteGnuBuildIdSectionHeader});
+//
+//   ProgramHeader dynamicSectionProgramHeader = makeDynamicSectionProgramHeader();
+//   dynamicSectionProgramHeader.offset = setup.dynamicSectionOffset;
+//   dynamicSectionProgramHeader.filesz = setup.dynamicSectionSize;
+//   dynamicSectionProgramHeader.vaddr = setup.dynamicSectionAddress;
+//   dynamicSectionProgramHeader.align = setup.dynamicSectionAlignment;
+//   dynamicSectionProgramHeader.paddr = setup.dynamicSectionAddress;
+//   dynamicSectionProgramHeader.memsz = setup.dynamicSectionSize;
+//
+//   SectionHeader dynamicSectionHeader = makeDynamicSectionHeader();
+//   dynamicSectionHeader.name = ".dynamic";
+//   dynamicSectionHeader.offset = setup.dynamicSectionOffset;
+//   dynamicSectionHeader.size = setup.dynamicSectionSize;
+//   dynamicSectionHeader.addr = setup.dynamicSectionAddress;
+//   dynamicSectionHeader.addralign = setup.dynamicSectionAlignment;
+//   dynamicSectionHeader.link = 5;
+//
+//   SectionHeader dynamicStringTableSectionHeader = makeStringTableSectionHeader();
+//   dynamicStringTableSectionHeader.name = ".dynstr";
+//   dynamicStringTableSectionHeader.offset = setup.dynamicStringTableOffset;
+//   dynamicStringTableSectionHeader.size = setup.dynamicStringTableSize;
+//   dynamicStringTableSectionHeader.addr = setup.dynamicStringTableAddress;
+//   dynamicStringTableSectionHeader.addralign = 1;
+//
+//   SectionHeader sectionNameStringTableHeader = makeStringTableSectionHeader();
+//   sectionNameStringTableHeader.name = "shstrtab";
+//   sectionNameStringTableHeader.offset = setup.sectionNameStringTableOffset;
+//   sectionNameStringTableHeader.size = 100;
+//
+//   ProgramHeader programHeaderTableProgramHeader = makeProgramHeaderTableProgramHeader();
+//   programHeaderTableProgramHeader.offset = setup.programHeaderTableOffset;
+//   programHeaderTableProgramHeader.filesz = 2*56;
+//   programHeaderTableProgramHeader.vaddr = setup.programHeaderTableOffset;
+//   programHeaderTableProgramHeader.memsz = 2*56;
+//
+//   ProgramHeaderTable programHeaderTable;
+//   programHeaderTable.addHeaderFromFile(programHeaderTableProgramHeader);
+//   programHeaderTable.addHeaderFromFile(programInterpreterSectionProgramHeader);
+//   programHeaderTable.addHeaderFromFile(noteProgramHeader);
+//   programHeaderTable.addHeaderFromFile(dynamicSectionProgramHeader);
+//
+//   std::vector<SectionHeader> sectionHeaderTable;
+//   sectionHeaderTable.push_back( makeNullSectionHeader() );
+//   sectionHeaderTable.push_back(programInterpreterSectionHeader);
+//   sectionHeaderTable.push_back(noteAbiTagSectionHeader);
+//   sectionHeaderTable.push_back(noteGnuBuildIdSectionHeader);
+//   sectionHeaderTable.push_back(dynamicSectionHeader);
+//   sectionHeaderTable.push_back(dynamicStringTableSectionHeader);
+//   sectionHeaderTable.push_back(sectionNameStringTableHeader);
+//
+//   fileHeader.shstrndx = 6;
+//
+//   headers.setFileHeader(fileHeader);
+//   headers.setProgramHeaderTable(programHeaderTable);
+//   headers.setSectionHeaderTable(sectionHeaderTable);
+//
+//   return headers;
+// }
 
 
 TEST_CASE("FileHeader")
@@ -174,6 +197,7 @@ TEST_CASE("ProgramHeaderTable")
     REQUIRE( !allHeaders.containsProgramHeaderTable() );
     REQUIRE( !allHeaders.containsDynamicProgramHeader() );
     REQUIRE( !allHeaders.containsProgramHeaderTableProgramHeader() );
+    REQUIRE( allHeaders.fileHeader().phnum == 0 );
   }
 
   SECTION("2 program headers")
@@ -222,6 +246,16 @@ TEST_CASE("ProgramHeaderTable")
     REQUIRE( allHeaders.containsProgramHeaderTableProgramHeader() );
     REQUIRE( allHeaders.programHeaderTableProgramHeader().segmentType() == SegmentType::ProgramHeaderTable );
   }
+}
+
+TEST_CASE("addProgramHeader")
+{
+  FileAllHeaders allHeaders;
+
+  allHeaders.addProgramHeader( makeNullProgramHeader() );
+
+  REQUIRE( allHeaders.programHeaderTable().headerCount() == 1 );
+  REQUIRE( allHeaders.fileHeader().phnum == 1 );
 }
 
 TEST_CASE("SectionHeaderTable")
@@ -284,7 +318,7 @@ TEST_CASE("SectionHeaderTable")
     dynamicSectionHeader.offset = 72;
     dynamicSectionHeader.link = 2;
 
-    SectionHeader dynamicStringTableSectionHeader = makeStringTableSectionHeader();
+    SectionHeader dynamicStringTableSectionHeader = makeDynamicStringTableSectionHeader();
     dynamicStringTableSectionHeader.offset = 48;
 
     sectionHeaderTable.push_back( makeNullSectionHeader() );
@@ -299,7 +333,237 @@ TEST_CASE("SectionHeaderTable")
   }
 }
 
-TEST_CASE("setDynamicSectionFileSize")
+TEST_CASE("sortSectionHeaderTableByFileOffset")
+{
+  FileAllHeaders allHeaders;
+  std::vector<SectionHeader> sectionHeaderTable;
+
+  SECTION("the section header string table section (.shstrtab) is also sorted")
+  {
+    SectionHeader shtStringTable = makeStringTableSectionHeader(".shstrtab");
+    shtStringTable.offset = 50;
+
+    SectionHeader dynamicSectionHeader = makeDynamicSectionHeader();
+    dynamicSectionHeader.offset = 100;
+
+    FileHeader fileHeader = make64BitLittleEndianFileHeader();
+    fileHeader.shstrndx = 2;
+    allHeaders.setFileHeader(fileHeader);
+
+    sectionHeaderTable.push_back( makeNullSectionHeader() );
+    sectionHeaderTable.push_back(dynamicSectionHeader);
+    sectionHeaderTable.push_back(shtStringTable);
+
+    allHeaders.setSectionHeaderTable(sectionHeaderTable);
+
+    allHeaders.sortSectionHeaderTableByFileOffset();
+
+    REQUIRE( allHeaders.sectionHeaderTable()[1].name == ".shstrtab" );
+    REQUIRE( allHeaders.sectionHeaderTable()[2].name == ".dynamic" );
+    REQUIRE( allHeaders.fileHeader().shstrndx == 1 );
+  }
+}
+
+TEST_CASE("gotSectionHeader")
+{
+  FileAllHeaders allHeaders;
+  std::vector<SectionHeader> sectionHeaderTable;
+
+  SECTION("default constructed")
+  {
+    REQUIRE( !allHeaders.containsGotSectionHeader() );
+  }
+
+  SECTION("does not contains the got section header")
+  {
+    sectionHeaderTable.push_back( makeNullSectionHeader() );
+    sectionHeaderTable.push_back( makeStringTableSectionHeader() );
+    sectionHeaderTable.push_back( makeGotPltSectionHeader() );
+
+    REQUIRE( !allHeaders.containsGotSectionHeader() );
+  }
+
+  SECTION("contains the got section header")
+  {
+    SectionHeader gotSectionHeader = makeGotSectionHeader();
+    gotSectionHeader.offset = 25;
+
+    sectionHeaderTable.push_back( makeNullSectionHeader() );
+    sectionHeaderTable.push_back( makeStringTableSectionHeader() );
+    sectionHeaderTable.push_back(gotSectionHeader);
+    allHeaders.setSectionHeaderTable(sectionHeaderTable);
+
+    REQUIRE( allHeaders.containsGotSectionHeader() );
+    REQUIRE( allHeaders.gotSectionHeader().offset == 25 );
+  }
+}
+
+TEST_CASE("gotPltSectionHeader")
+{
+  FileAllHeaders allHeaders;
+  std::vector<SectionHeader> sectionHeaderTable;
+
+  SECTION("default constructed")
+  {
+    REQUIRE( !allHeaders.containsGotPltSectionHeader() );
+  }
+
+  SECTION("does not contains the .got.plt section header")
+  {
+    sectionHeaderTable.push_back( makeNullSectionHeader() );
+    sectionHeaderTable.push_back( makeStringTableSectionHeader() );
+    sectionHeaderTable.push_back( makeGotSectionHeader() );
+
+    REQUIRE( !allHeaders.containsGotPltSectionHeader() );
+  }
+
+  SECTION("contains the got section header")
+  {
+    SectionHeader gotPltSectionHeader = makeGotPltSectionHeader();
+    gotPltSectionHeader.offset = 46;
+
+    sectionHeaderTable.push_back( makeNullSectionHeader() );
+    sectionHeaderTable.push_back( makeStringTableSectionHeader() );
+    sectionHeaderTable.push_back(gotPltSectionHeader);
+    allHeaders.setSectionHeaderTable(sectionHeaderTable);
+
+    REQUIRE( allHeaders.containsGotPltSectionHeader() );
+    REQUIRE( allHeaders.gotPltSectionHeader().offset == 46 );
+  }
+}
+
+TEST_CASE("programInterpreterSection")
+{
+  FileAllHeaders allHeaders;
+  std::vector<SectionHeader> sectionHeaderTable;
+  SectionHeader interpHeader;
+
+  SECTION("default constructed")
+  {
+    REQUIRE( !allHeaders.containsProgramInterpreterSectionHeader());
+  }
+
+  SECTION("add the PT_INTERP header")
+  {
+    interpHeader = makeProgramInterpreterSectionHeader();
+    interpHeader.offset = 142;
+
+    sectionHeaderTable.push_back( makeNullSectionHeader() );
+    sectionHeaderTable.push_back(interpHeader);
+    allHeaders.setSectionHeaderTable(sectionHeaderTable);
+
+    REQUIRE( allHeaders.containsProgramInterpreterSectionHeader() );
+    REQUIRE( allHeaders.programInterpreterSectionHeader().offset == 142 );
+  }
+
+  SECTION("add a other program header")
+  {
+    sectionHeaderTable.push_back( makeNullSectionHeader() );
+    allHeaders.setSectionHeaderTable(sectionHeaderTable);
+
+    REQUIRE( !allHeaders.containsProgramInterpreterSectionHeader() );
+  }
+}
+
+TEST_CASE("gnuHashTableSectionHeader")
+{
+  FileAllHeaders allHeaders;
+  std::vector<SectionHeader> sectionHeaderTable;
+  SectionHeader gnuHashHeader = makeGnuHashTableSectionHeader();
+
+  SECTION("default constructed")
+  {
+    REQUIRE( !allHeaders.containsGnuHashTableSectionHeader  ());
+  }
+
+  SECTION("add the .gnu.hash section header")
+  {
+    gnuHashHeader.offset = 156;
+
+    sectionHeaderTable.push_back( makeNullSectionHeader() );
+    sectionHeaderTable.push_back(gnuHashHeader);
+    allHeaders.setSectionHeaderTable(sectionHeaderTable);
+
+    REQUIRE( allHeaders.containsGnuHashTableSectionHeader() );
+    REQUIRE( allHeaders.gnuHashTableSectionHeader().offset == 156 );
+  }
+
+  SECTION("add a other section header")
+  {
+    sectionHeaderTable.push_back( makeNullSectionHeader() );
+    allHeaders.setSectionHeaderTable(sectionHeaderTable);
+
+    REQUIRE( !allHeaders.containsGnuHashTableSectionHeader() );
+  }
+}
+
+TEST_CASE("noteAbiTagSectionHeader")
+{
+  FileAllHeaders allHeaders;
+  std::vector<SectionHeader> sectionHeaderTable;
+  SectionHeader noteSectionHeader;
+
+  SECTION("default constructed")
+  {
+    REQUIRE( !allHeaders.containsNoteAbiTagSectionHeader());
+  }
+
+  SECTION("table contains the .note.ABI-tag section header")
+  {
+    noteSectionHeader = makeNoteSectionHeader(".note.ABI-tag");
+    noteSectionHeader.offset = 25;
+
+    sectionHeaderTable.push_back( makeNullSectionHeader() );
+    sectionHeaderTable.push_back(noteSectionHeader);
+    allHeaders.setSectionHeaderTable(sectionHeaderTable);
+
+    REQUIRE( allHeaders.containsNoteAbiTagSectionHeader() );
+    REQUIRE( allHeaders.noteAbiTagSectionHeader().offset == 25 );
+  }
+
+  SECTION("add a other program header")
+  {
+    sectionHeaderTable.push_back( makeNullSectionHeader() );
+    allHeaders.setSectionHeaderTable(sectionHeaderTable);
+
+    REQUIRE( !allHeaders.containsNoteAbiTagSectionHeader() );
+  }
+}
+
+TEST_CASE("noteGnuBuildIdSectionHeader")
+{
+  FileAllHeaders allHeaders;
+  std::vector<SectionHeader> sectionHeaderTable;
+  SectionHeader noteSectionHeader;
+
+  SECTION("default constructed")
+  {
+    REQUIRE( !allHeaders.containsNoteGnuBuildIdSectionHeader());
+  }
+
+  SECTION("table contains the .note.gnu.build-id section header")
+  {
+    noteSectionHeader = makeNoteSectionHeader(".note.gnu.build-id");
+    noteSectionHeader.offset = 26;
+
+    sectionHeaderTable.push_back( makeNullSectionHeader() );
+    sectionHeaderTable.push_back(noteSectionHeader);
+    allHeaders.setSectionHeaderTable(sectionHeaderTable);
+
+    REQUIRE( allHeaders.containsNoteGnuBuildIdSectionHeader() );
+    REQUIRE( allHeaders.noteGnuBuildIdSectionHeader().offset == 26 );
+  }
+
+  SECTION("add a other program header")
+  {
+    sectionHeaderTable.push_back( makeNullSectionHeader() );
+    allHeaders.setSectionHeaderTable(sectionHeaderTable);
+
+    REQUIRE( !allHeaders.containsNoteGnuBuildIdSectionHeader() );
+  }
+}
+
+TEST_CASE("setDynamicSectionSize")
 {
   FileAllHeaders allHeaders;
   FileHeader fileHeader = make64BitLittleEndianFileHeader();
@@ -320,9 +584,10 @@ TEST_CASE("setDynamicSectionFileSize")
   allHeaders.setProgramHeaderTable(programHeaderTable);
   allHeaders.setSectionHeaderTable(sectionHeaderTable);
 
-  allHeaders.setDynamicSectionFileSize(120);
+  allHeaders.setDynamicSectionSize(120);
 
   REQUIRE( allHeaders.dynamicProgramHeader().filesz == 120 );
+  REQUIRE( allHeaders.dynamicProgramHeader().memsz == 120 );
   REQUIRE( allHeaders.dynamicSectionHeader().size == 120 );
 }
 
@@ -346,6 +611,78 @@ TEST_CASE("moveProgramHeaderTableToNextPageAfterEnd")
   REQUIRE( headers.fileHeader().phoff == headers.programHeaderTableProgramHeader().offset );
 }
 
+TEST_CASE("moveProgramInterpreterSectionToEnd")
+{
+  TestHeadersSetup setup;
+  setup.programHeaderTableOffset = 0x40;
+  setup.programInterpreterSectionOffset = 200;
+  setup.programInterpreterSectionAddress = 2000;
+  setup.programInterpreterSectionSize = 10;
+  setup.dynamicSectionOffset = 300;
+  setup.dynamicSectionAddress = 3000;
+  setup.dynamicSectionSize = 10;
+  setup.sectionHeaderTableOffset = 1'000;
+
+  FileAllHeaders headers = makeTestHeaders(setup);
+  const uint64_t originalVirtualAddressEnd = headers.findLastSegmentVirtualAddressEnd();
+  const uint64_t originalFileEnd = headers.findGlobalFileOffsetEnd();
+
+  headers.moveProgramInterpreterSectionToEnd(MoveSectionAlignment::NextPage);
+
+  SECTION(".interp section must have been moved past the end")
+  {
+    REQUIRE( headers.programInterpreterSectionHeader().addr >= originalVirtualAddressEnd );
+    REQUIRE( (headers.programInterpreterSectionHeader().addr % 2) == 0 );
+    REQUIRE( headers.programInterpreterSectionHeader().offset >= originalFileEnd );
+  }
+
+  SECTION("the PT_INTERP segment must cover the .interp section")
+  {
+    REQUIRE( headers.programInterpreterProgramHeader().vaddr == headers.programInterpreterSectionHeader().addr );
+    REQUIRE( headers.programInterpreterProgramHeader().memsz == headers.programInterpreterSectionHeader().size );
+    REQUIRE( headers.programInterpreterProgramHeader().offset == headers.programInterpreterSectionHeader().offset );
+    REQUIRE( headers.programInterpreterProgramHeader().filesz == headers.programInterpreterSectionHeader().size );
+  }
+}
+
+TEST_CASE("moveNoteSectionsToEnd")
+{
+  TestHeadersSetup setup;
+  setup.programHeaderTableOffset = 50;
+  setup.noteAbiTagSectionOffset = 100;
+  setup.noteAbiTagSectionAddress = 200;
+  setup.noteAbiTagSectionSize = 10;
+  setup.noteGnuBuilIdSectionOffset = 110;
+  setup.noteGnuBuilIdSectionAddress = 210;
+  setup.noteGnuBuilIdSectionSize = 10;
+  setup.sectionHeaderTableOffset = 1'000;
+
+  FileAllHeaders headers = makeTestHeaders(setup);
+  const uint64_t originalVirtualAddressEnd = headers.findLastSegmentVirtualAddressEnd();
+  const uint64_t originalFileEnd = headers.findGlobalFileOffsetEnd();
+
+  headers.moveNoteSectionsToEnd(MoveSectionAlignment::SectionAlignment);
+
+  const auto noteSectionHeaders = headers.getNoteSectionHeaders();
+  REQUIRE( noteSectionHeaders.size() == 2 );
+
+  SECTION("note sections must have been moved to the end")
+  {
+    REQUIRE( noteSectionHeaders[0].addr >= originalVirtualAddressEnd );
+    REQUIRE( noteSectionHeaders[0].offset >= originalFileEnd );
+    REQUIRE( noteSectionHeaders[1].addr >= originalVirtualAddressEnd );
+    REQUIRE( noteSectionHeaders[1].offset >= originalFileEnd );
+  }
+
+  SECTION("the PT_NOTE segment must cover the new location of the note sections")
+  {
+    REQUIRE( headers.noteProgramHeader().vaddr >= originalVirtualAddressEnd );
+    REQUIRE( headers.noteProgramHeader().offset >= originalFileEnd );
+    REQUIRE( headers.noteProgramHeader().memsz == 20 );
+    REQUIRE( headers.noteProgramHeader().filesz == 20 );
+  }
+}
+
 TEST_CASE("moveDynamicSectionToEnd")
 {
   TestHeadersSetup setup;
@@ -359,7 +696,7 @@ TEST_CASE("moveDynamicSectionToEnd")
   const uint64_t originalVirtualAddressEnd = headers.findLastSegmentVirtualAddressEnd();
   const uint64_t originalFileEnd = headers.findGlobalFileOffsetEnd();
 
-  headers.moveDynamicSectionToEnd();
+  headers.moveDynamicSectionToEnd(MoveSectionAlignment::SectionAlignment);
 
   SECTION("the new virtual address must be at end and aligned (dynamic section has its own segment)")
   {
@@ -413,15 +750,16 @@ TEST_CASE("moveDynamicStringTableToEnd")
   }
 }
 
-TEST_CASE("setDynamicStringTableFileSize")
+TEST_CASE("setDynamicStringTableSize")
 {
   TestHeadersSetup setup;
   setup.dynamicStringTableOffset = 100;
+  setup.dynamicStringTableAddress = 100;
   setup.dynamicStringTableSize = 10;
 
   FileAllHeaders allHeaders = makeTestHeaders(setup);
 
-  allHeaders.setDynamicStringTableFileSize(25);
+  allHeaders.setDynamicStringTableSize(25);
 
   REQUIRE( allHeaders.dynamicStringTableSectionHeader().size == 25 );
 }
