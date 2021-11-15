@@ -74,7 +74,7 @@ struct TestFileSetup
   }
 };
 
-FileWriterFile makeWriterFile_NEW(const TestFileSetup & setup)
+FileWriterFile makeWriterFile(const TestFileSetup & setup)
 {
   using Mdt::DeployUtils::Impl::Elf::Class;
 
@@ -114,94 +114,6 @@ FileWriterFile makeWriterFile_NEW(const TestFileSetup & setup)
   symbolTable.addEntryFromFile(dynStrSymTabEntry);
   symbolTable.indexAssociationsKnownSections( headers.sectionHeaderTable() );
 
-  file.setSectionSymbolTableFromFile(symbolTable);
-
-  return file;
-}
-
-FileWriterFile makeWriterFile(const TestFileSetup & setup)
-{
-  return makeWriterFile_NEW(setup);
-
-  using Mdt::DeployUtils::Impl::Elf::symbolTableEntrySize;
-
-  FileHeader fileHeader = make64BitLittleEndianFileHeader();
-  fileHeader.phoff = setup.programHeaderTableOffset;
-  fileHeader.shoff = setup.sectionHeaderTableOffset;
-
-  DynamicSection dynamicSection;
-  dynamicSection.addEntry( makeNullEntry() );
-  dynamicSection.addEntry( makeStringTableAddressEntry(setup.dynamicStringTableAddress) );
-  dynamicSection.addEntry( makeStringTableSizeEntry(1) );
-  dynamicSection.setRunPath(setup.runPath);
-
-  const uint64_t dynamicSectionSize = dynamicSection.byteCount(fileHeader.ident._class);
-  const uint64_t dynamicStringTableSize = dynamicSection.stringTable().byteCount();
-
-  ProgramHeader dynamicSectionProgramHeader = makeDynamicSectionProgramHeader();
-  dynamicSectionProgramHeader.offset = setup.dynamicSectionOffset;
-  dynamicSectionProgramHeader.filesz = dynamicSectionSize;
-  dynamicSectionProgramHeader.vaddr = setup.dynamicSectionAddress;
-  dynamicSectionProgramHeader.paddr = setup.dynamicSectionAddress;
-  dynamicSectionProgramHeader.memsz = dynamicSectionSize;
-  dynamicSectionProgramHeader.align = 8;
-
-  SectionHeader dynamicSectionHeader = makeDynamicSectionHeader();
-  dynamicSectionHeader.name = ".dynamic";
-  dynamicSectionHeader.offset = setup.dynamicSectionOffset;
-  dynamicSectionHeader.size = dynamicSectionSize;
-  dynamicSectionHeader.addr = setup.dynamicSectionAddress;
-  dynamicSectionHeader.addralign = dynamicSectionProgramHeader.align;
-  dynamicSectionHeader.link = 2;
-
-  SectionHeader dynamicStringTableSectionHeader = makeStringTableSectionHeader();
-  dynamicStringTableSectionHeader.name = ".dynstr";
-  dynamicStringTableSectionHeader.offset = setup.dynamicStringTableOffset;
-  dynamicStringTableSectionHeader.size = dynamicStringTableSize;
-  dynamicStringTableSectionHeader.addr = setup.dynamicStringTableAddress;
-  dynamicStringTableSectionHeader.addralign = 1;
-
-  SectionHeader sectionNameStringTableHeader = makeStringTableSectionHeader();
-  sectionNameStringTableHeader.name = ".shstrtab";
-  sectionNameStringTableHeader.offset = setup.sectionNameStringTableOffset;
-  sectionNameStringTableHeader.size = 10;
-
-  ProgramHeader programHeaderTableProgramHeader = makeProgramHeaderTableProgramHeader();
-  programHeaderTableProgramHeader.offset = setup.programHeaderTableOffset;
-  programHeaderTableProgramHeader.filesz = 2*56;
-  programHeaderTableProgramHeader.vaddr = setup.programHeaderTableOffset;
-  programHeaderTableProgramHeader.paddr = setup.programHeaderTableOffset;
-  programHeaderTableProgramHeader.memsz = 2*56;
-
-  ProgramHeaderTable programHeaderTable;
-  programHeaderTable.addHeaderFromFile(programHeaderTableProgramHeader);
-  programHeaderTable.addHeaderFromFile(dynamicSectionProgramHeader);
-
-  std::vector<SectionHeader> sectionHeaderTable;
-  sectionHeaderTable.push_back( makeNullSectionHeader() );
-  sectionHeaderTable.push_back(dynamicSectionHeader);
-  sectionHeaderTable.push_back(dynamicStringTableSectionHeader);
-  sectionHeaderTable.push_back(sectionNameStringTableHeader);
-
-  PartialSymbolTable symbolTable;
-  int64_t dynSymEntryOffset = setup.dynSymOffset;
-  PartialSymbolTableEntry dynamicSectionSymTabEntry = makeSectionAssociationSymbolTableEntryWithFileOffset(dynSymEntryOffset);
-  dynamicSectionSymTabEntry.entry.shndx = 1;
-  dynSymEntryOffset += symbolTableEntrySize(fileHeader.ident._class);
-  PartialSymbolTableEntry dynStrSymTabEntry = makeSectionAssociationSymbolTableEntryWithFileOffset(dynSymEntryOffset);
-  dynStrSymTabEntry.entry.shndx = 2;
-  symbolTable.addEntryFromFile(dynamicSectionSymTabEntry);
-  symbolTable.addEntryFromFile(dynStrSymTabEntry);
-  symbolTable.indexAssociationsKnownSections(sectionHeaderTable);
-
-  fileHeader.shstrndx = 3;
-
-  FileAllHeaders allHeaders;
-  allHeaders.setFileHeader(fileHeader);
-  allHeaders.setProgramHeaderTable(programHeaderTable);
-  allHeaders.setSectionHeaderTable(sectionHeaderTable);
-
-  FileWriterFile file = FileWriterFile::fromOriginalFile(allHeaders, dynamicSection);
   file.setSectionSymbolTableFromFile(symbolTable);
 
   return file;
