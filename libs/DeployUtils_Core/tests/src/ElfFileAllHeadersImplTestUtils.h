@@ -34,12 +34,11 @@ struct TestHeadersSetup
   uint64_t programInterpreterSectionAddress = 0;
   uint64_t programInterpreterSectionSize = 0;
   uint64_t noteAbiTagSectionOffset = 0;
-//   uint64_t noteAbiTagSectionOffset = 50;
-  uint64_t noteAbiTagSectionAddress = 50;
-  uint64_t noteAbiTagSectionSize = 10;
-  uint64_t noteGnuBuilIdSectionOffset = 60;
-  uint64_t noteGnuBuilIdSectionAddress = 60;
-  uint64_t noteGnuBuilIdSectionSize = 10;
+  uint64_t noteAbiTagSectionAddress = 0;
+  uint64_t noteAbiTagSectionSize = 0;
+  uint64_t noteGnuBuilIdSectionOffset = 0;
+  uint64_t noteGnuBuilIdSectionAddress = 0;
+  uint64_t noteGnuBuilIdSectionSize = 0;
   uint64_t dynamicSectionOffset = 0;
   uint64_t dynamicSectionSize = 0;
   uint64_t dynamicSectionAddress = 0;
@@ -58,6 +57,34 @@ struct TestHeadersSetup
       return false;
     }
     if(programInterpreterSectionSize == 0){
+      return false;
+    }
+    return true;
+  }
+
+  bool containsNoteAbiTag() const noexcept
+  {
+    if(noteAbiTagSectionOffset == 0){
+      return false;
+    }
+    if(noteAbiTagSectionAddress == 0){
+      return false;
+    }
+    if(noteAbiTagSectionSize == 0){
+      return false;
+    }
+    return true;
+  }
+
+  bool containsNoteGnuBuildId() const noexcept
+  {
+    if(noteGnuBuilIdSectionOffset == 0){
+      return false;
+    }
+    if(noteGnuBuilIdSectionAddress == 0){
+      return false;
+    }
+    if(noteGnuBuilIdSectionSize == 0){
       return false;
     }
     return true;
@@ -157,6 +184,38 @@ Mdt::DeployUtils::Impl::Elf::SectionHeader makeProgramInterpreterSectionHeader(c
 }
 
 inline
+Mdt::DeployUtils::Impl::Elf::SectionHeader makeNoteAbiTagSectionHeader(const TestHeadersSetup & setup)
+{
+  using Mdt::DeployUtils::Impl::Elf::SectionHeader;
+
+  assert( setup.containsNoteAbiTag() );
+
+  SectionHeader header = makeNoteSectionHeader(".note.ABI-tag");
+  header.offset = setup.noteAbiTagSectionOffset;
+  header.size = setup.noteAbiTagSectionSize;
+  header.addr = setup.noteAbiTagSectionAddress;
+  header.addralign = 4;
+
+  return header;
+}
+
+inline
+Mdt::DeployUtils::Impl::Elf::SectionHeader makeNoteGnuBuildIdSectionHeader(const TestHeadersSetup & setup)
+{
+  using Mdt::DeployUtils::Impl::Elf::SectionHeader;
+
+  assert( setup.containsNoteGnuBuildId() );
+
+  SectionHeader header = makeNoteSectionHeader(".note.gnu.build-id");
+  header.offset = setup.noteGnuBuilIdSectionOffset;
+  header.size = setup.noteGnuBuilIdSectionSize;
+  header.addr = setup.noteGnuBuilIdSectionAddress;
+  header.addralign = 4;
+
+  return header;
+}
+
+inline
 Mdt::DeployUtils::Impl::Elf::ProgramHeader makeDynamicSectionProgramHeader(const TestHeadersSetup & setup)
 {
   using Mdt::DeployUtils::Impl::Elf::ProgramHeader;
@@ -228,19 +287,38 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
   fileHeader.phoff = setup.programHeaderTableOffset;
   fileHeader.shoff = setup.sectionHeaderTableOffset;
 
-  SectionHeader noteAbiTagSectionHeader = makeNoteSectionHeader(".note.ABI-tag");
-  noteAbiTagSectionHeader.offset = setup.noteAbiTagSectionOffset;
-  noteAbiTagSectionHeader.size = setup.noteAbiTagSectionSize;
-  noteAbiTagSectionHeader.addr = setup.noteAbiTagSectionAddress;
-  noteAbiTagSectionHeader.addralign = 4;
+//   SectionHeader noteAbiTagSectionHeader = makeNoteSectionHeader(".note.ABI-tag");
+//   noteAbiTagSectionHeader.offset = setup.noteAbiTagSectionOffset;
+//   noteAbiTagSectionHeader.size = setup.noteAbiTagSectionSize;
+//   noteAbiTagSectionHeader.addr = setup.noteAbiTagSectionAddress;
+//   noteAbiTagSectionHeader.addralign = 4;
 
-  SectionHeader noteGnuBuildIdSectionHeader = makeNoteSectionHeader(".note.gnu.build-id");
-  noteGnuBuildIdSectionHeader.offset = setup.noteGnuBuilIdSectionOffset;
-  noteGnuBuildIdSectionHeader.size = setup.noteGnuBuilIdSectionSize;
-  noteGnuBuildIdSectionHeader.addr = setup.noteGnuBuilIdSectionAddress;
-  noteGnuBuildIdSectionHeader.addralign = 4;
+//   SectionHeader noteGnuBuildIdSectionHeader = makeNoteSectionHeader(".note.gnu.build-id");
+//   noteGnuBuildIdSectionHeader.offset = setup.noteGnuBuilIdSectionOffset;
+//   noteGnuBuildIdSectionHeader.size = setup.noteGnuBuilIdSectionSize;
+//   noteGnuBuildIdSectionHeader.addr = setup.noteGnuBuilIdSectionAddress;
+//   noteGnuBuildIdSectionHeader.addralign = 4;
 
-  ProgramHeader noteProgramHeader = makeNoteProgramHeaderCoveringSections({noteAbiTagSectionHeader, noteGnuBuildIdSectionHeader});
+//   ProgramHeader noteProgramHeader = makeNoteProgramHeaderCoveringSections({noteAbiTagSectionHeader, noteGnuBuildIdSectionHeader});
+
+  SectionHeader noteAbiTagSectionHeader;
+  if( setup.containsNoteAbiTag() ){
+    noteAbiTagSectionHeader = makeNoteAbiTagSectionHeader(setup);
+  }
+
+  SectionHeader noteGnuBuildIdSectionHeader;
+  if( setup.containsNoteGnuBuildId() ){
+    noteGnuBuildIdSectionHeader = makeNoteGnuBuildIdSectionHeader(setup);
+  }
+
+  ProgramHeader noteProgramHeader;
+  if( setup.containsNoteAbiTag() && !setup.containsNoteGnuBuildId() ){
+    noteProgramHeader = makeNoteProgramHeaderCoveringSections({noteAbiTagSectionHeader});
+  }else if( !setup.containsNoteAbiTag() && setup.containsNoteGnuBuildId() ){
+    noteProgramHeader = makeNoteProgramHeaderCoveringSections({noteGnuBuildIdSectionHeader});
+  }else if( setup.containsNoteAbiTag() && setup.containsNoteGnuBuildId() ){
+    noteProgramHeader = makeNoteProgramHeaderCoveringSections({noteAbiTagSectionHeader, noteGnuBuildIdSectionHeader});
+  }
 
   SectionHeader sectionNameStringTableHeader = makeStringTableSectionHeader();
   sectionNameStringTableHeader.name = "shstrtab";
@@ -257,7 +335,9 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
   if( setup.containsProgramInterpreter() ){
     programHeaderTable.addHeader(makeProgramInterpreterProgramHeader(setup), programHeaderSize);
   }
-  programHeaderTable.addHeader(noteProgramHeader, programHeaderSize);
+  if( setup.containsNoteAbiTag() || setup.containsNoteGnuBuildId() ){
+    programHeaderTable.addHeader(noteProgramHeader, programHeaderSize);
+  }
   if( setup.containsDynamicSection() ){
     programHeaderTable.addHeader(makeDynamicSectionProgramHeader(setup), programHeaderSize);
   }
@@ -267,8 +347,12 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
   if( setup.containsProgramInterpreter() ){
     sectionHeaderTable.push_back( makeProgramInterpreterSectionHeader(setup) );
   }
-  sectionHeaderTable.push_back(noteAbiTagSectionHeader);
-  sectionHeaderTable.push_back(noteGnuBuildIdSectionHeader);
+  if( setup.containsNoteAbiTag() ){
+    sectionHeaderTable.push_back(noteAbiTagSectionHeader);
+  }
+  if( setup.containsNoteGnuBuildId() ){
+    sectionHeaderTable.push_back(noteGnuBuildIdSectionHeader);
+  }
   if( setup.containsDynamicSection() ){
     SectionHeader dynamicSectionHeader = makeDynamicSectionHeader(setup);
     if( setup.containsDynamicStringTable() ){
