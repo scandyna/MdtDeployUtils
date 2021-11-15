@@ -48,6 +48,22 @@ struct TestHeadersSetup
   uint64_t dynamicStringTableAddress = 0;
   uint64_t sectionNameStringTableOffset = 0;
 
+  bool containsProgramHeaderTable() const noexcept
+  {
+    if(programHeaderTableOffset == 0){
+      return false;
+    }
+    return true;
+  }
+
+  bool containsSectionHeaderTable() const noexcept
+  {
+    if(sectionHeaderTableOffset == 0){
+      return false;
+    }
+    return true;
+  }
+
   bool containsProgramInterpreter() const noexcept
   {
     if(programInterpreterSectionOffset == 0){
@@ -113,6 +129,14 @@ struct TestHeadersSetup
       return false;
     }
     if(dynamicStringTableSize == 0){
+      return false;
+    }
+    return true;
+  }
+
+  bool containsSectionNameStringTable() const noexcept
+  {
+    if(sectionNameStringTableOffset == 0){
       return false;
     }
     return true;
@@ -269,6 +293,20 @@ Mdt::DeployUtils::Impl::Elf::SectionHeader makeDynamicStringTableSectionHeader(c
   return header;
 }
 
+inline
+Mdt::DeployUtils::Impl::Elf::SectionHeader makeSectionNameStringTableSectionHeader(const TestHeadersSetup & setup)
+{
+  using Mdt::DeployUtils::Impl::Elf::SectionHeader;
+
+  assert( setup.containsSectionNameStringTable() );
+
+  SectionHeader header = makeStringTableSectionHeader();
+  header.name = ".shstrtab";
+  header.offset = setup.sectionNameStringTableOffset;
+  header.size = 100;
+
+  return header;
+}
 
 inline
 Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSetup & setup)
@@ -286,20 +324,6 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
   FileHeader fileHeader = make64BitLittleEndianFileHeader();
   fileHeader.phoff = setup.programHeaderTableOffset;
   fileHeader.shoff = setup.sectionHeaderTableOffset;
-
-//   SectionHeader noteAbiTagSectionHeader = makeNoteSectionHeader(".note.ABI-tag");
-//   noteAbiTagSectionHeader.offset = setup.noteAbiTagSectionOffset;
-//   noteAbiTagSectionHeader.size = setup.noteAbiTagSectionSize;
-//   noteAbiTagSectionHeader.addr = setup.noteAbiTagSectionAddress;
-//   noteAbiTagSectionHeader.addralign = 4;
-
-//   SectionHeader noteGnuBuildIdSectionHeader = makeNoteSectionHeader(".note.gnu.build-id");
-//   noteGnuBuildIdSectionHeader.offset = setup.noteGnuBuilIdSectionOffset;
-//   noteGnuBuildIdSectionHeader.size = setup.noteGnuBuilIdSectionSize;
-//   noteGnuBuildIdSectionHeader.addr = setup.noteGnuBuilIdSectionAddress;
-//   noteGnuBuildIdSectionHeader.addralign = 4;
-
-//   ProgramHeader noteProgramHeader = makeNoteProgramHeaderCoveringSections({noteAbiTagSectionHeader, noteGnuBuildIdSectionHeader});
 
   SectionHeader noteAbiTagSectionHeader;
   if( setup.containsNoteAbiTag() ){
@@ -319,11 +343,6 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
   }else if( setup.containsNoteAbiTag() && setup.containsNoteGnuBuildId() ){
     noteProgramHeader = makeNoteProgramHeaderCoveringSections({noteAbiTagSectionHeader, noteGnuBuildIdSectionHeader});
   }
-
-  SectionHeader sectionNameStringTableHeader = makeStringTableSectionHeader();
-  sectionNameStringTableHeader.name = "shstrtab";
-  sectionNameStringTableHeader.offset = setup.sectionNameStringTableOffset;
-  sectionNameStringTableHeader.size = 100;
 
   ProgramHeader programHeaderTableProgramHeader = makeProgramHeaderTableProgramHeader();
   programHeaderTableProgramHeader.offset = setup.programHeaderTableOffset;
@@ -365,7 +384,9 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
   if( setup.containsDynamicStringTable() ){
     sectionHeaderTable.push_back( makeDynamicStringTableSectionHeader(setup) );
   }
-  sectionHeaderTable.push_back(sectionNameStringTableHeader);
+  if( setup.containsSectionNameStringTable() ){
+    sectionHeaderTable.push_back( makeSectionNameStringTableSectionHeader(setup) );
+  }
 
   assert( !sectionHeaderTable.empty() );
   fileHeader.shstrndx = static_cast<uint16_t>( sectionHeaderTable.size() - 1 );
