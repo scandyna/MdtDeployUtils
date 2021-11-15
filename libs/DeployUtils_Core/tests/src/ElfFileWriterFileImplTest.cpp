@@ -22,8 +22,10 @@
 #include "Catch2QString.h"
 #include "TestFileUtils.h"
 #include "ElfFileIoTestUtils.h"
+#include "ElfFileAllHeadersImplTestUtils.h"
 #include "ElfDynamicSectionImplTestCommon.h"
 #include "ElfProgramHeaderTestUtils.h"
+#include "ElfSectionHeaderTestUtils.h"
 #include "ElfSymbolTableTestUtils.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileWriterFile.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileOffsetChanges.h"
@@ -50,32 +52,32 @@ FileAllHeaders makeBasicFileAllHeaders()
   return headers;
 }
 
-SectionHeader makeNullSectionHeader()
-{
-  SectionHeader header;
-  header.type = 0;
-  header.offset = 0;
-  header.addr = 0;
-  header.size = 0;
+// SectionHeader makeNullSectionHeader()
+// {
+//   SectionHeader header;
+//   header.type = 0;
+//   header.offset = 0;
+//   header.addr = 0;
+//   header.size = 0;
+//
+//   return header;
+// }
 
-  return header;
-}
+// SectionHeader makeDynamicSectionHeader()
+// {
+//   SectionHeader header;
+//   header.type = 6;
+//
+//   return header;
+// }
 
-SectionHeader makeDynamicSectionHeader()
-{
-  SectionHeader header;
-  header.type = 6;
-
-  return header;
-}
-
-SectionHeader makeStringTableSectionHeader()
-{
-  SectionHeader header;
-  header.type = 3;
-
-  return header;
-}
+// SectionHeader makeStringTableSectionHeader()
+// {
+//   SectionHeader header;
+//   header.type = 3;
+//
+//   return header;
+// }
 
 struct TestFileSetup
 {
@@ -306,6 +308,19 @@ TEST_CASE("fromOriginalFile")
   }
 }
 
+TEST_CASE("moveFirstCountSectionsToEnd")
+{
+  TestFileSetup setup;
+  std::vector<uint16_t> movedSectionHeadersIndexes;
+
+  setup.programHeaderTableOffset = 50;
+
+  SECTION("gcc dynamic executable")
+  {
+
+  }
+}
+
 TEST_CASE("setRunPath")
 {
   TestFileSetup setup;
@@ -383,10 +398,23 @@ TEST_CASE("setRunPath_fileLayout")
       SECTION("the dynamic section will move to the end, after PT_PHDR")
       {
         REQUIRE( file.dynamicProgramHeader().offset >= file.headers().programHeaderTableProgramHeader().fileOffsetEnd() );
-        REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
         REQUIRE( file.dynamicSectionHeader().offset == file.dynamicProgramHeader().offset );
         REQUIRE( file.dynamicSectionHeader().size == file.dynamicProgramHeader().filesz );
         REQUIRE( file.dynamicSectionMovesToEnd() );
+      }
+
+      SECTION("the new size of the dynamic section must be reflected to the headers")
+      {
+        const uint64_t dynamicSectionSize = static_cast<uint64_t>( file.dynamicSection().byteCount(Class::Class64) );
+
+        REQUIRE( file.dynamicProgramHeader().memsz == dynamicSectionSize );
+        REQUIRE( file.dynamicProgramHeader().filesz == dynamicSectionSize );
+        REQUIRE( file.dynamicSectionHeader().size == dynamicSectionSize );
+      }
+
+      SECTION("TODO: check global offset table")
+      {
+        ///REQUIRE( false );
       }
     }
   }
