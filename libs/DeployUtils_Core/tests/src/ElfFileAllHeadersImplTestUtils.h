@@ -183,6 +183,7 @@ Mdt::DeployUtils::Impl::Elf::ProgramHeader makeProgramInterpreterProgramHeader(c
   header.offset = setup.programInterpreterSectionOffset;
   header.filesz = setup.programInterpreterSectionSize;
   header.vaddr = setup.programInterpreterSectionAddress;
+  header.paddr = setup.programInterpreterSectionAddress;
   header.align = 1;
   header.paddr = setup.programInterpreterSectionAddress;
   header.memsz = setup.programInterpreterSectionSize;
@@ -251,6 +252,7 @@ Mdt::DeployUtils::Impl::Elf::ProgramHeader makeDynamicSectionProgramHeader(const
   header.offset = setup.dynamicSectionOffset;
   header.filesz = setup.dynamicSectionSize;
   header.vaddr = setup.dynamicSectionAddress;
+  header.paddr = setup.dynamicSectionAddress;
   header.align = setup.dynamicSectionAlignment;
   header.paddr = setup.dynamicSectionAddress;
   header.memsz = setup.dynamicSectionSize;
@@ -347,6 +349,7 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
   ProgramHeader programHeaderTableProgramHeader = makeProgramHeaderTableProgramHeader();
   programHeaderTableProgramHeader.offset = setup.programHeaderTableOffset;
   programHeaderTableProgramHeader.vaddr = setup.programHeaderTableOffset;
+  programHeaderTableProgramHeader.paddr = setup.programHeaderTableOffset;
 
   const uint16_t programHeaderSize = 56;
   ProgramHeaderTable programHeaderTable;

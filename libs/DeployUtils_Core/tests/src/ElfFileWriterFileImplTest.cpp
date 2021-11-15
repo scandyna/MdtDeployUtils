@@ -30,6 +30,7 @@
 #include "Mdt/DeployUtils/Impl/Elf/FileWriterFile.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileOffsetChanges.h"
 #include <QLatin1String>
+#include <cassert>
 
 using Mdt::DeployUtils::Impl::Elf::FileWriterFile;
 using Mdt::DeployUtils::Impl::Elf::FileWriterFileLayout;
@@ -52,33 +53,6 @@ FileAllHeaders makeBasicFileAllHeaders()
   return headers;
 }
 
-// SectionHeader makeNullSectionHeader()
-// {
-//   SectionHeader header;
-//   header.type = 0;
-//   header.offset = 0;
-//   header.addr = 0;
-//   header.size = 0;
-//
-//   return header;
-// }
-
-// SectionHeader makeDynamicSectionHeader()
-// {
-//   SectionHeader header;
-//   header.type = 6;
-//
-//   return header;
-// }
-
-// SectionHeader makeStringTableSectionHeader()
-// {
-//   SectionHeader header;
-//   header.type = 3;
-//
-//   return header;
-// }
-
 struct TestFileSetup
 {
   uint64_t programHeaderTableOffset = 0;
@@ -100,8 +74,55 @@ struct TestFileSetup
   }
 };
 
+FileWriterFile makeWriterFile_NEW(const TestFileSetup & setup)
+{
+  using Mdt::DeployUtils::Impl::Elf::Class;
+
+  assert(setup.dynamicSectionOffset > 0);
+  assert(setup.dynamicSectionAddress > 0);
+  assert(setup.dynamicStringTableOffset > 0);
+  assert(setup.dynamicStringTableAddress > 0);
+
+  DynamicSection dynamicSection;
+  dynamicSection.addEntry( makeNullEntry() );
+  dynamicSection.addEntry( makeStringTableAddressEntry(setup.dynamicStringTableAddress) );
+  dynamicSection.addEntry( makeStringTableSizeEntry(1) );
+  dynamicSection.setRunPath(setup.runPath);
+
+  TestHeadersSetup headersSetup;
+  headersSetup.programHeaderTableOffset = setup.programHeaderTableOffset;
+  headersSetup.sectionHeaderTableOffset = setup.sectionHeaderTableOffset;
+  headersSetup.dynamicSectionOffset = setup.dynamicSectionOffset;
+  headersSetup.dynamicSectionAddress = setup.dynamicSectionAddress;
+  headersSetup.dynamicSectionSize = static_cast<uint64_t>( dynamicSection.byteCount(Class::Class64) );
+  headersSetup.dynamicStringTableOffset = setup.dynamicStringTableOffset;
+  headersSetup.dynamicStringTableAddress = setup.dynamicStringTableAddress;
+  headersSetup.dynamicStringTableSize = static_cast<uint64_t>( dynamicSection.stringTable().byteCount() );
+  headersSetup.sectionNameStringTableOffset = setup.sectionNameStringTableOffset;
+
+  FileAllHeaders headers = makeTestHeaders(headersSetup);
+  FileWriterFile file = FileWriterFile::fromOriginalFile(headers, dynamicSection);
+
+  PartialSymbolTable symbolTable;
+  int64_t dynSymEntryOffset = setup.dynSymOffset;
+  PartialSymbolTableEntry dynamicSectionSymTabEntry = makeSectionAssociationSymbolTableEntryWithFileOffset(dynSymEntryOffset);
+  dynamicSectionSymTabEntry.entry.shndx = headers.dynamicSectionHeaderIndex();
+  dynSymEntryOffset += symbolTableEntrySize(headers.fileHeader().ident._class);
+  PartialSymbolTableEntry dynStrSymTabEntry = makeSectionAssociationSymbolTableEntryWithFileOffset(dynSymEntryOffset);
+  dynStrSymTabEntry.entry.shndx = headers.dynamicStringTableSectionHeaderIndex();
+  symbolTable.addEntryFromFile(dynamicSectionSymTabEntry);
+  symbolTable.addEntryFromFile(dynStrSymTabEntry);
+  symbolTable.indexAssociationsKnownSections( headers.sectionHeaderTable() );
+
+  file.setSectionSymbolTableFromFile(symbolTable);
+
+  return file;
+}
+
 FileWriterFile makeWriterFile(const TestFileSetup & setup)
 {
+  return makeWriterFile_NEW(setup);
+
   using Mdt::DeployUtils::Impl::Elf::symbolTableEntrySize;
 
   FileHeader fileHeader = make64BitLittleEndianFileHeader();
@@ -214,7 +235,9 @@ TEST_CASE("FileWriterFileLayout")
     TestFileSetup setup;
     setup.programHeaderTableOffset = 50;
     setup.dynamicSectionOffset = 100;
+    setup.dynamicSectionAddress = 100;
     setup.dynamicStringTableOffset = 1'000;
+    setup.dynamicStringTableAddress = 1000;
     setup.sectionNameStringTableOffset = 5'000;
     setup.sectionHeaderTableOffset = 10'000;
 
@@ -326,7 +349,9 @@ TEST_CASE("setRunPath")
   TestFileSetup setup;
   setup.programHeaderTableOffset = 50;
   setup.dynamicStringTableOffset = 100;
+  setup.dynamicStringTableAddress = 100;
   setup.dynamicSectionOffset = 1000;
+  setup.dynamicSectionAddress = 1000;
   setup.sectionNameStringTableOffset = 5'000;
   setup.sectionHeaderTableOffset = 10000;
 
@@ -555,7 +580,9 @@ TEST_CASE("minimumSizeToWriteFile")
   {
     setup.programHeaderTableOffset = 50;
     setup.dynamicSectionOffset = 100;
+    setup.dynamicSectionAddress = 100;
     setup.dynamicStringTableOffset = 1'000;
+    setup.dynamicStringTableAddress = 1000;
     setup.sectionHeaderTableOffset = 10'000;
     file = makeWriterFile(setup);
 
@@ -567,7 +594,9 @@ TEST_CASE("minimumSizeToWriteFile")
   {
     setup.programHeaderTableOffset = 50;
     setup.dynamicSectionOffset = 100;
+    setup.dynamicSectionAddress = 100;
     setup.dynamicStringTableOffset = 10'000;
+    setup.dynamicStringTableAddress = 10'000;
     setup.sectionHeaderTableOffset = 2'000;
     file = makeWriterFile(setup);
 
