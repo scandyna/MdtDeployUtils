@@ -41,6 +41,10 @@ using Mdt::DeployUtils::Impl::Elf::ProgramHeader;
 using Mdt::DeployUtils::Impl::Elf::ProgramHeaderTable;
 using Mdt::DeployUtils::Impl::Elf::SectionHeader;
 using Mdt::DeployUtils::Impl::Elf::PartialSymbolTable;
+using Mdt::DeployUtils::Impl::Elf::GlobalOffsetTable;
+using Mdt::DeployUtils::Impl::Elf::GlobalOffsetTableEntry;
+using Mdt::DeployUtils::Impl::Elf::globalOffsetTableEntrySize;
+using Mdt::DeployUtils::Impl::Elf::MoveSectionAlignment;
 
 FileAllHeaders makeBasicFileAllHeaders()
 {
@@ -57,11 +61,23 @@ struct TestFileSetup
 {
   uint64_t programHeaderTableOffset = 0;
   uint64_t sectionHeaderTableOffset = 0;
+  bool sortSectionHeaderTableByFileOffset = false;
+  uint64_t programInterpreterSectionOffset = 0;
+  uint64_t programInterpreterSectionAddress = 0;
+  std::string programInterpreterPath;
+  uint64_t noteAbiTagSectionOffset = 0;
+  uint64_t noteAbiTagSectionAddress = 0;
+  uint64_t noteGnuBuilIdSectionOffset = 0;
+  uint64_t noteGnuBuilIdSectionAddress = 0;
+  uint64_t gnuHashTableSectionOffset = 0;
+  uint64_t gnuHashTableSectionAddress = 0;
   uint64_t dynamicSectionOffset = 0;
   uint64_t dynamicSectionAddress = 0;
   uint64_t dynamicStringTableOffset = 0;
   uint64_t dynamicStringTableAddress = 0;
   int64_t dynSymOffset = 0;
+  uint64_t gotPltSectionOffset = 0;
+  uint64_t gotPltSectionAddress = 0;
   QString runPath;
   uint64_t sectionNameStringTableOffset = 0;
 
@@ -72,11 +88,48 @@ struct TestFileSetup
     }
     return 1 + static_cast<uint64_t>( runPath.size() ) + 1;
   }
+
+  bool containsProgramInterpreter() const noexcept
+  {
+    if(programInterpreterSectionOffset == 0){
+      return false;
+    }
+    if(programInterpreterSectionAddress == 0){
+      return false;
+    }
+    if( programInterpreterPath.empty() ){
+      return false;
+    }
+    return true;
+  }
+
+  bool containsGnuHashTable() const noexcept
+  {
+    if(gnuHashTableSectionOffset == 0){
+      return false;
+    }
+    if(gnuHashTableSectionAddress == 0){
+      return false;
+    }
+    return true;
+  }
+
+  bool containsGotPlt() const noexcept
+  {
+    if(gotPltSectionOffset == 0){
+      return false;
+    }
+    if(gotPltSectionAddress == 0){
+      return false;
+    }
+    return true;
+  }
 };
 
 FileWriterFile makeWriterFile(const TestFileSetup & setup)
 {
   using Mdt::DeployUtils::Impl::Elf::Class;
+  using Mdt::DeployUtils::Impl::Elf::ProgramInterpreterSection;
 
   assert(setup.dynamicSectionOffset > 0);
   assert(setup.dynamicSectionAddress > 0);
@@ -88,10 +141,42 @@ FileWriterFile makeWriterFile(const TestFileSetup & setup)
   dynamicSection.addEntry( makeStringTableAddressEntry(setup.dynamicStringTableAddress) );
   dynamicSection.addEntry( makeStringTableSizeEntry(1) );
   dynamicSection.setRunPath(setup.runPath);
+  if( setup.containsGnuHashTable() ){
+    dynamicSection.addEntry( makeGnuHashEntry(setup.gnuHashTableSectionAddress) );
+  }
 
   TestHeadersSetup headersSetup;
+
+  ProgramInterpreterSection programInterpreterSection;
+  if( setup.containsProgramInterpreter() ){
+    programInterpreterSection.path = setup.programInterpreterPath;
+    headersSetup.programInterpreterSectionOffset = setup.programInterpreterSectionOffset;
+    headersSetup.programInterpreterSectionAddress = setup.programInterpreterSectionAddress;
+    headersSetup.programInterpreterSectionSize = programInterpreterSection.path.size();
+  }
+
+  GlobalOffsetTable gotPltTable;
+  if( setup.containsGotPlt() ){
+    GlobalOffsetTableEntry gotPltTableDynamicAddressEntry;
+    gotPltTableDynamicAddressEntry.data = setup.dynamicSectionAddress;
+    gotPltTable.addEntryFromFile(gotPltTableDynamicAddressEntry);
+    headersSetup.gotPltSectionOffset = setup.gotPltSectionOffset;
+    headersSetup.gotPltSectionAddress = setup.gotPltSectionAddress;
+    headersSetup.gotPltSectionSize = static_cast<uint64_t>( globalOffsetTableEntrySize(Class::Class64) );
+  }
+
+  headersSetup.noteAbiTagSectionOffset = setup.noteAbiTagSectionOffset;
+  headersSetup.noteAbiTagSectionAddress = setup.noteAbiTagSectionAddress;
+  headersSetup.noteAbiTagSectionSize = 10;
+  headersSetup.noteGnuBuilIdSectionOffset = setup.noteGnuBuilIdSectionOffset;
+  headersSetup.noteGnuBuilIdSectionAddress = setup.noteGnuBuilIdSectionAddress;
+  headersSetup.noteGnuBuilIdSectionSize = 10;
+  headersSetup.gnuHashTableSectionOffset = setup.gnuHashTableSectionOffset;
+  headersSetup.gnuHashTableSectionAddress = setup.gnuHashTableSectionAddress;
+  headersSetup.gnuHashTableSectionSize = 10;
   headersSetup.programHeaderTableOffset = setup.programHeaderTableOffset;
   headersSetup.sectionHeaderTableOffset = setup.sectionHeaderTableOffset;
+  headersSetup.sortSectionHeaderTableByFileOffset = setup.sortSectionHeaderTableByFileOffset;
   headersSetup.dynamicSectionOffset = setup.dynamicSectionOffset;
   headersSetup.dynamicSectionAddress = setup.dynamicSectionAddress;
   headersSetup.dynamicSectionSize = static_cast<uint64_t>( dynamicSection.byteCount(Class::Class64) );
@@ -115,6 +200,14 @@ FileWriterFile makeWriterFile(const TestFileSetup & setup)
   symbolTable.indexAssociationsKnownSections( headers.sectionHeaderTable() );
 
   file.setSectionSymbolTableFromFile(symbolTable);
+
+  if( setup.containsProgramInterpreter() ){
+    file.setProgramInterpreterSectionFromFile(programInterpreterSection);
+  }
+
+  if( setup.containsGotPlt() ){
+    file.setGotPltSectionFromFile(gotPltTable);
+  }
 
   return file;
 }
@@ -207,7 +300,7 @@ TEST_CASE("fromOriginalFile")
     REQUIRE( file.sectionHeaderTable()[2].addr == 110 );
     REQUIRE( file.dynamicSectionOffset() == 1000 );
     REQUIRE( file.dynamicStringTableOffset() == 100 );
-    REQUIRE( file.dynamicSection().getStringTableAddress() == 110 );
+    REQUIRE( file.dynamicSection().stringTableAddress() == 110 );
     REQUIRE( file.dynamicSection().getRunPath().isEmpty() );
     REQUIRE( file.headers().sectionNameStringTableHeader().offset == 5'000 );
   }
@@ -237,22 +330,236 @@ TEST_CASE("fromOriginalFile")
     REQUIRE( file.sectionHeaderTable()[2].addr == 110 );
     REQUIRE( file.dynamicSectionOffset() == 1000 );
     REQUIRE( file.dynamicStringTableOffset() == 100 );
-    REQUIRE( file.dynamicSection().getStringTableAddress() == 110 );
+    REQUIRE( file.dynamicSection().stringTableAddress() == 110 );
     REQUIRE( file.dynamicSection().getRunPath() == QLatin1String("/tmp") );
     REQUIRE( file.headers().sectionNameStringTableHeader().offset == 5'000 );
   }
+}
+
+/*
+ * In this test, we check that related sections are updated.
+ * The addresses and similar are responsabilities of FileAllHeaders
+ */
+TEST_CASE("moveProgramInterpreterSectionToEnd")
+{
+  TestFileSetup setup;
+  FileWriterFile file;
+
+  setup.programHeaderTableOffset = 50;
+  setup.programInterpreterSectionOffset = 100;
+  setup.programInterpreterSectionAddress = 1000;
+  setup.programInterpreterPath = "/ld-linux";
+  setup.dynamicStringTableOffset = 500;
+  setup.dynamicStringTableAddress = 500;
+  setup.dynamicSectionOffset = 600;
+  setup.dynamicSectionAddress = 1600;
+
+  file = makeWriterFile(setup);
+
+  file.moveProgramInterpreterSectionToEnd(MoveSectionAlignment::SectionAlignment);
+
+  REQUIRE( file.headers().programInterpreterSectionHeader().offset > setup.dynamicSectionOffset );
+}
+
+/*
+ * In this test, we check that related sections are updated.
+ * The addresses and similar are responsabilities of FileAllHeaders
+ */
+TEST_CASE("moveGnuHashTableToEnd")
+{
+  TestFileSetup setup;
+  FileWriterFile file;
+
+  setup.programHeaderTableOffset = 50;
+  setup.gnuHashTableSectionOffset = 100;
+  setup.gnuHashTableSectionAddress = 1000;
+  setup.dynamicStringTableOffset = 500;
+  setup.dynamicStringTableAddress = 500;
+  setup.dynamicSectionOffset = 600;
+  setup.dynamicSectionAddress = 1600;
+
+  file = makeWriterFile(setup);
+
+  file.moveGnuHashTableToEnd(MoveSectionAlignment::SectionAlignment);
+
+  /*
+   * Check that the dynamic section's DT_GNU_HASH
+   * entry has the new address to the GNU hash table.
+   */
+  REQUIRE( file.dynamicSection().gnuHashTableAddress() == file.headers().gnuHashTableSectionHeader().addr );
+}
+
+/*
+ * In this test, we check that related sections are updated.
+ * The addresses and similar are responsabilities of FileAllHeaders
+ */
+TEST_CASE("moveDynamicSectionToEnd")
+{
+  TestFileSetup setup;
+  FileWriterFile file;
+
+  setup.programHeaderTableOffset = 50;
+  setup.dynamicStringTableOffset = 500;
+  setup.dynamicStringTableAddress = 500;
+  setup.dynamicSectionOffset = 600;
+  setup.dynamicSectionAddress = 1600;
+  setup.gotPltSectionOffset = 700;
+  setup.gotPltSectionAddress = 1700;
+
+  file = makeWriterFile(setup);
+
+  file.moveDynamicSectionToEnd(MoveSectionAlignment::SectionAlignment);
+
+  REQUIRE( file.headers().dynamicSectionHeader().offset > setup.gotPltSectionOffset );
+
+  /*
+   * The .got.plt has a pointer to the .dynamic section
+   */
+  REQUIRE( file.gotPltSection().dynamicSectionAddress() == file.headers().dynamicSectionHeader().addr );
+}
+
+/*
+ * In this test, we check that related sections are updated.
+ * The addresses and similar are responsabilities of FileAllHeaders
+ */
+TEST_CASE("moveDynamicStringTableToEnd")
+{
+  TestFileSetup setup;
+  FileWriterFile file;
+
+  setup.programHeaderTableOffset = 50;
+  setup.dynamicStringTableOffset = 500;
+  setup.dynamicStringTableAddress = 500;
+  setup.dynamicSectionOffset = 600;
+  setup.dynamicSectionAddress = 1600;
+  setup.gotPltSectionOffset = 700;
+  setup.gotPltSectionAddress = 1700;
+
+  file = makeWriterFile(setup);
+
+  file.moveDynamicStringTableToEnd(MoveSectionAlignment::SectionAlignment);
+
+  REQUIRE( file.headers().dynamicStringTableSectionHeader().offset > setup.gotPltSectionOffset );
+
+  /*
+   * The .dynamic section has a pointer to the .dynstr
+   */
+  REQUIRE( file.dynamicSection().stringTableAddress() == file.headers().dynamicStringTableSectionHeader().addr );
 }
 
 TEST_CASE("moveFirstCountSectionsToEnd")
 {
   TestFileSetup setup;
   std::vector<uint16_t> movedSectionHeadersIndexes;
+  FileWriterFile file;
 
   setup.programHeaderTableOffset = 50;
+  setup.sortSectionHeaderTableByFileOffset = true;
 
   SECTION("gcc dynamic executable")
   {
+    setup.programInterpreterSectionOffset = 100;
+    setup.programInterpreterSectionAddress = 100;
+    setup.programInterpreterPath = "/ld-linux";
+    setup.noteAbiTagSectionOffset = 110;
+    setup.noteAbiTagSectionAddress = 110;
+    setup.noteGnuBuilIdSectionOffset = 120;
+    setup.noteGnuBuilIdSectionAddress = 120;
+    setup.dynamicStringTableOffset = 500;
+    setup.dynamicStringTableAddress = 500;
+    setup.dynamicSectionOffset = 600;
+    setup.dynamicSectionAddress = 1600;
 
+    file = makeWriterFile(setup);
+
+    SECTION("move .interp")
+    {
+      // count: 2 (first null section is included in count)
+      movedSectionHeadersIndexes = file.moveFirstCountSectionsToEnd(2);
+
+      REQUIRE( movedSectionHeadersIndexes.size() == 1 );
+      REQUIRE( movedSectionHeadersIndexes[0] == 1 );
+    }
+
+    SECTION("move .interp and .note.ABI-tag - must also move .note.gnu.build-id")
+    {
+      // count: 3 (first null section is included in count)
+      movedSectionHeadersIndexes = file.moveFirstCountSectionsToEnd(3);
+
+      REQUIRE( movedSectionHeadersIndexes.size() == 3 );
+      REQUIRE( movedSectionHeadersIndexes[0] == 1 );
+      REQUIRE( movedSectionHeadersIndexes[1] == 2 );
+      REQUIRE( movedSectionHeadersIndexes[2] == 3 );
+    }
+
+    SECTION("move .interp , .note.ABI-tag and .note.gnu.build-id")
+    {
+      // count: 4 (first null section is included in count)
+      movedSectionHeadersIndexes = file.moveFirstCountSectionsToEnd(4);
+
+      REQUIRE( movedSectionHeadersIndexes.size() == 3 );
+      REQUIRE( movedSectionHeadersIndexes[0] == 1 );
+      REQUIRE( movedSectionHeadersIndexes[1] == 2 );
+      REQUIRE( movedSectionHeadersIndexes[2] == 3 );
+    }
+  }
+
+  SECTION("clang dynamic executable")
+  {
+    setup.programInterpreterSectionOffset = 100;
+    setup.programInterpreterSectionAddress = 1100;
+    setup.programInterpreterPath = "/ld-linux";
+    setup.noteAbiTagSectionOffset = 110;
+    setup.noteAbiTagSectionAddress = 1110;
+    setup.dynamicStringTableOffset = 500;
+    setup.dynamicStringTableAddress = 1500;
+    setup.dynamicSectionOffset = 600;
+    setup.dynamicSectionAddress = 1600;
+
+    file = makeWriterFile(setup);
+
+    SECTION("move .interp")
+    {
+      // count: 2 (first null section is included in count)
+      movedSectionHeadersIndexes = file.moveFirstCountSectionsToEnd(2);
+
+      REQUIRE( movedSectionHeadersIndexes.size() == 1 );
+      REQUIRE( movedSectionHeadersIndexes[0] == 1 );
+    }
+
+    SECTION("move .interp and .note.ABI-tag")
+    {
+      // count: 3 (first null section is included in count)
+      movedSectionHeadersIndexes = file.moveFirstCountSectionsToEnd(3);
+
+      REQUIRE( movedSectionHeadersIndexes.size() == 2 );
+      REQUIRE( movedSectionHeadersIndexes[0] == 1 );
+      REQUIRE( movedSectionHeadersIndexes[1] == 2 );
+    }
+  }
+
+  SECTION("gcc shared library")
+  {
+    setup.noteGnuBuilIdSectionOffset = 100;
+    setup.noteGnuBuilIdSectionAddress = 100;
+    setup.gnuHashTableSectionOffset = 110;
+    setup.gnuHashTableSectionAddress = 110;
+    setup.dynamicStringTableOffset = 500;
+    setup.dynamicStringTableAddress = 500;
+    setup.dynamicSectionOffset = 600;
+    setup.dynamicSectionAddress = 1600;
+
+    file = makeWriterFile(setup);
+
+    SECTION("move .note.gnu.build-id and .gnu.hash")
+    {
+      // count: 3 (first null section is included in count)
+      movedSectionHeadersIndexes = file.moveFirstCountSectionsToEnd(3);
+
+      REQUIRE( movedSectionHeadersIndexes.size() == 2 );
+      REQUIRE( movedSectionHeadersIndexes[0] == 1 );
+      REQUIRE( movedSectionHeadersIndexes[1] == 2 );
+    }
   }
 }
 
@@ -290,7 +597,7 @@ TEST_CASE("setRunPath")
 /*
  * Some responsabilities are given to FileAllHeaders,
  * so we have to concentrate mainly on coordination
- * between headers, dynamic section and the logic here,
+ * between headers, sections and the logic here,
  * but not every details.
  */
 TEST_CASE("setRunPath_fileLayout")
@@ -351,7 +658,7 @@ TEST_CASE("setRunPath_fileLayout")
 
       SECTION("TODO: check global offset table")
       {
-        ///REQUIRE( false );
+        REQUIRE( false );
       }
     }
   }
@@ -475,7 +782,7 @@ TEST_CASE("setRunPath_fileLayout")
 
       SECTION("the dynamic section must have the new address of the dynamic string table")
       {
-        REQUIRE( file.dynamicSection().getStringTableAddress() == file.headers().dynamicStringTableSectionHeader().addr );
+        REQUIRE( file.dynamicSection().stringTableAddress() == file.headers().dynamicStringTableSectionHeader().addr );
         REQUIRE( file.dynamicSection().getStringTableSize() == stringTableSize );
       }
     }
