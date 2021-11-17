@@ -185,6 +185,64 @@ TEST_CASE("stringTableAddress")
     section.clear();
     REQUIRE( !section.containsStringTableAddress() );
   }
+
+  /*
+   * Bug from 17.11.2021
+   */
+  SECTION("adding DT_RUNPATH must not break string table size index")
+  {
+    section.addEntry( makeNullEntry() );
+    section.addEntry( makeStringTableAddressEntry(123) );
+
+    REQUIRE( section.containsStringTableAddress() );
+    REQUIRE( !section.containsRunPathEntry() );
+
+    SECTION("section not contains null entries at end")
+    {
+      section.addRunPathEntry( makeRunPathEntry() );
+      REQUIRE( section.containsRunPathEntry() );
+
+      REQUIRE( section.containsStringTableAddress() );
+      REQUIRE( section.stringTableAddress() == 123 );
+    }
+
+    SECTION("section contains null entries at end")
+    {
+      section.addEntry( makeNullEntry() );
+      // the DT_RUNPATH entry should be added before the ending DT_NULL entry
+      section.addRunPathEntry( makeRunPathEntry() );
+      REQUIRE( section.containsRunPathEntry() );
+
+      REQUIRE( section.containsStringTableAddress() );
+      REQUIRE( section.stringTableAddress() == 123 );
+    }
+  }
+
+  SECTION("Removing DT_RUNPATH must not break string table size index")
+  {
+    uchar initialStringTable[6] = {
+      '\0',
+      '/','t','m','p','\0'
+    };
+
+    section.addEntry( makeNullEntry() );
+    section.addEntry( makeRunPathEntry(1) );
+    section.addEntry( makeStringTableSizeEntry(1) );
+    section.addEntry( makeStringTableAddressEntry(156) );
+    section.addEntry( makeNullEntry() );
+
+    section.setStringTable( stringTableFromCharArray( initialStringTable, sizeof(initialStringTable) ) );
+
+    REQUIRE( section.containsRunPathEntry() );
+    REQUIRE( section.containsStringTableAddress() );
+    REQUIRE( section.stringTableAddress() == 156 );
+
+    section.removeRunPath();
+
+    REQUIRE( !section.containsRunPathEntry() );
+    REQUIRE( section.containsStringTableAddress() );
+    REQUIRE( section.stringTableAddress() == 156 );
+  }
 }
 
 TEST_CASE("containsRunPathEntry")

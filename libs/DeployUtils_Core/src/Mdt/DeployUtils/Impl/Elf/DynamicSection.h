@@ -503,6 +503,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       const auto it = findEntryForTag(DynamicSectionTagType::Null);
       mSection.insert(it, entry);
+      indexKnownEnties();
     }
 
     /*! \brief Set the run path (DT_RUNPATH)
@@ -556,6 +557,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       shiftEntriesIndexingStrTabAfter(*it, offset);
 
       mSection.erase(it);
+      indexKnownEnties();
 
       updateStringTableSizeEntry();
     }
@@ -714,6 +716,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
           break;
         default:
           break;
+      }
+    }
+
+    void indexKnownEnties() noexcept
+    {
+      for(size_t i = 0; i < mSection.size(); ++i){
+        indexKnownEntry(mSection[i].tagType(), i);
       }
     }
 
