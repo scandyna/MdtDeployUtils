@@ -28,6 +28,7 @@
 #include <QStringList>
 #include <QObject>
 #include <cstdint>
+#include <limits>
 #include <cstdlib>
 #include <cmath>
 #include <vector>
@@ -44,14 +45,28 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    */
   enum class DynamicSectionTagType
   {
-    Null = 0,             /*!< Marks the end of the _DYNAMIC array */
-    Needed = 1,           /*!< This element holds the string table offset to get the needed library name */
-    StringTable = 5,      /*!< This element holds the address to the string table (DT_STRTAB) */
-    StringTableSize = 10, /*!< This element holds the size, in bytes, of the string table (DT_STRSZ) */
-    SoName = 14,          /*!< This element holds the string table offset to get the sahred object name */
-    RPath = 15,           /*!< This element holds the string table offset to get the search path (deprecated) */
-    Runpath = 29,         /*!< This element holds the string table offset to get the search path */
-    Unknown = 100         /*!< Unknown element (not from the standard) */
+    Null = 0,                 /*!< Marks the end of the _DYNAMIC array */
+    Needed = 1,               /*!< This element holds the string table offset to get the needed library name */
+    PltGot = 3,               /*!< DT_PLTGOT */
+    Hash = 4,                 /*!< DT_HASH */
+    StringTable = 5,          /*!< DT_STRTAB: this element holds the address to the string table */
+    SymbolTable = 6,          /*!< DT_SYMTAB: address of the symbol table */
+    RelocationTable = 7,      /*!< DT_RELA: address of the relocation table */
+    RelocationTableSize = 8,  /*!< DT_RELASZ: total size [bytes] of the relocation table */
+    RelocationEntrySize = 9,  /*!< DT_RELAENT: size [bytes] of the relocation entry */
+    StringTableSize = 10,     /*!< DT_STRSZ: this element holds the size, in bytes, of the string table */
+    SymbolEntrySize = 11,     /*!< DT_SYMENT: size [bytes] of a symbol table entry */
+    Init = 12,                /*!< DT_INIT: address of the initialization function */
+    Fini = 13,                /*!< DT_FINI: address of the termination function */
+    SoName = 14,              /*!< This element holds the string table offset to get the sahred object name */
+    RPath = 15,               /*!< This element holds the string table offset to get the search path (deprecated) */
+    Symbolic = 16,            /*!< DT_SYMBOLIC */
+    Debug = 21,               /*!< DT_DEBUG: used for debugging */
+    Runpath = 29,             /*!< This element holds the string table offset to get the search path */
+    Unknown = 100,            /*!< Unknown element (not from the standard) */
+    GnuHash = 0x6ffffef5      /*!< DT_GNU_HASH
+                                  (see source code, for example:
+                                  https://sourceware.org/git/?p=binutils-gdb.git;a=blob;f=include/elf/common.h;h=efb7ff0de05155604c162e5af4e59222ab7f9061;hb=refs/heads/master) */
   };
 
   /*! \internal
@@ -164,16 +179,40 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
           return DynamicSectionTagType::Null;
         case 1:
           return DynamicSectionTagType::Needed;
+        case 3:
+          return DynamicSectionTagType::PltGot;
+        case 4:
+          return DynamicSectionTagType::Hash;
         case 5:
           return DynamicSectionTagType::StringTable;
+        case 6:
+          return DynamicSectionTagType::SymbolTable;
+        case 7:
+          return DynamicSectionTagType::RelocationTable;
+        case 8:
+          return DynamicSectionTagType::RelocationTableSize;
+        case 9:
+          return DynamicSectionTagType::RelocationEntrySize;
         case 10:
           return DynamicSectionTagType::StringTableSize;
+        case 11:
+          return DynamicSectionTagType::SymbolEntrySize;
+        case 12:
+          return DynamicSectionTagType::Init;
+        case 13:
+          return DynamicSectionTagType::Fini;
         case 14:
           return DynamicSectionTagType::SoName;
         case 15:
           return DynamicSectionTagType::RPath;
+        case 16:
+          return DynamicSectionTagType::Symbolic;
+        case 21:
+          return DynamicSectionTagType::Debug;
         case 29:
           return DynamicSectionTagType::Runpath;
+        case 0x6ffffef5:
+          return DynamicSectionTagType::GnuHash;
       }
 
       return DynamicSectionTagType::Unknown;
@@ -272,6 +311,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      */
     void addEntry(DynamicStruct entry) noexcept
     {
+      indexKnownEntry( entry.tagType(), mSection.size() );
       mSection.push_back(entry);
     }
 
@@ -317,6 +357,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return mStringTable;
     }
 
+    /*! \brief Check if the dynamic string table address (DT_STRTAB) exists
+     */
+    bool containsStringTableAddress() const noexcept
+    {
+      return mStringTableAddressEntryIndex < mSection.size();
+    }
+
     /*! \brief Set the dynamic string table address (DT_STRTAB)
      *
      * \pre the DT_STRTAB entry must exist
@@ -324,10 +371,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      */
     void setStringTableAddress(uint64_t address) noexcept
     {
-      auto it = findMutableEntryForTag(DynamicSectionTagType::StringTable);
-      assert( it != end() );
+      assert( containsStringTableAddress() );
 
-      it->val_or_ptr = address;
+      mSection[mStringTableAddressEntryIndex].val_or_ptr = address;
     }
 
     /*! \brief Get the dynamic string table address (DT_STRTAB)
@@ -335,12 +381,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * \pre the DT_STRTAB entry must exist
      * (DT_STRTAB is mandadtory)
      */
-    uint64_t getStringTableAddress() const noexcept
+    uint64_t stringTableAddress() const noexcept
     {
-      const auto it = findEntryForTag(DynamicSectionTagType::StringTable);
-      assert( it != cend() );
+      assert( containsStringTableAddress() );
 
-      return it->val_or_ptr;
+      return mSection[mStringTableAddressEntryIndex].val_or_ptr;
     }
 
     /*! \brief Check if the string table size entry exists
@@ -444,6 +489,22 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return mStringTable.unicodeStringAtIndex(it->val_or_ptr);
     }
 
+    /*! \brief Add the run path entry to this table (DT_RUNPATH)
+     *
+     * The new entry will be added before the null entries
+     *
+     * \pre \a entry must be a run path entry
+     * \pre the run path entry must not allready exist
+     */
+    void addRunPathEntry(DynamicStruct entry) noexcept
+    {
+      assert( entry.tagType() == DynamicSectionTagType::Runpath );
+      assert( !containsRunPathEntry() );
+
+      const auto it = findEntryForTag(DynamicSectionTagType::Null);
+      mSection.insert(it, entry);
+    }
+
     /*! \brief Set the run path (DT_RUNPATH)
      *
      * If \a runPath is a empty string,
@@ -470,7 +531,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       }else{
         DynamicStruct runPathEntry(DynamicSectionTagType::Runpath);
         runPathEntry.val_or_ptr = mStringTable.appendUnicodeString(runPath);
-        addEntry(runPathEntry);
+        addRunPathEntry(runPathEntry);
       }
 
       updateStringTableSizeEntry();
@@ -499,12 +560,42 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       updateStringTableSizeEntry();
     }
 
+    /*! \brief Check if this dynamic section contains the address to the GNU hash table (DT_GNU_HASH)
+     */
+    bool containsGnuHashTableAddress() const noexcept
+    {
+      return mGnuHashEntryIndex < mSection.size();
+    }
+
+    /*! \brief Set the address of the GNU hash table (DT_GNU_HASH)
+     *
+     * \pre the DT_GNU_HASH entry must exist
+     */
+    void setGnuHashTableAddress(uint64_t address) noexcept
+    {
+      assert( containsGnuHashTableAddress() );
+
+      mSection[mGnuHashEntryIndex].val_or_ptr = address;
+    }
+
+    /*! \brief Get the address of the GNU hash table (DT_GNU_HASH)
+     *
+     * \pre the DT_GNU_HASH entry must exist
+     */
+    uint64_t gnuHashTableAddress() const noexcept
+    {
+      assert( containsGnuHashTableAddress() );
+
+      return mSection[mGnuHashEntryIndex].val_or_ptr;
+    }
+
     /*! \brief Clear this section
      */
     void clear() noexcept
     {
       mSection.clear();
       mStringTable.clear();
+      unindexEntries();
     }
 
     /*! \brief get the begin iterator
@@ -612,6 +703,34 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       it->val_or_ptr = mStringTable.byteCount();
     }
 
+    void indexKnownEntry(DynamicSectionTagType type, size_t index) noexcept
+    {
+      switch(type){
+        case DynamicSectionTagType::StringTable:
+          mStringTableAddressEntryIndex = index;
+          break;
+        case DynamicSectionTagType::GnuHash:
+          mGnuHashEntryIndex = index;
+          break;
+        default:
+          break;
+      }
+    }
+
+    void unindexEntries() noexcept
+    {
+      mStringTableAddressEntryIndex = invalidEntryIndex();
+      mGnuHashEntryIndex = invalidEntryIndex();
+    }
+
+    static
+    constexpr size_t invalidEntryIndex() noexcept
+    {
+      return std::numeric_limits<size_t>::max();
+    }
+
+    size_t mStringTableAddressEntryIndex = invalidEntryIndex();
+    size_t mGnuHashEntryIndex = invalidEntryIndex();
     std::vector<DynamicStruct> mSection;
     StringTable mStringTable;
   };

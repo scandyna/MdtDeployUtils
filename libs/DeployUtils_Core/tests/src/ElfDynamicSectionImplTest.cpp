@@ -139,6 +139,54 @@ TEST_CASE("add_entry_clear")
   REQUIRE( section.isNull() );
 }
 
+TEST_CASE("gnuHashTableAddress")
+{
+  DynamicSection section;
+
+  SECTION("initially the DT_GNU_HASH entry not exists")
+  {
+    REQUIRE( !section.containsGnuHashTableAddress() );
+  }
+
+  SECTION("DT_GNU_HASH exists - change and get it")
+  {
+    section.addEntry( makeGnuHashEntry(1234) );
+
+    REQUIRE( section.containsGnuHashTableAddress() );
+    REQUIRE( section.gnuHashTableAddress() == 1234 );
+
+    section.setGnuHashTableAddress(524);
+    REQUIRE( section.gnuHashTableAddress() == 524 );
+
+    section.clear();
+    REQUIRE( !section.containsGnuHashTableAddress() );
+  }
+}
+
+TEST_CASE("stringTableAddress")
+{
+  DynamicSection section;
+
+  SECTION("initially the DT_STRTAB entry not exists")
+  {
+    REQUIRE( !section.containsStringTableAddress() );
+  }
+
+  SECTION("DT_STRTAB exists - change and get it")
+  {
+    section.addEntry( makeStringTableAddressEntry(5568) );
+
+    REQUIRE( section.containsStringTableAddress() );
+    REQUIRE( section.stringTableAddress() == 5568 );
+
+    section.setStringTableAddress(512);
+    REQUIRE( section.stringTableAddress() == 512 );
+
+    section.clear();
+    REQUIRE( !section.containsStringTableAddress() );
+  }
+}
+
 TEST_CASE("containsRunPathEntry")
 {
   DynamicSection section;
@@ -162,7 +210,7 @@ TEST_CASE("getStringTableAddress")
 
   SECTION("get from existing entry")
   {
-    REQUIRE( section.getStringTableAddress() == 1000 );
+    REQUIRE( section.stringTableAddress() == 1000 );
   }
 }
 
@@ -172,7 +220,7 @@ TEST_CASE("setStringTableAddress")
   section.addEntry( makeStringTableAddressEntry(1000) );
 
   section.setStringTableAddress(150);
-  REQUIRE( section.getStringTableAddress() == 150 );
+  REQUIRE( section.stringTableAddress() == 150 );
 }
 
 TEST_CASE("getStringTableSize")
@@ -197,7 +245,7 @@ TEST_CASE("setStringTable")
 
   section.setStringTable(stringTable);
 
-  REQUIRE( section.getStringTableAddress() == 1000 );
+  REQUIRE( section.stringTableAddress() == 1000 );
   REQUIRE( section.getStringTableSize() == 8 );
 }
 
@@ -249,6 +297,40 @@ TEST_CASE("getNeededSharedLibraries")
     section.addEntry( makeNeededEntry(1) );
     section.addEntry( makeNeededEntry(9) );
     REQUIRE( section.getNeededSharedLibraries() == qStringListFromUtf8Strings({"libA.so","libB.so"}) );
+  }
+}
+
+TEST_CASE("addRunPathEntry")
+{
+  DynamicSection section;
+  DynamicStruct entry(DynamicSectionTagType::Runpath);
+
+  SECTION("the dynamic section is initially empty")
+  {
+    section.addRunPathEntry(entry);
+
+    REQUIRE( section.entriesCount() == 1 );
+    REQUIRE( section.entryAt(0).tagType() == DynamicSectionTagType::Runpath );
+  }
+
+  SECTION("the dynamic section initially has only a null entry")
+  {
+    section.addEntry( makeNullEntry() );
+    section.addRunPathEntry(entry);
+
+    REQUIRE( section.entriesCount() == 2 );
+    REQUIRE( section.entryAt(0).tagType() == DynamicSectionTagType::Runpath );
+    REQUIRE( section.entryAt(1).isNull() );
+  }
+
+  SECTION("the dynamic section initially contains only a DT_NEEDED entry")
+  {
+    section.addEntry( makeNeededEntry() );
+    section.addRunPathEntry(entry);
+
+    REQUIRE( section.entriesCount() == 2 );
+    REQUIRE( section.entryAt(0).tagType() == DynamicSectionTagType::Needed );
+    REQUIRE( section.entryAt(1).tagType() == DynamicSectionTagType::Runpath );
   }
 }
 
