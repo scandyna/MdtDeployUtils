@@ -32,18 +32,6 @@
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
-//   /*! \internal
-//    */
-//   inline
-//   bool isProgramInterpreterSection(const SectionHeader & sectionHeader) noexcept
-//   {
-//     if(sectionHeader.sectionType() != SectionType::ProgramData){
-//       return false;
-//     }
-// 
-//     return sectionHeader.name == ".interp";
-//   }
-
   /*! \internal
    */
   inline
