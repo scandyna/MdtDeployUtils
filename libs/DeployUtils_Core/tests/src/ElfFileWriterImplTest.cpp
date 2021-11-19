@@ -232,6 +232,56 @@ TEST_CASE("setSignedNWord")
   }
 }
 
+TEST_CASE("replaceBytesInArray")
+{
+  using Impl::Elf::replaceBytesInArray;
+
+  ByteArraySpan array;
+
+  SECTION("A -> B")
+  {
+    uchar arrayData[1] = {'A'};
+    array = arraySpanFromArray( arrayData, sizeof(arrayData) );
+
+    replaceBytesInArray(array, 'B');
+    REQUIRE( arraysAreEqual(array, {'B'}) );
+  }
+}
+
+TEST_CASE("setStringToUnsignedCharArray")
+{
+  using Impl::Elf::setStringToUnsignedCharArray;
+
+  ByteArraySpan array;
+
+  SECTION("empty string")
+  {
+    uchar arrayData[1] = {0xFF};
+    array = arraySpanFromArray( arrayData, sizeof(arrayData) );
+
+    setStringToUnsignedCharArray(array, "");
+    REQUIRE( arraysAreEqual(array, {'\0'}) );
+  }
+
+  SECTION("A")
+  {
+    uchar arrayData[2] = {0xFF,0xFF};
+    array = arraySpanFromArray( arrayData, sizeof(arrayData) );
+
+    setStringToUnsignedCharArray(array, "A");
+    REQUIRE( arraysAreEqual(array, {'A','\0'}) );
+  }
+
+  SECTION("ABC")
+  {
+    uchar arrayData[4] = {0xFF,0xFF,0xFF,0xFF};
+    array = arraySpanFromArray( arrayData, sizeof(arrayData) );
+
+    setStringToUnsignedCharArray(array, "ABC");
+    REQUIRE( arraysAreEqual(array, {'A','B','C','\0'}) );
+  }
+}
+
 TEST_CASE("FileOffsetChanges")
 {
   using Impl::Elf::FileOffsetChanges;

@@ -182,46 +182,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   }
 
   /*! \internal
-   *
-   * We cannot simply move anything from the file.
-   * If we wish to, we would have to be a linker,
-   * and support everything that exists in a ELF file,
-   * including compiler specific stuff.
-   *
-   * patchelf itself seems to not move stuff it does not know about.
-   *
-   * If a entry is removed from the dynamic section:
-   * - update dynamic section (responsability: DynamicSection)
-   * - update sizes of the related program header
-   * - update sizes of the related section header
-   * This will let a little hole in the file.
-   *
-   * If a bytes are removed from the dynamic string table:
-   * - remove them from the string table (responsability: StringTable)
-   * - update dynamic section (responsability: DynamicSection)
-   * - update sizes of the related section header
-   * - fill the created hole with null bytes (avoid having unwanted personal paths left in the file)
-   *
-   * If a entry is added to the dynamic section:
-   * - update dynamic section (responsability: DynamicSection)
-   * - move the dynamic section to the end of the file
-   * - update the related program header (offset, address, size)
-   * - update the related section header (offset, address, size)
-   * - make a new PT_LOAD segment that references the dynamic section
-   *   hmm.. implies putting program header table to the end of the file..
-   * - update file header
-   *
-   * If bytes are added to the dynamic string table:
-   * - update dynamic section (responsability: DynamicSection)
-   * - move the dynamic section to the end of the file
-   * - update the related program header (offset, address, size)
-   * - update the related section header (offset, address, size)
-   * - make a new PT_LOAD segment that references the dynamic section
-   *   hmm.. implies putting program header table to the end of the file..
-   * - update file header
-   *
-   * Note: if both of the dynamic section and dynamic string table grows,
-   * make a single PT_LOAD segment that references both
    */
   inline
   void setFileToMap(ByteArraySpan map, const FileWriterFile & file) noexcept
@@ -232,13 +192,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     if( file.dynamicStringTableMovesToEnd() ){
       replaceBytes(map, file.originalDynamicStringTableOffsetRange(), '\0');
-      ///setSymbolTableToMap(map, file.sectionSymbolTable(), file.fileHeader().ident);
     }else{
       setBytesAfterOldDynamicStringTableNull(map, file);
     }
 
     if( file.dynamicSectionMovesToEnd() ){
-      ///setSymbolTableToMap(map, file.sectionSymbolTable(), file.fileHeader().ident);
       if( !file.gotSection().isEmpty() && file.headers().containsGotSectionHeader() ){
         setGlobalOffsetTableToMap( map, file.headers().gotSectionHeader(), file.gotSection(), file.fileHeader() );
       }
@@ -254,8 +212,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     if( file.headers().containsGnuHashTableSectionHeader() ){
       GnuHashTableWriter::setGnuHashTableToMap( map, file.headers().gnuHashTableSectionHeader(), file.gnuHashTableSection(), file.fileHeader() );
     }
-
-    /// \todo should only write if changes
 
     NoteSectionWriter::setNoteSectionTableToMap( map, file.noteSectionTable(), file.fileHeader() );
 
