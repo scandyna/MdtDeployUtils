@@ -29,6 +29,7 @@
 #include <utility>
 #include <algorithm>
 #include <cstdint>
+#include <limits>
 #include <cassert>
 
 // #include <iostream>
@@ -164,10 +165,12 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      */
     for(SectionHeader & header : headers){
       if( header.linkIsIndexInSectionHeaderTable() ){
-        header.link = indexChangeMap.indexForOldIndex(header.link);
+        assert( header.link <= std::numeric_limits<uint16_t>::max() );
+        header.link = indexChangeMap.indexForOldIndex( static_cast<uint16_t>(header.link) );
       }
       if( header.infoIsIndexInSectionHeaderTable() ){
-        header.info = indexChangeMap.indexForOldIndex(header.info);
+        assert( header.info <= std::numeric_limits<uint16_t>::max() );
+        header.info = indexChangeMap.indexForOldIndex( static_cast<uint16_t>(header.info) );
       }
     }
 
@@ -184,7 +187,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    * \sa sectionHeadersAreSortedByFileOffset()
    */
   inline
-  size_t findCountOfSectionsToMoveToFreeSize(const std::vector<SectionHeader> & headers, uint16_t size) noexcept
+  uint16_t findCountOfSectionsToMoveToFreeSize(const std::vector<SectionHeader> & headers, uint16_t size) noexcept
   {
     assert(size > 0);
     assert( sectionHeadersAreSortedByFileOffset(headers) );
@@ -204,7 +207,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     auto sectionIt = std::find_if(headers.cbegin(), headers.cend(), nonNullOffsetPred);
 
     if( sectionIt == headers.cend() ){
-      return headers.size() + 1;
+      return static_cast<uint16_t>(headers.size() + 1);
     }
 
     /*
@@ -214,7 +217,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      */
 
     const uint64_t requestedSize = size;
-    size_t sectionCount = static_cast<size_t>( std::distance(headers.cbegin(), sectionIt) ) + 1;
+    uint16_t sectionCount = static_cast<uint16_t>(std::distance(headers.cbegin(), sectionIt) + 1);
     uint64_t totalSize = 0;
 
     /*
@@ -232,7 +235,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       // Accumulate the hole (if any)
       totalSize += sectionIt->offset - previousSectionEnd;
       if(requestedSize <= totalSize){
-        return sectionCount - 1;
+        assert(sectionCount > 0);
+        return static_cast<uint16_t>(sectionCount - 1);
       }
       // Accumulate section size
       totalSize += sectionIt->size;

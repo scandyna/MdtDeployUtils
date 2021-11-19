@@ -23,6 +23,8 @@
 
 #include "Ident.h"
 #include "SectionHeader.h"
+#include "SectionHeaderTable.h"
+#include "SectionIndexChangeMap.h"
 #include <cstdint>
 #include <limits>
 #include <vector>
@@ -113,6 +115,20 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       return SymbolType::NoType;
     }
+
+    /*! \brief Check if this entry is realted to a section
+     *
+     * From the TIS ELF specification v1.2:
+     * - Book I, Symbol Table 1-18
+     * - Book I, Figure 1-7. Special Section Indexes 1-9
+     */
+    bool isRelatedToASection() const noexcept
+    {
+      if(shndx == 0){
+        return false;
+      }
+      return shndx < 0xff00;  // SHN_LORESERVE
+    }
   };
 
   /*! \internal Get the size, in bytes, of a symbol table entry
@@ -169,7 +185,36 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mTable.push_back(entry);
     }
 
+    /*! \brief Updates the symbols referring to a index in the section header table regarding \a indexChanges
+     */
+    void updateSectionIndexes(const SectionIndexChangeMap & indexChanges) noexcept
+    {
+      for(PartialSymbolTableEntry & entry : mTable){
+        if( entry.entry.isRelatedToASection() ){
+          assert( entry.entry.shndx < indexChanges.indexCount() );
+          entry.entry.shndx = indexChanges.indexForOldIndex(entry.entry.shndx);
+        }
+      }
+    }
+
+    /*! \brief Update the virtual addresses in this symbol table regarding given section headers indexes referring \a sectionHeaderTable
+     */
+    void updateVirtualAddresses(const std::vector<uint16_t> sectionHeadersIndexes, const std::vector<SectionHeader> & sectionHeaderTable) noexcept
+    {
+      for(PartialSymbolTableEntry & entry : mTable){
+        if( entry.entry.isRelatedToASection() ){
+          const auto sectionHeaderIndexIt = std::find(sectionHeadersIndexes.cbegin(), sectionHeadersIndexes.cend(), entry.entry.shndx);
+          if( sectionHeaderIndexIt != sectionHeadersIndexes.cend() ){
+            assert( *sectionHeaderIndexIt < sectionHeaderTable.size() );
+            entry.entry.value = sectionHeaderTable[*sectionHeaderIndexIt].addr;
+          }
+        }
+      }
+    }
+
     /*! \brief Index the associations to known sections
+     *
+     * \todo rename: indexKnownSymbols()
      */
     void indexAssociationsKnownSections(const std::vector<SectionHeader> & sectionHeaderTable) noexcept
     {
@@ -189,10 +234,23 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       }
 
       for(size_t i=0; i < mTable.size(); ++i){
-        if( (dynamicSectionIndex < uint16Max)&&(mTable[i].entry.shndx == dynamicSectionIndex) ){
-          assert( i < mTable.size() );
-          mDynamicSectionIndex = i;
-        }else if( (dynamicStringTableIndex < uint16Max)&&(mTable[i].entry.shndx == dynamicStringTableIndex) ){
+        if(dynamicSectionIndex < uint16Max){
+          const SymbolTableEntry & entry = mTable[i].entry;
+          if(entry.shndx == dynamicSectionIndex){
+            assert( i < mTable.size() );
+            switch( entry.symbolType() ){
+              case SymbolType::Section:
+                mDynamicSectionIndex = i;
+                break;
+              case SymbolType::Object:
+                mDynamicObjectIndex = i;
+                break;
+              default:
+                break;
+            }
+          }
+        }
+        if( (dynamicStringTableIndex < uint16Max)&&(mTable[i].entry.shndx == dynamicStringTableIndex) ){
           assert( i < mTable.size() );
           mDynamicStringTableIndex = i;
         }
@@ -242,13 +300,23 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return mDynamicSectionIndex < std::numeric_limits<size_t>::max();
     }
 
+    /*! \brief Check if this table contains the dynamic object (_DYNAMIC)
+     */
+    bool containsDynamicObject() const noexcept
+    {
+      return mDynamicObjectIndex < std::numeric_limits<size_t>::max();
+    }
+
     /*! \brief Set the virtual address to the dynamic section
      */
     void setDynamicSectionVirtualAddress(uint64_t address) noexcept
     {
-      assert( containsDynamicSectionAssociation() );
-
-      mTable[mDynamicSectionIndex].entry.value = address;
+      if( containsDynamicSectionAssociation() ){
+        mTable[mDynamicSectionIndex].entry.value = address;
+      }
+      if( containsDynamicObject() ){
+        mTable[mDynamicObjectIndex].entry.value = address;
+      }
     }
 
     /*! \brief Check if this table contains the association to the dynamic string table (.dynstr)
@@ -286,6 +354,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    private:
 
     size_t mDynamicSectionIndex = std::numeric_limits<size_t>::max();
+    size_t mDynamicObjectIndex = std::numeric_limits<size_t>::max();
     size_t mDynamicStringTableIndex = std::numeric_limits<size_t>::max();
     std::vector<PartialSymbolTableEntry> mTable;
   };

@@ -75,7 +75,7 @@ struct TestFileSetup
   uint64_t dynamicSectionAddress = 0;
   uint64_t dynamicStringTableOffset = 0;
   uint64_t dynamicStringTableAddress = 0;
-  int64_t dynSymOffset = 0;
+  uint64_t dynSymOffset = 0;
   uint64_t gotPltSectionOffset = 0;
   uint64_t gotPltSectionAddress = 0;
   QString runPath;
@@ -191,10 +191,10 @@ void makeWriterFile(FileWriterFile & file, const TestFileSetup & setup)
   file.setDynamicSectionFromFile(dynamicSection);
 
   PartialSymbolTable symbolTable;
-  int64_t dynSymEntryOffset = setup.dynSymOffset;
+  uint64_t dynSymEntryOffset = setup.dynSymOffset;
   PartialSymbolTableEntry dynamicSectionSymTabEntry = makeSectionAssociationSymbolTableEntryWithFileOffset(dynSymEntryOffset);
   dynamicSectionSymTabEntry.entry.shndx = headers.dynamicSectionHeaderIndex();
-  dynSymEntryOffset += symbolTableEntrySize(headers.fileHeader().ident._class);
+  dynSymEntryOffset += static_cast<uint64_t>( symbolTableEntrySize(headers.fileHeader().ident._class) );
   PartialSymbolTableEntry dynStrSymTabEntry = makeSectionAssociationSymbolTableEntryWithFileOffset(dynSymEntryOffset);
   dynStrSymTabEntry.entry.shndx = headers.dynamicStringTableSectionHeaderIndex();
   symbolTable.addEntryFromFile(dynamicSectionSymTabEntry);
@@ -250,7 +250,7 @@ TEST_CASE("FileWriterFileLayout")
     makeWriterFile(file, setup);
     layout = makeFileLayoutFromFile(file);
 
-    uint64_t expectedDynamicSectionSize = file.dynamicSection().byteCount(Class::Class64);
+    uint64_t expectedDynamicSectionSize = static_cast<uint64_t>( file.dynamicSection().byteCount(Class::Class64) );
     int64_t expectedMinimumFileSize = file.fileHeader().minimumSizeToReadAllSectionHeaders();
 
     REQUIRE( layout.dynamicSectionOffset() == 100 );
@@ -846,7 +846,7 @@ TEST_CASE("minimumSizeToWriteFile")
     setup.sectionHeaderTableOffset = 2'000;
     makeWriterFile(file, setup);
 
-    expectedMinimumSize = 10'000 + file.dynamicStringTableSize();
+    expectedMinimumSize = 10'000 + static_cast<int64_t>( file.dynamicStringTableSize() );
     REQUIRE( file.minimumSizeToWriteFile() == expectedMinimumSize );
   }
 }

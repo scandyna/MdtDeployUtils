@@ -52,6 +52,28 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return start + pageSize - offsetInPage;
   }
 
+  /*! \internal Find the size that is aligned to \a alignment
+   *
+   * Examples for \a size with \a alignment of 4 bytes (32bit):
+   * - 0: is aligned (0 % 4 = 0)
+   * - 1: not aligned (1 % 4 = 1) -> aligned size is 4 (1 + 4 - 1)
+   * - 3: not aligned (3 % 4 = 3) -> aligned size is 4 (3 + 4 - 3)
+   * - 4: is aligned (4 % 4 = 0)
+   * - 5: not aligned (5 % 4 = 1) -> aligned size is 8 (5 + 4 - 1)
+   */
+  inline
+  uint64_t findAlignedSize(uint64_t size, uint64_t alignment) noexcept
+  {
+    assert(alignment > 0);
+
+    const uint64_t offset = size % alignment;
+    if(offset == 0){
+      return size;
+    }
+
+    return size + alignment - offset;
+  }
+
   /*! \internal Find the next address that is aligned to \a alignment
    *
    * Examples for \a start with \a alignment of 4 bytes (32bit):

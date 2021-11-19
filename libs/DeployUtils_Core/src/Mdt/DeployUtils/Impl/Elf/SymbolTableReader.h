@@ -25,6 +25,7 @@
 #include "Ident.h"
 #include "FileHeader.h"
 #include "SectionHeader.h"
+#include "SectionHeaderTable.h"
 #include "FileReader.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include <cstdint>
@@ -121,13 +122,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return entry;
   }
 
-  /*! \internal Extract a partial symbol table from \a sectionType for given \a symbolType
+  /*! \internal Extract a partial symbol table for given \a sectionType that satisfy \a symbolPredicate
    */
-  inline
+  template<typename SymbolPredicate>
   PartialSymbolTable extractPartialSymbolTable(const ByteArraySpan & map,
                                                const FileHeader & fileHeader,
                                                const std::vector<SectionHeader> & sectionHeaderTable,
-                                               SectionType sectionType, SymbolType symbolType) noexcept
+                                               SectionType sectionType, const SymbolPredicate & symbolPredicate) noexcept
   {
     assert( !map.isNull() );
     assert( fileHeader.seemsValid() );
@@ -149,8 +150,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     const uint64_t entrySize = symTabIt->entsize;
     const uint64_t offsetEnd = symTabIt->offset + symTabIt->size;
     for(uint64_t offset = symTabIt->offset; offset < offsetEnd; offset += entrySize){
-      const PartialSymbolTableEntry entry = extractPartialSymbolTableEntry(map, offset, fileHeader.ident);
-      if(entry.entry.symbolType() == symbolType){
+      const PartialSymbolTableEntry entry = extractPartialSymbolTableEntry(map, static_cast<int64_t>(offset), fileHeader.ident);
+      if( symbolPredicate(entry.entry) ){
         symbolTable.addEntryFromFile(entry);
       }
     }
@@ -158,6 +159,74 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     symbolTable.indexAssociationsKnownSections(sectionHeaderTable);
 
     return symbolTable;
+  }
+
+  /*! \internal Extract the part of a symbol table that refers to a section in the file
+   */
+  inline
+  PartialSymbolTable extractPartialSymbolTableReferringToSection(const ByteArraySpan & map,
+                                                                 const FileHeader & fileHeader,
+                                                                 const std::vector<SectionHeader> & sectionHeaderTable,
+                                                                 SectionType sectionType) noexcept
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.seemsValid() );
+    assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
+    assert( isSymbolTableSection(sectionType) );
+
+    const auto symbolPredicate = [](const SymbolTableEntry & entry){
+      return entry.isRelatedToASection();
+    };
+
+    return extractPartialSymbolTable(map, fileHeader, sectionHeaderTable, sectionType, symbolPredicate);
+  }
+
+  /*! \internal Extract the part of .symtab that refers to a section in the file
+   */
+  inline
+  PartialSymbolTable extractSymTabPartReferringToSection(const ByteArraySpan & map,
+                                                         const FileHeader & fileHeader,
+                                                         const std::vector<SectionHeader> & sectionHeaderTable) noexcept
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.seemsValid() );
+    assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
+
+    return extractPartialSymbolTableReferringToSection(map, fileHeader, sectionHeaderTable, SectionType::SymbolTable);
+  }
+
+  /*! \internal Extract the part of .dynsym that refers to a section in the file
+   */
+  inline
+  PartialSymbolTable extractDynSymPartReferringToSection(const ByteArraySpan & map,
+                                                         const FileHeader & fileHeader,
+                                                         const std::vector<SectionHeader> & sectionHeaderTable) noexcept
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.seemsValid() );
+    assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
+
+    return extractPartialSymbolTableReferringToSection(map, fileHeader, sectionHeaderTable, SectionType::DynSym);
+  }
+
+  /*! \internal Extract a partial symbol table from \a sectionType for given \a symbolType
+   */
+  inline
+  PartialSymbolTable extractPartialSymbolTableForSymbolType(const ByteArraySpan & map,
+                                                            const FileHeader & fileHeader,
+                                                            const std::vector<SectionHeader> & sectionHeaderTable,
+                                                            SectionType sectionType, SymbolType symbolType) noexcept
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.seemsValid() );
+    assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
+    assert( isSymbolTableSection(sectionType) );
+
+    const auto symbolPredicate = [symbolType](const SymbolTableEntry & entry){
+      return entry.symbolType() == symbolType;
+    };
+
+    return extractPartialSymbolTable(map, fileHeader, sectionHeaderTable, sectionType, symbolPredicate);
   }
 
   /*! \internal Extract the sections associations from the symbol table (.symtab)
@@ -174,7 +243,39 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( fileHeader.seemsValid() );
     assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
 
-    return extractPartialSymbolTable(map, fileHeader, sectionHeaderTable, SectionType::SymbolTable, SymbolType::Section);
+    return extractPartialSymbolTableForSymbolType(map, fileHeader, sectionHeaderTable, SectionType::SymbolTable, SymbolType::Section);
+  }
+
+  /*! \internal Extract symbols related to the .dynamic and also those related .dynstr sections
+   *
+   * If the symbol table (.symtab) does not exist, a empty symbol table is returned.
+   *
+   * If no symbol is related to the .dynamic section and neither to the .dynstr section,
+   * a empty symbol table is returned.
+   */
+  inline
+  PartialSymbolTable extractDynamicAndDynstrSymbolsFromSymTab(const ByteArraySpan & map,
+                                                              const FileHeader & fileHeader,
+                                                              const std::vector<SectionHeader> & sectionHeaderTable) noexcept
+  {
+    assert( !map.isNull() );
+    assert( fileHeader.seemsValid() );
+    assert( map.size >= fileHeader.minimumSizeToReadAllSectionHeaders() );
+
+    const uint16_t dynamicSectionIndex = findIndexOfFirstSectionHeader(sectionHeaderTable, SectionType::Dynamic, ".dynamic");
+    const uint16_t dynstrSectionIndex = findIndexOfFirstSectionHeader(sectionHeaderTable, SectionType::StringTable, ".dynstr");
+
+    const auto symbolPredicate = [dynamicSectionIndex,dynstrSectionIndex](const SymbolTableEntry & entry){
+      if(entry.shndx == dynamicSectionIndex){
+        return true;
+      }
+      if(entry.shndx == dynstrSectionIndex){
+        return true;
+      }
+      return false;
+    };
+
+    return extractPartialSymbolTable(map, fileHeader, sectionHeaderTable, SectionType::SymbolTable, symbolPredicate);
   }
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{

@@ -35,26 +35,23 @@ NoteSection makeNoteSection(const std::string & name)
   return section;
 }
 
-
-TEST_CASE("updateSectionHeaderTable")
+TEST_CASE("updateSectionHeaders")
 {
   NoteSectionTable noteSectionTable;
   std::vector<SectionHeader> sectionHeaderTable;
 
   SECTION("both tables are empty")
   {
-    noteSectionTable.updateSectionHeaderTable(sectionHeaderTable);
-
-    REQUIRE( sectionHeaderTable.empty() );
+    noteSectionTable.updateSectionHeaders(sectionHeaderTable);
   }
 
   SECTION("section header table is empty")
   {
     noteSectionTable.addSectionFromFile( makeNoteSectionHeader(".note.A"), makeNoteSection("A") );
 
-    noteSectionTable.updateSectionHeaderTable(sectionHeaderTable);
+    noteSectionTable.updateSectionHeaders(sectionHeaderTable);
 
-    REQUIRE( sectionHeaderTable.empty() );
+    REQUIRE( noteSectionTable.sectionCount() == 1 );
   }
 
   SECTION("section header table contains no note section")
@@ -63,10 +60,10 @@ TEST_CASE("updateSectionHeaderTable")
 
     noteSectionTable.addSectionFromFile( makeNoteSectionHeader(".note.A"), makeNoteSection("A") );
 
-    noteSectionTable.updateSectionHeaderTable(sectionHeaderTable);
+    noteSectionTable.updateSectionHeaders(sectionHeaderTable);
 
-    REQUIRE( sectionHeaderTable.size() == 1 );
-    REQUIRE( sectionHeaderTable[0].sectionType() == SectionType::Null );
+    REQUIRE( noteSectionTable.sectionCount() == 1 );
+    REQUIRE( noteSectionTable.sectionHeaderAt(0).name == ".note.A" );
   }
 
   SECTION("section header table contains a note section, but does not match any one in the note section table")
@@ -75,10 +72,10 @@ TEST_CASE("updateSectionHeaderTable")
 
     noteSectionTable.addSectionFromFile( makeNoteSectionHeader(".note.A"), makeNoteSection("A") );
 
-    noteSectionTable.updateSectionHeaderTable(sectionHeaderTable);
+    noteSectionTable.updateSectionHeaders(sectionHeaderTable);
 
-    REQUIRE( sectionHeaderTable.size() == 1 );
-    REQUIRE( sectionHeaderTable[0].name == ".note" );
+    REQUIRE( noteSectionTable.sectionCount() == 1 );
+    REQUIRE( noteSectionTable.sectionHeaderAt(0).name == ".note.A" );
   }
 
   SECTION("section header table contains a note section that matches one in the note section table")
@@ -89,14 +86,14 @@ TEST_CASE("updateSectionHeaderTable")
     sectionHeaderTable.emplace_back( makeNullSectionHeader() );
     sectionHeaderTable.emplace_back(noteSectionHeaderA);
 
-    noteSectionHeaderA.offset = 584;
     noteSectionTable.addSectionFromFile( noteSectionHeaderA, makeNoteSection("A") );
 
-    noteSectionTable.updateSectionHeaderTable(sectionHeaderTable);
+    sectionHeaderTable[1].offset = 584;
 
-    REQUIRE( sectionHeaderTable.size() == 2 );
-    REQUIRE( sectionHeaderTable[0].sectionType() == SectionType::Null );
-    REQUIRE( sectionHeaderTable[1].offset == 584 );
+    noteSectionTable.updateSectionHeaders(sectionHeaderTable);
+
+    REQUIRE( noteSectionTable.sectionCount() == 1 );
+    REQUIRE( noteSectionTable.sectionHeaderAt(0).offset == 584 );
   }
 }
 

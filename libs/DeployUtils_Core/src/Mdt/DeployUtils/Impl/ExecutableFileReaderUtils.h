@@ -29,6 +29,7 @@
 #include <initializer_list>
 #include <cstdint>
 #include <algorithm>
+#include <string>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{
@@ -41,6 +42,27 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     assert( sourceText != nullptr );
 
     return QCoreApplication::translate("Mdt::DeployUtils::Impl::ExecutableFileReaderUtils", sourceText);
+  }
+
+  /*! \internal Get a string from a array of unsigned characters
+   *
+   * Will read from \a charArray until a null char is encountered,
+   * or until the end of the array.
+   * This means that this function accepts non null terminated strings.
+   *
+   * \pre \a charArray must not be null
+   */
+  inline
+  std::string stringFromBoundedUnsignedCharArray(const ByteArraySpan & charArray) noexcept
+  {
+    assert( !charArray.isNull() );
+    assert( charArray.size >= 1 );
+
+    if( charArray.data[charArray.size-1] != 0 ){
+      return std::string( reinterpret_cast<const char*>(charArray.data), static_cast<size_t>(charArray.size) );
+    }
+
+    return std::string( reinterpret_cast<const char*>(charArray.data) );
   }
 
   /*! \internal Check if \a charArray contains the end of string

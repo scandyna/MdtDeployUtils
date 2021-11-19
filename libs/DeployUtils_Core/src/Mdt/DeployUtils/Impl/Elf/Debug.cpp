@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "Debug.h"
 #include "StringTable.h"
+#include "SectionSegmentUtils.h"
 #include <QLatin1String>
 #include <QLatin1Char>
 #include <algorithm>
@@ -169,7 +170,7 @@ QString toDebugString(SegmentType type)
       return QLatin1String("PT_GNU_EH_FRAME");
     case SegmentType::GnuStack:
       return QLatin1String("PT_GNU_STACK");
-    case SegmentType::GnuRelo:
+    case SegmentType::GnuRelRo:
       return QLatin1String("PT_GNU_RELRO");
 
     case SegmentType::Unknown:
@@ -200,7 +201,7 @@ QString segmentTypeName(SegmentType type)
       return QLatin1String("PT_GNU_EH_FRAME");
     case SegmentType::GnuStack:
       return QLatin1String("PT_GNU_STACK");
-    case SegmentType::GnuRelo:
+    case SegmentType::GnuRelRo:
       return QLatin1String("PT_GNU_RELRO");
     case SegmentType::Unknown:
       return QLatin1String("Unknown");
@@ -258,6 +259,8 @@ QString toDebugString(SectionType type)
       return QLatin1String("notes");
     case SectionType::NoBits:
       return QLatin1String("program space with no data (bss)");
+    case SectionType::Rel:
+      return QLatin1String("relocation entries without addends");
     case SectionType::DynSym:
       return QLatin1String("dynamic linker symbol table");
     case SectionType::InitArray:
@@ -266,6 +269,14 @@ QString toDebugString(SectionType type)
       return QLatin1String("array of destructors");
     case SectionType::OsSpecific:
       return QLatin1String("OS specific");
+    case SectionType::GnuHash:
+      return QLatin1String("GNU_HASH: GNU hash table");
+    case SectionType::GnuVersionDef:
+      return QLatin1String("SHT_GNU_verdef: symbol versions that are provided");
+    case SectionType::GnuVersionNeed:
+      return QLatin1String("SHT_GNU_verneed: symbol versions that are required");
+    case SectionType::GnuVersionSym:
+      return QLatin1String("SHT_GNU_versym: Symbol Version Table");
   }
 
   return QString();
@@ -278,10 +289,13 @@ QString toDebugString(const SectionHeader & header)
   str = QLatin1String("header for section ") + QString::fromStdString(header.name);
   str += QLatin1String("\n name index: ") + QString::number(header.nameIndex);
   str += QLatin1String("\n type: 0x") + QString::number(header.type, 16) + QLatin1String(" (") + toDebugString( header.sectionType() ) + QLatin1String(")");
+  str += QLatin1String("\n flags: 0x") + QString::number(header.flags, 16);
   str += QLatin1String("\n address: ") + QString::number(header.addr) + QLatin1String(" (0x") + QString::number(header.addr, 16) + QLatin1String(")");
   str += QLatin1String("\n address alignment: ") + QString::number(header.addralign) + QLatin1String(" (0x") + QString::number(header.addralign, 16) + QLatin1String(")");
   str += QLatin1String("\n offset in file: ") + QString::number(header.offset) + QLatin1String(" (0x") + QString::number(header.offset, 16) + QLatin1String(")");
   str += QLatin1String("\n size in the file: ") + QString::number(header.size);
+
+  str += QLatin1String("\n info: ") + QString::number(header.info);
 
   str += QLatin1String("\n link: ") + QString::number(header.link);
   if( header.sectionType() == SectionType::Dynamic ){
@@ -295,9 +309,12 @@ QString toDebugString(const std::vector<SectionHeader> & headers)
 {
   QString str;
 
-  for(const auto & header : headers){
-    str += QLatin1String("\n") + toDebugString(header);
+  for(size_t i=0; i<headers.size(); ++i){
+    str += QLatin1String("\n[") + QString::number(i) + QLatin1String("] ") + toDebugString( headers.at(i) );
   }
+//   for(const auto & header : headers){
+//     str += QLatin1String("\n[] ") + toDebugString(header);
+//   }
 
   return str;
 }
@@ -344,21 +361,55 @@ QString toDebugString(DynamicSectionTagType type)
       return QLatin1String("end of the _DYNAMIC array");
     case DynamicSectionTagType::Needed:
       return QLatin1String("string table offset to get the needed library name");
+    case DynamicSectionTagType::PltGot:
+      return QLatin1String("DT_PLTGOT");
+    case DynamicSectionTagType::Hash:
+      return QLatin1String("DT_HASH");
     case DynamicSectionTagType::StringTable:
       return QLatin1String("address to the string table");
+    case DynamicSectionTagType::SymbolTable:
+      return QLatin1String("DT_SYMTAB: address of the symbol table");
+    case DynamicSectionTagType::RelocationTable:
+      return QLatin1String("DT_RELA: address of the relocation table");
+    case DynamicSectionTagType::RelocationTableSize:
+      return QLatin1String("DT_RELASZ: total size [bytes] of the relocation table");
+    case DynamicSectionTagType::RelocationEntrySize:
+      return QLatin1String("DT_RELAENT: size [bytes] of the relocation entry");
     case DynamicSectionTagType::StringTableSize:
       return QLatin1String("size of the string table (in bytes)");
+    case DynamicSectionTagType::SymbolEntrySize:
+      return QLatin1String("DT_SYMENT: size [bytes] of a symbol table entry");
+    case DynamicSectionTagType::Init:
+      return QLatin1String("DT_INIT: address of the initialization function");
+    case DynamicSectionTagType::Fini:
+      return QLatin1String("DT_FINI: address of the termination function");
     case DynamicSectionTagType::SoName:
       return QLatin1String("string table offset to get the shared object name");
     case DynamicSectionTagType::RPath:
       return QLatin1String("string table offset to get the search path");
+    case DynamicSectionTagType::Symbolic:
+      return QLatin1String("DT_SYMBOLIC");
+    case DynamicSectionTagType::Debug:
+      return QLatin1String("DT_DEBUG: used for debugging");
     case DynamicSectionTagType::Runpath:
       return QLatin1String("string table offset to get the search path");
+    case DynamicSectionTagType::GnuHash:
+      return QLatin1String("DT_GNU_HASH");
     case DynamicSectionTagType::Unknown:
       return QLatin1String("unknown");
   }
 
   return QString();
+}
+
+QString dynamicStructValToDebugString(const DynamicStruct & entry)
+{
+  return QLatin1String("val: ") + QString::number(entry.val_or_ptr);
+}
+
+QString dynamicStructPtrToDebugString(const DynamicStruct & entry)
+{
+  return QLatin1String("ptr: 0x") + QString::number(entry.val_or_ptr, 16) + QLatin1String(" (") + QString::number(entry.val_or_ptr) + QLatin1String(")");
 }
 
 QString dynamicStructValOrPtrToDebugString(const DynamicStruct & entry)
@@ -368,16 +419,34 @@ QString dynamicStructValOrPtrToDebugString(const DynamicStruct & entry)
     case DynamicSectionTagType::Unknown:
       break;
     case DynamicSectionTagType::Needed:
+      return dynamicStructValToDebugString(entry);
+    case DynamicSectionTagType::PltGot:
+    case DynamicSectionTagType::Hash:
+    case DynamicSectionTagType::StringTable:
+    case DynamicSectionTagType::SymbolTable:
+    case DynamicSectionTagType::RelocationTable:
+      return dynamicStructPtrToDebugString(entry);
     case DynamicSectionTagType::SoName:
+    case DynamicSectionTagType::RelocationTableSize:
+    case DynamicSectionTagType::RelocationEntrySize:
+    case DynamicSectionTagType::SymbolEntrySize:
+      return dynamicStructValToDebugString(entry);
+    case DynamicSectionTagType::Init:
+    case DynamicSectionTagType::Fini:
+      return dynamicStructPtrToDebugString(entry);
     case DynamicSectionTagType::Runpath:
     case DynamicSectionTagType::RPath:
     case DynamicSectionTagType::StringTableSize:
-      return QLatin1String("val: ") + QString::number(entry.val_or_ptr);
-    case DynamicSectionTagType::StringTable:
-      return QLatin1String("ptr: 0x") + QString::number(entry.val_or_ptr, 16) + QLatin1String(" (") + QString::number(entry.val_or_ptr) + QLatin1String(")");
+      return dynamicStructValToDebugString(entry);
+    case DynamicSectionTagType::Symbolic:
+      return QLatin1String("ignored");
+    case DynamicSectionTagType::Debug:
+      return dynamicStructPtrToDebugString(entry);
+    case DynamicSectionTagType::GnuHash:
+      return dynamicStructPtrToDebugString(entry);
   }
 
-  return QLatin1String("val or ptr: ") + QString::number(entry.val_or_ptr);
+  return QLatin1String("val or ptr: 0x") + QString::number(entry.val_or_ptr, 16) + QLatin1String(" (") + QString::number(entry.val_or_ptr) + QLatin1String(")");
 }
 
 QString toDebugString(const DynamicStruct & entry, const QString & leftPad)
@@ -451,6 +520,90 @@ QString toDebugString(const PartialSymbolTable & table, const QString & leftPad)
   return str;
 }
 
+QString toDebugString(const GlobalOffsetTableEntry & entry, const QString & leftPad)
+{
+  QString str = leftPad;
+
+  str += QLatin1String("data: ") + QString::number(entry.data) + QLatin1String(" (0x") + QString::number(entry.data, 16) + QLatin1String(")");
+
+  return str;
+}
+
+QString toDebugString(const GlobalOffsetTable & table, const QString & leftPad)
+{
+  QString str;
+
+  if( table.containsDynamicSectionAddress() ){
+    str += QLatin1String("\n dynamic section address: 0x") + QString::number(table.dynamicSectionAddress(), 16);
+  }
+
+  for(size_t i=0; i < table.entriesCount(); ++i){
+    str += QLatin1String("\n") + toDebugString(table.entryAt(i), leftPad);
+  }
+
+  return str;
+}
+
+QString toDebugString(const ProgramInterpreterSection & section)
+{
+  QString str = QLatin1String("program interpreter: ");
+
+  str += QString::fromStdString(section.path);
+
+  return str;
+}
+
+QString toDebugString(const GnuHashTable & table)
+{
+  QString str = QLatin1String("GNU hash table:");
+
+  str += QString::fromLatin1("\n nbuckets: %1 , symoffset: %2 , bloom_size: %3 , bloom_shift: %4")
+         .arg( table.bucketCount() ).arg(table.symoffset).arg( table.bloomSize() ).arg(table.bloomShift);
+
+  str += QLatin1String("\n bloom array:");
+  for(auto entry : table.bloom){
+    str += QString::fromLatin1("\n  0x%1").arg(entry, 0, 16);
+  }
+
+  str += QLatin1String("\n buckets array:");
+  for(auto entry : table.buckets){
+    str += QString::fromLatin1("\n  %1 (0x%2)").arg(entry).arg(entry, 0, 16);
+  }
+
+  str += QLatin1String("\n chain array:");
+  for(auto entry : table.chain){
+    str += QString::fromLatin1("\n  0x%1").arg(entry, 0, 16);
+  }
+
+  return str;
+}
+
+QString toDebugString(const NoteSection & section, const QString & leftPad)
+{
+  QString str;
+
+  str += leftPad + QLatin1String("owner: ") + QString::fromStdString(section.name);
+  str += leftPad + QLatin1String("\ntype: ") + QString::number(section.type) + QLatin1String(" (0x") + QString::number(section.type, 16) + QLatin1String(")");
+  for(size_t i=0; i<section.description.size(); ++i){
+    const uint32_t word = section.description[i];
+    str += QLatin1Char('\n') + leftPad + QString::fromLatin1(" word %1: %2 (0x%3)").arg(i).arg(word).arg(word, 0, 16);
+  }
+
+  return str;
+}
+
+QString toDebugString(const NoteSectionTable & table, const QString & leftPad)
+{
+  QString str;
+
+  for(size_t i=0; i < table.sectionCount(); ++i){
+    str += QString::fromLatin1("\nsection: %1 \n").arg( QString::fromStdString(table.sectionNameAt(i)) )
+         + toDebugString(table.sectionAt(i), leftPad);
+  }
+
+  return str;
+}
+
 void sortProgramHeadersByFileOffset(ProgramHeaderTable & programHeaders)
 {
   const auto cmp = [](const ProgramHeader & a, const ProgramHeader & b){
@@ -458,15 +611,6 @@ void sortProgramHeadersByFileOffset(ProgramHeaderTable & programHeaders)
   };
 
   std::sort(programHeaders.begin(), programHeaders.end(), cmp);
-}
-
-void sortSectionHeadersByFileOffset(std::vector<SectionHeader> & sectionHeaders)
-{
-  const auto cmp = [](const SectionHeader & a, const SectionHeader & b){
-    return a.offset < b.offset;
-  };
-
-  std::sort(sectionHeaders.begin(), sectionHeaders.end(), cmp);
 }
 
 QString fileLayoutToDebugString(const FileHeader & fileHeader, ProgramHeaderTable programHeaders, std::vector<SectionHeader> sectionHeaders)
@@ -516,6 +660,7 @@ QString fileLayoutToDebugString(const FileHeader & fileHeader, ProgramHeaderTabl
                + QLatin1String(" to 0x") + QString::number(lastAddr, 16) + QLatin1Char(')');
         }
         str += QLatin1String(": section ") + QString::fromStdString(sectionHeader.name);
+        str += QString::fromLatin1(" (size: %1)").arg(sectionHeader.size);
   }
 
   str += QLatin1String("\nfrom 0x") + QString::number(fileHeader.shoff, 16)

@@ -95,11 +95,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( map.size >= fileHeader.minimumSizeToReadAllProgramHeaders() );
 
     const uint16_t programHeaderCount = fileHeader.phnum;
-    const int64_t start = fileHeader.phoff;
+    const int64_t start = static_cast<int64_t>(fileHeader.phoff);
 
     for(uint16_t i = 0; i < programHeaderCount; ++i){
       const int64_t offset = start + i * fileHeader.phentsize;
-      const int64_t size = fileHeader.phentsize;
+      const int64_t size = static_cast<int64_t>(fileHeader.phentsize);
       programHeaderToArray(map.subSpan(offset, size), programHeaders.headerAt(i), fileHeader);
     }
   }

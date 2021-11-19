@@ -53,6 +53,37 @@ TEST_CASE("SectionAttributeFlags")
     REQUIRE( header.allocatesMemory() );
     REQUIRE( !header.holdsTls() );
   }
+
+  SECTION("Write")
+  {
+    SECTION("0x01 writable")
+    {
+      header.flags = 0x01;
+
+      REQUIRE( header.isWritable() );
+    }
+
+    SECTION("0x02 alloc")
+    {
+      header.flags = 0x02;
+
+      REQUIRE( !header.isWritable() );
+    }
+
+    SECTION("0x03 write and alloc")
+    {
+      header.flags = 0x03;
+
+      REQUIRE( header.isWritable() );
+    }
+
+    SECTION("0x04 executable instruction")
+    {
+      header.flags = 0x04;
+
+      REQUIRE( !header.isWritable() );
+    }
+  }
 }
 
 TEST_CASE("fileOffsetEnd")

@@ -65,7 +65,7 @@ bool arraysAreEqual(const Mdt::DeployUtils::Impl::ByteArraySpan & array, std::ve
 {
   Mdt::DeployUtils::Impl::ByteArraySpan referenceArray;
   referenceArray.data = reference.data();
-  referenceArray.size = reference.size();
+  referenceArray.size = static_cast<int64_t>( reference.size() );
 
   return arraysAreEqual(array, referenceArray);
 }

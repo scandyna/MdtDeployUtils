@@ -40,7 +40,7 @@ std::vector<SectionHeader> makeSectionHeaderTable(int n)
 {
   assert(n > 0);
 
-  return std::vector<SectionHeader>( n, makeNullSectionHeader() );
+  return std::vector<SectionHeader>( static_cast<size_t>(n), makeNullSectionHeader() );
 }
 
 

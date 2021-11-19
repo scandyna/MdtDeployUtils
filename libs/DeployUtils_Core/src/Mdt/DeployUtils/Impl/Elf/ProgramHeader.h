@@ -45,7 +45,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     GnuStack = 0x6474e551,      /*!< PT_GNU_STACK: the p_flags member specifies the permissions on the segment
                                      containing the stack and is used to indicate wether the stack should be executable.
                                      The absense of this header indicates that the stack will be executable. */
-    GnuRelo = 0x6474e552        /*!< PT_GNU_RELRO: the array element specifies the location and size
+    GnuRelRo = 0x6474e552        /*!< PT_GNU_RELRO: the array element specifies the location and size
                                      of a segment which may be made read-only after relocation shave been processed. */
   };
 
@@ -155,7 +155,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
         case 0x6474e551:
           return SegmentType::GnuStack;
         case 0x6474e552:
-          return SegmentType::GnuRelo;
+          return SegmentType::GnuRelRo;
 
       }
 

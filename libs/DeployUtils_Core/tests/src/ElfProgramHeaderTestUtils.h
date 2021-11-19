@@ -18,8 +18,12 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
+#ifndef ELF_PROGRAM_HEADER_TEST_UTILS_H
+#define ELF_PROGRAM_HEADER_TEST_UTILS_H
+
 #include "Mdt/DeployUtils/Impl/Elf/ProgramHeader.h"
 
+inline
 Mdt::DeployUtils::Impl::Elf::ProgramHeader makeNullProgramHeader()
 {
   Mdt::DeployUtils::Impl::Elf::ProgramHeader header;
@@ -28,6 +32,7 @@ Mdt::DeployUtils::Impl::Elf::ProgramHeader makeNullProgramHeader()
   return header;
 }
 
+inline
 Mdt::DeployUtils::Impl::Elf::ProgramHeader makeDynamicSectionProgramHeader()
 {
   Mdt::DeployUtils::Impl::Elf::ProgramHeader header;
@@ -36,6 +41,29 @@ Mdt::DeployUtils::Impl::Elf::ProgramHeader makeDynamicSectionProgramHeader()
   return header;
 }
 
+inline
+Mdt::DeployUtils::Impl::Elf::ProgramHeader makeProgramInterpreterProgramHeader()
+{
+  using Mdt::DeployUtils::Impl::Elf::SegmentType;
+
+  Mdt::DeployUtils::Impl::Elf::ProgramHeader header;
+  header.setSegmentType(SegmentType::Interpreter);
+
+  return header;
+}
+
+inline
+Mdt::DeployUtils::Impl::Elf::ProgramHeader makeNoteProgramHeader()
+{
+  using Mdt::DeployUtils::Impl::Elf::SegmentType;
+
+  Mdt::DeployUtils::Impl::Elf::ProgramHeader header;
+  header.setSegmentType(SegmentType::Note);
+
+  return header;
+}
+
+inline
 Mdt::DeployUtils::Impl::Elf::ProgramHeader makeProgramHeaderTableProgramHeader()
 {
   using Mdt::DeployUtils::Impl::Elf::SegmentType;
@@ -47,3 +75,16 @@ Mdt::DeployUtils::Impl::Elf::ProgramHeader makeProgramHeaderTableProgramHeader()
 
   return header;
 }
+
+inline
+Mdt::DeployUtils::Impl::Elf::ProgramHeader makeGnuRelRoProgramHeader()
+{
+  using Mdt::DeployUtils::Impl::Elf::SegmentType;
+
+  Mdt::DeployUtils::Impl::Elf::ProgramHeader header;
+  header.setSegmentType(SegmentType::GnuRelRo);
+
+  return header;
+}
+
+#endif // #ifndef ELF_PROGRAM_HEADER_TEST_UTILS_H

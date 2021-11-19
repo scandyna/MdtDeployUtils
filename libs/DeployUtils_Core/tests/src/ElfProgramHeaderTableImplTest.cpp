@@ -102,6 +102,96 @@ TEST_CASE("DynamicSection")
   }
 }
 
+TEST_CASE("programInterpreterSection")
+{
+  ProgramHeaderTable table;
+  ProgramHeader interpHeader;
+
+  SECTION("default constructed")
+  {
+    REQUIRE( !table.containsProgramInterpreterProgramHeader() );
+  }
+
+  SECTION("add the PT_INTERP header")
+  {
+    interpHeader = makeProgramInterpreterProgramHeader();
+    interpHeader.offset = 150;
+
+    table.addHeaderFromFile(interpHeader);
+
+    REQUIRE( table.containsProgramInterpreterProgramHeader() );
+    REQUIRE( table.programInterpreterProgramHeader().offset == 150 );
+  }
+
+  SECTION("add a other program header")
+  {
+    table.addHeaderFromFile( makeNullProgramHeader() );
+    REQUIRE( !table.containsProgramInterpreterProgramHeader() );
+  }
+}
+
+TEST_CASE("notesSegment")
+{
+  ProgramHeaderTable table;
+  ProgramHeader noteHeader;
+
+  SECTION("default constructed")
+  {
+    REQUIRE( !table.containsNoteProgramHeader() );
+  }
+
+  SECTION("add the PT_INTERP header")
+  {
+    noteHeader = makeNoteProgramHeader();
+    noteHeader.offset = 160;
+
+    table.addHeaderFromFile(noteHeader);
+
+    REQUIRE( table.containsNoteProgramHeader() );
+    REQUIRE( table.noteProgramHeader().offset == 160 );
+  }
+
+  SECTION("add a other program header")
+  {
+    table.addHeaderFromFile( makeNullProgramHeader() );
+    REQUIRE( !table.containsNoteProgramHeader() );
+  }
+}
+
+TEST_CASE("gnuRelRoHeader")
+{
+  ProgramHeaderTable table;
+  ProgramHeader gnuRelRoHeader;
+
+  SECTION("default constructed")
+  {
+    REQUIRE( !table.containsGnuRelRoHeader() );
+  }
+
+  SECTION("add the PT_GNU_RELRO header")
+  {
+    gnuRelRoHeader = makeGnuRelRoProgramHeader();
+    gnuRelRoHeader.offset = 150;
+    gnuRelRoHeader.memsz = 10;
+    gnuRelRoHeader.filesz = 10;
+
+    table.addHeaderFromFile(gnuRelRoHeader);
+
+    REQUIRE( table.containsGnuRelRoHeader() );
+    REQUIRE( table.gnuRelRoHeader().offset == 150 );
+
+    table.setGnuRelRoHeaderSize(25);
+    REQUIRE( table.gnuRelRoHeader().memsz == 25 );
+    REQUIRE( table.gnuRelRoHeader().filesz == 25 );
+  }
+
+  SECTION("add a other program header")
+  {
+    table.addHeaderFromFile( makeNullProgramHeader() );
+    REQUIRE( !table.containsGnuRelRoHeader() );
+  }
+}
+
 TEST_CASE("findLastSegmentVirtualAddressEnd")
 {
   ProgramHeaderTable table;

@@ -66,9 +66,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( ident.isValid() );
     assert( map.size >= table.findMinimumSizeToAccessEntries(ident._class) );
 
+    const int64_t entrySize = symbolTableEntrySize(ident._class);
+
     for(size_t i=0; i < table.entriesCount(); ++i){
       const int64_t fileOffset = table.fileMapOffsetAt(i);
-      const int64_t entrySize = symbolTableEntrySize(ident._class);
       setSymbolTableEntryToArray( map.subSpan(fileOffset, entrySize), table.entryAt(i), ident );
     }
   }

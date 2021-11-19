@@ -63,9 +63,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     uint32_t flags;
     uint16_t ehsize;
     uint16_t phentsize;
-    uint16_t phnum;
+    uint16_t phnum = 0;
     uint16_t shentsize;
-    uint16_t shnum;
+    uint16_t shnum = 0;
     uint16_t shstrndx = 0;
 
     /*! \brief
@@ -175,7 +175,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       ident.clear();
       type = 0;
       machine = 0;
-//       machine = Machine::None;
     }
 
     /*! \brief Get the minimum size to read all program headers

@@ -49,7 +49,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   {
     assert( sectionHeader.sectionType() == SectionType::StringTable );
 
-    return sectionHeader.offset + sectionHeader.size;
+    return static_cast<int64_t>(sectionHeader.offset + sectionHeader.size);
   }
 
   /*! \internal
@@ -73,8 +73,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( mapIsBigEnoughToSetDynamicStringTable(map, sectionHeader) );
 //     assert( map.size >= minimumSizeToAccessStringTable(sectionHeader) );
 
-    const int64_t offset = sectionHeader.offset;
-    const int64_t size = sectionHeader.size;
+    const int64_t offset = static_cast<int64_t>(sectionHeader.offset);
+    const int64_t size = static_cast<int64_t>(sectionHeader.size);
 
     stringTableToArray( map.subSpan(offset, size), stringTable );
   }

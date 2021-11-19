@@ -300,11 +300,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       assert(c != Class::ClassNone);
 
       if(c == Class::Class32){
-        return 2 * sizeof(uint32_t) * entriesCount();
+        return 2 * static_cast<int64_t>( sizeof(uint32_t) ) * entriesCount();
       }
       assert(c == Class::Class64);
 
-      return 2 * sizeof(uint64_t) * entriesCount();
+      return 2 * static_cast<int64_t>( sizeof(uint64_t) ) * entriesCount();
     }
 
     /*! \brief Add a entry to this section
@@ -331,7 +331,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       assert( index >= 0 );
       assert( index < entriesCount() );
 
-      return mSection[index];
+      return mSection[static_cast<size_t>(index)];
     }
 
     /*! \brief Set the string table to this section
@@ -702,7 +702,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       const auto it = findMutableEntryForTag(DynamicSectionTagType::StringTableSize);
       assert( it != mSection.end() );
       assert( mStringTable.byteCount() > 0 );
-      it->val_or_ptr = mStringTable.byteCount();
+      it->val_or_ptr = static_cast<uint64_t>( mStringTable.byteCount() );
     }
 
     void indexKnownEntry(DynamicSectionTagType type, size_t index) noexcept

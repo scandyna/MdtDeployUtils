@@ -28,6 +28,8 @@
 #include <algorithm>
 #include <cassert>
 
+// #include <iostream>
+
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
   /*! \internal Represents the program header table in a ELF file
@@ -84,6 +86,15 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
         case SegmentType::ProgramHeaderTable:
           mProgramHeaderTableHeaderIndex = mTable.size();
           break;
+        case SegmentType::Interpreter:
+          mProgramInterpreterHeaderIndex = mTable.size();
+          break;
+        case SegmentType::Note:
+          mNoteSegmentHeaderIndex = mTable.size();
+          break;
+        case SegmentType::GnuRelRo:
+          mGnuRelRoSegmentHeaderIndex = mTable.size();
+          break;
         default:
           break;
       }
@@ -108,6 +119,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     /*! \brief Add a new load segment to the end of the program header table
      */
+    [[deprecated]]
     ProgramHeader & appendNullLoadSegment(uint16_t programHeaderEntrySize) noexcept
     {
       ProgramHeader header;
@@ -174,15 +186,16 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return mTable[mDynamicSectionHeaderIndex];
     }
 
-    /*! \brief Set the file size of the dynamic section
+    /*! \brief Set the size of the dynamic section
      *
      * \pre the program header of the dynamic section must exist in this table
      * \sa containsDynamicSectionHeader()
      */
-    void setDynamicSectionFileSize(uint64_t size) noexcept
+    void setDynamicSectionSize(uint64_t size) noexcept
     {
       assert( containsDynamicSectionHeader() );
 
+      mTable[mDynamicSectionHeaderIndex].memsz = size;
       mTable[mDynamicSectionHeaderIndex].filesz = size;
     }
 
@@ -198,6 +211,110 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mTable[mDynamicSectionHeaderIndex].vaddr = virtualAddress;
       mTable[mDynamicSectionHeaderIndex].paddr = virtualAddress;
       mTable[mDynamicSectionHeaderIndex].offset = fileOffset;
+    }
+
+    /*! \brief Check if the .interp program header exists
+     */
+    bool containsProgramInterpreterProgramHeader() const noexcept
+    {
+      return mProgramInterpreterHeaderIndex < mTable.size();
+    }
+
+    /*! \brief Get the .interp program header
+     *
+     * \pre the .interp program header must exist
+     * \sa containsProgramInterpreterProgramHeader()
+     */
+    const ProgramHeader & programInterpreterProgramHeader() const noexcept
+    {
+      assert( containsProgramInterpreterProgramHeader() );
+
+      return mTable[mProgramInterpreterHeaderIndex];
+    }
+
+    /*! \brief Set the virtual address and offset of the program interpreter header (PT_INTERP)
+     */
+    void setProgramInterpreterHeaderVirtualAddressAndFileOffset(uint64_t virtualAddress, uint64_t fileOffset) noexcept
+    {
+      assert( containsProgramInterpreterProgramHeader() );
+
+      mTable[mProgramInterpreterHeaderIndex].vaddr = virtualAddress;
+      mTable[mProgramInterpreterHeaderIndex].paddr = virtualAddress;
+      mTable[mProgramInterpreterHeaderIndex].offset = fileOffset;
+    }
+
+    /*! \brief Check if the PT_NOTE program header exists
+     */
+    bool containsNoteProgramHeader() const noexcept
+    {
+      return mNoteSegmentHeaderIndex < mTable.size();
+    }
+
+    /*! \brief Get the PT_NOTE program header
+     *
+     * \pre the PT_NOTE program header must exist
+     * \sa containsNoteProgramHeader()
+     */
+    const ProgramHeader & noteProgramHeader() const noexcept
+    {
+      assert( containsNoteProgramHeader() );
+
+      return mTable[mNoteSegmentHeaderIndex];
+    }
+
+    /*! \brief Set the virtual address and offset of the note header (PT_NOTE)
+     */
+    void setNoteProgramHeaderVirtualAddressAndFileOffset(uint64_t virtualAddress, uint64_t fileOffset) noexcept
+    {
+      assert( containsNoteProgramHeader() );
+
+      mTable[mNoteSegmentHeaderIndex].vaddr = virtualAddress;
+      mTable[mNoteSegmentHeaderIndex].paddr = virtualAddress;
+      mTable[mNoteSegmentHeaderIndex].offset = fileOffset;
+    }
+
+    /*! \brief Check if this table contains the PT_GNU_RELRO header
+     */
+    bool containsGnuRelRoHeader() const noexcept
+    {
+      return mGnuRelRoSegmentHeaderIndex < mTable.size();
+    }
+
+    /*! \brief Get the PT_GNU_RELRO program header
+     *
+     * \pre the PT_GNU_RELRO program header must exist
+     * \sa containsGnuRelRoHeader()
+     */
+    const ProgramHeader & gnuRelRoHeader() const noexcept
+    {
+      assert( containsGnuRelRoHeader() );
+
+      return mTable[mGnuRelRoSegmentHeaderIndex];
+    }
+
+    /*! \brief Get the PT_GNU_RELRO program header
+     *
+     * \pre the PT_GNU_RELRO program header must exist
+     * \sa containsGnuRelRoHeader()
+     */
+    ProgramHeader & gnuRelRoHeaderMutable() noexcept
+    {
+      assert( containsGnuRelRoHeader() );
+
+      return mTable[mGnuRelRoSegmentHeaderIndex];
+    }
+
+    /*! \brief Set the size for the PT_GNU_RELRO header
+     *
+     * \pre the PT_GNU_RELRO program header must exist
+     * \sa containsGnuRelRoHeader()
+     */
+    void setGnuRelRoHeaderSize(uint64_t size) noexcept
+    {
+      assert( containsGnuRelRoHeader() );
+
+      mTable[mGnuRelRoSegmentHeaderIndex].memsz = size;
+      mTable[mGnuRelRoSegmentHeaderIndex].filesz = size;
     }
 
     /*! \brief Get the virtual address of the end of the last segment of this table
@@ -282,8 +399,17 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
    private:
 
-    size_t mDynamicSectionHeaderIndex = std::numeric_limits<size_t>::max();
-    size_t mProgramHeaderTableHeaderIndex = std::numeric_limits<size_t>::max();
+    static
+    constexpr size_t invalidHeaderIndex() noexcept
+    {
+      return std::numeric_limits<size_t>::max();
+    }
+
+    size_t mDynamicSectionHeaderIndex = invalidHeaderIndex();
+    size_t mProgramHeaderTableHeaderIndex = invalidHeaderIndex();
+    size_t mProgramInterpreterHeaderIndex = invalidHeaderIndex();
+    size_t mNoteSegmentHeaderIndex = invalidHeaderIndex();
+    size_t mGnuRelRoSegmentHeaderIndex = invalidHeaderIndex();
     std::vector<ProgramHeader> mTable;
   };
 

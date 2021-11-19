@@ -21,8 +21,6 @@
 #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_DYNAMIC_SECTION_WRITER_H
 #define MDT_DEPLOY_UTILS_IMPL_ELF_DYNAMIC_SECTION_WRITER_H
 
-// #include "FileReader.h"
-
 #include "DynamicSection.h"
 #include "FileHeader.h"
 #include "ProgramHeader.h"
@@ -103,7 +101,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   {
     assert( dynamicSectionHeader.sectionType() == SectionType::Dynamic );
 
-    return dynamicSectionHeader.offset + dynamicSectionHeader.size;
+    return static_cast<int64_t>(dynamicSectionHeader.offset + dynamicSectionHeader.size);
   }
 
   /*! \internal
@@ -132,8 +130,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 //     assert( map.size >= minimumSizeToAccessDynamicSection(dynamicSectionHeader) );
 //     assert( sectionNamesStringTableSectionHeader.sectionType() == SectionType::StringTable );
 
-    const int64_t offset = dynamicSectionHeader.offset;
-    const int64_t size = dynamicSectionHeader.size;
+    const int64_t offset = static_cast<int64_t>(dynamicSectionHeader.offset);
+    const int64_t size = static_cast<int64_t>(dynamicSectionHeader.size);
 
     dynamicSectionToArray( map.subSpan(offset, size), dynamicSection, fileHeader.ident );
   }

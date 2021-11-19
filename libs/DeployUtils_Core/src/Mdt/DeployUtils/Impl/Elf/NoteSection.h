@@ -34,7 +34,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    *
    * \sa https://www.netbsd.org/docs/kernel/elf-notes.html
    *
-   * For a list of some xeisting note section,
+   * For a list of some existing note section,
    * see https://man7.org/linux/man-pages/man5/elf.5.html
    */
   struct NoteSection

@@ -68,6 +68,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
         const QString msg = tr("name size %1 is to large").arg(nameSize);
         throw NoteSectionReadError(msg);
       }
+      assert(nameSize > 0);
       assert(nameSize < array.size);
 
       section.descriptionSize = getWord(array.subSpan(4, 4).data, ident.dataFormat);
@@ -75,7 +76,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       section.name = stringFromBoundedUnsignedCharArray( array.subSpan(12, nameSize) );
 
-      const int64_t descriptionStart = 12 + static_cast<int64_t>( findAlignedSize(nameSize, 4) );
+      const int64_t descriptionStart = 12 + static_cast<int64_t>( findAlignedSize(static_cast<uint64_t>(nameSize), 4) );
       const int64_t descriptionEnd = descriptionStart + static_cast<int64_t>(section.descriptionSize);
 
       if(descriptionEnd > array.size){

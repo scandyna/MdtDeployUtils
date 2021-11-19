@@ -35,8 +35,16 @@ SymbolTableEntry makeSectionAssociationSymbolTableEntry()
 PartialSymbolTableEntry makeSectionAssociationSymbolTableEntryWithFileOffset(uint64_t offset)
 {
   PartialSymbolTableEntry pEntry;
-  pEntry.fileOffset = offset;
+  pEntry.fileOffset = static_cast<int64_t>(offset);
   pEntry.entry = makeSectionAssociationSymbolTableEntry();
 
   return pEntry;
+}
+
+SymbolTableEntry makeObjectSymbolTableEntry()
+{
+  SymbolTableEntry entry;
+  entry.info = 1;
+
+  return entry;
 }

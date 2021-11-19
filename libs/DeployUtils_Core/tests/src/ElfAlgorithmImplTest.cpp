@@ -62,6 +62,46 @@ TEST_CASE("findAddressOfNextPage")
   }
 }
 
+TEST_CASE("findAlignedSize")
+{
+  using Mdt::DeployUtils::Impl::Elf::findAlignedSize;
+
+  SECTION("alignment: 4 bytes")
+  {
+    const uint64_t alignment = 4;
+
+    SECTION("size: 0 (is aligned)")
+    {
+      REQUIRE( findAlignedSize(0, alignment) == 0 );
+    }
+
+    SECTION("size: 1 (aligned size is 4)")
+    {
+      REQUIRE( findAlignedSize(1, alignment) == 4 );
+    }
+
+    SECTION("size: 3 (aligned size is 4)")
+    {
+      REQUIRE( findAlignedSize(3, alignment) == 4 );
+    }
+
+    SECTION("size: 4 (is aligned)")
+    {
+      REQUIRE( findAlignedSize(4, alignment) == 4 );
+    }
+
+    SECTION("size: 5 (aligned size is 8)")
+    {
+      REQUIRE( findAlignedSize(5, alignment) == 8 );
+    }
+
+    SECTION("size: 7 (aligned size is 8)")
+    {
+      REQUIRE( findAlignedSize(7, alignment) == 8 );
+    }
+  }
+}
+
 TEST_CASE("findNextAlignedAddress")
 {
   using Mdt::DeployUtils::Impl::Elf::findNextAlignedAddress;

@@ -20,9 +20,45 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "ElfFileIoTestUtils.h"
 #include "Mdt/DeployUtils/Impl/ExecutableFileReaderUtils.h"
 
 using namespace Mdt::DeployUtils::Impl;
+
+TEST_CASE("stringFromBoundedUnsignedCharArray")
+{
+  ByteArraySpan span;
+
+  SECTION("span is larger that string")
+  {
+    SECTION("A")
+    {
+      unsigned char array[2] = {'A','\0'};
+      span = arraySpanFromArray( array, sizeof(array) );
+
+      REQUIRE( stringFromBoundedUnsignedCharArray(span) == "A" );
+    }
+  }
+
+  SECTION("span is just large enought")
+  {
+    SECTION("A (string not null terminated)")
+    {
+      unsigned char array[1] = {'A'};
+      span = arraySpanFromArray( array, sizeof(array) );
+
+      REQUIRE( stringFromBoundedUnsignedCharArray(span) == "A" );
+    }
+
+    SECTION("A (string is null terminated)")
+    {
+      unsigned char array[2] = {'A','\0'};
+      span = arraySpanFromArray( array, sizeof(array) );
+
+      REQUIRE( stringFromBoundedUnsignedCharArray(span) == "A" );
+    }
+  }
+}
 
 TEST_CASE("containsEndOfString")
 {

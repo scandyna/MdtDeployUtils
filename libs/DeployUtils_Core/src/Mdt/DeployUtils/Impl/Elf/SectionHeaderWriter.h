@@ -26,6 +26,7 @@
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include "FileWriterUtils.h"
 #include "FileHeader.h"
+#include <vector>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
@@ -98,7 +99,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( map.size >= fileHeader.minimumSizeToReadAllProgramHeaders() );
 
     const uint16_t sectionHeaderCount = fileHeader.shnum;
-    const int64_t start = fileHeader.shoff;
+    const int64_t start = static_cast<int64_t>(fileHeader.shoff);
 
     for(uint16_t i = 0; i < sectionHeaderCount; ++i){
       const int64_t offset = start + i * fileHeader.shentsize;

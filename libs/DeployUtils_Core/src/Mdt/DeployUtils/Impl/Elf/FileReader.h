@@ -106,6 +106,22 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     return value;
   }
 
+  /*! \internal
+   *
+   * \pre \a array must not be null
+   * \pre \a array size must be at least 4 bytes long
+   * \pre \a dataFormat must be valid
+   */
+  inline
+  uint32_t getWord(const ByteArraySpan & array, DataFormat dataFormat) noexcept
+  {
+    assert( !array.isNull() );
+    assert( array.size >= 4 );
+    assert( dataFormat != DataFormat::DataNone );
+
+    return getWord(array.data, dataFormat);
+  }
+
   /*! \internal Get a (unsigned) word out from \a array
    *
    * Depending on the machine (32-bit or 64-bit), defined in \a ident ,
@@ -147,6 +163,31 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     assert( ident.dataFormat == DataFormat::Data2LSB );
 
     return qFromLittleEndian<quint64>(array);
+  }
+
+  /*! \internal Get a (unsigned) word out from \a array
+   *
+   * Depending on the machine (32-bit or 64-bit), defined in \a ident ,
+   * the value will be decoded as a uint32_t
+   * or a uint64_t.
+   *
+   * The endianness, also defined in \a ident ,
+   * is also taken into account for the decoding.
+   *
+   * \pre \a array must not be null
+   * \pre \a array must be of a size that can hold the value
+   *  (at least 4 bytes for a 32-bit file, at least 8 bytes for a 64-bit file)
+   * \pre \a ident must be valid
+   *
+   * \sa https://manpages.debian.org/stretch/manpages/elf.5.en.html
+   */
+  inline
+  uint64_t getNWord(const ByteArraySpan & array, const Ident & ident) noexcept
+  {
+    assert( !array.isNull() );
+    assert( ident.isValid() );
+
+    return getNWord(array.data, ident);
   }
 
   /*! \internal

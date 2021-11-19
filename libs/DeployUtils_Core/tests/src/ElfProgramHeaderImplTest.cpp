@@ -88,7 +88,7 @@ TEST_CASE("segmentType")
   SECTION("PT_GNU_RELRO")
   {
     header.type = 0x6474e552;
-    REQUIRE( header.segmentType() == SegmentType::GnuRelo );
+    REQUIRE( header.segmentType() == SegmentType::GnuRelRo );
   }
 }
 

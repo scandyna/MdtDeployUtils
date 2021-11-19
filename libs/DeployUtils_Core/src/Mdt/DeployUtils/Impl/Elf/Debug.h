@@ -28,6 +28,11 @@
 #include "SectionHeader.h"
 #include "DynamicSection.h"
 #include "SymbolTable.h"
+#include "GlobalOffsetTable.h"
+#include "ProgramInterpreterSection.h"
+#include "GnuHashTable.h"
+#include "NoteSection.h"
+#include "NoteSectionTable.h"
 #include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QLatin1String>
@@ -149,6 +154,36 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
    */
   MDT_DEPLOYUTILSCORE_EXPORT
   QString toDebugString(const PartialSymbolTable & table, const QString & leftPad = QLatin1String("  "));
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString toDebugString(const GlobalOffsetTableEntry & entry, const QString & leftPad = QLatin1String("  "));
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString toDebugString(const GlobalOffsetTable & table, const QString & leftPad = QLatin1String("  "));
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString toDebugString(const ProgramInterpreterSection & section);
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString toDebugString(const GnuHashTable & table);
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString toDebugString(const NoteSection & section, const QString & leftPad = QLatin1String("  "));
+
+  /*! \internal
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QString toDebugString(const NoteSectionTable & table, const QString & leftPad = QLatin1String("  "));
 
   /** \internal Print the file layout regarding all headers (File, Programm, Section)
    *

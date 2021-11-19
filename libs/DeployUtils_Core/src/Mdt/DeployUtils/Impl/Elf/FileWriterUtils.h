@@ -25,6 +25,8 @@
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include <QtEndian>
 #include <cstdint>
+#include <string>
+#include <algorithm>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
@@ -199,6 +201,34 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
         qToLittleEndian<qint64>(value, array.data);
       }
     }
+  }
+
+  /*! \internal
+   */
+  inline
+  void replaceBytesInArray(ByteArraySpan array, unsigned char c) noexcept
+  {
+    assert( !array.isNull() );
+
+    auto first = array.begin();
+    const auto last = array.end();
+
+    while(first != last){
+      *first = c;
+      ++first;
+    }
+  }
+
+  /*! \internal Set \a str string to \a array
+   */
+  inline
+  void setStringToUnsignedCharArray(ByteArraySpan array, const std::string & str) noexcept
+  {
+    assert( !array.isNull() );
+    assert( array.size == static_cast<int64_t>( str.size() + 1 ) );
+
+    std::copy( str.cbegin(), str.cend(), array.data );
+    array.data[str.size()] = '\0';
   }
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{

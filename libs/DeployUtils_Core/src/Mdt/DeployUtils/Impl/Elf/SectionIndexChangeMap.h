@@ -85,6 +85,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return mMap[oldIndex];
     }
 
+    /*! \brief Get the count of indexes in this map
+     */
+    uint16_t indexCount() const noexcept
+    {
+      return static_cast<uint16_t>( mMap.size() );
+    }
+
     /*! \brief Get the count of entries in this map
      */
     size_t entriesCount() const noexcept
@@ -99,19 +106,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return mMap.empty();
     }
 
-    /*! \brief Get the change at \a entryIndex
-     */
-//     const SectionIndexChange & entryAt(size_t entryIndex) const noexcept
-//     {
-//       assert( entryIndex < entriesCount() );
-// 
-//       return mMap[entryIndex];
-//     }
-
    private:
 
     std::vector<uint16_t> mMap;
-//     std::vector<SectionIndexChange> mMap;
   };
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{

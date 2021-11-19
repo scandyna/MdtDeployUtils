@@ -56,6 +56,12 @@ DynamicStruct makeRunPathEntry(uint64_t val = 2)
   return makeEntry(DynamicSectionTagType::Runpath, val);
 }
 
+inline
+DynamicStruct makeGnuHashEntry(uint64_t address)
+{
+  return makeEntry(DynamicSectionTagType::GnuHash, address);
+}
+
 DynamicStruct makeStringTableAddressEntry(uint64_t address)
 {
   return makeEntry(DynamicSectionTagType::StringTable, address);

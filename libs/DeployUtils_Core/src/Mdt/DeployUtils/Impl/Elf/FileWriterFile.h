@@ -129,8 +129,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       mDynamicSection.setRunPath(runPath);
 
-      mHeaders.setDynamicSectionSize( mDynamicSection.byteCount(fileHeader().ident._class) );
-      mHeaders.setDynamicStringTableSize( mDynamicSection.stringTable().byteCount() );
+      const int64_t dynamicSectionSize = mDynamicSection.byteCount(fileHeader().ident._class);
+      assert( dynamicSectionSize >= 0 );
+      mHeaders.setDynamicSectionSize( static_cast<uint64_t>(dynamicSectionSize) );
+
+      const int64_t dynamicStringTableSize = mDynamicSection.stringTable().byteCount();
+      assert( dynamicStringTableSize >= 0 );
+      mHeaders.setDynamicStringTableSize( static_cast<uint64_t>(dynamicStringTableSize) );
 
       const bool mustMoveDynamicSection = mFileOffsetChanges.dynamicSectionChangesOffset(mDynamicSection) > 0;
       const bool mustMoveDynamicStringTable = mFileOffsetChanges.dynamicStringTableChangesOffset(mDynamicSection) > 0;

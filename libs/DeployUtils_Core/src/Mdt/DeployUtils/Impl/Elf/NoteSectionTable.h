@@ -110,16 +110,19 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return mTable[index].section;
     }
 
-    /*! \brief Update the note sections existing in this table in given section header table
+    /*! \brief Update the section headers regarding \a sectionHeaderTable
+     *
+     * Should be called if some note sections are moved
+     * in the section header table, so that the section headers in this table
+     * are up to date.
      */
-    [[deprecated]]
-    void updateSectionHeaderTable(std::vector<SectionHeader> & sectionHeaderTable) const noexcept
+    void updateSectionHeaders(const std::vector<SectionHeader> & sectionHeaderTable) noexcept
     {
-      for(SectionHeader & shtHeader : sectionHeaderTable){
+      for(const SectionHeader & shtHeader : sectionHeaderTable){
         if( isNoteSectionHeader(shtHeader) ){
           const auto it = findSectionHeader(shtHeader.name);
           if( it != mTable.cend() ){
-            shtHeader = it->header;
+            it->header = shtHeader;
           }
         }
       }
@@ -143,15 +146,15 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
    private:
 
-    using const_iterator = std::vector<NoteSectionTableEntry>::const_iterator;
+    using iterator = std::vector<NoteSectionTableEntry>::iterator;
 
-    const_iterator findSectionHeader(const std::string & name) const noexcept
+    iterator findSectionHeader(const std::string & name) noexcept
     {
       const auto pred = [&name](const NoteSectionTableEntry & entry){
         return entry.header.name == name;
       };
 
-      return std::find_if(mTable.cbegin(), mTable.cend(), pred);
+      return std::find_if(mTable.begin(), mTable.end(), pred);
     }
 
     std::vector<NoteSectionTableEntry> mTable;

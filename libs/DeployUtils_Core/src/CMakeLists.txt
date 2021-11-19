@@ -41,12 +41,15 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/Elf/ProgramHeaderReaderWriterCommon.cpp
   Mdt/DeployUtils/Impl/Elf/ProgramHeaderReader.cpp
   Mdt/DeployUtils/Impl/Elf/ProgramHeaderWriter.cpp
+  Mdt/DeployUtils/Impl/Elf/SectionIndexChangeMap.cpp
   Mdt/DeployUtils/Impl/Elf/SectionHeader.cpp
+  Mdt/DeployUtils/Impl/Elf/SectionHeaderTable.cpp
   Mdt/DeployUtils/Impl/Elf/SectionHeaderReaderWriterCommon.cpp
   Mdt/DeployUtils/Impl/Elf/SectionHeaderWriter.cpp
   Mdt/DeployUtils/Impl/Elf/FileHeader.cpp
   Mdt/DeployUtils/Impl/Elf/FileHeaderReaderWriterCommon.cpp
   Mdt/DeployUtils/Impl/Elf/FileHeaderWriter.cpp
+  Mdt/DeployUtils/Impl/Elf/SectionSegmentUtils.cpp
   Mdt/DeployUtils/Impl/Elf/FileAllHeaders.cpp
   Mdt/DeployUtils/Impl/Elf/FileAllHeadersReaderWriterCommon.cpp
   Mdt/DeployUtils/Impl/Elf/FileAllHeadersReader.cpp
@@ -60,6 +63,23 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/Elf/SymbolTable.cpp
   Mdt/DeployUtils/Impl/Elf/SymbolTableReader.cpp
   Mdt/DeployUtils/Impl/Elf/SymbolTableWriter.cpp
+  Mdt/DeployUtils/Impl/Elf/HashTable.cpp
+  Mdt/DeployUtils/Impl/Elf/HashTableReader.cpp
+  Mdt/DeployUtils/Impl/Elf/HashTableWriter.cpp
+  Mdt/DeployUtils/Impl/Elf/GnuHashTable.cpp
+  Mdt/DeployUtils/Impl/Elf/GnuHashTableReader.cpp
+  Mdt/DeployUtils/Impl/Elf/GnuHashTableWriter.cpp
+  Mdt/DeployUtils/Impl/Elf/GlobalOffsetTable.cpp
+  Mdt/DeployUtils/Impl/Elf/GlobalOffsetTableReaderWriterCommon.cpp
+  Mdt/DeployUtils/Impl/Elf/GlobalOffsetTableReader.cpp
+  Mdt/DeployUtils/Impl/Elf/GlobalOffsetTableWriter.cpp
+  Mdt/DeployUtils/Impl/Elf/ProgramInterpreterSection.cpp
+  Mdt/DeployUtils/Impl/Elf/ProgramInterpreterSectionReader.cpp
+  Mdt/DeployUtils/Impl/Elf/ProgramInterpreterSectionWriter.cpp
+  Mdt/DeployUtils/Impl/Elf/NoteSection.cpp
+  Mdt/DeployUtils/Impl/Elf/NoteSectionTable.cpp
+  Mdt/DeployUtils/Impl/Elf/NoteSectionReader.cpp
+  Mdt/DeployUtils/Impl/Elf/NoteSectionWriter.cpp
   Mdt/DeployUtils/Impl/Elf/OffsetRange.cpp
   Mdt/DeployUtils/Impl/Elf/FileOffsetChanges.cpp
   Mdt/DeployUtils/Impl/Elf/FileReader.cpp
