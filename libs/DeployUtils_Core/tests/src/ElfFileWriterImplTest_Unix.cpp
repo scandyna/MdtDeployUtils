@@ -39,8 +39,8 @@
 #include <vector>
 #include <cassert>
 
-#include "Mdt/DeployUtils/Impl/Elf/Debug.h"
-#include <iostream>
+// #include "Mdt/DeployUtils/Impl/Elf/Debug.h"
+// #include <iostream>
 
 using namespace Mdt::DeployUtils;
 using Impl::ByteArraySpan;
@@ -218,7 +218,7 @@ FileWriterFile copyAndReadElfFile(const QString & targetFilePath, const char * s
 
 bool readExecutable(const QString & filePath)
 {
-  using Impl::Elf::toDebugString;
+//   using Impl::Elf::toDebugString;
 
   const FileWriterFile elfFile = readElfFile(filePath);
   if( !elfFile.seemsValid() ){
@@ -282,7 +282,7 @@ TEST_CASE("simpleReadWrite")
 
   QTemporaryDir dir;
   REQUIRE( dir.isValid() );
-  dir.setAutoRemove(false);
+  dir.setAutoRemove(true);
 
   FileWriterFile elfFile;
   QFile file;
@@ -312,88 +312,13 @@ TEST_CASE("simpleReadWrite")
   REQUIRE( lintElfFile(targetFilePath) );
 }
 
-
-TEST_CASE("moveProgramInterpreterSectionToEnd_sandbox")
-{
-  using Impl::Elf::setFileToMap;
-
-  QTemporaryDir dir;
-  REQUIRE( dir.isValid() );
-  dir.setAutoRemove(false);
-
-  FileWriterFile elfFile;
-  QFile file;
-  ByteArraySpan map;
-
-  const QString targetFilePath = makePath(dir, "move_interp");
-  elfFile = copyAndReadElfFile(targetFilePath, TEST_SIMPLE_EXECUTABLE_DYNAMIC_WITH_RUNPATH_FILE_PATH);
-  REQUIRE( elfFile.seemsValid() );
-
-  qDebug() << "************* file " << targetFilePath << " before changes *************";
-  readExecutable(targetFilePath);
-  qDebug() << "*************************************************************************" ;
-
-  elfFile.moveProgramInterpreterSectionToEnd_sandbox();
-
-  openFileForWrite(file, targetFilePath);
-  resizeFile( file, elfFile.minimumSizeToWriteFile() );
-  map = mapFile(file);
-  REQUIRE( !map.isNull() );
-
-  setFileToMap(map, elfFile);
-
-  unmapAndCloseFile(file, map);
-  REQUIRE( readExecutable(targetFilePath) );
-  REQUIRE( runElfExecutable(targetFilePath) );
-//   REQUIRE( readExecutable(targetFilePath) );
-//   REQUIRE( runExecutable(targetFilePath) );
-}
-
-TEST_CASE("moveSections_sandbox_SharedLib")
-{
-  using Impl::Elf::setFileToMap;
-
-  QTemporaryDir dir;
-  REQUIRE( dir.isValid() );
-  dir.setAutoRemove(false);
-
-  FileWriterFile elfFile;
-  QFile file;
-  ByteArraySpan map;
-
-  const QString targetFilePath = makePath(dir, "move_sections_sharedLib");
-  elfFile = copyAndReadElfFile(targetFilePath, TEST_SHARED_LIBRARY_FILE_PATH);
-  REQUIRE( elfFile.seemsValid() );
-
-  qDebug() << "************* file " << targetFilePath << " before changes *************";
-  readExecutable(targetFilePath);
-  qDebug() << "*************************************************************************" ;
-
-  elfFile.moveProgramInterpreterSectionToEnd_sandbox();
-
-  openFileForWrite(file, targetFilePath);
-  resizeFile( file, elfFile.minimumSizeToWriteFile() );
-  map = mapFile(file);
-  REQUIRE( !map.isNull() );
-
-  setFileToMap(map, elfFile);
-
-  unmapAndCloseFile(file, map);
-  REQUIRE( readExecutable(targetFilePath) );
-//   REQUIRE( runExecutable(targetFilePath) );
-//   REQUIRE( readExecutable(targetFilePath) );
-//   REQUIRE( runExecutable(targetFilePath) );
-
-  qDebug() << "END of test, file: " << targetFilePath;
-}
-
 TEST_CASE("editRunPath_SimpleExecutable")
 {
   using Impl::Elf::setFileToMap;
 
   QTemporaryDir dir;
   REQUIRE( dir.isValid() );
-  dir.setAutoRemove(false);
+  dir.setAutoRemove(true);
 
   FileWriterFile elfFile;
   QFile file;
@@ -425,9 +350,6 @@ TEST_CASE("editRunPath_SimpleExecutable")
 
     elfFile.setRunPath( QLatin1String("/tmp") );
 
-    /// \todo sandbox
-    ///map = openAndMapFileForWrite(file, targetFilePath);
-    ///REQUIRE( !map.isNull() );
     openFileForWrite(file, targetFilePath);
     resizeFile( file, elfFile.minimumSizeToWriteFile() );
     map = mapFile(file);
@@ -452,9 +374,6 @@ TEST_CASE("editRunPath_SimpleExecutable")
 
     elfFile.setRunPath( QString() );
 
-    /// \todo sandbox
-    ///map = openAndMapFileForWrite(file, targetFilePath);
-    ///REQUIRE( !map.isNull() );
     openFileForWrite(file, targetFilePath);
     resizeFile( file, elfFile.minimumSizeToWriteFile() );
     map = mapFile(file);
@@ -480,12 +399,6 @@ TEST_CASE("editRunPath_SimpleExecutable")
     REQUIRE( elfFile.seemsValid() );
 
     const QString runPath = generateStringWithNChars(10000);
-
-    /// \todo just for debug
-    qDebug() << "************* file " << targetFilePath << " before changes *************";
-    readExecutable(targetFilePath);
-    qDebug() << "*************************************************************************" ;
-    
     elfFile.setRunPath(runPath);
 
     openFileForWrite(file, targetFilePath);
@@ -509,11 +422,6 @@ TEST_CASE("editRunPath_SimpleExecutable")
     elfFile = copyAndReadElfFile(targetFilePath, TEST_SIMPLE_EXECUTABLE_DYNAMIC_NO_RUNPATH_FILE_PATH);
     REQUIRE( elfFile.seemsValid() );
     REQUIRE( !elfFile.dynamicSection().containsRunPathEntry() );
-
-    /// \todo just for debug
-    qDebug() << "************* file " << targetFilePath << " before changes *************";
-    readExecutable(targetFilePath);
-    qDebug() << "*************************************************************************" ;
 
     elfFile.setRunPath( QLatin1String("/tmp") );
 
@@ -550,11 +458,6 @@ TEST_CASE("editRunPath_SharedLibrary")
     elfFile = copyAndReadElfFile(targetFilePath, TEST_SHARED_LIBRARY_NO_RUNPATH_FILE_PATH);
     REQUIRE( elfFile.seemsValid() );
     REQUIRE( !elfFile.dynamicSection().containsRunPathEntry() );
-
-    /// \todo just for debug
-    qDebug() << "************* file " << targetFilePath << " before changes *************";
-    readExecutable(targetFilePath);
-    qDebug() << "*************************************************************************" ;
 
     elfFile.setRunPath( QLatin1String("/tmp") );
 
