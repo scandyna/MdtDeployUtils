@@ -31,6 +31,10 @@
 #include "StringTable.h"
 #include "StringTableWriter.h"
 #include "SymbolTableWriter.h"
+#include "GlobalOffsetTableWriter.h"
+#include "ProgramInterpreterSectionWriter.h"
+#include "GnuHashTableWriter.h"
+#include "NoteSectionWriter.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include <QtEndian>
 #include <cstdint>
@@ -228,11 +232,35 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     if( file.dynamicStringTableMovesToEnd() ){
       replaceBytes(map, file.originalDynamicStringTableOffsetRange(), '\0');
-      setSymbolTableToMap(map, file.sectionSymbolTable(), file.fileHeader().ident);
+      ///setSymbolTableToMap(map, file.sectionSymbolTable(), file.fileHeader().ident);
     }else{
       setBytesAfterOldDynamicStringTableNull(map, file);
     }
-    /// \todo handle case of dynamic section moving to the end
+
+    if( file.dynamicSectionMovesToEnd() ){
+      ///setSymbolTableToMap(map, file.sectionSymbolTable(), file.fileHeader().ident);
+      if( !file.gotSection().isEmpty() && file.headers().containsGotSectionHeader() ){
+        setGlobalOffsetTableToMap( map, file.headers().gotSectionHeader(), file.gotSection(), file.fileHeader() );
+      }
+      if( !file.gotPltSection().isEmpty() && file.headers().containsGotPltSectionHeader() ){
+        setGlobalOffsetTableToMap( map, file.headers().gotPltSectionHeader(), file.gotPltSection(), file.fileHeader() );
+      }
+    }
+
+    if( file.headers().containsProgramInterpreterSectionHeader() ){
+      setProgramInterpreterSectionToMap( map, file.headers().programInterpreterSectionHeader(), file.programInterpreterSection() );
+    }
+
+    if( file.headers().containsGnuHashTableSectionHeader() ){
+      GnuHashTableWriter::setGnuHashTableToMap( map, file.headers().gnuHashTableSectionHeader(), file.gnuHashTableSection(), file.fileHeader() );
+    }
+
+    /// \todo should only write if changes
+
+    NoteSectionWriter::setNoteSectionTableToMap( map, file.noteSectionTable(), file.fileHeader() );
+
+    setSymbolTableToMap(map, file.symTab(), file.fileHeader().ident);
+    setSymbolTableToMap(map, file.dynSym(), file.fileHeader().ident);
 
     setDynamicSectionToMap( map, file.dynamicSectionHeader(), file.dynamicSection(), file.fileHeader() );
     setStringTableToMap( map, file.headers().dynamicStringTableSectionHeader(), file.dynamicSection().stringTable() );
