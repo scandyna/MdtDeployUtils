@@ -242,7 +242,16 @@ TEST_CASE("sortSectionHeaderTableByFileOffset")
     REQUIRE( allHeaders.sectionHeaderTable()[1].name == ".shstrtab" );
     REQUIRE( allHeaders.sectionHeaderTable()[2].name == ".dynamic" );
     REQUIRE( allHeaders.fileHeader().shstrndx == 1 );
+
+    /*
+     * Known indexes must also be updated
+     */
+    REQUIRE( allHeaders.containsSectionNameStringTableHeader() );
+    REQUIRE( allHeaders.sectionNameStringTableHeader().name == ".shstrtab" );
+    REQUIRE( allHeaders.containsDynamicSectionHeader() );
+    REQUIRE( allHeaders.dynamicSectionHeader().name == ".dynamic" );
   }
+
 }
 
 TEST_CASE("gotSectionHeader")
@@ -481,7 +490,7 @@ TEST_CASE("moveProgramHeaderTableToNextPageAfterEnd")
   setup.sectionHeaderTableOffset = 1'000;
 
   FileAllHeaders headers = makeTestHeaders(setup);
-  const uint64_t originalVirtualMemoryEnd = headers.findLastSegmentVirtualAddressEnd();
+  const uint64_t originalVirtualMemoryEnd = headers.findGlobalVirtualAddressEnd();
   const uint64_t originalFileEnd = headers.findGlobalFileOffsetEnd();
 
   headers.moveProgramHeaderTableToNextPageAfterEnd();
@@ -505,7 +514,7 @@ TEST_CASE("moveProgramInterpreterSectionToEnd")
   setup.sectionHeaderTableOffset = 1'000;
 
   FileAllHeaders headers = makeTestHeaders(setup);
-  const uint64_t originalVirtualAddressEnd = headers.findLastSegmentVirtualAddressEnd();
+  const uint64_t originalVirtualAddressEnd = headers.findGlobalVirtualAddressEnd();
   const uint64_t originalFileEnd = headers.findGlobalFileOffsetEnd();
 
   headers.moveProgramInterpreterSectionToEnd(MoveSectionAlignment::NextPage);
@@ -539,7 +548,7 @@ TEST_CASE("moveNoteSectionsToEnd")
   setup.sectionHeaderTableOffset = 1'000;
 
   FileAllHeaders headers = makeTestHeaders(setup);
-  const uint64_t originalVirtualAddressEnd = headers.findLastSegmentVirtualAddressEnd();
+  const uint64_t originalVirtualAddressEnd = headers.findGlobalVirtualAddressEnd();
   const uint64_t originalFileEnd = headers.findGlobalFileOffsetEnd();
 
   headers.moveNoteSectionsToEnd(MoveSectionAlignment::SectionAlignment);
@@ -564,6 +573,31 @@ TEST_CASE("moveNoteSectionsToEnd")
   }
 }
 
+TEST_CASE("moveGnuHashTableToEnd")
+{
+  TestHeadersSetup setup;
+  setup.programHeaderTableOffset = 50;
+  setup.gnuHashTableSectionOffset = 100;
+  setup.gnuHashTableSectionAddress = 1000;
+  setup.gnuHashTableSectionSize = 25;
+  setup.dynamicSectionOffset = 130;
+  setup.dynamicSectionAddress = 1030;
+  setup.dynamicSectionSize = 40;
+  setup.sectionHeaderTableOffset = 500;
+
+  FileAllHeaders headers = makeTestHeaders(setup);
+  const uint64_t originalVirtualAddressEnd = headers.findGlobalVirtualAddressEnd();
+  const uint64_t originalFileEnd = headers.findGlobalFileOffsetEnd();
+
+  headers.moveGnuHashTableToEnd(MoveSectionAlignment::SectionAlignment);
+
+  /*
+   * The new virtual address and offset must be at end
+   */
+  REQUIRE( headers.gnuHashTableSectionHeader().addr >= originalVirtualAddressEnd );
+  REQUIRE( headers.gnuHashTableSectionHeader().offset >= originalFileEnd );
+}
+
 TEST_CASE("moveDynamicSectionToEnd")
 {
   TestHeadersSetup setup;
@@ -574,16 +608,17 @@ TEST_CASE("moveDynamicSectionToEnd")
   setup.sectionHeaderTableOffset = 1'000;
 
   FileAllHeaders headers = makeTestHeaders(setup);
-  const uint64_t originalVirtualAddressEnd = headers.findLastSegmentVirtualAddressEnd();
+  const uint64_t originalVirtualAddressEnd = headers.findGlobalVirtualAddressEnd();
   const uint64_t originalFileEnd = headers.findGlobalFileOffsetEnd();
 
   headers.moveDynamicSectionToEnd(MoveSectionAlignment::SectionAlignment);
 
-  SECTION("the new virtual address must be at end and aligned (dynamic section has its own segment)")
-  {
-    REQUIRE( headers.dynamicProgramHeader().vaddr >= originalVirtualAddressEnd );
-    REQUIRE( (headers.dynamicProgramHeader().vaddr % setup.dynamicSectionAlignment) == 0 );
-  }
+  /*
+   * The new virtual address must be at end and aligned (dynamic section has its own segment)
+   */
+  REQUIRE( headers.dynamicProgramHeader().vaddr >= originalVirtualAddressEnd );
+  REQUIRE( (headers.dynamicProgramHeader().vaddr % setup.dynamicSectionAlignment) == 0 );
+  REQUIRE( headers.dynamicSectionHeader().addr == headers.dynamicProgramHeader().vaddr );
 
   SECTION("the new file offset must be at least at end and congruent to the virtual address modulo page size")
   {
@@ -614,10 +649,10 @@ TEST_CASE("moveDynamicStringTableToEnd")
   setup.sectionHeaderTableOffset = 1'000;
 
   FileAllHeaders headers = makeTestHeaders(setup);
-  const uint64_t originalVirtualAddressEnd = headers.findLastSegmentVirtualAddressEnd();
+  const uint64_t originalVirtualAddressEnd = headers.findGlobalVirtualAddressEnd();
   const uint64_t originalFileEnd = headers.findGlobalFileOffsetEnd();
 
-  headers.moveDynamicStringTableToEnd();
+  headers.moveDynamicStringTableToEnd(MoveSectionAlignment::SectionAlignment);
 
   SECTION("the new virtual address must be at end and modulo 2")
   {
@@ -671,6 +706,29 @@ TEST_CASE("findLastSegmentVirtualAddressEnd")
 
       REQUIRE( allHeaders.findLastSegmentVirtualAddressEnd() == expectedLastAddress );
     }
+  }
+}
+
+TEST_CASE("findGlobalVirtualAddressEnd")
+{
+  TestHeadersSetup setup;
+  FileAllHeaders allHeaders;
+
+  SECTION("the dynamic section is at the end of the virtual memory")
+  {
+    setup.dynamicStringTableOffset = 200;
+    setup.dynamicStringTableAddress = 2000;
+    setup.dynamicStringTableSize = 10;
+    setup.dynamicSectionOffset = 300;
+    setup.dynamicSectionAddress = 3000;
+    setup.dynamicSectionSize = 20;
+
+    allHeaders = makeTestHeaders(setup);
+    REQUIRE( allHeaders.seemsValid() );
+
+    const uint64_t expectedLastAddress = 3020;
+
+    REQUIRE( allHeaders.findGlobalVirtualAddressEnd() == expectedLastAddress );
   }
 }
 

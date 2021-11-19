@@ -39,6 +39,8 @@ TEST_CASE("makeTestHeaders")
 
     REQUIRE( headers.containsProgramInterpreterProgramHeader() );
     REQUIRE( headers.containsProgramInterpreterSectionHeader() );
+    REQUIRE( headers.programInterpreterProgramHeader().vaddr == 100 );
+    REQUIRE( headers.programInterpreterSectionHeader().addr == 100 );
   }
 
   SECTION("contains .dynamic")
@@ -52,6 +54,8 @@ TEST_CASE("makeTestHeaders")
     REQUIRE( headers.containsDynamicProgramHeader() );
     REQUIRE( headers.containsDynamicSectionHeader() );
     REQUIRE( !headers.containsDynamicStringTableSectionHeader() );
+    REQUIRE( headers.dynamicProgramHeader().vaddr == 100 );
+    REQUIRE( headers.dynamicSectionHeader().addr == 100 );
   }
 
   SECTION(".dynstr")
@@ -63,6 +67,7 @@ TEST_CASE("makeTestHeaders")
     headers = makeTestHeaders(setup);
 
     REQUIRE( headers.containsDynamicStringTableSectionHeader() );
+    REQUIRE( headers.dynamicStringTableSectionHeader().addr == 100 );
   }
 
   SECTION("contains .dynamic and .dynstr")
@@ -81,4 +86,68 @@ TEST_CASE("makeTestHeaders")
     REQUIRE( headers.containsDynamicStringTableSectionHeader() );
   }
 
+  SECTION(".gnu.hash")
+  {
+    SECTION("when not set, no .gnu.hash")
+    {
+      headers = makeTestHeaders(setup);
+
+      REQUIRE( !headers.containsGnuHashTableSectionHeader() );
+    }
+
+    SECTION("setup with .gnu.hash")
+    {
+      setup.gnuHashTableSectionOffset = 10;
+      setup.gnuHashTableSectionAddress = 100;
+      setup.gnuHashTableSectionSize = 15;
+
+      headers = makeTestHeaders(setup);
+
+      REQUIRE( headers.containsGnuHashTableSectionHeader() );
+      REQUIRE( headers.gnuHashTableSectionHeader().addr == 100 );
+    }
+  }
+
+  SECTION(".got.plt")
+  {
+    SECTION("when not set, no .got.plt")
+    {
+      headers = makeTestHeaders(setup);
+
+      REQUIRE( !headers.containsGotPltSectionHeader() );
+    }
+
+    SECTION("setup with .got.plt")
+    {
+      setup.gotPltSectionOffset = 10;
+      setup.gotPltSectionAddress = 100;
+      setup.gotPltSectionSize = 15;
+
+      headers = makeTestHeaders(setup);
+
+      REQUIRE( headers.containsGotPltSectionHeader() );
+      REQUIRE( headers.gotPltSectionHeader().addr == 100 );
+    }
+  }
+
+  SECTION(".shstrtab (section name string table)")
+  {
+    SECTION("when not set, no .shstrtab")
+    {
+      headers = makeTestHeaders(setup);
+
+      REQUIRE( !headers.containsSectionNameStringTableHeader() );
+    }
+
+    SECTION("setup with .shstrtab")
+    {
+      setup.sectionNameStringTableOffset = 25;
+
+      headers = makeTestHeaders(setup);
+
+      REQUIRE( headers.containsSectionNameStringTableHeader() );
+      REQUIRE( headers.sectionNameStringTableHeader().offset == 25 );
+      REQUIRE( headers.sectionNameStringTableHeader().addr == 0 );
+    }
+  }
 }

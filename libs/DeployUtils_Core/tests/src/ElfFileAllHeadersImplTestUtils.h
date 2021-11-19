@@ -22,6 +22,7 @@
 #include "ElfSectionHeaderTestUtils.h"
 #include "ElfFileIoTestUtils.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileAllHeaders.h"
+#include "Mdt/DeployUtils/Impl/Elf/SectionHeaderTable.h"
 #include "Mdt/DeployUtils/Impl/Elf/SectionSegmentUtils.h"
 #include <cstdint>
 #include <cassert>
@@ -30,6 +31,7 @@ struct TestHeadersSetup
 {
   uint64_t programHeaderTableOffset = 0;
   uint64_t sectionHeaderTableOffset = 0;
+  bool sortSectionHeaderTableByFileOffset = false;
   uint64_t programInterpreterSectionOffset = 0;
   uint64_t programInterpreterSectionAddress = 0;
   uint64_t programInterpreterSectionSize = 0;
@@ -39,6 +41,9 @@ struct TestHeadersSetup
   uint64_t noteGnuBuilIdSectionOffset = 0;
   uint64_t noteGnuBuilIdSectionAddress = 0;
   uint64_t noteGnuBuilIdSectionSize = 0;
+  uint64_t gnuHashTableSectionOffset = 0;
+  uint64_t gnuHashTableSectionAddress = 0;
+  uint64_t gnuHashTableSectionSize = 0;
   uint64_t dynamicSectionOffset = 0;
   uint64_t dynamicSectionSize = 0;
   uint64_t dynamicSectionAddress = 0;
@@ -46,6 +51,9 @@ struct TestHeadersSetup
   uint64_t dynamicStringTableOffset = 0;
   uint64_t dynamicStringTableSize = 0;
   uint64_t dynamicStringTableAddress = 0;
+  uint64_t gotPltSectionOffset = 0;
+  uint64_t gotPltSectionAddress = 0;
+  uint64_t gotPltSectionSize = 0;
   uint64_t sectionNameStringTableOffset = 0;
 
   bool containsProgramHeaderTable() const noexcept
@@ -106,6 +114,20 @@ struct TestHeadersSetup
     return true;
   }
 
+  bool containsGnuHashTable() const noexcept
+  {
+    if(gnuHashTableSectionOffset == 0){
+      return false;
+    }
+    if(gnuHashTableSectionAddress == 0){
+      return false;
+    }
+    if(gnuHashTableSectionSize == 0){
+      return false;
+    }
+    return true;
+  }
+
   bool containsDynamicSection() const noexcept
   {
     if(dynamicSectionOffset == 0){
@@ -129,6 +151,20 @@ struct TestHeadersSetup
       return false;
     }
     if(dynamicStringTableSize == 0){
+      return false;
+    }
+    return true;
+  }
+
+  bool containsGotPlt() const noexcept
+  {
+    if(gotPltSectionOffset == 0){
+      return false;
+    }
+    if(gotPltSectionAddress == 0){
+      return false;
+    }
+    if(gotPltSectionSize == 0){
       return false;
     }
     return true;
@@ -241,6 +277,22 @@ Mdt::DeployUtils::Impl::Elf::SectionHeader makeNoteGnuBuildIdSectionHeader(const
 }
 
 inline
+Mdt::DeployUtils::Impl::Elf::SectionHeader makeGnuHashTableSectionHeader(const TestHeadersSetup & setup)
+{
+  using Mdt::DeployUtils::Impl::Elf::SectionHeader;
+
+  assert( setup.containsGnuHashTable() );
+
+  SectionHeader header = makeGnuHashTableSectionHeader();
+  header.offset = setup.gnuHashTableSectionOffset;
+  header.addr = setup.gnuHashTableSectionAddress;
+  header.size = setup.gnuHashTableSectionSize;
+  header.addralign = 8;
+
+  return header;
+}
+
+inline
 Mdt::DeployUtils::Impl::Elf::ProgramHeader makeDynamicSectionProgramHeader(const TestHeadersSetup & setup)
 {
   using Mdt::DeployUtils::Impl::Elf::ProgramHeader;
@@ -296,6 +348,21 @@ Mdt::DeployUtils::Impl::Elf::SectionHeader makeDynamicStringTableSectionHeader(c
 }
 
 inline
+Mdt::DeployUtils::Impl::Elf::SectionHeader makeGotPltSectionHeader(const TestHeadersSetup & setup)
+{
+  using Mdt::DeployUtils::Impl::Elf::SectionHeader;
+
+  assert( setup.containsGotPlt() );
+
+  SectionHeader header = makeGotPltSectionHeader();
+  header.offset = setup.gotPltSectionOffset;
+  header.size = setup.gotPltSectionSize;
+  header.addr = setup.gotPltSectionAddress;
+
+  return header;
+}
+
+inline
 Mdt::DeployUtils::Impl::Elf::SectionHeader makeSectionNameStringTableSectionHeader(const TestHeadersSetup & setup)
 {
   using Mdt::DeployUtils::Impl::Elf::SectionHeader;
@@ -306,9 +373,11 @@ Mdt::DeployUtils::Impl::Elf::SectionHeader makeSectionNameStringTableSectionHead
   header.name = ".shstrtab";
   header.offset = setup.sectionNameStringTableOffset;
   header.size = 100;
+  header.addr = 0;
 
   return header;
 }
+
 
 inline
 Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSetup & setup)
@@ -320,6 +389,7 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
   using Mdt::DeployUtils::Impl::Elf::ProgramHeaderTable;
   using Mdt::DeployUtils::Impl::Elf::SectionHeader;
   using Mdt::DeployUtils::Impl::Elf::FileAllHeaders;
+  using Mdt::DeployUtils::Impl::Elf::sortSectionHeadersByFileOffset;
   using Mdt::DeployUtils::Impl::Elf::makeNoteProgramHeaderCoveringSections;
 
   FileAllHeaders headers;
@@ -375,6 +445,9 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
   if( setup.containsNoteGnuBuildId() ){
     sectionHeaderTable.push_back(noteGnuBuildIdSectionHeader);
   }
+  if( setup.containsGnuHashTable() ){
+    sectionHeaderTable.push_back( makeGnuHashTableSectionHeader(setup) );
+  }
   if( setup.containsDynamicSection() ){
     SectionHeader dynamicSectionHeader = makeDynamicSectionHeader(setup);
     if( setup.containsDynamicStringTable() ){
@@ -387,12 +460,22 @@ Mdt::DeployUtils::Impl::Elf::FileAllHeaders makeTestHeaders(const TestHeadersSet
   if( setup.containsDynamicStringTable() ){
     sectionHeaderTable.push_back( makeDynamicStringTableSectionHeader(setup) );
   }
+  if( setup.containsGotPlt() ){
+    sectionHeaderTable.push_back( makeGotPltSectionHeader(setup) );
+  }
   if( setup.containsSectionNameStringTable() ){
     sectionHeaderTable.push_back( makeSectionNameStringTableSectionHeader(setup) );
+    fileHeader.shstrndx = static_cast<uint16_t>( sectionHeaderTable.size() - 1 );
+  }else{
+    fileHeader.shstrndx = 0;
   }
 
-  assert( !sectionHeaderTable.empty() );
-  fileHeader.shstrndx = static_cast<uint16_t>( sectionHeaderTable.size() - 1 );
+  if(setup.sortSectionHeaderTableByFileOffset){
+    sortSectionHeadersByFileOffset(sectionHeaderTable);
+  }
+
+//   assert( !sectionHeaderTable.empty() );
+//   fileHeader.shstrndx = static_cast<uint16_t>( sectionHeaderTable.size() - 1 );
 
   headers.setFileHeader(fileHeader);
   headers.setProgramHeaderTable(programHeaderTable);
