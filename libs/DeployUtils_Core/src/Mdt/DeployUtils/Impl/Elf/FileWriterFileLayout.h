@@ -43,21 +43,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     uint64_t dynamicSectionOffset() const noexcept
     {
       return mDynamicSectionOffsetRange.begin();
-//       return mDynamicSectionOffset;
     }
-
-//     uint64_t dynamicSectionEndOffset() const noexcept
-//     {
-//       if(mDynamicSectionSize == 0){
-//         return mDynamicSectionOffset;
-//       }
-//       return mDynamicSectionOffset + mDynamicSectionSize - 1;
-//     }
 
     uint64_t dynamicSectionSize() const noexcept
     {
       return mDynamicSectionOffsetRange.byteCount();
-//       return mDynamicSectionSize;
     }
 
     OffsetRange dynamicStringTableOffsetRange() const noexcept
@@ -68,21 +58,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     uint64_t dynamicStringTableOffset() const noexcept
     {
       return mDynamicStringTableOffsetRange.begin();
-//       return mDynamicStringTableOffset;
     }
-
-//     uint64_t dynamicStringTableEndOffset() const noexcept
-//     {
-//       if(mDynamicStringTableSize == 0){
-//         return mDynamicStringTableOffset;
-//       }
-//       return mDynamicStringTableOffset + mDynamicStringTableSize - 1;
-//     }
 
     uint64_t dynamicStringTableSize() const noexcept
     {
       return mDynamicStringTableOffsetRange.byteCount();
-//       return mDynamicStringTableSize;
     }
 
     OffsetRange globalOffsetRange() const noexcept
@@ -110,10 +90,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       layout.mDynamicSectionOffsetRange = OffsetRange::fromProgrameHeader( headers.dynamicProgramHeader() );
       layout.mDynamicStringTableOffsetRange = OffsetRange::fromSectionHeader( headers.dynamicStringTableSectionHeader() );
       layout.mGlobalOffsetRange = headers.globalFileOffsetRange();
-//       layout.mDynamicSectionOffset = headers.dynamicProgramHeader().offset;
-//       layout.mDynamicSectionSize = headers.dynamicProgramHeader().filesz;
-//       layout.mDynamicStringTableOffset = headers.dynamicStringTableSectionHeader().offset;
-//       layout.mDynamicStringTableSize = headers.dynamicStringTableSectionHeader().size;
 
       return layout;
     }
@@ -123,10 +99,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     OffsetRange mDynamicSectionOffsetRange;
     OffsetRange mDynamicStringTableOffsetRange;
     OffsetRange mGlobalOffsetRange;
-//     uint64_t mDynamicSectionOffset = 0;
-//     uint64_t mDynamicSectionSize = 0;
-//     uint64_t mDynamicStringTableOffset = 0;
-//     uint64_t mDynamicStringTableSize = 0;
   };
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
