@@ -139,7 +139,7 @@ bool unmapAndCloseFile(QFile & file, ByteArraySpan & map)
   return true;
 }
 
-FileWriterFile readElfFile(const QString & filePath)
+void readElfFile(FileWriterFile & elfFile, const QString & filePath)
 {
   using Impl::Elf::extractFileHeader;
   using Impl::Elf::extractAllHeaders;
@@ -154,7 +154,7 @@ FileWriterFile readElfFile(const QString & filePath)
   using Impl::Elf::NoteSectionReader;
   using Impl::Elf::NoteSectionReadError;
 
-  FileWriterFile elfFile;
+//   FileWriterFile elfFile;
   QFile file(filePath);
   ByteArraySpan map;
 
@@ -172,7 +172,9 @@ FileWriterFile readElfFile(const QString & filePath)
     throw QRuntimeError(msg);
   }
 
-  elfFile = FileWriterFile::fromOriginalFile( headers, extractDynamicSection( map, fileHeader, headers.sectionNameStringTableHeader() ) );
+//   elfFile = FileWriterFile::fromOriginalFile( headers, extractDynamicSection( map, fileHeader, headers.sectionNameStringTableHeader() ) );
+  elfFile.setHeadersFromFile(headers);
+  elfFile.setDynamicSectionFromFile( extractDynamicSection( map, fileHeader, headers.sectionNameStringTableHeader() ) );
   elfFile.setSymTabFromFile( extractSymTabPartReferringToSection( map, headers.fileHeader(), headers.sectionHeaderTable() ) );
   elfFile.setDynSymFromFile( extractDynSymPartReferringToSection( map, headers.fileHeader(), headers.sectionHeaderTable() ) );
   elfFile.setGotSectionFromFile( extractGotSection( map, headers.fileHeader(), headers.sectionHeaderTable() ) );
@@ -198,10 +200,10 @@ FileWriterFile readElfFile(const QString & filePath)
     throw QRuntimeError(msg);
   }
 
-  return elfFile;
+//   return elfFile;
 }
 
-FileWriterFile copyAndReadElfFile(const QString & targetFilePath, const char * sourceFile)
+void copyAndReadElfFile(FileWriterFile & elfFile, const QString & targetFilePath, const char * sourceFile)
 {
   if( !copyFile(QString::fromLocal8Bit(sourceFile), targetFilePath) ){
     const QString msg = QLatin1String("copy the file failed");
@@ -213,14 +215,15 @@ FileWriterFile copyAndReadElfFile(const QString & targetFilePath, const char * s
 //     throw QRuntimeError(msg);
 //   }
 
-  return readElfFile(targetFilePath);
+  readElfFile(elfFile, targetFilePath);
 }
 
 bool readExecutable(const QString & filePath)
 {
 //   using Impl::Elf::toDebugString;
 
-  const FileWriterFile elfFile = readElfFile(filePath);
+  FileWriterFile elfFile;
+  readElfFile(elfFile, filePath);
   if( !elfFile.seemsValid() ){
     return false;
   }
@@ -244,7 +247,7 @@ bool readExecutable(const QString & filePath)
   return true;
 }
 
-bool runElfExecutable( const QString & executableFilePath)
+bool runElfExecutable(const QString & executableFilePath)
 {
   QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
   env.insert( QLatin1String("LD_BIND_NOW"), QLatin1String("1") );
@@ -262,7 +265,8 @@ bool lintElfFile(const QString & filePath)
 
 QString getExecutableRunPath(const QString & filePath)
 {
-  const FileWriterFile elfFile = readElfFile(filePath);
+  FileWriterFile elfFile;
+  readElfFile(elfFile, filePath);
   if( !elfFile.seemsValid() ){
     return QString();
   }
@@ -292,7 +296,7 @@ TEST_CASE("simpleReadWrite")
   REQUIRE( copyFile(QString::fromLocal8Bit(TEST_SIMPLE_EXECUTABLE_DYNAMIC_FILE_PATH), targetFilePath) );
   REQUIRE( runElfExecutable(targetFilePath) );
 
-  elfFile = readElfFile(targetFilePath);
+  readElfFile(elfFile, targetFilePath);
   REQUIRE( elfFile.seemsValid() );
 
   map = openAndMapFileForWrite(file, targetFilePath);
@@ -327,7 +331,7 @@ TEST_CASE("editRunPath_SimpleExecutable")
   SECTION("dynamic section does not change")
   {
     const QString targetFilePath = makePath(dir, "no_changes");
-    elfFile = copyAndReadElfFile(targetFilePath, TEST_SIMPLE_EXECUTABLE_DYNAMIC_FILE_PATH);
+    copyAndReadElfFile(elfFile, targetFilePath, TEST_SIMPLE_EXECUTABLE_DYNAMIC_FILE_PATH);
     REQUIRE( elfFile.seemsValid() );
 
     map = openAndMapFileForWrite(file, targetFilePath);
@@ -344,7 +348,7 @@ TEST_CASE("editRunPath_SimpleExecutable")
   SECTION("change RUNPATH")
   {
     const QString targetFilePath = makePath(dir, "change_runpath");
-    elfFile = copyAndReadElfFile(targetFilePath, TEST_SIMPLE_EXECUTABLE_DYNAMIC_WITH_RUNPATH_FILE_PATH);
+    copyAndReadElfFile(elfFile, targetFilePath, TEST_SIMPLE_EXECUTABLE_DYNAMIC_WITH_RUNPATH_FILE_PATH);
     REQUIRE( elfFile.seemsValid() );
     REQUIRE( elfFile.dynamicSection().getRunPath().length() >= 4 );
 
@@ -367,7 +371,7 @@ TEST_CASE("editRunPath_SimpleExecutable")
   SECTION("remove RUNPATH")
   {
     const QString targetFilePath = makePath(dir, "remove_runpath");
-    elfFile = copyAndReadElfFile(targetFilePath, TEST_SIMPLE_EXECUTABLE_DYNAMIC_WITH_RUNPATH_FILE_PATH);
+    copyAndReadElfFile(elfFile, targetFilePath, TEST_SIMPLE_EXECUTABLE_DYNAMIC_WITH_RUNPATH_FILE_PATH);
     REQUIRE( elfFile.seemsValid() );
     REQUIRE( elfFile.dynamicSection().containsRunPathEntry() );
     REQUIRE( !elfFile.dynamicSection().getRunPath().isEmpty() );
@@ -383,7 +387,7 @@ TEST_CASE("editRunPath_SimpleExecutable")
 
     unmapAndCloseFile(file, map);
     REQUIRE( runElfExecutable(targetFilePath) );
-    elfFile = readElfFile(targetFilePath);
+    readElfFile(elfFile, targetFilePath);
     REQUIRE( elfFile.seemsValid() );
     REQUIRE( !elfFile.dynamicSection().containsRunPathEntry() );
     REQUIRE( elfFile.dynamicSection().getRunPath().isEmpty() );
@@ -395,7 +399,7 @@ TEST_CASE("editRunPath_SimpleExecutable")
   SECTION("set a very long RUNPATH")
   {
     const QString targetFilePath = makePath(dir, "set_very_long_runpath");
-    elfFile = copyAndReadElfFile(targetFilePath, TEST_SIMPLE_EXECUTABLE_DYNAMIC_FILE_PATH);
+    copyAndReadElfFile(elfFile, targetFilePath, TEST_SIMPLE_EXECUTABLE_DYNAMIC_FILE_PATH);
     REQUIRE( elfFile.seemsValid() );
 
     const QString runPath = generateStringWithNChars(10000);
@@ -419,7 +423,7 @@ TEST_CASE("editRunPath_SimpleExecutable")
   SECTION("set a RUNPATH - the DT_RUNPATH entry does not exist initially")
   {
     const QString targetFilePath = makePath(dir, "add_runpath");
-    elfFile = copyAndReadElfFile(targetFilePath, TEST_SIMPLE_EXECUTABLE_DYNAMIC_NO_RUNPATH_FILE_PATH);
+    copyAndReadElfFile(elfFile, targetFilePath, TEST_SIMPLE_EXECUTABLE_DYNAMIC_NO_RUNPATH_FILE_PATH);
     REQUIRE( elfFile.seemsValid() );
     REQUIRE( !elfFile.dynamicSection().containsRunPathEntry() );
 
@@ -455,7 +459,7 @@ TEST_CASE("editRunPath_SharedLibrary")
   SECTION("set a RUNPATH - the DT_RUNPATH entry does not exist initially")
   {
     const QString targetFilePath = makePath(dir, "add_runpath");
-    elfFile = copyAndReadElfFile(targetFilePath, TEST_SHARED_LIBRARY_NO_RUNPATH_FILE_PATH);
+    copyAndReadElfFile(elfFile, targetFilePath, TEST_SHARED_LIBRARY_NO_RUNPATH_FILE_PATH);
     REQUIRE( elfFile.seemsValid() );
     REQUIRE( !elfFile.dynamicSection().containsRunPathEntry() );
 

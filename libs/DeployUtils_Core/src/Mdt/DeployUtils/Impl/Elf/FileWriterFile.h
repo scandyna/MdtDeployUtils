@@ -65,21 +65,23 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      */
     FileWriterFile() noexcept = default;
 
-    /*! \brief Copy construct a file from \a other
-     */
-    FileWriterFile(const FileWriterFile & other) = default;
+    FileWriterFile(const FileWriterFile & other) = delete;
+    FileWriterFile & operator=(const FileWriterFile & other) = delete;
 
-    /*! \brief Copy assign \a other to this file
-     */
-    FileWriterFile & operator=(const FileWriterFile & other) = default;
+    FileWriterFile(FileWriterFile && other) noexcept = delete;
+    FileWriterFile & operator=(FileWriterFile && other) noexcept = delete;
 
-    /*! \brief Move construct a file from \a other
+    /*! \brief Set the headers readen from file
      */
-    FileWriterFile(FileWriterFile && other) noexcept = default;
+    void setHeadersFromFile(const FileAllHeaders & headers) noexcept
+    {
+      assert( headers.seemsValid() );
+      assert( headers.containsDynamicProgramHeader() );
+      assert( headers.containsDynamicSectionHeader() );
+      assert( headers.containsDynamicStringTableSectionHeader() );
 
-    /*! \brief Move assign \a other to this file
-     */
-    FileWriterFile & operator=(FileWriterFile && other) noexcept = default;
+      mHeaders = headers;
+    }
 
     /*! \brief Get the headers
      */
@@ -389,6 +391,18 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return movedSectionHeadersIndexes;
     }
 
+    /*! \brief Set the dynamic section and its string table as readen from file
+     */
+    void setDynamicSectionFromFile(const DynamicSection & section) noexcept
+    {
+      assert( mHeaders.seemsValid() );
+      assert( !section.isNull() );
+
+      mDynamicSection = section;
+      mOriginalLayout = FileWriterFileLayout::fromFile(mHeaders, section);
+      mFileOffsetChanges.setOriginalSizes(section, mHeaders.fileHeader().ident._class);
+    }
+
     /*! \brief Check if this file has the dynamic section
      */
     bool containsDynamicSection() const noexcept
@@ -627,34 +641,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return true;
     }
 
-    /*! \brief Get a file writer file from the readen file
-     *
-     * \pre \a headers must be valid
-     * \pre \a dynamicSection must not be null
-     * \pre \a headers must contain the dynamic program header
-     * \pre \a headers must contain the dynamic section header
-     */
-    static
-    FileWriterFile fromOriginalFile(const FileAllHeaders & headers, const DynamicSection & dynamicSection) noexcept
-    {
-      assert( headers.seemsValid() );
-      assert( !dynamicSection.isNull() );
-      assert( headers.containsDynamicProgramHeader() );
-      assert( headers.containsDynamicSectionHeader() );
-      assert( headers.containsDynamicStringTableSectionHeader() );
-
-      return FileWriterFile(headers, dynamicSection);
-    }
-
    private:
-
-    FileWriterFile(const FileAllHeaders & headers, const DynamicSection & dynamicSection)
-     : mHeaders(headers),
-       mDynamicSection(dynamicSection)
-    {
-      mOriginalLayout = FileWriterFileLayout::fromFile(headers, dynamicSection);
-      mFileOffsetChanges.setOriginalSizes(dynamicSection, headers.fileHeader().ident._class);
-    }
 
     FileWriterFileLayout mOriginalLayout;
     FileOffsetChanges mFileOffsetChanges;

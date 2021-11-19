@@ -126,7 +126,7 @@ struct TestFileSetup
   }
 };
 
-FileWriterFile makeWriterFile(const TestFileSetup & setup)
+void makeWriterFile(FileWriterFile & file, const TestFileSetup & setup)
 {
   using Mdt::DeployUtils::Impl::Elf::Class;
   using Mdt::DeployUtils::Impl::Elf::ProgramInterpreterSection;
@@ -186,7 +186,9 @@ FileWriterFile makeWriterFile(const TestFileSetup & setup)
   headersSetup.sectionNameStringTableOffset = setup.sectionNameStringTableOffset;
 
   FileAllHeaders headers = makeTestHeaders(headersSetup);
-  FileWriterFile file = FileWriterFile::fromOriginalFile(headers, dynamicSection);
+
+  file.setHeadersFromFile(headers);
+  file.setDynamicSectionFromFile(dynamicSection);
 
   PartialSymbolTable symbolTable;
   int64_t dynSymEntryOffset = setup.dynSymOffset;
@@ -208,8 +210,6 @@ FileWriterFile makeWriterFile(const TestFileSetup & setup)
   if( setup.containsGotPlt() ){
     file.setGotPltSectionFromFile(gotPltTable);
   }
-
-  return file;
 }
 
 FileWriterFileLayout makeFileLayoutFromFile(const FileWriterFile & file)
@@ -246,7 +246,8 @@ TEST_CASE("FileWriterFileLayout")
     setup.sectionNameStringTableOffset = 5'000;
     setup.sectionHeaderTableOffset = 10'000;
 
-    FileWriterFile file = makeWriterFile(setup);
+    FileWriterFile file;
+    makeWriterFile(file, setup);
     layout = makeFileLayoutFromFile(file);
 
     uint64_t expectedDynamicSectionSize = file.dynamicSection().byteCount(Class::Class64);
@@ -278,7 +279,8 @@ TEST_CASE("fromOriginalFile")
 
   SECTION("No RUNPATH")
   {
-    FileWriterFile file = makeWriterFile(setup);
+    FileWriterFile file;
+    makeWriterFile(file, setup);
     REQUIRE( file.fileHeader().seemsValid() );
     REQUIRE( file.fileHeader().phoff == 50 );
     REQUIRE( file.fileHeader().shoff == 10000 );
@@ -308,7 +310,8 @@ TEST_CASE("fromOriginalFile")
   SECTION("RUNPATH /tmp")
   {
     setup.runPath = QLatin1String("/tmp");
-    FileWriterFile file = makeWriterFile(setup);
+    FileWriterFile file;
+    makeWriterFile(file, setup);
     REQUIRE( file.fileHeader().seemsValid() );
     REQUIRE( file.fileHeader().phoff == 50 );
     REQUIRE( file.fileHeader().shoff == 10000 );
@@ -354,7 +357,7 @@ TEST_CASE("moveProgramInterpreterSectionToEnd")
   setup.dynamicSectionOffset = 600;
   setup.dynamicSectionAddress = 1600;
 
-  file = makeWriterFile(setup);
+  makeWriterFile(file, setup);
 
   file.moveProgramInterpreterSectionToEnd(MoveSectionAlignment::SectionAlignment);
 
@@ -378,7 +381,7 @@ TEST_CASE("moveGnuHashTableToEnd")
   setup.dynamicSectionOffset = 600;
   setup.dynamicSectionAddress = 1600;
 
-  file = makeWriterFile(setup);
+  makeWriterFile(file, setup);
 
   file.moveGnuHashTableToEnd(MoveSectionAlignment::SectionAlignment);
 
@@ -406,7 +409,7 @@ TEST_CASE("moveDynamicSectionToEnd")
   setup.gotPltSectionOffset = 700;
   setup.gotPltSectionAddress = 1700;
 
-  file = makeWriterFile(setup);
+  makeWriterFile(file, setup);
 
   file.moveDynamicSectionToEnd(MoveSectionAlignment::SectionAlignment);
 
@@ -435,7 +438,7 @@ TEST_CASE("moveDynamicStringTableToEnd")
   setup.gotPltSectionOffset = 700;
   setup.gotPltSectionAddress = 1700;
 
-  file = makeWriterFile(setup);
+  makeWriterFile(file, setup);
 
   file.moveDynamicStringTableToEnd(MoveSectionAlignment::SectionAlignment);
 
@@ -470,7 +473,7 @@ TEST_CASE("moveFirstCountSectionsToEnd")
     setup.dynamicSectionOffset = 600;
     setup.dynamicSectionAddress = 1600;
 
-    file = makeWriterFile(setup);
+    makeWriterFile(file, setup);
 
     SECTION("move .interp")
     {
@@ -516,7 +519,7 @@ TEST_CASE("moveFirstCountSectionsToEnd")
     setup.dynamicSectionOffset = 600;
     setup.dynamicSectionAddress = 1600;
 
-    file = makeWriterFile(setup);
+    makeWriterFile(file, setup);
 
     SECTION("move .interp")
     {
@@ -549,7 +552,7 @@ TEST_CASE("moveFirstCountSectionsToEnd")
     setup.dynamicSectionOffset = 600;
     setup.dynamicSectionAddress = 1600;
 
-    file = makeWriterFile(setup);
+    makeWriterFile(file, setup);
 
     SECTION("move .note.gnu.build-id and .gnu.hash")
     {
@@ -580,7 +583,8 @@ TEST_CASE("setRunPath")
 
   SECTION("There is initially no RUNPATH")
   {
-    FileWriterFile file = makeWriterFile(setup);
+    FileWriterFile file;
+    makeWriterFile(file, setup);
     REQUIRE( file.dynamicSection().getRunPath().isEmpty() );
 
     file.setRunPath( QLatin1String("/tmp") );
@@ -590,7 +594,8 @@ TEST_CASE("setRunPath")
   SECTION("Change RUNPATH from /tmp /usr/lib")
   {
     setup.runPath = QLatin1String("/tmp");
-    FileWriterFile file = makeWriterFile(setup);
+    FileWriterFile file;
+    makeWriterFile(file, setup);
     REQUIRE( file.dynamicSection().getRunPath() == QLatin1String("/tmp") );
 
     file.setRunPath( QLatin1String("/usr/lib") );
@@ -628,7 +633,7 @@ TEST_CASE("setRunPath_fileLayout")
 
   SECTION("there is initially no RUNPATH")
   {
-    file = makeWriterFile(setup);
+    makeWriterFile(file, setup);
     originalLayout = FileWriterFileLayout::fromFile( file.headers(), file.dynamicSection() );
     REQUIRE( !file.dynamicSection().containsRunPathEntry() );
 
@@ -676,7 +681,7 @@ TEST_CASE("setRunPath_fileLayout")
   {
     setup.runPath = QLatin1String("/opt/libA");
 
-    file = makeWriterFile(setup);
+    makeWriterFile(file, setup);
     REQUIRE( file.containsDynamicSection() );
     REQUIRE( file.containsDynamicStringTableSectionHeader() );
     originalLayout = FileWriterFileLayout::fromFile( file.headers(), file.dynamicSection() );
@@ -825,7 +830,7 @@ TEST_CASE("minimumSizeToWriteFile")
     setup.dynamicStringTableOffset = 1'000;
     setup.dynamicStringTableAddress = 1000;
     setup.sectionHeaderTableOffset = 10'000;
-    file = makeWriterFile(setup);
+    makeWriterFile(file, setup);
 
     expectedMinimumSize = file.fileHeader().minimumSizeToReadAllSectionHeaders();
     REQUIRE( file.minimumSizeToWriteFile() == expectedMinimumSize );
@@ -839,7 +844,7 @@ TEST_CASE("minimumSizeToWriteFile")
     setup.dynamicStringTableOffset = 10'000;
     setup.dynamicStringTableAddress = 10'000;
     setup.sectionHeaderTableOffset = 2'000;
-    file = makeWriterFile(setup);
+    makeWriterFile(file, setup);
 
     expectedMinimumSize = 10'000 + file.dynamicStringTableSize();
     REQUIRE( file.minimumSizeToWriteFile() == expectedMinimumSize );
