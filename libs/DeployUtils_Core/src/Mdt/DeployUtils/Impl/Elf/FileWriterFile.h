@@ -41,29 +41,33 @@
 #include "Algorithm.h"
 #include "Exceptions.h"
 #include "Mdt/DeployUtils/Algorithm.h"
-#include <QCoreApplication>
+#include "mdt_deployutilscore_export.h"
+#include <QObject>
 #include <QString>
 #include <algorithm>
 #include <cstdint>
 #include <vector>
 #include <cassert>
 
-#include <QDebug>
-#include <iostream>
+// #include <QDebug>
+// #include <iostream>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
   /*! \internal
    */
-  class FileWriterFile
+  class MDT_DEPLOYUTILSCORE_EXPORT FileWriterFile : public QObject
   {
-    Q_DECLARE_TR_FUNCTIONS(FileWriterFile)
+    Q_OBJECT
 
    public:
 
     /*! \brief Construct a empty file
      */
-    FileWriterFile() noexcept = default;
+    FileWriterFile(QObject *parent = nullptr)
+     : QObject(parent)
+    {
+    }
 
     FileWriterFile(const FileWriterFile & other) = delete;
     FileWriterFile & operator=(const FileWriterFile & other) = delete;
@@ -118,6 +122,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      */
     void setRunPath(const QString & runPath)
     {
+      QString msg;
+
+      msg = tr("set runpath to %1").arg(runPath);
+      emit message(msg);
+
       mDynamicSection.setRunPath(runPath);
 
       mHeaders.setDynamicSectionSize( mDynamicSection.byteCount(fileHeader().ident._class) );
@@ -213,24 +222,33 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       std::vector<uint16_t> movedSectionHeadersIndexes;
 
       if(sectionToMoveCount > 1){
+        msg = tr("will have to move %1 sections").arg(sectionToMoveCount-1);
+        emit message(msg);
+
         movedSectionHeadersIndexes = moveFirstCountSectionsToEnd(sectionToMoveCount);
       }
 
       std::cout << "offset end: " << mHeaders.findGlobalFileOffsetEnd() << " , Vaddr end: " << mHeaders.findGlobalVirtualAddressEnd() << std::endl;
 
       if(mustMoveDynamicSection){
-        std::cout << "moving .dynamic section to end ..." << std::endl;
+        msg = tr("moving .dynamic section to end");
+        emit verboseMessage(msg);
+
         moveDynamicSectionToEnd(MoveSectionAlignment::SectionAlignment);
         movedSectionHeadersIndexes.push_back( mHeaders.dynamicSectionHeaderIndex() );
       }
 
       if(mustMoveDynamicStringTable){
-        std::cout << "moving .dynstr section to end ..." << std::endl;
+        msg = tr("moving .dynstr section to end");
+        emit verboseMessage(msg);
+
         moveDynamicStringTableToEnd(MoveSectionAlignment::SectionAlignment);
         movedSectionHeadersIndexes.push_back( mHeaders.dynamicStringTableSectionHeaderIndex() );
       }
 
-      std::cout << "updating symbol tables ..." << std::endl;
+      msg = tr("updating symbol tables");
+      emit verboseMessage(msg);
+
       /*
        * Moving sections will change offsets and addresses.
        * We have to update some parts,
@@ -240,7 +258,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mDynSym.updateVirtualAddresses( movedSectionHeadersIndexes, mHeaders.sectionHeaderTable() );
 
       if( !movedSectionHeadersIndexes.empty() ){
-        std::cout << "creating PT_LOAD segment header" << std::endl;
+        msg = tr("creating PT_LOAD segment header");
+        emit verboseMessage(msg);
+
         const ProgramHeader loadSegmentHeader = makeLoadProgramHeaderCoveringSections(
           movedSectionHeadersIndexes, mHeaders.sectionHeaderTable(), mHeaders.fileHeader().pageSize()
         );
@@ -273,8 +293,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 //         std::cout << "extending PT_GNU_RELRO to also cover .dynamic section" << std::endl;
 //         extendProgramHeaderSizeToCoverSections( mHeaders.gnuRelRoProgramHeaderMutable(), {mHeaders.dynamicSectionHeader()} );
 //       }
-
-      std::cout << "DONE !!" << std::endl;
     }
 
     /*! \brief Move the .interp to the end
@@ -331,6 +349,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     void moveSectionToEnd(const SectionHeader & header, MoveSectionAlignment alignment)
     {
+      const QString msg = tr("moving section %1 to the end")
+                          .arg( QString::fromStdString(header.name) );
+      emit verboseMessage(msg);
+
       if( header.isProgramInterpreterSectionHeader() ){
         moveProgramInterpreterSectionToEnd(alignment);
       }else if( header.isGnuHashTableSectionHeader() ){
@@ -370,8 +392,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
           * so we have to move them all
           */
         if( header.sectionType() == SectionType::Note ){
+          const QString msg = tr("moving note sections to end");
+          emit verboseMessage(msg);
           // PT_NOTE program header will also be updated
-          std::cout << "moving note sections to end ..." << std::endl;
           mHeaders.moveNoteSectionsToEnd(moveSectionAlignment);
           const auto noteSections = mHeaders.getNoteSectionHeaders();
           mNoteSectionTable.updateSectionHeaders( mHeaders.sectionHeaderTable() );
@@ -381,11 +404,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
             movedSectionHeadersIndexes.push_back(i);
           }
         }else{
-          std::cout << "moving section " << header.name << " to end ..." << std::endl;
           moveSectionToEnd(header, moveSectionAlignment);
           movedSectionHeadersIndexes.push_back(i);
         }
-        std::cout << "offset end: " << mHeaders.findGlobalFileOffsetEnd() << " , Vaddr end: " << mHeaders.findGlobalVirtualAddressEnd() << std::endl;
       }
 
       return movedSectionHeadersIndexes;
@@ -640,6 +661,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       return true;
     }
+
+   signals:
+
+    void message(const QString & message) const;
+    void verboseMessage(const QString & message) const;
 
    private:
 
