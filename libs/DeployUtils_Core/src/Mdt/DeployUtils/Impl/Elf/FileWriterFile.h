@@ -118,6 +118,168 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     {
       mDynamicSection.setRunPath(runPath);
 
+      mHeaders.setDynamicSectionSize( mDynamicSection.byteCount(fileHeader().ident._class) );
+      mHeaders.setDynamicStringTableSize( mDynamicSection.stringTable().byteCount() );
+
+      const bool mustMoveDynamicSection = mFileOffsetChanges.dynamicSectionChangesOffset(mDynamicSection) > 0;
+      const bool mustMoveDynamicStringTable = mFileOffsetChanges.dynamicStringTableChangesOffset(mDynamicSection) > 0;
+      const bool mustMoveAnySection = mustMoveDynamicSection || mustMoveDynamicStringTable;
+
+      if(!mustMoveAnySection){
+        return;
+      }
+
+      /*
+       * If either the .dynstr and/or the .dynamic section grows,
+       * we have to put them at the end of the file
+       * (shifting all the data after those sections is not a option,
+       * because this will inavlidate references we don't know
+       * how to handle. We are not a linker).
+       *
+       * Also, the .dynstr and .dynamic must be
+       * covered by a load segment (PT_LOAD).
+       * For this, a new entry must be added in the program header table.
+       * For this, we have to do some place after this table.
+       *
+       * Also putting the program header table at the end causes problems.
+       * In my case, on a Ubuntu 18.04, the resulting program allways crashed
+       * while glibc (2.27) parses the program header table,
+       * at rtld.c:1148.
+       * This could be worked around for gcc generated executables,
+       * which are shared object (DYN).
+       * For Clang generated executables (EXEC), this did not work.
+       * See also:
+       * - https://lwn.net/Articles/631631/
+       * - https://github.com/NixOS/patchelf/blob/master/BUGS
+       * - https://github.com/NixOS/patchelf/pull/117
+       *
+       * Try to make place just after the program header table,
+       * so we can add the new load segment.
+       * On x86-64, a entry is 56-bytes long.
+       *
+       * Looking at generated executables, the first sections that came
+       * just after the program header table are .interp (28-bytes)
+       * and .note.ABI-tag (32-bytes).
+       *
+       * A other note section could also follows: .note.gnu.build-id
+       * Because the PT_NOTE segment must cover all note sections,
+       * we have to move them all.
+       *
+       * As example, if we move the .dynamic and .dynstr,
+       * we would end up with soemthing like this:
+       *
+       * EOF (maybe section header table)
+       * .interp section
+       * .note.ABI-tag section
+       * .note.gnu.build-id
+       * .dynamic section
+       * .dynstr section
+       *
+       * PT_PHDR segment must cover the program header table (new size)
+       * PT_INTERP segment must cover .interp
+       * PT_LOAD new segment that covers .interp , .note.ABI-tag, .note.gnu.build-id , .dynamic and .dynstr
+       * PT_DYNAMIC segment must cover .dynamic
+       * PT_GNU_RELRO segment must be extended to also cover the .dynamic section
+       * PT_NOTE segment must cover .note.ABI-tag and .note.gnu.build-id
+       */
+
+      assert(mustMoveAnySection);
+
+      /*
+       * We need to add a new PT_LOAD to the program header table.
+       * For that, we need to move first sections to the end.
+       */
+
+      const SectionIndexChangeMap sectionIndexChangeMap = mHeaders.sortSectionHeaderTableByFileOffset();
+      /*
+       * Sorting the section header table changes the index of some headers.
+       * We have to update parts, like symbol tables,
+       * that references indexes in the section header table.
+       */
+      mSymTab.updateSectionIndexes(sectionIndexChangeMap);
+      mDynSym.updateSectionIndexes(sectionIndexChangeMap);
+
+      const uint16_t sectionToMoveCount = findCountOfSectionsToMoveToFreeSize(mHeaders.sectionHeaderTable(), fileHeader().phentsize);
+      if( sectionToMoveCount >= mHeaders.sectionHeaderTable().size() ){
+        const QString msg = tr("should move %1 sections, but file contains only %2 sections")
+                            .arg(sectionToMoveCount).arg( mHeaders.sectionHeaderTable().size() );
+        throw MoveSectionError(msg);
+      }
+
+      std::cout << "required place: " << fileHeader().phentsize << " , sections to move (includes SHT_NULL): " << sectionToMoveCount << std::endl;
+
+      /// If zero -> good :)
+
+      std::vector<uint16_t> movedSectionHeadersIndexes;
+
+      if(sectionToMoveCount > 1){
+        movedSectionHeadersIndexes = moveFirstCountSectionsToEnd(sectionToMoveCount);
+      }
+
+      std::cout << "offset end: " << mHeaders.findGlobalFileOffsetEnd() << " , Vaddr end: " << mHeaders.findGlobalVirtualAddressEnd() << std::endl;
+
+      if(mustMoveDynamicSection){
+        std::cout << "moving .dynamic section to end ..." << std::endl;
+        moveDynamicSectionToEnd(MoveSectionAlignment::SectionAlignment);
+        movedSectionHeadersIndexes.push_back( mHeaders.dynamicSectionHeaderIndex() );
+      }
+
+      if(mustMoveDynamicStringTable){
+        std::cout << "moving .dynstr section to end ..." << std::endl;
+        moveDynamicStringTableToEnd(MoveSectionAlignment::SectionAlignment);
+        movedSectionHeadersIndexes.push_back( mHeaders.dynamicStringTableSectionHeaderIndex() );
+      }
+
+      std::cout << "updating symbol tables ..." << std::endl;
+      /*
+       * Moving sections will change offsets and addresses.
+       * We have to update some parts,
+       * like symbol tables, that references those addresses.
+       */
+      mSymTab.updateVirtualAddresses( movedSectionHeadersIndexes, mHeaders.sectionHeaderTable() );
+      mDynSym.updateVirtualAddresses( movedSectionHeadersIndexes, mHeaders.sectionHeaderTable() );
+
+      if( !movedSectionHeadersIndexes.empty() ){
+        std::cout << "creating PT_LOAD segment header" << std::endl;
+        const ProgramHeader loadSegmentHeader = makeLoadProgramHeaderCoveringSections(
+          movedSectionHeadersIndexes, mHeaders.sectionHeaderTable(), mHeaders.fileHeader().pageSize()
+        );
+        mHeaders.addProgramHeader(loadSegmentHeader);
+      }
+
+      /** \todo The PT_GNU_RELRO segment should also cover the .dynamic section
+       *
+       * In elf files generated (at least by ld), a PT_GNU_RELRO segment
+       * also covers the .dynamic section.
+       *
+       * To have a idea of its role, see
+       * https://thr3ads.net/llvm-dev/2017/05/2818516-lld-ELF-Add-option-to-make-.dynamic-read-only
+       *
+       * Making PT_GNU_RELRO also cover the .dynamic section seems to be tricky,
+       * because it seems to require some sections to be properly aligned.
+       * Making a second PT_GNU_RELRO could be a idea, but:
+       * - it will require to add a new program header to the program header table,
+       *   that will again require to move more sections from the beginning of the file
+       * - it seems not to be well supported by the loaders
+       * For more details, see https://reviews.llvm.org/D40029
+       *
+       * This code below is commented, because it does not work:
+       * - launching a simple exectable segfaults
+       * - eu-elflint tells:
+       *  a) PT_GNU_RELRO is not covered by any PT_LOAD segment
+       *  b) PT_GNU_RELRO's file size is greater than its memory size
+       */
+//       if( mustMoveDynamicSection && mHeaders.containsGnuRelRoProgramHeader() ){
+//         std::cout << "extending PT_GNU_RELRO to also cover .dynamic section" << std::endl;
+//         extendProgramHeaderSizeToCoverSections( mHeaders.gnuRelRoProgramHeaderMutable(), {mHeaders.dynamicSectionHeader()} );
+//       }
+      /** \todo if moving .dynamic, think about PT_GNU_RELRO
+       */
+
+      std::cout << "DONE !!" << std::endl;
+
+      return;
+
 //         mHeaders.setDynamicSectionSize( mDynamicSection.byteCount(fileHeader().ident._class) );
 //         mHeaders.setDynamicStringTableSize( mDynamicSection.stringTable().byteCount() );
 
@@ -154,10 +316,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
        * PT_LOAD new segment that covers the program header table, .dynamic and .dynstr
        * PT_DYNAMIC segment must cover .dynamic
        */
-
-      const bool mustMoveDynamicSection = mFileOffsetChanges.dynamicSectionChangesOffset(mDynamicSection) > 0;
-      const bool mustMoveDynamicStringTable = mFileOffsetChanges.dynamicStringTableChangesOffset(mDynamicSection) > 0;
-      const bool mustMoveAnySection = mustMoveDynamicSection || mustMoveDynamicStringTable;
 
       /*
        * If we move any section to the end,
@@ -231,58 +389,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
         mHeaders.setDynamicStringTableSize( mDynamicSection.stringTable().byteCount() );
       }
 
-      /*
-       * If either the .dynstr and/or the .dynamic section grows,
-       * we have to put them at the end of the file
-       * (shifting all the data after those sections is not a option,
-       * because this will inavlidate references we don't know
-       * how to handle. We are not a linker).
-       *
-       * Also, the .dynstr and .dynamic must be
-       * covered by a load segment (PT_LOAD).
-       * For this, a new entry must be added in the program header table.
-       * For this, we have to do some place after this table.
-       *
-       * Also putting the program header table at the end causes problems.
-       * In my case, on a Ubuntu 18.04, the resulting program allways crashed
-       * while glibc (2.27) parses the program header table,
-       * at rtld.c:1148.
-       * This could be worked around for gcc generated executables,
-       * which are shared object (DYN).
-       * For Clang generated executables (EXEC), this did not work.
-       * See also:
-       * - https://lwn.net/Articles/631631/
-       * - https://github.com/NixOS/patchelf/blob/master/BUGS
-       * - https://github.com/NixOS/patchelf/pull/117
-       *
-       * Try to make place just after the program header table,
-       * so we can add the new load segment.
-       * On x86-64, a entry is 56-bytes long.
-       *
-       * Looking at generated executables, the first sections that came
-       * just after the program header table are .interp (28-bytes)
-       * and .note.ABI-tag (32-bytes).
-       *
-       * A other note section could also follows: .note.gnu.build-id
-       * Because the PT_NOTE segment must cover all note sections,
-       * we have to move them all.
-       *
-       * As example, if we move the .dynamic and .dynstr,
-       * we would end up with soemthing like this:
-       *
-       * EOF (maybe section header table)
-       * .interp section
-       * .note.ABI-tag section
-       * .note.gnu.build-id
-       * .dynamic section
-       * .dynstr section
-       *
-       * PT_PHDR segment must cover the program header table (new size)
-       * PT_INTERP segment must cover .interp
-       * PT_LOAD new segment that covers .interp , .note.ABI-tag, .note.gnu.build-id , .dynamic and .dynstr
-       * PT_DYNAMIC segment must cover .dynamic
-       * PT_NOTE segment must cover .note.ABI-tag and .note.gnu.build-id
-       */
     }
 
     /*! \brief Move the .interp to the end
@@ -300,7 +406,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     {
       assert( mHeaders.containsGnuHashTableSectionHeader() );
 
+      std::cout << " move .gnu.hash , offset end: " << mHeaders.findGlobalFileOffsetEnd() << " , Vaddr end: " << mHeaders.findGlobalVirtualAddressEnd() << std::endl;
       mHeaders.moveGnuHashTableToEnd(alignment);
+
+      std::cout << " Move DONE: offset end: " << mHeaders.findGlobalFileOffsetEnd() << " , Vaddr end: " << mHeaders.findGlobalVirtualAddressEnd() << std::endl;
 
       if( mDynamicSection.containsGnuHashTableAddress() ){
         mDynamicSection.setGnuHashTableAddress(mHeaders.gnuHashTableSectionHeader().addr);
@@ -316,6 +425,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       // Will also handle PT_DYNAMIC
       mHeaders.moveDynamicSectionToEnd(alignment);
 
+      if( mGotSection.containsDynamicSectionAddress() ){
+        mGotSection.setDynamicSectionAddress(mHeaders.dynamicSectionHeader().addr);
+      }
       if( mGotPltSection.containsDynamicSectionAddress() ){
         mGotPltSection.setDynamicSectionAddress(mHeaders.dynamicSectionHeader().addr);
       }
@@ -391,6 +503,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
           moveSectionToEnd(header, moveSectionAlignment);
           movedSectionHeadersIndexes.push_back(i);
         }
+        std::cout << "offset end: " << mHeaders.findGlobalFileOffsetEnd() << " , Vaddr end: " << mHeaders.findGlobalVirtualAddressEnd() << std::endl;
       }
 
       return movedSectionHeadersIndexes;
