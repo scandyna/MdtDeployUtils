@@ -199,7 +199,7 @@ FileWriterFile makeWriterFile(const TestFileSetup & setup)
   symbolTable.addEntryFromFile(dynStrSymTabEntry);
   symbolTable.indexAssociationsKnownSections( headers.sectionHeaderTable() );
 
-  file.setSectionSymbolTableFromFile(symbolTable);
+  file.setDynSymFromFile(symbolTable);
 
   if( setup.containsProgramInterpreter() ){
     file.setProgramInterpreterSectionFromFile(programInterpreterSection);

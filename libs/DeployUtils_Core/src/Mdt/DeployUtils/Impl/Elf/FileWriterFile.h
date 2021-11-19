@@ -208,8 +208,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       std::cout << "required place: " << fileHeader().phentsize << " , sections to move (includes SHT_NULL): " << sectionToMoveCount << std::endl;
 
-      /// If zero -> good :)
-
       std::vector<uint16_t> movedSectionHeadersIndexes;
 
       if(sectionToMoveCount > 1){
@@ -273,122 +271,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 //         std::cout << "extending PT_GNU_RELRO to also cover .dynamic section" << std::endl;
 //         extendProgramHeaderSizeToCoverSections( mHeaders.gnuRelRoProgramHeaderMutable(), {mHeaders.dynamicSectionHeader()} );
 //       }
-      /** \todo if moving .dynamic, think about PT_GNU_RELRO
-       */
 
       std::cout << "DONE !!" << std::endl;
-
-      return;
-
-//         mHeaders.setDynamicSectionSize( mDynamicSection.byteCount(fileHeader().ident._class) );
-//         mHeaders.setDynamicStringTableSize( mDynamicSection.stringTable().byteCount() );
-
-      /*
-       * If we move .dynstr:
-       *
-       * EOF (maybe section header table)
-       * program header table
-       * .dynstr section
-       *
-       * PT_PHDR segment must cover the program header table
-       * PT_LOAD new segment that covers the program header table and .dynstr
-       *
-       *
-       * If we move .dynamic:
-       *
-       * EOF (maybe section header table)
-       * program header table
-       * .dynamic section
-       *
-       * PT_PHDR segment must cover the program header table
-       * PT_LOAD new segment that covers the program header table and .dynamic
-       * PT_DYNAMIC segment must cover .dynamic
-       *
-       *
-       * If we move both .dynamic and .dynstr:
-       *
-       * EOF (maybe section header table)
-       * program header table
-       * .dynamic section
-       * .dynstr section
-       *
-       * PT_PHDR segment must cover the program header table
-       * PT_LOAD new segment that covers the program header table, .dynamic and .dynstr
-       * PT_DYNAMIC segment must cover .dynamic
-       */
-
-      /*
-       * If we move any section to the end,
-       * a new PT_LOAD segment must be created.
-       * Because of this, the program header table also moves to the end.
-       * This new load segment covers also the program header table.
-       * This segment should also be aligned in memory
-       */
-      if(mustMoveAnySection){
-
-        mHeaders.moveProgramHeaderTableToNextPageAfterEnd();
-
-        const QString msg = tr("the new rpath is to long, will have to move sections to the end.");
-        /** \todo emit a warning (that will be used by the message logger)
-         * Will have to do it in a other place, because we cannot inherit QObject here
-         */
-        qDebug() << msg;
-
-        ProgramHeader & loadSegmentHeader = mHeaders.appendNullLoadSegment();
-        loadSegmentHeader.vaddr = mHeaders.programHeaderTableProgramHeader().vaddr;
-        loadSegmentHeader.paddr = loadSegmentHeader.vaddr;
-
-        /** Read:
-         * - https://ktln2.org/2019/10/28/elf/
-         * - https://lwn.net/Articles/631631/
-         */
-
-        /// \todo check if this should be as the other PT_LOAD ? f.ex. 0x200000
-//         loadSegmentHeader.align = 0x200000;
-        loadSegmentHeader.align = mHeaders.fileHeader().pageSize();
-
-        loadSegmentHeader.offset = mHeaders.programHeaderTableProgramHeader().offset;
-
-        if(mustMoveDynamicSection){
-          loadSegmentHeader.setPermissions(SegmentPermission::Read | SegmentPermission::Write);
-        }else{
-          loadSegmentHeader.setPermissions(SegmentPermission::Read);
-        }
-
-        uint64_t loadSegmentSize = mHeaders.programHeaderTableProgramHeader().memsz;
-
-        if(mustMoveDynamicSection){
-          mHeaders.moveDynamicSectionToEnd(MoveSectionAlignment::SectionAlignment);
-          mHeaders.setDynamicSectionSize( mDynamicSection.byteCount(fileHeader().ident._class) );
-          ///mSectionSymbolTable.setDynamicSectionVirtualAddress( mHeaders.dynamicSectionHeader().addr );
-
-          if( mGotSection.containsDynamicSectionAddress() ){
-            mGotSection.setDynamicSectionAddress(mHeaders.dynamicSectionHeader().addr);
-          }
-          if( mGotPltSection.containsDynamicSectionAddress() ){
-            mGotPltSection.setDynamicSectionAddress(mHeaders.dynamicSectionHeader().addr);
-          }
-
-          loadSegmentSize += mHeaders.dynamicProgramHeader().memsz;
-        }
-
-        if(mustMoveDynamicStringTable){
-          ///mHeaders.moveDynamicStringTableToEnd();
-          mDynamicSection.setStringTableAddress( mHeaders.dynamicStringTableSectionHeader().addr );
-          mHeaders.setDynamicStringTableSize( mDynamicSection.stringTable().byteCount() );
-          ///mSectionSymbolTable.setDynamicStringTableVirtualAddress( mHeaders.dynamicStringTableSectionHeader().addr );
-          loadSegmentSize += mHeaders.dynamicStringTableSectionHeader().size;
-        }
-
-        loadSegmentHeader.memsz = loadSegmentSize;
-        loadSegmentHeader.filesz = loadSegmentHeader.memsz;
-
-      }else{
-        // some sections will maybe shrink
-        mHeaders.setDynamicSectionSize( mDynamicSection.byteCount(fileHeader().ident._class) );
-        mHeaders.setDynamicStringTableSize( mDynamicSection.stringTable().byteCount() );
-      }
-
     }
 
     /*! \brief Move the .interp to the end
@@ -406,10 +290,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     {
       assert( mHeaders.containsGnuHashTableSectionHeader() );
 
-      std::cout << " move .gnu.hash , offset end: " << mHeaders.findGlobalFileOffsetEnd() << " , Vaddr end: " << mHeaders.findGlobalVirtualAddressEnd() << std::endl;
       mHeaders.moveGnuHashTableToEnd(alignment);
-
-      std::cout << " Move DONE: offset end: " << mHeaders.findGlobalFileOffsetEnd() << " , Vaddr end: " << mHeaders.findGlobalVirtualAddressEnd() << std::endl;
 
       if( mDynamicSection.containsGnuHashTableAddress() ){
         mDynamicSection.setGnuHashTableAddress(mHeaders.gnuHashTableSectionHeader().addr);
@@ -482,7 +363,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
           moveSectionAlignment = MoveSectionAlignment::SectionAlignment;
         }
         const SectionHeader & header = mHeaders.sectionHeaderTable()[i];
-//           std::cout << "mov: i: " << i << " , section: " << header.name << std::endl;
         /*
           * note sections belong to the PT_NOTE segment,
           * so we have to move them all
@@ -507,93 +387,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       }
 
       return movedSectionHeadersIndexes;
-    }
-
-    void moveProgramInterpreterSectionToEnd_sandbox()
-    {
-      /// \todo Check if we have something to move first
-
-      /*
-       * We need to add a new PT_LOAD to the program header table.
-       * For that, we need to move first sections to the end.
-       */
-
-      SectionIndexChangeMap sectionIndexChangeMap = mHeaders.sortSectionHeaderTableByFileOffset();
-      /*
-       * Sorting the section header table changes the index of some headers.
-       * We have to update parts, like symbol tables,
-       * that references indexes in the section header table.
-       */
-      mSymTab.updateSectionIndexes(sectionIndexChangeMap);
-      mDynSym.updateSectionIndexes(sectionIndexChangeMap);
-
-      const uint16_t sectionToMoveCount = findCountOfSectionsToMoveToFreeSize(mHeaders.sectionHeaderTable(), fileHeader().phentsize);
-      if( sectionToMoveCount >= mHeaders.sectionHeaderTable().size() ){
-        const QString msg = tr("should move %1 sections, but file contains only %2 sections")
-                            .arg(sectionToMoveCount).arg( mHeaders.sectionHeaderTable().size() );
-        throw MoveSectionError(msg);
-      }
-
-      std::cout << "required place: " << fileHeader().phentsize << " , sections to move (includes SHT_NULL): " << sectionToMoveCount << std::endl;
-
-      /// If zero -> good :)
-
-      std::vector<uint16_t> movedSectionHeadersIndexes;
-
-      if(sectionToMoveCount > 1){
-        movedSectionHeadersIndexes = moveFirstCountSectionsToEnd(sectionToMoveCount);
-      }
-
-//       if(sectionToMoveCount > 1){
-//         MoveSectionAlignment moveSectionAlignment = MoveSectionAlignment::NextPage;
-//         // The first section is the null section (SHT_NULL)
-//         for(uint16_t i=1; i < sectionToMoveCount; ++i){
-//           if(i > 1){
-//             moveSectionAlignment = MoveSectionAlignment::SectionAlignment;
-//           }
-//           const SectionHeader & header = mHeaders.sectionHeaderTable()[i];
-// //           std::cout << "mov: i: " << i << " , section: " << header.name << std::endl;
-//           /*
-//            * note sections belong to the PT_NOTE segment,
-//            * so we have to move them all
-//            */
-//           if( header.sectionType() == SectionType::Note ){
-//             // PT_NOTE program header will also be updated
-//             std::cout << "moving note sections to end ..." << std::endl;
-//             mHeaders.moveNoteSectionsToEnd(moveSectionAlignment);
-//             const auto noteSections = mHeaders.getNoteSectionHeaders();
-//             mNoteSectionTable.updateSectionHeaders( mHeaders.sectionHeaderTable() );
-//             for(size_t j=0; j < noteSections.size(); ++j){
-//               movedSectionHeadersIndexes.push_back(i);
-//               if(j > 0){
-//                 ++i;
-//               }
-//             }
-//           }else{
-//             std::cout << "moving section " << header.name << " to end ..." << std::endl;
-//             moveSectionToEnd(header, moveSectionAlignment);
-//             movedSectionHeadersIndexes.push_back(i);
-//           }
-//         }
-//       }
-
-      /*
-       * Moving sections will change offsets and addresses.
-       * We have to update some parts,
-       * like symbol tables, that references those addresses.
-       */
-      mSymTab.updateVirtualAddresses( movedSectionHeadersIndexes, mHeaders.sectionHeaderTable() );
-      mDynSym.updateVirtualAddresses( movedSectionHeadersIndexes, mHeaders.sectionHeaderTable() );
-
-      if( !movedSectionHeadersIndexes.empty() ){
-        const ProgramHeader loadSegmentHeader = makeLoadProgramHeaderCoveringSections(
-          movedSectionHeadersIndexes, mHeaders.sectionHeaderTable(), mHeaders.fileHeader().pageSize()
-        );
-        mHeaders.addProgramHeader(loadSegmentHeader);
-      }
-
-      /** \todo if moving .dynamic, think about PT_GNU_RELRO
-       */
     }
 
     /*! \brief Check if this file has the dynamic section
@@ -679,22 +472,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     const PartialSymbolTable & dynSym() const noexcept
     {
       return mDynSym;
-    }
-
-    /*! \brief Set the section symbol table from file (from .symtab)
-     */
-    [[deprecated]]
-    void setSectionSymbolTableFromFile(const PartialSymbolTable & table) noexcept
-    {
-//       mSectionSymbolTable = table;
-    }
-
-    /*! \brief Get the section symbol table (from .symtab)
-     */
-    [[deprecated]]
-    const PartialSymbolTable & sectionSymbolTable() const noexcept
-    {
-//       return mSectionSymbolTable;
     }
 
     /*! \brief Set the .got global offset table from file
@@ -885,9 +662,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     DynamicSection mDynamicSection;
     PartialSymbolTable mSymTab;
     PartialSymbolTable mDynSym;
-    
-//     PartialSymbolTable mSectionSymbolTable;
-    
     GlobalOffsetTable mGotSection;
     GlobalOffsetTable mGotPltSection;
     ProgramInterpreterSection mProgramInterpreterSection;
