@@ -567,12 +567,16 @@ TEST_CASE("setRunPath")
 {
   TestFileSetup setup;
   setup.programHeaderTableOffset = 50;
-  setup.dynamicStringTableOffset = 100;
-  setup.dynamicStringTableAddress = 100;
-  setup.dynamicSectionOffset = 1000;
-  setup.dynamicSectionAddress = 1000;
-  setup.sectionNameStringTableOffset = 5'000;
-  setup.sectionHeaderTableOffset = 10000;
+  setup.noteGnuBuilIdSectionOffset = 100;
+  setup.noteGnuBuilIdSectionAddress = 1000;
+  setup.gnuHashTableSectionOffset = 140;
+  setup.gnuHashTableSectionAddress = 1040;
+  setup.dynamicStringTableOffset = 300;
+  setup.dynamicStringTableAddress = 1300;
+  setup.dynamicSectionOffset = 500;
+  setup.dynamicSectionAddress = 1500;
+  setup.sectionNameStringTableOffset = 5000;
+  setup.sectionHeaderTableOffset = 10'000;
 
   SECTION("There is initially no RUNPATH")
   {
@@ -610,12 +614,16 @@ TEST_CASE("setRunPath_fileLayout")
   uint64_t stringTableSize;
 
   setup.programHeaderTableOffset = 50;
-  setup.dynamicStringTableOffset = 100;
-  setup.dynamicStringTableAddress = 200;
-  setup.dynamicSectionOffset = 1'000;
-  setup.dynamicSectionAddress = 1'200;
-  setup.dynSymOffset = 500;
-  setup.sectionNameStringTableOffset = 5'000;
+  setup.noteGnuBuilIdSectionOffset = 100;
+  setup.noteGnuBuilIdSectionAddress = 1000;
+  setup.gnuHashTableSectionOffset = 140;
+  setup.gnuHashTableSectionAddress = 1040;
+  setup.dynSymOffset = 200;
+  setup.dynamicStringTableOffset = 300;
+  setup.dynamicStringTableAddress = 1300;
+  setup.dynamicSectionOffset = 500;
+  setup.dynamicSectionAddress = 1500;
+  setup.sectionNameStringTableOffset = 5000;
   setup.sectionHeaderTableOffset = 10'000;
 
   SECTION("there is initially no RUNPATH")
@@ -628,38 +636,39 @@ TEST_CASE("setRunPath_fileLayout")
     {
       file.setRunPath( QLatin1String("/opt") );
 
-      SECTION("the section header table does not change")
-      {
-        REQUIRE( file.fileHeader().shoff == setup.sectionHeaderTableOffset );
-      }
+      /*
+       * The section header table does not change
+       */
+      REQUIRE( file.fileHeader().shoff == setup.sectionHeaderTableOffset );
 
-      SECTION("the program header table will move to end (we add a PT_LOAD segment)")
-      {
-        REQUIRE( file.fileHeader().phoff >= originalLayout.globalOffsetRange().end() );
-        REQUIRE( file.headers().programHeaderTableProgramHeader().offset == file.fileHeader().phoff );
-      }
+      /*
+       * The program header table must not be moved
+       * (this simply does not work, see comments in FileWriterFile.h)
+       */
+      REQUIRE( file.fileHeader().phoff == setup.programHeaderTableOffset );
+      REQUIRE( file.headers().programHeaderTableProgramHeader().offset == file.fileHeader().phoff );
 
-      SECTION("the dynamic section will move to the end, after PT_PHDR")
-      {
-        REQUIRE( file.dynamicProgramHeader().offset >= file.headers().programHeaderTableProgramHeader().fileOffsetEnd() );
-        REQUIRE( file.dynamicSectionHeader().offset == file.dynamicProgramHeader().offset );
-        REQUIRE( file.dynamicSectionHeader().size == file.dynamicProgramHeader().filesz );
-        REQUIRE( file.dynamicSectionMovesToEnd() );
-      }
+      /*
+       * The .note.gnu.build-id and .gnu.hash moves to the end,
+       * to make place for the new PT_LOAD program header
+       */
+      REQUIRE( file.headers().noteProgramHeader().offset >= setup.sectionHeaderTableOffset );
+      REQUIRE( file.headers().gnuHashTableSectionHeader().offset >= setup.sectionHeaderTableOffset );
+      // 17.11.2021: check that virtual addresses are not garbage
+      REQUIRE( file.headers().noteProgramHeader().vaddr < 20'000 );
+      REQUIRE( file.headers().gnuHashTableSectionHeader().addr < 20'000 );
 
-      SECTION("the new size of the dynamic section must be reflected to the headers")
-      {
-        const uint64_t dynamicSectionSize = static_cast<uint64_t>( file.dynamicSection().byteCount(Class::Class64) );
-
-        REQUIRE( file.dynamicProgramHeader().memsz == dynamicSectionSize );
-        REQUIRE( file.dynamicProgramHeader().filesz == dynamicSectionSize );
-        REQUIRE( file.dynamicSectionHeader().size == dynamicSectionSize );
-      }
-
-      SECTION("TODO: check global offset table")
-      {
-        REQUIRE( false );
-      }
+      /*
+       * The .dynamic section grows, so it has to move to the end.
+       */
+      REQUIRE( file.dynamicProgramHeader().offset >= setup.sectionHeaderTableOffset );
+      REQUIRE( file.dynamicSectionHeader().offset == file.dynamicProgramHeader().offset );
+      REQUIRE( file.dynamicSectionMovesToEnd() );
+      // Here we also have to check that size is adjusted correctly in the headers.
+      const uint64_t dynamicSectionSize = static_cast<uint64_t>( file.dynamicSection().byteCount(Class::Class64) );
+      REQUIRE( file.dynamicProgramHeader().memsz == dynamicSectionSize );
+      REQUIRE( file.dynamicProgramHeader().filesz == dynamicSectionSize );
+      REQUIRE( file.dynamicSectionHeader().size == dynamicSectionSize );
     }
   }
 
@@ -671,76 +680,83 @@ TEST_CASE("setRunPath_fileLayout")
     REQUIRE( file.containsDynamicSection() );
     REQUIRE( file.containsDynamicStringTableSectionHeader() );
     originalLayout = FileWriterFileLayout::fromFile( file.headers(), file.dynamicSection() );
+    const uint64_t originalFileOffsetEnd = originalLayout.globalOffsetRange().end();
 
     SECTION("replace RUNPATH with a other one that is shorter")
     {
       file.setRunPath( QLatin1String("/opt") );
       stringTableSize = 1+4+1;
 
-      SECTION("the dynamic section will not change")
-      {
-        REQUIRE( file.dynamicProgramHeader().offset == setup.dynamicSectionOffset );
-        REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
-        REQUIRE( file.dynamicSectionHeader().offset == setup.dynamicSectionOffset );
-        REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
-        REQUIRE( !file.dynamicSectionMovesToEnd() );
-      }
+      /*
+       * The .note.gnu.build-id and .gnu.hash stays as is.
+       */
+      REQUIRE( file.headers().noteProgramHeader().offset == setup.noteGnuBuilIdSectionOffset );
+      REQUIRE( file.headers().gnuHashTableSectionHeader().offset == setup.gnuHashTableSectionOffset );
 
-      SECTION("the dynamic string table shrinks but stays at the same place")
-      {
-        REQUIRE( file.dynamicStringTableSectionHeader().offset == setup.dynamicStringTableOffset );
-        REQUIRE( file.dynamicStringTableSectionHeader().size == stringTableSize );
-        REQUIRE( file.originalDynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
-        REQUIRE( file.originalDynamicStringTableOffsetRange().byteCount() == setup.stringTableByteCount() );
-        REQUIRE( file.dynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
-        REQUIRE( file.dynamicStringTableOffsetRange().byteCount() == stringTableSize );
-        REQUIRE( !file.dynamicStringTableMovesToEnd() );
-      }
+      /*
+       * The .dynamic section will not change
+       */
+      REQUIRE( file.dynamicProgramHeader().offset == setup.dynamicSectionOffset );
+      REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
+      REQUIRE( file.dynamicSectionHeader().offset == setup.dynamicSectionOffset );
+      REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
+      REQUIRE( !file.dynamicSectionMovesToEnd() );
 
-      SECTION("the program header table does not change")
-      {
-        REQUIRE( file.fileHeader().phoff == setup.programHeaderTableOffset );
-      }
+      /*
+       * The dynamic string table shrinks but stays at the same place
+       */
+      REQUIRE( file.dynamicStringTableSectionHeader().offset == setup.dynamicStringTableOffset );
+      REQUIRE( file.dynamicStringTableSectionHeader().size == stringTableSize );
+      REQUIRE( file.originalDynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
+      REQUIRE( file.originalDynamicStringTableOffsetRange().byteCount() == setup.stringTableByteCount() );
+      REQUIRE( file.dynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
+      REQUIRE( file.dynamicStringTableOffsetRange().byteCount() == stringTableSize );
+      REQUIRE( !file.dynamicStringTableMovesToEnd() );
 
-      SECTION("the section header table does not change")
-      {
-        REQUIRE( file.fileHeader().shoff == setup.sectionHeaderTableOffset );
-      }
+      /*
+       * The program header table does not change
+       */
+      REQUIRE( file.fileHeader().phoff == setup.programHeaderTableOffset );
+
+      /*
+       * The section header table does not change
+       */
+      REQUIRE( file.fileHeader().shoff == setup.sectionHeaderTableOffset );
     }
 
     SECTION("replace RUNPATH with a other one that is the same length")
     {
       file.setRunPath( QLatin1String("/opt/libB") );
 
-      SECTION("the dynamic section will not change")
-      {
-        REQUIRE( file.dynamicProgramHeader().offset == setup.dynamicSectionOffset );
-        REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
-        REQUIRE( file.dynamicSectionHeader().offset == setup.dynamicSectionOffset );
-        REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
-        REQUIRE( !file.dynamicSectionMovesToEnd() );
-      }
+      /*
+       * The dynamic section does not change
+       */
+      REQUIRE( file.dynamicProgramHeader().offset == setup.dynamicSectionOffset );
+      REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
+      REQUIRE( file.dynamicSectionHeader().offset == setup.dynamicSectionOffset );
+      REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
+      REQUIRE( !file.dynamicSectionMovesToEnd() );
 
-      SECTION("the dynamic string table will not change in term of layout")
-      {
-        REQUIRE( file.dynamicStringTableSectionHeader().offset == setup.dynamicStringTableOffset );
-        REQUIRE( file.dynamicStringTableSectionHeader().size == setup.stringTableByteCount() );
-        REQUIRE( file.originalDynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
-        REQUIRE( file.originalDynamicStringTableOffsetRange().byteCount() == setup.stringTableByteCount() );
-        REQUIRE( file.dynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
-        REQUIRE( file.dynamicStringTableOffsetRange().byteCount() == setup.stringTableByteCount() );
-        REQUIRE( !file.dynamicStringTableMovesToEnd() );
-      }
+      /*
+       * The dynamic string table will not change in term of layout
+       */
+      REQUIRE( file.dynamicStringTableSectionHeader().offset == setup.dynamicStringTableOffset );
+      REQUIRE( file.dynamicStringTableSectionHeader().size == setup.stringTableByteCount() );
+      REQUIRE( file.originalDynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
+      REQUIRE( file.originalDynamicStringTableOffsetRange().byteCount() == setup.stringTableByteCount() );
+      REQUIRE( file.dynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
+      REQUIRE( file.dynamicStringTableOffsetRange().byteCount() == setup.stringTableByteCount() );
+      REQUIRE( !file.dynamicStringTableMovesToEnd() );
 
-      SECTION("the program header table does not change")
-      {
-        REQUIRE( file.fileHeader().phoff == setup.programHeaderTableOffset );
-      }
+      /*
+       * The program header table does not change
+       */
+      REQUIRE( file.fileHeader().phoff == setup.programHeaderTableOffset );
 
-      SECTION("the section header table does not change")
-      {
-        REQUIRE( file.fileHeader().shoff == setup.sectionHeaderTableOffset );
-      }
+      /*
+       * The section header table does not change
+       */
+      REQUIRE( file.fileHeader().shoff == setup.sectionHeaderTableOffset );
     }
 
     SECTION("replace RUNPATH with a other one that is much longer")
@@ -749,42 +765,48 @@ TEST_CASE("setRunPath_fileLayout")
       file.setRunPath(runPath);
       stringTableSize = static_cast<uint64_t>(1+runPath.size()+1);
 
-      SECTION("the section header table does not change")
-      {
-        REQUIRE( file.fileHeader().shoff == setup.sectionHeaderTableOffset );
-      }
+      /*
+       * The program header table does not change
+       */
+      REQUIRE( file.fileHeader().phoff == setup.programHeaderTableOffset );
 
-      SECTION("the program header table will move to end (we add a PT_LOAD segment)")
-      {
-        REQUIRE( file.fileHeader().phoff >= originalLayout.globalOffsetRange().end() );
-        REQUIRE( file.headers().programHeaderTableProgramHeader().offset == file.fileHeader().phoff );
-      }
+      /*
+       * The section header table does not change
+       */
+      REQUIRE( file.fileHeader().shoff == setup.sectionHeaderTableOffset );
 
-      SECTION("the dynamic section will not change")
-      {
-        REQUIRE( file.dynamicProgramHeader().offset == setup.dynamicSectionOffset );
-        REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
-        REQUIRE( file.dynamicSectionHeader().offset == setup.dynamicSectionOffset );
-        REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
-        REQUIRE( !file.dynamicSectionMovesToEnd() );
-      }
+      /*
+       * The .note.gnu.build-id and .gnu.hash moves to the end,
+       * to make place for the new PT_LOAD program header
+       */
+      REQUIRE( file.headers().noteProgramHeader().offset >= originalFileOffsetEnd );
+      REQUIRE( file.headers().gnuHashTableSectionHeader().offset >= originalFileOffsetEnd );
 
-      SECTION("the dynamic string table grows and moves to the end, after PT_PHDR")
-      {
-        REQUIRE( file.dynamicStringTableSectionHeader().offset >= file.headers().programHeaderTableProgramHeader().fileOffsetEnd() );
-        REQUIRE( file.dynamicStringTableSectionHeader().size == stringTableSize );
-        REQUIRE( file.originalDynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
-        REQUIRE( file.originalDynamicStringTableOffsetRange().byteCount() == setup.stringTableByteCount() );
+      /*
+       * The dynamic section does not change
+       */
+      REQUIRE( file.dynamicProgramHeader().offset == setup.dynamicSectionOffset );
+      REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
+      REQUIRE( file.dynamicSectionHeader().offset == setup.dynamicSectionOffset );
+      REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
+      REQUIRE( !file.dynamicSectionMovesToEnd() );
+
+      /*
+       * The dynamic string table grows and moves to the end
+       */
+      REQUIRE( file.dynamicStringTableSectionHeader().offset >= originalFileOffsetEnd );
+      REQUIRE( file.dynamicStringTableSectionHeader().size == stringTableSize );
+      REQUIRE( file.originalDynamicStringTableOffsetRange().begin() == setup.dynamicStringTableOffset );
+      REQUIRE( file.originalDynamicStringTableOffsetRange().byteCount() == setup.stringTableByteCount() );
 //         REQUIRE( file.dynamicStringTableOffsetRange().begin() == originalLayout.globalOffsetRange().end() );
 //         REQUIRE( file.dynamicStringTableOffsetRange().byteCount() == stringTableSize );
-        REQUIRE( file.dynamicStringTableMovesToEnd() );
-      }
+      REQUIRE( file.dynamicStringTableMovesToEnd() );
 
-      SECTION("the dynamic section must have the new address of the dynamic string table")
-      {
-        REQUIRE( file.dynamicSection().stringTableAddress() == file.headers().dynamicStringTableSectionHeader().addr );
-        REQUIRE( file.dynamicSection().getStringTableSize() == stringTableSize );
-      }
+      /*
+       * The .dynamic section's string table address and size must be updated
+       */
+      REQUIRE( file.dynamicSection().stringTableAddress() == file.headers().dynamicStringTableSectionHeader().addr );
+      REQUIRE( file.dynamicSection().getStringTableSize() == stringTableSize );
     }
   }
 }
