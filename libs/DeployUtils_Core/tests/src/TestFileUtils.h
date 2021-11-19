@@ -28,6 +28,7 @@
 #include <QTemporaryDir>
 #include <QDir>
 #include <QProcess>
+#include <QProcessEnvironment>
 #include <QDebug>
 #include <iostream>
 #include <cassert>
@@ -104,10 +105,13 @@ bool copyFile(const QString & source, const QString & destination)
   return QFile::copy(source, destination);
 }
 
-bool runExecutable( const QString & executableFilePath, const QStringList & arguments = QStringList() )
+bool runExecutable( const QString & executableFilePath,
+                    const QStringList & arguments = QStringList(),
+                    const QProcessEnvironment & env = QProcessEnvironment::systemEnvironment() )
 {
   QProcess process;
 
+  process.setProcessEnvironment(env);
   process.start(executableFilePath, arguments);
   if( !process.waitForStarted() ){
     qDebug() << "starting process for executable '" << executableFilePath << "' failed: " << process.errorString();
@@ -121,11 +125,11 @@ bool runExecutable( const QString & executableFilePath, const QStringList & argu
     qDebug() << "executable '" << executableFilePath << "' probably crashed: " << process.readAllStandardError();
     return false;
   }
-  if(process.exitCode() != 0){
-    qDebug() << "executable '" << executableFilePath << "' returned a error code: " << process.exitCode();
-    qDebug() << process.readAllStandardError();
-    return false;
-  }
+//   if(process.exitCode() != 0){
+//     qDebug() << "executable '" << executableFilePath << "' returned a error code: " << process.exitCode();
+//     qDebug() << process.readAllStandardError();
+//     return false;
+//   }
 
   const QString stdOut = QString::fromLocal8Bit( process.readAllStandardOutput() );
   if( !stdOut.isEmpty() ){
@@ -135,6 +139,11 @@ bool runExecutable( const QString & executableFilePath, const QStringList & argu
   const QString stdErr = QString::fromLocal8Bit( process.readAllStandardError() );
   if( !stdErr.isEmpty() ){
     std::cout << "(std err) output for executable '" << executableFilePath.toStdString() << "': " << stdErr.toStdString() << std::endl;
+  }
+
+  if(process.exitCode() != 0){
+    qDebug() << "executable '" << executableFilePath << "' returned a error code: " << process.exitCode();
+    return false;
   }
 
   return true;
