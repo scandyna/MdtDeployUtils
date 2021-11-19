@@ -179,34 +179,6 @@ struct TestHeadersSetup
   }
 };
 
-// inline
-// void makeAndAddProgramInterpreterToTables(const TestHeadersSetup & setup,
-//                                           Mdt::DeployUtils::Impl::Elf::ProgramHeaderTable & programHeaderTable,
-//                                           std::vector<Mdt::DeployUtils::Impl::Elf::SectionHeader> & sectionHeaderTable)
-// {
-//   using Mdt::DeployUtils::Impl::Elf::ProgramHeader;
-//   using Mdt::DeployUtils::Impl::Elf::SectionHeader;
-// 
-//   assert( setup.containsProgramInterpreter() );
-// 
-//   ProgramHeader programInterpreterSectionProgramHeader = makeProgramInterpreterProgramHeader();
-//   programInterpreterSectionProgramHeader.offset = setup.programInterpreterSectionOffset;
-//   programInterpreterSectionProgramHeader.filesz = setup.programInterpreterSectionSize;
-//   programInterpreterSectionProgramHeader.vaddr = setup.programInterpreterSectionAddress;
-//   programInterpreterSectionProgramHeader.align = 1;
-//   programInterpreterSectionProgramHeader.paddr = setup.programInterpreterSectionAddress;
-//   programInterpreterSectionProgramHeader.memsz = setup.programInterpreterSectionSize;
-// 
-//   SectionHeader programInterpreterSectionHeader = makeProgramInterpreterSectionHeader();
-//   programInterpreterSectionHeader.name = ".interp";
-//   programInterpreterSectionHeader.offset = setup.programInterpreterSectionOffset;
-//   programInterpreterSectionHeader.size = setup.programInterpreterSectionSize;
-//   programInterpreterSectionHeader.addr = setup.programInterpreterSectionAddress;
-//   programInterpreterSectionHeader.addralign = 1;
-// 
-//   programHeaderTable.addHeaderFromFile(programInterpreterSectionProgramHeader);
-//   sectionHeaderTable.push_back(programInterpreterSectionHeader);
-// }
 
 inline
 Mdt::DeployUtils::Impl::Elf::ProgramHeader makeProgramInterpreterProgramHeader(const TestHeadersSetup & setup)

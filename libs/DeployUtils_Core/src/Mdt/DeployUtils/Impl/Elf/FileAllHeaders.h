@@ -25,7 +25,11 @@
 #include "ProgramHeader.h"
 #include "ProgramHeaderTable.h"
 #include "SectionHeader.h"
+#include "SectionHeaderTable.h"
+#include "SectionIndexChangeMap.h"
+
 #include "OffsetRange.h"
+
 #include "Algorithm.h"
 #include <vector>
 #include <cstdint>
@@ -39,234 +43,13 @@
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
-  /*! \internal Check if a segment can only hold sections allocating memory
-   *
-   * \todo missing type >= PT_GNU_MBIND_LO and type <= PT_GNU_MBIND_HI
-   */
-  inline
-  bool segmentOnlyContainsSectionsAllocatingMemory(SegmentType segmentType) noexcept
-  {
-    switch(segmentType){
-      case SegmentType::Load:
-      case SegmentType::Dynamic:
-      case SegmentType::GnuEhFrame:
-      case SegmentType::GnuStack:
-      case SegmentType::GnuRelo:
-        return true;
-      default:
-        return false;
-    }
-//     return false;
-  }
-
-  /*! \internal
-   *
-   * \sa sectionIsInSegmentStrict
-   */
-  inline
-  bool segmentCanContainSection(const ProgramHeader & programHeader, const SectionHeader & sectionHeader) noexcept
-  {
-    const SegmentType segmentType = programHeader.segmentType();
-
-    // Only PT_LOAD, PT_GNU_RELRO and PT_TLS segments can contain SHF_TLS sections.
-    if( sectionHeader.holdsTls() ){
-      switch(segmentType){
-        case SegmentType::Load:
-///         case SegmentType::Relro:
-        case SegmentType::Tls:
-          break;
-        default:
-          return false;
-      }
-    }
-
-    // PT_TLS segment contains only SHF_TLS sections.
-    if(segmentType == SegmentType::Tls){
-      if( !sectionHeader.holdsTls() ){
-        return false;
-      }
-    }
-
-    // PT_PHDR contains no section
-    if(segmentType == SegmentType::ProgramHeaderTable){
-      return false;
-    }
-
-    // PT_LOAD and similar segments only have SHF_ALLOC sections.
-    if( segmentOnlyContainsSectionsAllocatingMemory( programHeader.segmentType() ) ){
-      if( !sectionHeader.allocatesMemory() ){
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  /*! \internal
-   *
-   * .tbss is special.
-   * It doesn't contribute memory space to normal segments
-   * and it doesn't take file space in normal segments.
-   */
-  inline
-  bool isSpecialTbss(const SectionHeader & sectionHeader, const ProgramHeader & programHeader) noexcept
-  {
-    if( !sectionHeader.holdsTls() ){
-      return false;
-    }
-    if(sectionHeader.sectionType() != SectionType::NoBits){
-      return false;
-    }
-    if(programHeader.segmentType() == SegmentType::Tls){
-      return false;
-    }
-
-    return true;
-  }
-
   /*! \internal
    */
-  inline
-  uint64_t elfSectionSize(const SectionHeader & sectionHeader, const ProgramHeader & programHeader) noexcept
+  enum class MoveSectionAlignment
   {
-    if( isSpecialTbss(sectionHeader, programHeader) ){
-      return 0;
-    }
-
-    return sectionHeader.size;
-  }
-
-  /*! \internal
-   *
-   * This code comes from the ELF_SECTION_IN_SEGMENT_1 macro,
-   * part commented: "Any section besides one of type SHT_NOBITS must have file offsets within the segment.",
-   * but:
-   * - it is not checked that the section is not SHT_NOBITS
-   * - strict mode is ON
-   * - check VMA is ON
-   *
-   * The original macro is here: binutils-gdb/include/elf/internal.h
-   */
-  inline
-  bool fileOffsetsAreWithinSegment(const SectionHeader & sectionHeader, const ProgramHeader & programHeader) noexcept
-  {
-    if(sectionHeader.offset < programHeader.offset){
-      return false;
-    }
-    assert(sectionHeader.offset >= programHeader.offset);
-
-    if( (sectionHeader.offset - programHeader.offset) >= programHeader.filesz ){
-      return false;
-    }
-
-    if( (sectionHeader.offset - programHeader.offset + elfSectionSize(sectionHeader, programHeader)) > programHeader.filesz ){
-      return false;
-    }
-
-    return true;
-  }
-
-    /* Any section besides one of type SHT_NOBITS must have file offsets within the segment. */
-//     sh_type == SHT_NOBITS
-//     || (sh_offset >= p_offset
-//         && (sh_offset - p_offset < p_filesz)
-//         && ( (sh_offset - p_offset + ELF_SECTION_SIZE(sec_hdr, segment) ) <= p_filesz) )
-
-  /*! \internal
-   *
-   * This code comes from the ELF_SECTION_IN_SEGMENT_1 macro,
-   * part commented: "SHF_ALLOC sections must have VMAs within the segment.",
-   * but:
-   * - it is not checked that the section has the SHF_ALLOC flag
-   * - strict mode is ON
-   * - check VMA is ON
-   *
-   * The original macro is here: binutils-gdb/include/elf/internal.h
-   */
-  inline
-  bool vmasAreWithinSegment(const SectionHeader & sectionHeader, const ProgramHeader & programHeader) noexcept
-  {
-    if(sectionHeader.addr < programHeader.vaddr){
-      return false;
-    }
-    assert(sectionHeader.addr >= programHeader.vaddr);
-
-    if( (sectionHeader.addr - programHeader.vaddr) >= programHeader.memsz ){
-      return false;
-    }
-
-    if( (sectionHeader.addr - programHeader.vaddr + elfSectionSize(sectionHeader, programHeader)) > programHeader.memsz ){
-      return false;
-    }
-
-    return true;
-  }
-
-  /* SHF_ALLOC sections must have VMAs within the segment.  */
-//   (sh_flags & SHF_ALLOC) == 0
-//   || ( sh_addr >= p_vaddr && (sh_addr - p_vaddr < p_memsz) )
-//     && ( (sh_addr - p_vaddr + ELF_SECTION_SIZE(sec_hdr, segment)) <= p_memsz)
-
-  /*! \internal Check if section (described by \a sectionHeader) is in a segment (described by \a programHeader)
-   *
-   * This code comes from the ELF_SECTION_IN_SEGMENT_STRICT macro
-   * from the binutils-gdb/include/elf/internal.h
-   *
-   * \todo move somewhere else ?
-   */
-  inline
-  bool sectionIsInSegmentStrict(const SectionHeader & sectionHeader, const ProgramHeader & programHeader) noexcept
-  {
-    if( !segmentCanContainSection(programHeader, sectionHeader) ){
-      return false;
-    }
-
-    // Any section besides one of type SHT_NOBITS must have file offsets within the segment
-    if(sectionHeader.sectionType() != SectionType::NoBits){
-      if( !fileOffsetsAreWithinSegment(sectionHeader, programHeader) ){
-        return false;
-      }
-    }
-
-    // SHF_ALLOC sections must have VMAs within the segment.
-    if( sectionHeader.allocatesMemory() ){
-      if( !vmasAreWithinSegment(sectionHeader, programHeader) ){
-        return false;
-      }
-    }
-
-    const SegmentType segmentType = programHeader.segmentType();
-
-    // No zero size sections at start or end of PT_DYNAMIC nor PT_NOTE
-    if( (segmentType == SegmentType::Dynamic) || (segmentType == SegmentType::Note) ){
-      if(sectionHeader.size == 0){
-        return false;
-      }
-      if(programHeader.memsz == 0){
-        return true;
-      }
-      if(sectionHeader.sectionType() != SectionType::NoBits){
-        if( !fileOffsetsAreWithinSegment(sectionHeader, programHeader) ){
-          return false;
-        }
-      }
-      if( sectionHeader.allocatesMemory() ){
-        if( !vmasAreWithinSegment(sectionHeader, programHeader) ){
-          return false;
-        }
-      }
-    }
-
-    /* No zero size sections at start or end of PT_DYNAMIC nor PT_NOTE */
-//     (p_type != PT_DYNAMIC	&& p_type != PT_NOTE)
-//        || sh_size != 0
-//        || p_memsz == 0
-//        || ( (sh_type == SHT_NOBITS
-//             || (sh_offset > p_offset && (sh_offset - p_offset < p_filesz)) )
-//             && ( (sh_flags & SHF_ALLOC) == 0 || (sh_addr > p_vaddr && (sh_addr - p_vaddr < p_memsz))) )
-
-    return true;
-  }
+    SectionAlignment, /*!< Take the alignment of the section (if any is required) */
+    NextPage          /*!< Align to the next page */
+  };
 
   /*! \internal
    */
@@ -320,8 +103,17 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mFileHeader.phnum = static_cast<uint16_t>( table.headerCount() );
     }
 
+    /*! \brief Add a program header to this table
+     */
+    void addProgramHeader(const ProgramHeader & header) noexcept
+    {
+      mProgramHeaderTable.addHeader(header, fileHeader().phentsize);
+      ++mFileHeader.phnum;
+    }
+
     /*! \brief Add a new load segment to the end of the program header table
      */
+    [[deprecated]]
     ProgramHeader & appendNullLoadSegment() noexcept
     {
       assert( fileHeaderSeemsValid() );
@@ -373,8 +165,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       mSectionHeaderTable = table;
       mFileHeader.shnum = static_cast<uint16_t>( table.size() );
-      setIndexOfDynamicSectionHeader();
-      setIndexOfDynamicStringTableSectionHeader();
+
+      indexKnownSectionHeaders();
     }
 
     /*! \brief Set the offset of the section header table
@@ -389,6 +181,241 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     const std::vector<SectionHeader> & sectionHeaderTable() const noexcept
     {
       return mSectionHeaderTable;
+    }
+
+    /*! \brief Check if the section header table is sorted by file offset
+     */
+    bool sectionHeaderTableIsSortedByFileOffset() const noexcept
+    {
+      return sectionHeadersAreSortedByFileOffset(mSectionHeaderTable);
+    }
+
+    /*! \brief Sort the section header table by file offset
+     */
+    SectionIndexChangeMap sortSectionHeaderTableByFileOffset() noexcept
+    {
+      const uint64_t shtStringTableOffset = mSectionHeaderTable[mFileHeader.shstrndx].offset;
+
+      const SectionIndexChangeMap map = sortSectionHeadersByFileOffset(mSectionHeaderTable);
+      indexKnownSectionHeaders();
+
+      mFileHeader.shstrndx = findIndexOfSectionHeaderAtOffset(mSectionHeaderTable, shtStringTableOffset);
+
+      return map;
+    }
+
+    /*! \brief Check if the .got section header exists
+     */
+    bool containsGotSectionHeader() const noexcept
+    {
+      return mIndexOfGotSectionHeader < mSectionHeaderTable.size();
+    }
+
+    /*! \brief Get the .got section header
+     *
+     * \pre the .got section header must exist
+     * \sa containsGotSectionHeader()
+     */
+    const SectionHeader & gotSectionHeader() const noexcept
+    {
+      assert( containsGotSectionHeader() );
+
+      return mSectionHeaderTable[mIndexOfGotSectionHeader];
+    }
+
+    /*! \brief Check if the .got.plt section header exists
+     */
+    bool containsGotPltSectionHeader() const noexcept
+    {
+      return mIndexOfGotPltSectionHeader < mSectionHeaderTable.size();
+    }
+
+    /*! \brief Get the .got.plt section header
+     *
+     * \pre the .got.plt section header must exist
+     * \sa containsGotPltSectionHeader()
+     */
+    const SectionHeader & gotPltSectionHeader() const noexcept
+    {
+      assert( containsGotPltSectionHeader() );
+
+      return mSectionHeaderTable[mIndexOfGotPltSectionHeader];
+    }
+
+    /*! \brief Check if the .interp program header exists
+     */
+    bool containsProgramInterpreterProgramHeader() const noexcept
+    {
+      return mProgramHeaderTable.containsProgramInterpreterProgramHeader();
+    }
+
+    /*! \brief Get the .interp program header
+     *
+     * \pre the .interp program header must exist
+     * \sa containsProgramInterpreterProgramHeader()
+     */
+    const ProgramHeader & programInterpreterProgramHeader() const noexcept
+    {
+      assert( containsProgramInterpreterProgramHeader() );
+
+      return mProgramHeaderTable.programInterpreterProgramHeader();
+    }
+
+    /*! \brief Check if the .interp section header exists
+     */
+    bool containsProgramInterpreterSectionHeader() const noexcept
+    {
+      return mIndexOfProgramInterpreterSectionHeader < mSectionHeaderTable.size();
+    }
+
+    /*! \brief Get the .interp section header
+     *
+     * \pre the .interp interp header must exist
+     * \sa containsProgramInterpreterSectionHeader()
+     */
+    const SectionHeader & programInterpreterSectionHeader() const noexcept
+    {
+      assert( containsProgramInterpreterSectionHeader() );
+
+      return mSectionHeaderTable[mIndexOfProgramInterpreterSectionHeader];
+    }
+
+    /*! \brief Check if the PT_NOTE program header exists
+     */
+    bool containsNoteProgramHeader() const noexcept
+    {
+      return mProgramHeaderTable.containsNoteProgramHeader();
+    }
+
+    /*! \brief Check if the .gnu.hash section header exists
+     */
+    bool containsGnuHashTableSectionHeader() const noexcept
+    {
+      return mIndexOfGnuHashTableSectionHeader < mSectionHeaderTable.size();
+    }
+
+    /*! \brief Get the .gnu.hash section header
+     *
+     * \pre the .gnu.hash section header must exist
+     * \sa containsGnuHashTableSectionHeader()
+     */
+    const SectionHeader & gnuHashTableSectionHeader() const noexcept
+    {
+      assert( containsGnuHashTableSectionHeader() );
+
+      return mSectionHeaderTable[mIndexOfGnuHashTableSectionHeader];
+    }
+
+    /*! \brief Get the PT_NOTE program header
+     *
+     * \pre the PT_NOTE program header must exist
+     * \sa containsNoteProgramHeader()
+     */
+    const ProgramHeader & noteProgramHeader() const noexcept
+    {
+      assert( containsNoteProgramHeader() );
+
+      return mProgramHeaderTable.noteProgramHeader();
+    }
+
+    /*! \brief Get the note section headers
+     */
+    std::vector<SectionHeader> getNoteSectionHeaders() const noexcept
+    {
+      std::vector<SectionHeader> noteSectionHeaders;
+
+      for(const SectionHeader & header : mSectionHeaderTable){
+        if(header.sectionType() == SectionType::Note){
+          noteSectionHeaders.push_back(header);
+        }
+      }
+
+      return noteSectionHeaders;
+    }
+
+    /*! \brief Check if the .note.ABI-tag section header exists
+     */
+    [[deprecated]]
+    bool containsNoteAbiTagSectionHeader() const noexcept
+    {
+      return mIndexOfNoteAbiTagSectionHeader < mSectionHeaderTable.size();
+    }
+
+    /*! \brief Get the the .note.ABI-tag section header
+     *
+     * \pre the .note.ABI-tag section header must exist
+     * \sa containsNoteAbiTagSectionHeader()
+     */
+    [[deprecated]]
+    const SectionHeader & noteAbiTagSectionHeader() const noexcept
+    {
+      assert( containsNoteAbiTagSectionHeader() );
+
+      return mSectionHeaderTable[mIndexOfNoteAbiTagSectionHeader];
+    }
+
+    /*! \brief Check if the .note.gnu.build-id section header exists
+     */
+    [[deprecated]]
+    bool containsNoteGnuBuildIdSectionHeader() const noexcept
+    {
+      return mIndexOfNoteGnuBuildIdSectionHeader < mSectionHeaderTable.size();
+    }
+
+    /*! \brief Get the the .note.gnu.build-id section header
+     *
+     * \pre the .note.gnu.build-id section header must exist
+     * \sa containsNoteGnuBuildIdSectionHeader()
+     */
+    [[deprecated]]
+    const SectionHeader & noteGnuBuildIdSectionHeader() const noexcept
+    {
+      assert( containsNoteGnuBuildIdSectionHeader() );
+
+      return mSectionHeaderTable[mIndexOfNoteGnuBuildIdSectionHeader];
+    }
+
+    /*! \brief Check if the PT_GNU_RELRO program header exists
+     */
+    bool containsGnuRelRoProgramHeader() const noexcept
+    {
+      return mProgramHeaderTable.containsGnuRelRoHeader();
+    }
+
+    /*! \brief Get the PT_GNU_RELRO program header
+     *
+     * \pre the PT_GNU_RELRO program header must exist
+     * \sa containsGnuRelRoProgramHeader()
+     */
+    const ProgramHeader & gnuRelRoProgramHeader() const noexcept
+    {
+      assert( containsGnuRelRoProgramHeader() );
+
+      return mProgramHeaderTable.gnuRelRoHeader();
+    }
+
+    /*! \brief Get the PT_GNU_RELRO program header
+     *
+     * \pre the PT_GNU_RELRO program header must exist
+     * \sa containsGnuRelRoProgramHeader()
+     */
+    ProgramHeader & gnuRelRoProgramHeaderMutable() noexcept
+    {
+      assert( containsGnuRelRoProgramHeader() );
+
+      return mProgramHeaderTable.gnuRelRoHeaderMutable();
+    }
+
+    /*! \brief Set the size for the PT_GNU_RELRO program header
+     *
+     * \pre the PT_GNU_RELRO program header must exist
+     * \sa containsGnuRelRoProgramHeader()
+     */
+    void setGnuRelRoProgramHeaderSize(uint64_t size) noexcept
+    {
+      assert( containsGnuRelRoProgramHeader() );
+
+      mProgramHeaderTable.setGnuRelRoHeaderSize(size);
     }
 
     /*! \brief Check if the dynamic program header exists
@@ -452,7 +479,19 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      */
     bool containsDynamicSectionHeader() const noexcept
     {
-      return mIndexOfDynamicSectionHeader > 0;
+      return mIndexOfDynamicSectionHeader < mSectionHeaderTable.size();
+    }
+
+    /*! \brief Get the index of the dynamic section in the section header table
+     *
+     * \pre the dynamic section header must exist
+     * \sa containsDynamicSectionHeader()
+     */
+    uint16_t dynamicSectionHeaderIndex() const noexcept
+    {
+      assert( containsDynamicSectionHeader() );
+
+      return static_cast<uint16_t>(mIndexOfDynamicSectionHeader);
     }
 
     /*! \brief Get the dynamic section header
@@ -464,18 +503,26 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     {
       assert( containsDynamicSectionHeader() );
 
-      const size_t index = mIndexOfDynamicSectionHeader;
-      assert( index < mSectionHeaderTable.size() );
-      assert( mSectionHeaderTable[index].sectionType() == SectionType::Dynamic );
-
-      return mSectionHeaderTable[index];
+      return mSectionHeaderTable[mIndexOfDynamicSectionHeader];
     }
 
     /*! \brief Check if the dynamic string table section header exists
      */
     bool containsDynamicStringTableSectionHeader() const noexcept
     {
-      return mIndexOfDynamicStringTableSectionHeader > 0;
+      return mIndexOfDynamicStringTableSectionHeader < mSectionHeaderTable.size();
+    }
+
+    /*! \brief Get the index of the dynamic string table section in the section header table
+     *
+     * \pre the dynamic string table section header must exist
+     * \sa containsDynamicStringTableSectionHeader()
+     */
+    uint16_t dynamicStringTableSectionHeaderIndex() const noexcept
+    {
+      assert( containsDynamicStringTableSectionHeader() );
+
+      return static_cast<uint16_t>(mIndexOfDynamicStringTableSectionHeader);
     }
 
     /*! \brief Get the dynamic string table section header
@@ -501,12 +548,12 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * \pre the dynamic section header must exist
      * \sa containsDynamicSectionHeader()
      */
-    void setDynamicSectionFileSize(uint64_t size) noexcept
+    void setDynamicSectionSize(uint64_t size) noexcept
     {
       assert( containsDynamicProgramHeader() );
       assert( containsDynamicSectionHeader() );
 
-      mProgramHeaderTable.setDynamicSectionFileSize(size);
+      mProgramHeaderTable.setDynamicSectionSize(size);
       mSectionHeaderTable[mIndexOfDynamicSectionHeader].size = size;
     }
 
@@ -518,16 +565,18 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * \pre the dynamic section header must exist
      * \sa containsDynamicSectionHeader()
      */
-    void moveDynamicSectionToEnd() noexcept
+    void moveDynamicSectionToEnd(MoveSectionAlignment alignmentMode) noexcept
     {
       assert( fileHeaderSeemsValid() );
       assert( containsDynamicProgramHeader() );
       assert( containsDynamicSectionHeader() );
 
-      /// \todo does the dynamic section allways require alignment ?
-      assert( dynamicProgramHeader().align > 0 );
+//       /// \todo does the dynamic section allways require alignment ?
+//       assert( dynamicProgramHeader().align > 0 );
 
-      const uint64_t virtualAddess = findNextAlignedAddress(findLastSegmentVirtualAddressEnd(), dynamicProgramHeader().align);
+      const uint64_t alignment = sectionAlignemnt(dynamicSectionHeader().addralign, alignmentMode);
+
+      const uint64_t virtualAddess = findNextAlignedAddress(findGlobalVirtualAddressEnd(), alignment);
       const uint64_t fileOffset = findNextFileOffset( findGlobalFileOffsetEnd(), virtualAddess, fileHeader().pageSize() );
 
       mProgramHeaderTable.setDynamicSectionVirtualAddressAndFileOffset(virtualAddess, fileOffset);
@@ -535,12 +584,12 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mSectionHeaderTable[mIndexOfDynamicSectionHeader].offset = fileOffset;
     }
 
-    /*! \brief Set the file size of the dynamic string table
+    /*! \brief Set the size of the dynamic string table
      *
      * \pre the dynamic string table section header must exist
      * \sa containsDynamicStringTableSectionHeader()
      */
-    void setDynamicStringTableFileSize(uint64_t size) noexcept
+    void setDynamicStringTableSize(uint64_t size) noexcept
     {
       assert( containsDynamicStringTableSectionHeader() );
 
@@ -552,18 +601,34 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      * \pre the dynamic string table section header must exist
      * \sa containsDynamicStringTableSectionHeader()
      */
-    void moveDynamicStringTableToEnd() noexcept
+    void moveDynamicStringTableToEnd(MoveSectionAlignment alignmentMode) noexcept
     {
       assert( containsDynamicStringTableSectionHeader() );
 
       /// \todo can dynamic string table require alignment ?
-      assert( dynamicStringTableSectionHeader().addralign < 2 );
+//       assert( dynamicStringTableSectionHeader().addralign < 2 );
 
-      uint64_t virtualAddess = findLastSegmentVirtualAddressEnd();
-      if( (virtualAddess % 2) != 0){
-        ++virtualAddess;
+//       uint64_t virtualAddess = findLastSegmentVirtualAddressEnd();
+//       if( (virtualAddess % 2) != 0){
+//         ++virtualAddess;
+//       }
+//       const uint64_t fileOffset = globalFileOffsetRange().end();
+
+      const uint64_t alignment = sectionAlignemnt(dynamicStringTableSectionHeader().addralign, alignmentMode);
+
+      uint64_t virtualAddess;
+      uint64_t fileOffset;
+      if(alignmentMode == MoveSectionAlignment::NextPage){
+        assert(alignment > 1);
+        virtualAddess = findNextAlignedAddress(findGlobalVirtualAddressEnd(), alignment);
+        fileOffset = findNextFileOffset( findGlobalFileOffsetEnd(), virtualAddess, fileHeader().pageSize() );
+      }else{
+        virtualAddess = findGlobalVirtualAddressEnd();
+        if( (virtualAddess % 2) != 0){
+          ++virtualAddess;
+        }
+        fileOffset = findGlobalFileOffsetEnd();
       }
-      const uint64_t fileOffset = globalFileOffsetRange().end();
 
       mSectionHeaderTable[mIndexOfDynamicStringTableSectionHeader].addr = virtualAddess;
       mSectionHeaderTable[mIndexOfDynamicStringTableSectionHeader].offset = fileOffset;
@@ -586,9 +651,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       assert( containsProgramHeaderTable() );
       assert( containsProgramHeaderTableProgramHeader() );
 
+      /// \todo check if this should be as the other PT_LOAD ? f.ex. 0x200000 maybe a argument ??
+//       const uint64_t pageSize = 0x200000;
       const uint64_t pageSize = mFileHeader.pageSize();
 
-      const uint64_t lastVirtualAddress = findLastSegmentVirtualAddressEnd();
+      const uint64_t lastVirtualAddress = findGlobalVirtualAddressEnd();
       const uint64_t lastFileOffset = findGlobalFileOffsetEnd();
 
       const uint64_t virtualAddess = findAddressOfNextPage(std::max(lastVirtualAddress, lastFileOffset), pageSize);
@@ -610,13 +677,132 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       mFileHeader.phoff = fileOffset;
     }
 
+    /*! \brief Move the program interpreter section to the end
+     *
+     * \pre the file header must be valid
+     * \pre the .interp section header must exist
+     * \pre the PT_INTERP programe header must exist
+     */
+    void moveProgramInterpreterSectionToEnd(MoveSectionAlignment alignmentMode) noexcept
+    {
+      assert( fileHeaderSeemsValid() );
+      assert( containsProgramInterpreterSectionHeader() );
+      assert( containsProgramInterpreterProgramHeader() );
+
+      const uint64_t alignment = sectionAlignemnt(programInterpreterSectionHeader().addralign, alignmentMode);
+//       const uint64_t pageSize = mFileHeader.pageSize();
+
+      const uint64_t lastVirtualAddress = findGlobalVirtualAddressEnd();
+      const uint64_t lastFileOffset = findGlobalFileOffsetEnd();
+
+      const uint64_t virtualAddess = findNextAlignedAddress(lastVirtualAddress, alignment);
+      const uint64_t fileOffset = findNextFileOffset( lastFileOffset, virtualAddess, mFileHeader.pageSize() );
+//       const uint64_t fileOffset = findNextFileOffset(lastFileOffset, virtualAddess, alignment);
+
+      mSectionHeaderTable[mIndexOfProgramInterpreterSectionHeader].addr = virtualAddess;
+      mSectionHeaderTable[mIndexOfProgramInterpreterSectionHeader].offset = fileOffset;
+
+      mProgramHeaderTable.setProgramInterpreterHeaderVirtualAddressAndFileOffset(virtualAddess, fileOffset);
+    }
+
+    /*! \brief Move the note sections to the end
+     *
+     * \pre the file header must be valid
+     * \pre the PT_NOTE programe header must exist
+     */
+    void moveNoteSectionsToEnd(MoveSectionAlignment alignmentMode) noexcept
+    {
+      assert( fileHeaderSeemsValid() );
+      assert( containsNoteProgramHeader() );
+
+      /// \todo does the note segment allways require alignment ?
+//       assert( noteProgramHeader().align > 0 );
+
+      const uint64_t alignment = sectionAlignemnt(noteProgramHeader().align, alignmentMode);
+
+      const uint64_t firstVirtualAddess = findNextAlignedAddress(findGlobalVirtualAddressEnd(), alignment);
+      const uint64_t firstFileOffset = findNextFileOffset( findGlobalFileOffsetEnd(), firstVirtualAddess, fileHeader().pageSize() );
+
+      uint64_t virtualAddess = firstVirtualAddess;
+      uint64_t fileOffset = firstFileOffset;
+
+      for(SectionHeader & header : mSectionHeaderTable){
+        if(header.sectionType() == SectionType::Note){
+          header.addr = virtualAddess;
+          header.offset = fileOffset;
+          virtualAddess += header.size;
+          fileOffset += header.size;
+        }
+      }
+
+      mProgramHeaderTable.setNoteProgramHeaderVirtualAddressAndFileOffset(firstVirtualAddess, firstFileOffset);
+    }
+
+    /*! \brief Move the .gnu.hash section to the end
+     *
+     * \pre the file header must be valid
+     * \pre the .gnu.hash section header must exist
+     * \sa containsGnuHashTableSectionHeader()
+     */
+    void moveGnuHashTableToEnd(MoveSectionAlignment alignmentMode) noexcept
+    {
+      assert( fileHeaderSeemsValid() );
+      assert( containsGnuHashTableSectionHeader() );
+
+      const uint64_t alignment = sectionAlignemnt(gnuHashTableSectionHeader().addralign, alignmentMode);
+
+      const uint64_t virtualAddess = findNextAlignedAddress(findGlobalVirtualAddressEnd(), alignment);
+      const uint64_t fileOffset = findNextFileOffset( findGlobalFileOffsetEnd(), virtualAddess, fileHeader().pageSize() );
+
+      mSectionHeaderTable[mIndexOfGnuHashTableSectionHeader].addr = virtualAddess;
+      mSectionHeaderTable[mIndexOfGnuHashTableSectionHeader].offset = fileOffset;
+    }
+
+    /*! \brief Find the virtual address for a segment that will be the next page after the end of the file represented by this headers
+     */
+    [[deprecated]]
+    uint64_t findVirtualAddressForNextSegmentAfterEnd() noexcept
+    {
+      const uint64_t pageSize = mFileHeader.pageSize();
+      const uint64_t lastVirtualAddress = findLastSegmentVirtualAddressEnd();
+
+      return findAddressOfNextPage(lastVirtualAddress, pageSize);
+    }
+
     /*! \brief Get the virtual address of the end of the last segment of the file represented by this headers
      *
      * \note the returned address is 1 byte past the last virtual address of the last segment
      */
+    [[deprecated]]
     uint64_t findLastSegmentVirtualAddressEnd() const noexcept
     {
       return mProgramHeaderTable.findLastSegmentVirtualAddressEnd();
+    }
+
+    /*! \brief Find the global virtual address end
+     */
+    uint64_t findGlobalVirtualAddressEnd() const noexcept
+    {
+      assert( fileHeaderSeemsValid() );
+
+      uint64_t lastSegmentVirtalAddressEnd = 0;
+      if( !mProgramHeaderTable.isEmpty() ){
+        lastSegmentVirtalAddressEnd = mProgramHeaderTable.findLastSegmentVirtualAddressEnd();
+      }
+
+      uint64_t lastSectionVirtualAddressEnd = 0;
+      if( !mSectionHeaderTable.empty() ){
+        const auto cmp = [](const SectionHeader & a, const SectionHeader & b){
+          return a.virtualAddressEnd() < b.virtualAddressEnd();
+        };
+
+        const auto it = std::max_element(mSectionHeaderTable.cbegin(), mSectionHeaderTable.cend(), cmp);
+        assert( it != mSectionHeaderTable.cend() );
+
+        lastSectionVirtualAddressEnd = it->virtualAddressEnd();
+      }
+
+      return std::max(lastSegmentVirtalAddressEnd, lastSectionVirtualAddressEnd);
     }
 
     /*! \brief Get the global file offset end
@@ -695,29 +881,150 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
    private:
 
-    void setIndexOfDynamicSectionHeader() noexcept
+    uint64_t sectionAlignemnt(uint64_t alignment, MoveSectionAlignment alignmentMode) const noexcept
     {
-      const auto pred = [](const SectionHeader & header){
-        return header.sectionType() == SectionType::Dynamic;
-      };
+//       uint64_t alignment = 1;
 
-      const auto it = std::find_if(mSectionHeaderTable.cbegin(), mSectionHeaderTable.cend(), pred);
-      if( it == mSectionHeaderTable.cend() ){
-        mIndexOfDynamicSectionHeader = 0;
-      }else{
-        mIndexOfDynamicSectionHeader = static_cast<int>( std::distance(mSectionHeaderTable.cbegin(), it) );
+      switch(alignmentMode){
+        case MoveSectionAlignment::SectionAlignment:
+//           alignment = sectionHeader.addralign;
+          break;
+        case MoveSectionAlignment::NextPage:
+          alignment = mFileHeader.pageSize();
+          break;
       }
+
+      if(alignment == 0){
+        alignment = 1;
+      }
+
+      return alignment;
+    }
+
+    static
+    constexpr size_t invalidSectionHeaderIndex() noexcept
+    {
+      return std::numeric_limits<size_t>::max();
+    }
+
+    static
+    bool isGotSectionHeader(const SectionHeader & header) noexcept
+    {
+      if(header.sectionType() != SectionType::ProgramData){
+        return false;
+      }
+
+      return header.name == ".got";
+    }
+
+    static
+    bool isGotPltSectionHeader(const SectionHeader & header) noexcept
+    {
+      if(header.sectionType() != SectionType::ProgramData){
+        return false;
+      }
+
+      return header.name == ".got.plt";
+    }
+
+    static
+    bool isNoteSectionHeaderWithName(const SectionHeader & header, const std::string & name) noexcept
+    {
+      if(header.sectionType() != SectionType::Note){
+        return false;
+      }
+
+      return header.name == name;
+    }
+
+    static
+    bool isNoteAbiTagSectionHeader(const SectionHeader & header) noexcept
+    {
+      return isNoteSectionHeaderWithName(header, ".note.ABI-tag");
+    }
+
+    static
+    bool isNoteGnuBuildIdSectionHeader(const SectionHeader & header) noexcept
+    {
+      return isNoteSectionHeaderWithName(header, ".note.gnu.build-id");
+    }
+
+    static
+    bool isDynamicSectionHeader(const SectionHeader & header) noexcept
+    {
+      return header.sectionType() == SectionType::Dynamic;
+    }
+
+    static
+    bool isDynamicStringTableSectionHeader(const SectionHeader & header) noexcept
+    {
+      if( header.sectionType() != SectionType::StringTable ){
+        return false;
+      }
+
+      return header.name == ".dynstr";
+    }
+
+//     static
+//     bool isProgramInterpreterSectionHeader(const SectionHeader & header) noexcept
+//     {
+//       if( header.sectionType() != SectionType::ProgramData ){
+//         return false;
+//       }
+// 
+//       return header.name == ".interp";
+//     }
+
+    void indexKnownSectionHeaders() noexcept
+    {
+      for(size_t i=1; i < mSectionHeaderTable.size(); ++i){
+        const SectionHeader & header = mSectionHeaderTable[i];
+
+        if( isGotSectionHeader(header) ){
+          mIndexOfGotSectionHeader = i;
+        }else if( isGotPltSectionHeader(header) ){
+          mIndexOfGotPltSectionHeader = i;
+        }else if( isDynamicSectionHeader(header) ){
+          mIndexOfDynamicSectionHeader = i;
+        }else if( header.isProgramInterpreterSectionHeader() ){
+          mIndexOfProgramInterpreterSectionHeader = i;
+        }else if( isNoteAbiTagSectionHeader(header) ){
+          mIndexOfNoteAbiTagSectionHeader = i;
+        }else if( isNoteGnuBuildIdSectionHeader(header) ){
+          mIndexOfNoteGnuBuildIdSectionHeader = i;
+        }else if( header.isGnuHashTableSectionHeader() ){
+          mIndexOfGnuHashTableSectionHeader = i;
+        }else if( isDynamicStringTableSectionHeader(header) ){
+          mIndexOfDynamicStringTableSectionHeader = i;
+        }
+      }
+
+      /** \todo when implementing section header table,
+       * it should be possible to check (by the user),
+       * if the .dynamic section links properly to the .dynstr section.
+       * AND: avoid current double implementation
+       * of indexing .dynstr
+       */
+      setIndexOfDynamicStringTableSectionHeader();
     }
 
     void setIndexOfDynamicStringTableSectionHeader() noexcept
     {
-      if( containsDynamicSectionHeader() ){
+      if( containsDynamicSectionHeader() && ( dynamicSectionHeader().linkIsIndexInSectionHeaderTable() ) ){
         mIndexOfDynamicStringTableSectionHeader = dynamicSectionHeader().link;
+        assert( mIndexOfDynamicStringTableSectionHeader < mSectionHeaderTable.size() );
+        assert( isDynamicStringTableSectionHeader( mSectionHeaderTable[mIndexOfDynamicStringTableSectionHeader] ) );
       }
     }
 
-    int mIndexOfDynamicSectionHeader = 0;
-    int mIndexOfDynamicStringTableSectionHeader = 0;
+    size_t mIndexOfDynamicSectionHeader = invalidSectionHeaderIndex();
+    size_t mIndexOfDynamicStringTableSectionHeader = invalidSectionHeaderIndex();
+    size_t mIndexOfGotSectionHeader = invalidSectionHeaderIndex();
+    size_t mIndexOfGotPltSectionHeader = invalidSectionHeaderIndex();
+    size_t mIndexOfProgramInterpreterSectionHeader = invalidSectionHeaderIndex();
+    size_t mIndexOfGnuHashTableSectionHeader = invalidSectionHeaderIndex();
+    size_t mIndexOfNoteAbiTagSectionHeader = invalidSectionHeaderIndex();
+    size_t mIndexOfNoteGnuBuildIdSectionHeader = invalidSectionHeaderIndex();
     FileHeader mFileHeader;
     ProgramHeaderTable mProgramHeaderTable;
     std::vector<SectionHeader> mSectionHeaderTable;

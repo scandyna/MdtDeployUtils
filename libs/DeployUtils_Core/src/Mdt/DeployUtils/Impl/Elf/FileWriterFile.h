@@ -217,8 +217,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
         throw MoveSectionError(msg);
       }
 
-      std::cout << "required place: " << fileHeader().phentsize << " , sections to move (includes SHT_NULL): " << sectionToMoveCount << std::endl;
-
       std::vector<uint16_t> movedSectionHeadersIndexes;
 
       if(sectionToMoveCount > 1){
@@ -227,8 +225,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
         movedSectionHeadersIndexes = moveFirstCountSectionsToEnd(sectionToMoveCount);
       }
-
-      std::cout << "offset end: " << mHeaders.findGlobalFileOffsetEnd() << " , Vaddr end: " << mHeaders.findGlobalVirtualAddressEnd() << std::endl;
 
       if(mustMoveDynamicSection){
         msg = tr("moving .dynamic section to end");
