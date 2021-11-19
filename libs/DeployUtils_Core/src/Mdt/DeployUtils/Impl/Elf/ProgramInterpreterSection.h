@@ -21,7 +21,6 @@
 #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_PROGRAM_INTERPRETER_SECTION_H
 #define MDT_DEPLOY_UTILS_IMPL_ELF_PROGRAM_INTERPRETER_SECTION_H
 
-// #include "SectionHeader.h"
 #include <string>
 #include <cassert>
 
@@ -33,18 +32,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   {
     std::string path;
   };
-
-//   /*! \internal
-//    */
-//   inline
-//   bool isProgramInterpreterSectionHeader(const SectionHeader & sectionHeader) noexcept
-//   {
-//     if(sectionHeader.sectionType() != SectionType::ProgramData){
-//       return false;
-//     }
-// 
-//     return sectionHeader.name == ".interp";
-//   }
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
