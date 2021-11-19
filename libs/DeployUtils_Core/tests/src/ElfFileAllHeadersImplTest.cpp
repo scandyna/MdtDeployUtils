@@ -387,72 +387,6 @@ TEST_CASE("gnuHashTableSectionHeader")
   }
 }
 
-TEST_CASE("noteAbiTagSectionHeader")
-{
-  FileAllHeaders allHeaders;
-  std::vector<SectionHeader> sectionHeaderTable;
-  SectionHeader noteSectionHeader;
-
-  SECTION("default constructed")
-  {
-    REQUIRE( !allHeaders.containsNoteAbiTagSectionHeader());
-  }
-
-  SECTION("table contains the .note.ABI-tag section header")
-  {
-    noteSectionHeader = makeNoteSectionHeader(".note.ABI-tag");
-    noteSectionHeader.offset = 25;
-
-    sectionHeaderTable.push_back( makeNullSectionHeader() );
-    sectionHeaderTable.push_back(noteSectionHeader);
-    allHeaders.setSectionHeaderTable(sectionHeaderTable);
-
-    REQUIRE( allHeaders.containsNoteAbiTagSectionHeader() );
-    REQUIRE( allHeaders.noteAbiTagSectionHeader().offset == 25 );
-  }
-
-  SECTION("add a other program header")
-  {
-    sectionHeaderTable.push_back( makeNullSectionHeader() );
-    allHeaders.setSectionHeaderTable(sectionHeaderTable);
-
-    REQUIRE( !allHeaders.containsNoteAbiTagSectionHeader() );
-  }
-}
-
-TEST_CASE("noteGnuBuildIdSectionHeader")
-{
-  FileAllHeaders allHeaders;
-  std::vector<SectionHeader> sectionHeaderTable;
-  SectionHeader noteSectionHeader;
-
-  SECTION("default constructed")
-  {
-    REQUIRE( !allHeaders.containsNoteGnuBuildIdSectionHeader());
-  }
-
-  SECTION("table contains the .note.gnu.build-id section header")
-  {
-    noteSectionHeader = makeNoteSectionHeader(".note.gnu.build-id");
-    noteSectionHeader.offset = 26;
-
-    sectionHeaderTable.push_back( makeNullSectionHeader() );
-    sectionHeaderTable.push_back(noteSectionHeader);
-    allHeaders.setSectionHeaderTable(sectionHeaderTable);
-
-    REQUIRE( allHeaders.containsNoteGnuBuildIdSectionHeader() );
-    REQUIRE( allHeaders.noteGnuBuildIdSectionHeader().offset == 26 );
-  }
-
-  SECTION("add a other program header")
-  {
-    sectionHeaderTable.push_back( makeNullSectionHeader() );
-    allHeaders.setSectionHeaderTable(sectionHeaderTable);
-
-    REQUIRE( !allHeaders.containsNoteGnuBuildIdSectionHeader() );
-  }
-}
-
 TEST_CASE("setDynamicSectionSize")
 {
   FileAllHeaders allHeaders;
@@ -678,35 +612,6 @@ TEST_CASE("setDynamicStringTableSize")
   allHeaders.setDynamicStringTableSize(25);
 
   REQUIRE( allHeaders.dynamicStringTableSectionHeader().size == 25 );
-}
-
-TEST_CASE("findLastSegmentVirtualAddressEnd")
-{
-  TestHeadersSetup setup;
-  FileAllHeaders allHeaders;
-
-  SECTION("section header table is at the end of the file but it is not loaded into memory")
-  {
-    setup.programHeaderTableOffset = 50;
-    setup.sectionHeaderTableOffset = 15'000;
-
-    SECTION("the dynamic section is at the end of the file")
-    {
-      setup.dynamicStringTableOffset = 200;
-      setup.dynamicStringTableSize = 10;
-      setup.dynamicStringTableAddress = 2000;
-      setup.dynamicSectionOffset = 300;
-      setup.dynamicSectionSize = 20;
-      setup.dynamicSectionAddress = 3000;
-
-      allHeaders = makeTestHeaders(setup);
-      REQUIRE( allHeaders.seemsValid() );
-
-      const uint64_t expectedLastAddress = 3020;
-
-      REQUIRE( allHeaders.findLastSegmentVirtualAddressEnd() == expectedLastAddress );
-    }
-  }
 }
 
 TEST_CASE("findGlobalVirtualAddressEnd")

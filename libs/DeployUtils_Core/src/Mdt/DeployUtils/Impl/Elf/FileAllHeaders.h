@@ -27,9 +27,7 @@
 #include "SectionHeader.h"
 #include "SectionHeaderTable.h"
 #include "SectionIndexChangeMap.h"
-
 #include "OffsetRange.h"
-
 #include "Algorithm.h"
 #include <vector>
 #include <cstdint>
@@ -109,19 +107,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     {
       mProgramHeaderTable.addHeader(header, fileHeader().phentsize);
       ++mFileHeader.phnum;
-    }
-
-    /*! \brief Add a new load segment to the end of the program header table
-     */
-    [[deprecated]]
-    ProgramHeader & appendNullLoadSegment() noexcept
-    {
-      assert( fileHeaderSeemsValid() );
-
-      ProgramHeader & header = mProgramHeaderTable.appendNullLoadSegment(fileHeader().phentsize);
-      ++mFileHeader.phnum;
-
-      return header;
     }
 
     /*! \brief Get the program header table
@@ -333,48 +318,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return noteSectionHeaders;
     }
 
-    /*! \brief Check if the .note.ABI-tag section header exists
-     */
-    [[deprecated]]
-    bool containsNoteAbiTagSectionHeader() const noexcept
-    {
-      return mIndexOfNoteAbiTagSectionHeader < mSectionHeaderTable.size();
-    }
-
-    /*! \brief Get the the .note.ABI-tag section header
-     *
-     * \pre the .note.ABI-tag section header must exist
-     * \sa containsNoteAbiTagSectionHeader()
-     */
-    [[deprecated]]
-    const SectionHeader & noteAbiTagSectionHeader() const noexcept
-    {
-      assert( containsNoteAbiTagSectionHeader() );
-
-      return mSectionHeaderTable[mIndexOfNoteAbiTagSectionHeader];
-    }
-
-    /*! \brief Check if the .note.gnu.build-id section header exists
-     */
-    [[deprecated]]
-    bool containsNoteGnuBuildIdSectionHeader() const noexcept
-    {
-      return mIndexOfNoteGnuBuildIdSectionHeader < mSectionHeaderTable.size();
-    }
-
-    /*! \brief Get the the .note.gnu.build-id section header
-     *
-     * \pre the .note.gnu.build-id section header must exist
-     * \sa containsNoteGnuBuildIdSectionHeader()
-     */
-    [[deprecated]]
-    const SectionHeader & noteGnuBuildIdSectionHeader() const noexcept
-    {
-      assert( containsNoteGnuBuildIdSectionHeader() );
-
-      return mSectionHeaderTable[mIndexOfNoteGnuBuildIdSectionHeader];
-    }
-
     /*! \brief Check if the PT_GNU_RELRO program header exists
      */
     bool containsGnuRelRoProgramHeader() const noexcept
@@ -571,9 +514,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       assert( containsDynamicProgramHeader() );
       assert( containsDynamicSectionHeader() );
 
-//       /// \todo does the dynamic section allways require alignment ?
-//       assert( dynamicProgramHeader().align > 0 );
-
       const uint64_t alignment = sectionAlignemnt(dynamicSectionHeader().addralign, alignmentMode);
 
       const uint64_t virtualAddess = findNextAlignedAddress(findGlobalVirtualAddressEnd(), alignment);
@@ -604,15 +544,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     void moveDynamicStringTableToEnd(MoveSectionAlignment alignmentMode) noexcept
     {
       assert( containsDynamicStringTableSectionHeader() );
-
-      /// \todo can dynamic string table require alignment ?
-//       assert( dynamicStringTableSectionHeader().addralign < 2 );
-
-//       uint64_t virtualAddess = findLastSegmentVirtualAddressEnd();
-//       if( (virtualAddess % 2) != 0){
-//         ++virtualAddess;
-//       }
-//       const uint64_t fileOffset = globalFileOffsetRange().end();
 
       const uint64_t alignment = sectionAlignemnt(dynamicStringTableSectionHeader().addralign, alignmentMode);
 
@@ -690,14 +621,12 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       assert( containsProgramInterpreterProgramHeader() );
 
       const uint64_t alignment = sectionAlignemnt(programInterpreterSectionHeader().addralign, alignmentMode);
-//       const uint64_t pageSize = mFileHeader.pageSize();
 
       const uint64_t lastVirtualAddress = findGlobalVirtualAddressEnd();
       const uint64_t lastFileOffset = findGlobalFileOffsetEnd();
 
       const uint64_t virtualAddess = findNextAlignedAddress(lastVirtualAddress, alignment);
       const uint64_t fileOffset = findNextFileOffset( lastFileOffset, virtualAddess, mFileHeader.pageSize() );
-//       const uint64_t fileOffset = findNextFileOffset(lastFileOffset, virtualAddess, alignment);
 
       mSectionHeaderTable[mIndexOfProgramInterpreterSectionHeader].addr = virtualAddess;
       mSectionHeaderTable[mIndexOfProgramInterpreterSectionHeader].offset = fileOffset;
@@ -714,9 +643,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     {
       assert( fileHeaderSeemsValid() );
       assert( containsNoteProgramHeader() );
-
-      /// \todo does the note segment allways require alignment ?
-//       assert( noteProgramHeader().align > 0 );
 
       const uint64_t alignment = sectionAlignemnt(noteProgramHeader().align, alignmentMode);
 
@@ -756,27 +682,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
       mSectionHeaderTable[mIndexOfGnuHashTableSectionHeader].addr = virtualAddess;
       mSectionHeaderTable[mIndexOfGnuHashTableSectionHeader].offset = fileOffset;
-    }
-
-    /*! \brief Find the virtual address for a segment that will be the next page after the end of the file represented by this headers
-     */
-    [[deprecated]]
-    uint64_t findVirtualAddressForNextSegmentAfterEnd() noexcept
-    {
-      const uint64_t pageSize = mFileHeader.pageSize();
-      const uint64_t lastVirtualAddress = findLastSegmentVirtualAddressEnd();
-
-      return findAddressOfNextPage(lastVirtualAddress, pageSize);
-    }
-
-    /*! \brief Get the virtual address of the end of the last segment of the file represented by this headers
-     *
-     * \note the returned address is 1 byte past the last virtual address of the last segment
-     */
-    [[deprecated]]
-    uint64_t findLastSegmentVirtualAddressEnd() const noexcept
-    {
-      return mProgramHeaderTable.findLastSegmentVirtualAddressEnd();
     }
 
     /*! \brief Find the global virtual address end
@@ -883,11 +788,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     uint64_t sectionAlignemnt(uint64_t alignment, MoveSectionAlignment alignmentMode) const noexcept
     {
-//       uint64_t alignment = 1;
-
       switch(alignmentMode){
         case MoveSectionAlignment::SectionAlignment:
-//           alignment = sectionHeader.addralign;
           break;
         case MoveSectionAlignment::NextPage:
           alignment = mFileHeader.pageSize();
@@ -965,16 +867,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       return header.name == ".dynstr";
     }
 
-//     static
-//     bool isProgramInterpreterSectionHeader(const SectionHeader & header) noexcept
-//     {
-//       if( header.sectionType() != SectionType::ProgramData ){
-//         return false;
-//       }
-// 
-//       return header.name == ".interp";
-//     }
-
     void indexKnownSectionHeaders() noexcept
     {
       for(size_t i=1; i < mSectionHeaderTable.size(); ++i){
@@ -988,10 +880,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
           mIndexOfDynamicSectionHeader = i;
         }else if( header.isProgramInterpreterSectionHeader() ){
           mIndexOfProgramInterpreterSectionHeader = i;
-        }else if( isNoteAbiTagSectionHeader(header) ){
-          mIndexOfNoteAbiTagSectionHeader = i;
-        }else if( isNoteGnuBuildIdSectionHeader(header) ){
-          mIndexOfNoteGnuBuildIdSectionHeader = i;
         }else if( header.isGnuHashTableSectionHeader() ){
           mIndexOfGnuHashTableSectionHeader = i;
         }else if( isDynamicStringTableSectionHeader(header) ){
@@ -1023,8 +911,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     size_t mIndexOfGotPltSectionHeader = invalidSectionHeaderIndex();
     size_t mIndexOfProgramInterpreterSectionHeader = invalidSectionHeaderIndex();
     size_t mIndexOfGnuHashTableSectionHeader = invalidSectionHeaderIndex();
-    size_t mIndexOfNoteAbiTagSectionHeader = invalidSectionHeaderIndex();
-    size_t mIndexOfNoteGnuBuildIdSectionHeader = invalidSectionHeaderIndex();
     FileHeader mFileHeader;
     ProgramHeaderTable mProgramHeaderTable;
     std::vector<SectionHeader> mSectionHeaderTable;
