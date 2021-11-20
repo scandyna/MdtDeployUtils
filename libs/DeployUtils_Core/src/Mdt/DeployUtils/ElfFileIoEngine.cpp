@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "ElfFileIoEngine.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileIoEngine.h"
+#include "Mdt/DeployUtils/Impl/Elf/FileWriterFile.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
 #include <cassert>
 
@@ -199,12 +200,27 @@ QStringList ElfFileIoEngine::doGetRunPath()
 void ElfFileIoEngine::doSetRunPath(const QStringList & rPath)
 {
   using Impl::ByteArraySpan;
+  using Impl::Elf::FileWriterFile;
 
   const qint64 size = fileSize();
 
   ByteArraySpan map = mapIfRequired(0, size);
 
-  mImpl->setRunPath(map, rPath);
+  FileWriterFile file;
+  connect(&file, &FileWriterFile::message, this, &ElfFileIoEngine::message);
+  connect(&file, &FileWriterFile::verboseMessage, this, &ElfFileIoEngine::verboseMessage);
+
+  mImpl->readToFileWriterFile(file, map);
+
+  file.setRunPath( rPath.join( QLatin1Char(':') ) );
+
+  const qint64 newSize = file.minimumSizeToWriteFile();
+  if(newSize > size){
+    resizeFile(newSize);
+    map = mapIfRequired(0, newSize);
+  }
+
+  mImpl->setFileWriterToMap(map, file);
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

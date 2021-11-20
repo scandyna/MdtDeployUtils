@@ -23,9 +23,7 @@
 
 #include "AbstractExecutableFileIoEngine.h"
 #include "FileOpenError.h"
-
 #include "ExecutableFileReadError.h"
-
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>

@@ -102,6 +102,11 @@ namespace Mdt{ namespace DeployUtils{
      */
     void setRunPath(const QStringList & rPath);
 
+   signals:
+
+    void message(const QString & message) const;
+    void verboseMessage(const QString & message) const;
+
    private:
 
     ExecutableFileIoEngine mEngine;

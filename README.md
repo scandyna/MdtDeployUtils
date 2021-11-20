@@ -214,36 +214,18 @@ only the linker of the compiler knows all the details required to write a workin
 
 The solution is to move the `.dynstr` (and maybe the `.dynamic`) section to the end.
 Because those sections need to be loaded into memory at runtime,
-a load segment (PT_LOAD) that covers them must be added.
+a load segment (`PT_LOAD`) that covers them must be added.
+
 By adding a segment, the program header table will grow,
-requiring to also move it tos the end of the file.
-The program header table must also be covered by the new load segment.
-Also, the new load segment has to be aligned to the next page
-after the end of the last virtual address of the mapped file in memory,
-which can be for example at 2MB for a simple `hello wrold` executable.
-Example:
-```
-Virtual address of the end of the last segment: 0x201fff
-Virtual address of the new load segment,
-which covers the program header table
-and the .dynstr section (page size is 0x1000): 0x203000
-File offset of the end of the last section: 0x24ff
-```
-In this example, the program header table
-will start at the virtual address `0x203000` in memory.
-We could place it in the file to a offset,
-that is congruent to the virtual address modulo page size,
-after the last section, which would be `0xd000`.
+requiring to also move some sections to the end of the file.
+Current implementation is able to do this,
+and a set of tests shows that the resulting ELF still works.
+Despite that, only a very small set of binaries have been
+tested on Linux, based on GNU ld generated ELF files.
 
-And this does not work (segfault)!
-
-For the particular case of the program header table,
-the file offset must be the same as the virtual address.
-For this reason, a binary that was originally about a size of 90kB
-can grow to a size of 2MB.
-
-In the [patchelf](https://github.com/NixOS/patchelf) project,
-this is documented [as a kernel bug](https://github.com/NixOS/patchelf/blob/master/BUGS).
+For more technical details, take a look at the source code, mainly:
+- libs/DeployUtils_Core/src/Mdt/DeployUtils/Impl/Elf/FileWriterFile.h
+- libs/DeployUtils_Core/tests/src/ElfFileWriterImplTest_Unix.cpp
 
 ## Recommandation
 

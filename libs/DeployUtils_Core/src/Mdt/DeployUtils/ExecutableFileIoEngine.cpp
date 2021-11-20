@@ -139,6 +139,11 @@ void ExecutableFileIoEngine::instanciateEngine(ExecutableFileFormat format) noex
     case ExecutableFileFormat::Unknown:
       break;
   }
+
+  if( mIoEngine.get() != nullptr ){
+    connect(mIoEngine.get(), &AbstractExecutableFileIoEngine::message, this, &ExecutableFileIoEngine::message);
+    connect(mIoEngine.get(), &AbstractExecutableFileIoEngine::verboseMessage, this, &ExecutableFileIoEngine::verboseMessage);
+  }
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

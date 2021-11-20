@@ -124,7 +124,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     {
       QString msg;
 
-      msg = tr("set runpath to %1").arg(runPath);
+      msg = tr("set runpath to '%1'").arg(runPath);
       emit message(msg);
 
       mDynamicSection.setRunPath(runPath);
@@ -225,7 +225,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       std::vector<uint16_t> movedSectionHeadersIndexes;
 
       if(sectionToMoveCount > 1){
-        msg = tr("will have to move %1 sections").arg(sectionToMoveCount-1);
+        msg = tr("will have to move %1 sections because the program header table must be updated")
+              .arg(sectionToMoveCount-1);
         emit message(msg);
 
         movedSectionHeadersIndexes = moveFirstCountSectionsToEnd(sectionToMoveCount);

@@ -27,6 +27,8 @@ namespace Mdt{ namespace DeployUtils{
 ExecutableFileWriter::ExecutableFileWriter(QObject *parent)
  : QObject(parent)
 {
+  connect(&mEngine, &ExecutableFileIoEngine::message, this, &ExecutableFileWriter::message);
+  connect(&mEngine, &ExecutableFileIoEngine::verboseMessage, this, &ExecutableFileWriter::verboseMessage);
 }
 
 void ExecutableFileWriter::openFile(const QFileInfo & fileInfo)

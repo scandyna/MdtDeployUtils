@@ -103,6 +103,11 @@ namespace Mdt{ namespace DeployUtils{
       return mIoEngine;
     }
 
+   signals:
+
+    void message(const QString & message) const;
+    void verboseMessage(const QString & message) const;
+
    private:
 
     void instanciateEngine(ExecutableFileFormat format) noexcept;

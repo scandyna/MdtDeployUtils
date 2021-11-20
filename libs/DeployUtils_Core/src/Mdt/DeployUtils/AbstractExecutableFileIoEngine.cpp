@@ -124,6 +124,20 @@ qint64 AbstractExecutableFileIoEngine::fileSize() const noexcept
   return mFile.size();
 }
 
+void AbstractExecutableFileIoEngine::resizeFile(qint64 size)
+{
+  assert( isOpen() );
+  assert( size > 0 );
+
+  if( !mFile.resize(size) ){
+    const QString msg = tr("resize file '%1' failed: %2")
+                        .arg( fileName(), mFile.errorString() );
+    throw ExecutableFileWriteError(msg);
+  }
+}
+
+
+
 QString AbstractExecutableFileIoEngine::fileName() const noexcept
 {
   assert( isOpen() );

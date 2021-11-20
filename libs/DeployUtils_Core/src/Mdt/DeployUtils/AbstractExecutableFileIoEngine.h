@@ -156,6 +156,11 @@ namespace Mdt{ namespace DeployUtils{
      */
     void setRunPath(const QStringList & rPath);
 
+   signals:
+
+    void message(const QString & message) const;
+    void verboseMessage(const QString & message) const;
+
    protected:
 
     /*! \brief Get the size of the file
@@ -164,6 +169,15 @@ namespace Mdt{ namespace DeployUtils{
      * \sa isOpen()
      */
     qint64 fileSize() const noexcept;
+
+    /*! \brief Resize current file
+     *
+     * \pre this engine must have a open file
+     * \sa isOpen()
+     * \pre \a size must be > 0
+     * \exception ExecutableFileWriteError
+     */
+    void resizeFile(qint64 size);
 
     /*! \brief Get the name of the file
      *

@@ -21,14 +21,22 @@
 #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_IO_ENGINE_H
 #define MDT_DEPLOY_UTILS_IMPL_ELF_FILE_IO_ENGINE_H
 
+#include "FileAllHeaders.h"
 #include "DynamicSection.h"
 #include "FileReader.h"
 #include "ProgramHeaderReader.h"
+#include "SymbolTableReader.h"
+#include "GlobalOffsetTableReader.h"
+#include "ProgramInterpreterSectionReader.h"
+#include "GnuHashTableReader.h"
+#include "NoteSectionReader.h"
 #include "FileWriter.h"
+#include "FileWriterFile.h"
+#include "Mdt/DeployUtils/ExecutableFileWriteError.h"
 #include <QLatin1Char>
 
-#include "Debug.h"
-#include <iostream>
+// #include "Debug.h"
+// #include <iostream>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
@@ -155,9 +163,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      *
      * \pre \a map must not be null
      * \exception ExecutableFileReadError
-     * \exception ExecutableFileWriteError
      */
-    void setRunPath(ByteArraySpan & map, const QStringList & rPath)
+    void readToFileWriterFile(FileWriterFile & file, const ByteArraySpan & map)
     {
       assert( !map.isNull() );
 
@@ -166,31 +173,46 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       readSectionNameStringTableHeaderIfNull(map);
       readDynamicSectionIfNull(map);
 
-      std::cout << "****** file: " << mFileName.toStdString() << " ******" << std::endl;
-      
-      std::cout << "File header:\n" << toDebugString(mFileHeader).toStdString() << std::endl;
-      
-//       std::cout << "sectionNamesStringTableSectionHeader:\n" << toDebugString(sectionNamesStringTableSectionHeader).toStdString() << std::endl;
+      FileAllHeaders headers;
+      headers.setFileHeader(mFileHeader);
+      headers.setProgramHeaderTable( extractAllProgramHeaders(map, mFileHeader) );
+      headers.setSectionHeaderTable( extractAllSectionHeaders(map, mFileHeader) );
 
-      const auto allProgramHeaders = extractAllProgramHeaders(map, mFileHeader);
-      std::cout << "Program headers:\n" << toDebugString(allProgramHeaders).toStdString() << std::endl;
+      file.setHeadersFromFile(headers);
+      file.setDynamicSectionFromFile(mDynamicSection);
+      file.setSymTabFromFile( extractSymTabPartReferringToSection( map, headers.fileHeader(), headers.sectionHeaderTable() ) );
+      file.setDynSymFromFile( extractDynSymPartReferringToSection( map, headers.fileHeader(), headers.sectionHeaderTable() ) );
+      file.setGotSectionFromFile( extractGotSection( map, headers.fileHeader(), headers.sectionHeaderTable() ) );
+      file.setGotPltSectionFromFile( extractGotPltSection( map, headers.fileHeader(), headers.sectionHeaderTable() ) );
 
-      const auto allSectionHeaders = extractAllSectionHeaders(map, mFileHeader);
-      std::cout << "Section headers:\n" << toDebugString(allSectionHeaders).toStdString() << std::endl;
-            
-      std::cout << "Dynamic section:\n" << toDebugString(mDynamicSection).toStdString() << std::endl;
-      std::cout << "Dynamic section string table:\n" << toDebugString(mDynamicSection.stringTable()).toStdString() << std::endl;
-      
-      const SectionHeader dynamicSectionHeader  = findSectionHeader(map, mFileHeader, mSectionNamesStringTableSectionHeader, SectionType::Dynamic, ".dynamic");
-      std::cout << "\nDynamic section header:\n" << toDebugString(dynamicSectionHeader).toStdString() << std::endl;
-      
-      SectionHeader dynamicStringTableSectionHeader = extractSectionHeaderAt( map, mFileHeader, static_cast<uint16_t>(dynamicSectionHeader.link) );
-      setSectionHeaderName(map, mSectionNamesStringTableSectionHeader, dynamicStringTableSectionHeader);
-      std::cout << "\nDynamic section string table header:\n" << toDebugString(dynamicStringTableSectionHeader).toStdString() << std::endl;
-      
-      mDynamicSection.setRunPath( rPath.join( QLatin1Char(':') ) );
+      if( headers.containsProgramInterpreterSectionHeader() ){
+        file.setProgramInterpreterSectionFromFile( extractProgramInterpreterSection( map, headers.fileHeader(), headers.programInterpreterSectionHeader() ) );
+      }
 
-//       setRunPathToMap( map, rPath.join( QLatin1Char(':') ), mFileHeader, mDynamicSectionHeader );
+      if( headers.containsGnuHashTableSectionHeader() ){
+        file.setGnuHashTableSection( GnuHashTableReader::extractHasTable( map, headers.fileHeader(), headers.gnuHashTableSectionHeader() ) );
+      }
+
+      try{
+        file.setNoteSectionTableFromFile( NoteSectionReader::extractNoteSectionTable( map, headers.fileHeader(), headers.sectionHeaderTable() ) );
+      }catch(const NoteSectionReadError & error){
+        const QString msg = tr("file '%1' contains a invalid note section: %2")
+                            .arg( mFileName, error.whatQString() );
+        throw ExecutableFileReadError(msg);
+      }
+    }
+
+    /*! \brief
+     *
+     * \pre \a map must not be null
+     * \exception ExecutableFileWriteError
+     */
+    void setFileWriterToMap(ByteArraySpan map, const FileWriterFile & file)
+    {
+      assert( !map.isNull() );
+      assert( map.size >= file.minimumSizeToWriteFile() );
+
+      setFileToMap(map, file);
     }
 
    private:

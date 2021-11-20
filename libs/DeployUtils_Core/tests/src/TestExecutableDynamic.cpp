@@ -30,5 +30,9 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  return (process(argv[0]) != 0);
+  if( process(argv[0]) != 0 ){
+    return 0;
+  }
+
+  return 1;
 }

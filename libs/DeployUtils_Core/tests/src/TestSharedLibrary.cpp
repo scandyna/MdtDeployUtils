@@ -32,6 +32,8 @@ int process(const char *str)
 {
   const QString s = QString::fromLocal8Bit(str);
 
+  qDebug() << "process() - str: " << s;
+
   if( !s.isEmpty() ){
     return 42;
   }

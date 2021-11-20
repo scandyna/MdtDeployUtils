@@ -29,6 +29,7 @@
 #include <QTemporaryFile>
 #include <QtGlobal>
 
+// #include "Mdt/DeployUtils/MessageLogger.h"
 // #include <QDebug>
 
 using namespace Mdt::DeployUtils;
@@ -96,10 +97,15 @@ TEST_CASE("setRunPath")
 {
   QTemporaryDir dir;
   REQUIRE( dir.isValid() );
+  dir.setAutoRemove(true);
   const QString targetFilePath = makePath(dir, "targetFile");
   ExecutableFileWriter writer;
   QStringList originalRPath;
   QStringList expectedRPath;
+
+//   MessageLogger messageLogger;
+//   QObject::connect(&writer, &ExecutableFileWriter::message, &MessageLogger::info);
+//   QObject::connect(&writer, &ExecutableFileWriter::verboseMessage, &MessageLogger::info);
 
 #ifdef Q_OS_WIN
   constexpr bool checkResult = false;
@@ -120,11 +126,8 @@ TEST_CASE("setRunPath")
     if(checkResult){
       REQUIRE( getFileRunPath(targetFilePath) == expectedRPath );
     }
-    
-    /** \todo Should check that the executable works after modify (not corrupted) !!!
-     * - Try run
-     */
-    REQUIRE(false);
+
+    REQUIRE( runExecutable(targetFilePath, {QLatin1String("25")}) );
   }
 
   SECTION("shared library")
