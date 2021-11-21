@@ -367,7 +367,7 @@ deploy_windows_msvc_x86_64_release:
 
 build_api_doc:
   stage: build
-  image: registry.gitlab.com/scandyna/docker-images/ubuntu-18.04-cpp:latest
+  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-cpp:latest
   before_script:
     - !reference [.setup_conan, script]
   script:
@@ -384,7 +384,7 @@ build_api_doc:
 
 pages:
   stage: deploy
-  image: registry.gitlab.com/scandyna/docker-images/ubuntu-18.04-minimal:latest
+  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-minimal:latest
   rules:
     - if: $CI_COMMIT_TAG
       when: on_success
