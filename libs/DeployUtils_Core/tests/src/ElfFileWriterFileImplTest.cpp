@@ -214,7 +214,7 @@ void makeWriterFile(FileWriterFile & file, const TestFileSetup & setup)
 
 FileWriterFileLayout makeFileLayoutFromFile(const FileWriterFile & file)
 {
-  return FileWriterFileLayout::fromFile( file.headers(), file.dynamicSection() );
+  return FileWriterFileLayout::fromFile( file.headers() );
 }
 
 
@@ -634,7 +634,7 @@ TEST_CASE("setRunPath_fileLayout")
   SECTION("there is initially no RUNPATH")
   {
     makeWriterFile(file, setup);
-    originalLayout = FileWriterFileLayout::fromFile( file.headers(), file.dynamicSection() );
+    originalLayout = FileWriterFileLayout::fromFile( file.headers() );
     REQUIRE( !file.dynamicSection().containsRunPathEntry() );
 
     SECTION("set a RUNPATH - We not check dynamic string table here")
@@ -684,7 +684,7 @@ TEST_CASE("setRunPath_fileLayout")
     makeWriterFile(file, setup);
     REQUIRE( file.containsDynamicSection() );
     REQUIRE( file.containsDynamicStringTableSectionHeader() );
-    originalLayout = FileWriterFileLayout::fromFile( file.headers(), file.dynamicSection() );
+    originalLayout = FileWriterFileLayout::fromFile( file.headers() );
     const uint64_t originalFileOffsetEnd = originalLayout.globalOffsetRange().end();
 
     SECTION("replace RUNPATH with a other one that is shorter")

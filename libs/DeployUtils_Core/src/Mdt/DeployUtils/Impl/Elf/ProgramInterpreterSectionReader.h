@@ -35,10 +35,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   /*! \internal
    */
   inline
-  ProgramInterpreterSection extractProgramInterpreterSection(const ByteArraySpan & map, const FileHeader & fileHeader, const SectionHeader & sectionHeader) noexcept
+  ProgramInterpreterSection extractProgramInterpreterSection(const ByteArraySpan & map, const SectionHeader & sectionHeader) noexcept
   {
     assert( !map.isNull() );
-    assert( fileHeader.seemsValid() );
+//     assert( fileHeader.seemsValid() );
     assert( map.size >= sectionHeader.minimumSizeToReadSection() );
     assert( sectionHeader.isProgramInterpreterSectionHeader() );
 

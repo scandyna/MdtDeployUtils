@@ -54,7 +54,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   struct FileHeader
   {
     Ident ident;
-    uint16_t type;
+    uint16_t type = 0;
     uint16_t machine;
     uint32_t version;
     uint64_t entry;

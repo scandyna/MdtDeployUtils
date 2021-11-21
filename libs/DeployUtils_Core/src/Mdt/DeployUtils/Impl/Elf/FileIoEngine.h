@@ -186,7 +186,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       file.setGotPltSectionFromFile( extractGotPltSection( map, headers.fileHeader(), headers.sectionHeaderTable() ) );
 
       if( headers.containsProgramInterpreterSectionHeader() ){
-        file.setProgramInterpreterSectionFromFile( extractProgramInterpreterSection( map, headers.fileHeader(), headers.programInterpreterSectionHeader() ) );
+        file.setProgramInterpreterSectionFromFile( extractProgramInterpreterSection( map, headers.programInterpreterSectionHeader() ) );
       }
 
       if( headers.containsGnuHashTableSectionHeader() ){

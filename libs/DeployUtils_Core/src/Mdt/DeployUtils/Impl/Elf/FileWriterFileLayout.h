@@ -73,15 +73,13 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     /*! \brief Get a file layout from a file
      *
      * \pre \a headers must be valid
-     * \pre \a dynamicSection must not be null
      * \pre \a headers must contain the dynamic program header
      * \pre \a headers must contain the dynamic section header
      */
     static
-    FileWriterFileLayout fromFile(const FileAllHeaders & headers, const DynamicSection & dynamicSection) noexcept
+    FileWriterFileLayout fromFile(const FileAllHeaders & headers) noexcept
     {
       assert( headers.seemsValid() );
-      assert( !dynamicSection.isNull() );
       assert( headers.containsDynamicProgramHeader() );
       assert( headers.containsDynamicSectionHeader() );
       assert( headers.containsDynamicStringTableSectionHeader() );

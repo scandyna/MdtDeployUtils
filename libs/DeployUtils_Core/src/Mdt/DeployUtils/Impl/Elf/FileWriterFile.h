@@ -422,7 +422,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       assert( !section.isNull() );
 
       mDynamicSection = section;
-      mOriginalLayout = FileWriterFileLayout::fromFile(mHeaders, section);
+      mOriginalLayout = FileWriterFileLayout::fromFile(mHeaders);
       mFileOffsetChanges.setOriginalSizes(section, mHeaders.fileHeader().ident._class);
     }
 

@@ -181,7 +181,7 @@ void readElfFile(FileWriterFile & elfFile, const QString & filePath)
   elfFile.setGotPltSectionFromFile( extractGotPltSection( map, headers.fileHeader(), headers.sectionHeaderTable() ) );
 
   if( headers.containsProgramInterpreterSectionHeader() ){
-    elfFile.setProgramInterpreterSectionFromFile( extractProgramInterpreterSection( map, headers.fileHeader(), headers.programInterpreterSectionHeader() ) );
+    elfFile.setProgramInterpreterSectionFromFile( extractProgramInterpreterSection( map, headers.programInterpreterSectionHeader() ) );
   }
 
   if( headers.containsGnuHashTableSectionHeader() ){

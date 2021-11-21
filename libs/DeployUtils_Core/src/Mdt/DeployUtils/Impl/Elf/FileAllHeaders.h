@@ -105,7 +105,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      */
     void addProgramHeader(const ProgramHeader & header) noexcept
     {
-      mProgramHeaderTable.addHeader(header, fileHeader().phentsize);
+      assert( mFileHeader.seemsValid() );
+
+      mProgramHeaderTable.addHeader(header, mFileHeader.phentsize);
       ++mFileHeader.phnum;
     }
 

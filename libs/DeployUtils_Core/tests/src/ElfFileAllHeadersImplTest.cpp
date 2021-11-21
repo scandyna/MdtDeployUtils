@@ -132,6 +132,9 @@ TEST_CASE("ProgramHeaderTable")
 TEST_CASE("addProgramHeader")
 {
   FileAllHeaders allHeaders;
+  FileHeader fileHeader = make64BitLittleEndianFileHeader();
+  fileHeader.phnum = 0;
+  allHeaders.setFileHeader(fileHeader);
 
   allHeaders.addProgramHeader( makeNullProgramHeader() );
 
