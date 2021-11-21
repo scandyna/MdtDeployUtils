@@ -701,10 +701,11 @@ TEST_CASE("setRunPath_fileLayout")
       /*
        * The .dynamic section will not change
        */
+      const uint64_t dynamicSectionSize = static_cast<uint64_t>( file.dynamicSection().byteCount(Class::Class64) );
       REQUIRE( file.dynamicProgramHeader().offset == setup.dynamicSectionOffset );
-      REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
+      REQUIRE( file.dynamicProgramHeader().filesz == dynamicSectionSize );
       REQUIRE( file.dynamicSectionHeader().offset == setup.dynamicSectionOffset );
-      REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
+      REQUIRE( file.dynamicSectionHeader().size == dynamicSectionSize );
       REQUIRE( !file.dynamicSectionMovesToEnd() );
 
       /*
@@ -736,10 +737,11 @@ TEST_CASE("setRunPath_fileLayout")
       /*
        * The dynamic section does not change
        */
+      const uint64_t dynamicSectionSize = static_cast<uint64_t>( file.dynamicSection().byteCount(Class::Class64) );
       REQUIRE( file.dynamicProgramHeader().offset == setup.dynamicSectionOffset );
-      REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
+      REQUIRE( file.dynamicProgramHeader().filesz == dynamicSectionSize );
       REQUIRE( file.dynamicSectionHeader().offset == setup.dynamicSectionOffset );
-      REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
+      REQUIRE( file.dynamicSectionHeader().size == dynamicSectionSize );
       REQUIRE( !file.dynamicSectionMovesToEnd() );
 
       /*
@@ -790,10 +792,11 @@ TEST_CASE("setRunPath_fileLayout")
       /*
        * The dynamic section does not change
        */
+      const uint64_t dynamicSectionSize = static_cast<uint64_t>( file.dynamicSection().byteCount(Class::Class64) );
       REQUIRE( file.dynamicProgramHeader().offset == setup.dynamicSectionOffset );
-      REQUIRE( file.dynamicProgramHeader().filesz == file.dynamicSection().byteCount(Class::Class64) );
+      REQUIRE( file.dynamicProgramHeader().filesz == dynamicSectionSize );
       REQUIRE( file.dynamicSectionHeader().offset == setup.dynamicSectionOffset );
-      REQUIRE( file.dynamicSectionHeader().size == file.dynamicSection().byteCount(Class::Class64) );
+      REQUIRE( file.dynamicSectionHeader().size == dynamicSectionSize );
       REQUIRE( !file.dynamicSectionMovesToEnd() );
 
       /*
