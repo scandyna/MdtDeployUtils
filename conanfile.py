@@ -21,7 +21,7 @@ class MdtDeployUtilsConan(ConanFile):
   # version ranges are not possible.
   # See https://gitlab.com/gitlab-org/gitlab/-/issues/333638
   requires = "MdtApplication/0.3.5@scandyna/testing"
-  build_requires = "MdtCMakeModules/0.16.0@scandyna/testing", "Catch2/2.11.1@catchorg/stable"
+  build_requires = "MdtCMakeModules/0.16.0@scandyna/testing", "Catch2/v2.13.7x@scandyna/testing"
   generators = "cmake", "cmake_paths", "virtualenv"
   exports_sources = "apps/*", "libs/*", "cmake/*", "MdtDeployUtilsConfig.cmake.in", "CMakeLists.txt", "conanfile.py", "LICENSE.txt", "COPYING", "COPYING.LESSER"
   # If no_copy_source is False, conan copies sources to build directory and does in-source build,
