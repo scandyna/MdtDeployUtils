@@ -125,9 +125,17 @@ TEST_CASE("setRunPath")
     writer.close();
     if(checkResult){
       REQUIRE( getFileRunPath(targetFilePath) == expectedRPath );
+      /*
+       * To run the executable on Windows,
+       * we would have to put all required dlls
+       * beside the executable,
+       * or provide a PATH for those.
+       * ExecutableFileWriter::setRunPath()
+       * does nothing on Windows.
+       * Also, other (end-to-end) test will call it anyway.
+       */
+      REQUIRE( runExecutable(targetFilePath, {QLatin1String("25")}) );
     }
-
-    REQUIRE( runExecutable(targetFilePath, {QLatin1String("25")}) );
   }
 
   SECTION("shared library")
