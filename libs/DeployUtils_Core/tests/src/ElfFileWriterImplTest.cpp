@@ -260,7 +260,10 @@ TEST_CASE("setStringToUnsignedCharArray")
     array = arraySpanFromArray( arrayData, sizeof(arrayData) );
 
     setStringToUnsignedCharArray(array, "");
-    REQUIRE( arraysAreEqual(array, {'\0'}) );
+    REQUIRE( array.size == 1 );
+    REQUIRE( array.data[0] == '\0' );
+    // MSVC does not like below version (C2668)
+//     REQUIRE( arraysAreEqual(array, {'\0'}) );
   }
 
   SECTION("A")
@@ -444,7 +447,10 @@ TEST_CASE("replaceBytes")
     range = OffsetRange::fromBeginAndEndOffsets(0, 1);
     replaceBytes(map, range, '\0');
 
-    REQUIRE( arraysAreEqual(map, {'\0'}) );
+    REQUIRE( map.size == 1 );
+    REQUIRE( map.data[0] == '\0' );
+    // MSVC does not like below version (C2668)
+//     REQUIRE( arraysAreEqual(map, {'\0'}) );
   }
 
   SECTION("{A,B,C} -> {A,B,0}")
