@@ -49,7 +49,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     return headers;
   }
-  
+
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
 #endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ELF_FILE_ALL_HEADERS_READER_H
