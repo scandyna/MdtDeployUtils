@@ -159,7 +159,9 @@ TEST_CASE("setRunPath")
     SECTION("set a empty RunPath")
     {
       REQUIRE( expectedRPath.isEmpty() );
-      REQUIRE(originalRPath != expectedRPath);
+      if(checkResult){
+        REQUIRE(originalRPath != expectedRPath);
+      }
 
       writer.openFile(targetFilePath);
       writer.setRunPath(expectedRPath);
