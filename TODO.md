@@ -8,13 +8,29 @@ In CI, add a test that executes on a machine without Qt installed
 
 Use BUILD_REAL_INSTALL_TESTS
 
+Also, make shure to run all the tests on the installed libraries
+See Elf writer for why..
+
+Re-enable 32-bit builds !!!
+(See Elf / Pe for why)
+The 2-3 cast warnings must then be fixed,
+but there is a lot to test !!
+
+# RPath
+
+Add a option that fails when mdtdeployutils
+has to move sections (in ELF file)
+when the new RPath is to big.
+
+See comments in README about why.
+
 # Install
 
 Remove RPATH for copied shared libraries
 
 When targetting Linux system wide install,
 like debian packages,
-do not copy shared libraries mdtdeployutils depnds on.
+do not copy shared libraries mdtdeployutils depends on.
 
 Maybe provide a option that can either:
  - Deploy mdtdeployutils with the dependencies
@@ -29,6 +45,10 @@ NOTE: simply build with only Debian native pkgs
 NOTE: hmm MdtApplication, MdtCommandLineParser ??
 Should provide Debian packages for them,
 and also Mdt0.
+
+NOTE:
+mdtdeployutils0-standalone
+Debian package that installs allmost in /opt/ ?
 
 Provides several components/packages:
 - MdtDeployUtils          (Common usecase, so this is the intuitive name)
