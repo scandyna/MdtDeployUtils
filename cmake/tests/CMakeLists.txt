@@ -40,18 +40,6 @@
 # which can check MdtDeployUtils CMake modules.
 #
 
-# First versions reused the compiled version of MdtDeployUtils,
-# avoiding to rebuild it a second time for following tests.
-# This was done by calling cmake --build ${CMAKE_BINARY_DIR} .
-#
-# On local development machine, this worked.
-# On CI, MdtDeployUtils was rebuilt, including tests,
-# which could take a very long time.
-# Example: https://gitlab.com/scandyna/mdtdeployutils/-/jobs/1848788088
-#
-# So, we better rebuild MdtDeployUtils here, with default options for tests, etc..
-# (tests, benchmarks, docs, etc... must be disabled by default)
-
 if(WIN32)
   string(REGEX REPLACE "^[a-zA-Z]:" ""
     testMdtDeployUtilsInstallPrefix
@@ -61,18 +49,7 @@ else()
   set(testMdtDeployUtilsInstallPrefix "${CMAKE_INSTALL_PREFIX}")
 endif()
 
-message("TEST: CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}")
-
 # TODO: component install (currently headers etc.. are installed)
-# add_test(NAME EndToEndTests_Install_DeployUtils_Destdir_Configure
-#   COMMAND "${CMAKE_COMMAND}"
-#     -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH}"
-#     -DCMAKE_INSTALL_PREFIX="${testMdtDeployUtilsInstallPrefix}"
-#     -DBUILD_SHARED_LIBS=ON
-#     -S "${CMAKE_SOURCE_DIR}"
-#     -B "${CMAKE_CURRENT_BINARY_DIR}/build/MdtDeployUtils"
-# )
-
 add_test(NAME EndToEndTests_Install_DeployUtils_Destdir
   COMMAND "${CMAKE_COMMAND}"
     --install "${CMAKE_BINARY_DIR}"
@@ -80,22 +57,6 @@ add_test(NAME EndToEndTests_Install_DeployUtils_Destdir
 #     --component ${PROJECT_NAME}_Runtime
 #     --component ${PROJECT_NAME}_Dev
 )
-
-# TODO depends
-
-# TODO: component install (currently headers etc.. are installed)
-# add_test(NAME EndToEndTests_Install_DeployUtils_Destdir
-#   COMMAND "${CMAKE_CTEST_COMMAND}"
-#     --build-and-test "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/build/MdtDeployUtils"
-#     --build-generator "${CMAKE_GENERATOR}"
-#     --build-generator-platform "${CMAKE_GENERATOR_PLATFORM}"
-#     --build-generator-toolset "${CMAKE_GENERATOR_TOOLSET}"
-#     --build-config $<CONFIG>
-#     --build-options
-#       "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"
-#       "-DCMAKE_INSTALL_PREFIX=${testMdtDeployUtilsInstallPrefix}"
-#       "-DBUILD_SHARED_LIBS=ON"
-# )
 
 # add_test(NAME EndToEndTests_Install_DeployUtils_Destdir
 #   COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --target install --config $<CONFIG>
@@ -108,6 +69,7 @@ set_tests_properties(EndToEndTests_Install_DeployUtils_Destdir
 )
 
 if(BUILD_REAL_INSTALL_TESTS)
+  # TODO: maybe use cmake --install as above
   # TODO: component install (currently headers etc.. are installed)
   add_test(NAME EndToEndTests_Install_DeployUtils_Real
     COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --target install --config $<CONFIG>
