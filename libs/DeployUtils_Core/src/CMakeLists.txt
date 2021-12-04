@@ -17,6 +17,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/ConsoleMessageLogger.cpp
   Mdt/DeployUtils/CMakeStyleMessageLogger.cpp
   Mdt/DeployUtils/Algorithm.cpp
+  Mdt/DeployUtils/RPath.cpp
   Mdt/DeployUtils/PathList.cpp
   Mdt/DeployUtils/SearchPathList.cpp
   Mdt/DeployUtils/LibraryVersion.cpp

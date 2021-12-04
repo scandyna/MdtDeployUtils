@@ -36,6 +36,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME RPathTest
+  TARGET rPathTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/RPathTest.cpp
+)
+
+mdt_add_test(
   NAME PathTest
   TARGET pathTest
   DEPENDENCIES Mdt::DeployUtilsCore Qt5::Test
