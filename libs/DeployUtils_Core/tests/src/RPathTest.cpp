@@ -21,8 +21,153 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "Mdt/DeployUtils/RPath.h"
+#include "Mdt/DeployUtils/RPathElf.h"
 #include <QLatin1String>
 
+using Mdt::DeployUtils::RPathEntry;
 using Mdt::DeployUtils::RPath;
+using Mdt::DeployUtils::RPathElf;
 
 
+TEST_CASE("entry_isRelative")
+{
+  SECTION("opt")
+  {
+    RPathEntry entry( QLatin1String("opt") );
+
+    REQUIRE( entry.isRelative() );
+  }
+
+  SECTION("./opt")
+  {
+    RPathEntry entry( QLatin1String("./opt") );
+
+    REQUIRE( entry.isRelative() );
+  }
+
+  SECTION("../opt")
+  {
+    RPathEntry entry( QLatin1String("../opt") );
+
+    REQUIRE( entry.isRelative() );
+  }
+
+  SECTION("/opt")
+  {
+    RPathEntry entry( QLatin1String("/opt") );
+
+    REQUIRE( !entry.isRelative() );
+  }
+}
+
+TEST_CASE("append_and_attributes")
+{
+  RPath rpath;
+
+  SECTION("default constructed")
+  {
+    REQUIRE( rpath.entriesCount() == 0 );
+    REQUIRE( rpath.isEmpty() );
+  }
+
+  SECTION("1 path")
+  {
+    rpath.appendPath( QLatin1String(".") );
+
+    REQUIRE( rpath.entriesCount() == 1 );
+    REQUIRE( !rpath.isEmpty() );
+    REQUIRE( rpath.entryAt(0).path() == QLatin1String(".") );
+  }
+}
+
+TEST_CASE("clear")
+{
+  RPath rpath;
+  rpath.appendPath( QLatin1String(".") );
+  REQUIRE( !rpath.isEmpty() );
+
+  rpath.clear();
+
+  REQUIRE( rpath.isEmpty() );
+}
+
+TEST_CASE("ELF_rPathEntryFromString")
+{
+  SECTION("/lib")
+  {
+    const RPathEntry entry = RPathElf::rPathEntryFromString( QLatin1String("/lib") );
+    REQUIRE( entry.path() == QLatin1String("/lib") );
+  }
+
+  SECTION("lib (relative path)")
+  {
+    const RPathEntry entry = RPathElf::rPathEntryFromString( QLatin1String("lib") );
+    REQUIRE( entry.path() == QLatin1String("lib") );
+  }
+
+  SECTION("$ORIGIN")
+  {
+    const RPathEntry entry = RPathElf::rPathEntryFromString( QLatin1String("$ORIGIN") );
+    REQUIRE( entry.path() == QLatin1String(".") );
+  }
+
+  SECTION("${ORIGIN}")
+  {
+    const RPathEntry entry = RPathElf::rPathEntryFromString( QLatin1String("${ORIGIN}") );
+    REQUIRE( entry.path() == QLatin1String(".") );
+  }
+
+  SECTION("ORIGIN")
+  {
+    const RPathEntry entry = RPathElf::rPathEntryFromString( QLatin1String("ORIGIN") );
+    REQUIRE( entry.path() == QLatin1String("ORIGIN") );
+  }
+
+  SECTION("$ORIGIN/lib")
+  {
+    const RPathEntry entry = RPathElf::rPathEntryFromString( QLatin1String("$ORIGIN/lib") );
+    REQUIRE( entry.path() == QLatin1String("lib") );
+  }
+
+  SECTION("${ORIGIN}/lib")
+  {
+    const RPathEntry entry = RPathElf::rPathEntryFromString( QLatin1String("${ORIGIN}/lib") );
+    REQUIRE( entry.path() == QLatin1String("lib") );
+  }
+}
+
+TEST_CASE("ELF_rPathFromString")
+{
+  RPath rpath;
+
+  SECTION("empty")
+  {
+    rpath = RPathElf::rPathFromString( QString() );
+    REQUIRE( rpath.isEmpty() );
+  }
+
+  SECTION("/lib")
+  {
+    rpath = RPathElf::rPathFromString( QLatin1String("/lib") );
+    REQUIRE( rpath.entryAt(0).path() == QLatin1String("/lib") );
+  }
+
+  SECTION("lib (relative path)")
+  {
+    rpath = RPathElf::rPathFromString( QLatin1String("lib") );
+    REQUIRE( rpath.entryAt(0).path() == QLatin1String("lib") );
+  }
+
+  SECTION("$ORIGIN")
+  {
+    rpath = RPathElf::rPathFromString( QLatin1String("$ORIGIN") );
+    REQUIRE( rpath.entryAt(0).path() == QLatin1String(".") );
+  }
+
+  SECTION("$ORIGIN:opt/lib")
+  {
+    rpath = RPathElf::rPathFromString( QLatin1String("$ORIGIN:opt/lib") );
+    REQUIRE( rpath.entryAt(0).path() == QLatin1String(".") );
+    REQUIRE( rpath.entryAt(1).path() == QLatin1String("opt/lib") );
+  }
+}
