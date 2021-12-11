@@ -27,6 +27,8 @@
 #include "Mdt/DeployUtils/ExecutableFileReader.h"
 #include "Mdt/DeployUtils/PathList.h"
 #include "Mdt/DeployUtils/SearchPathList.h"
+#include "Mdt/DeployUtils/RPath.h"
+#include "Mdt/DeployUtils/RPathElf.h"
 #include "Mdt/DeployUtils/Platform.h"
 #include "mdt_deployutilscore_export.h"
 #include <QString>
@@ -40,6 +42,8 @@
 #include <cassert>
 #include <vector>
 #include <algorithm>
+
+// #include <QDebug>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
@@ -162,23 +166,22 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
   /*! \internal
    */
   inline
-  QString makeDirectoryFromRpath(const ExecutableFileInfo & originExecutable, const QString & rpathItem) noexcept
+  QString makeDirectoryFromRpathEntry(const ExecutableFileInfo & originExecutable, const RPathEntry & rpathEntry) noexcept
   {
     assert( originExecutable.hasAbsoluteFilePath() );
-    assert( !rpathItem.trimmed().isEmpty() );
 
-    if( rpathItem.startsWith( QLatin1String("$ORIGIN") ) ){
-      return QDir::cleanPath( originExecutable.directoryPath + QLatin1Char('/') + rpathItem.right( rpathItem.length() - 7) );
+    if( rpathEntry.isRelative() ){
+      return QDir::cleanPath( originExecutable.directoryPath + QLatin1Char('/') + rpathEntry.path() );
     }
 
-    return rpathItem;
+    return rpathEntry.path();
   }
 
   /*! \internal
    */
   template<typename IsExistingSharedLibraryOp>
   ExecutableFileInfo findLibraryAbsolutePathByRpath(const ExecutableFileInfo & originExecutable,
-                                                    const QString & libraryName, const QStringList & rpath,
+                                                    const QString & libraryName, const RPath & rpath,
                                                     IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
   {
     assert( originExecutable.hasAbsoluteFilePath() );
@@ -187,8 +190,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
     ExecutableFileInfo fi;
 
-    for(const auto & rpathItem : rpath){
-      const QString directory = makeDirectoryFromRpath(originExecutable, rpathItem);
+    for(const auto & rpathEntry : rpath){
+      const QString directory = makeDirectoryFromRpathEntry(originExecutable, rpathEntry);
       const QFileInfo libraryFile(directory, libraryName);
       if( isExistingSharedLibraryOp(libraryFile) ){
         fi.fileName = libraryName;
@@ -198,6 +201,27 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     }
 
     return fi;
+  }
+
+  /*! \internal
+   *
+   * \todo remove as soon as possible !!
+   */
+  template<typename IsExistingSharedLibraryOp>
+  ExecutableFileInfo findLibraryAbsolutePathByRpath(const ExecutableFileInfo & originExecutable,
+                                                    const QString & libraryName, const QStringList & rpathStringList,
+                                                    IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+  {
+    assert( originExecutable.hasAbsoluteFilePath() );
+    assert( !libraryName.trimmed().isEmpty() );
+    assert( !rpathStringList.isEmpty() );
+
+    RPath rpath;
+    for(const QString & path : rpathStringList){
+      rpath.appendPath(path);
+    }
+
+    return findLibraryAbsolutePathByRpath(originExecutable, libraryName, rpath, isExistingSharedLibraryOp);
   }
 
   /*! \internal

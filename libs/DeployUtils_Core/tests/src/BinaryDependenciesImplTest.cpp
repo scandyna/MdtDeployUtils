@@ -550,27 +550,27 @@ TEST_CASE("findLibraryAbsolutePath")
   }
 }
 
-TEST_CASE("makeDirectoryFromRpath")
+TEST_CASE("makeDirectoryFromRpathEntry")
 {
-  using Impl::makeDirectoryFromRpath;
+  using Impl::makeDirectoryFromRpathEntry;
 
   ExecutableFileInfo originExecutable;
   originExecutable.fileName = QLatin1String("myapp");
   originExecutable.directoryPath = QLatin1String("/opt");
 
-  SECTION("rpath item:/tmp")
+  SECTION("rpath entry:/tmp")
   {
-    REQUIRE( makeDirectoryFromRpath( originExecutable, QLatin1String("/tmp") ) == QLatin1String("/tmp") );
+    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( QLatin1String("/tmp") ) ) == QLatin1String("/tmp") );
   }
 
-  SECTION("rpath item:$ORIGIN")
+  SECTION("rpath entry:. (relative to binary, like ELF $ORIGIN)")
   {
-    REQUIRE( makeDirectoryFromRpath( originExecutable, QLatin1String("$ORIGIN") ) == QLatin1String("/opt") );
+    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( QLatin1String(".") ) ) == QLatin1String("/opt") );
   }
 
-  SECTION("rpath item:$ORIGIN/../lib")
+  SECTION("rpath entry:../lib")
   {
-    REQUIRE( makeDirectoryFromRpath( originExecutable, QLatin1String("$ORIGIN/../lib") ) == QLatin1String("/lib") );
+    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( QLatin1String("../lib") ) ) == QLatin1String("/lib") );
   }
 }
 
@@ -578,7 +578,7 @@ TEST_CASE("findLibraryAbsolutePathByRpath")
 {
   using Impl::findLibraryAbsolutePathByRpath;
 
-  QStringList rpath;
+  RPath rpath;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
   ExecutableFileInfo library;
 
@@ -588,16 +588,16 @@ TEST_CASE("findLibraryAbsolutePathByRpath")
 
   SECTION("libA.so - rpath:/tmp - exists")
   {
-    rpath = qStringListFromUtf8Strings({"/tmp"});
+    rpath.appendPath( QLatin1String("/tmp") );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so"});
     library = findLibraryAbsolutePathByRpath(originExecutable, QLatin1String("libA.so"), rpath, isExistingSharedLibraryOp);
     REQUIRE( library.hasAbsoluteFilePath() );
     REQUIRE( library.toFileInfo().absoluteFilePath() == QFileInfo( QLatin1String("/tmp/libA.so") ).absoluteFilePath() );
   }
 
-  SECTION("libA.so - rpath:$ORIGIN - exists")
+  SECTION("libA.so - rpath:. - exists")
   {
-    rpath = qStringListFromUtf8Strings({"$ORIGIN"});
+    rpath.appendPath( QLatin1String(".") );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/libA.so"});
     library = findLibraryAbsolutePathByRpath(originExecutable, QLatin1String("libA.so"), rpath, isExistingSharedLibraryOp);
     REQUIRE( library.hasAbsoluteFilePath() );
@@ -606,7 +606,7 @@ TEST_CASE("findLibraryAbsolutePathByRpath")
 
   SECTION("libA.so - rpath:/tmp - not exists")
   {
-    rpath = qStringListFromUtf8Strings({"/tmp"});
+    rpath.appendPath( QLatin1String("/tmp") );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/lib/libA.so"});
     library = findLibraryAbsolutePathByRpath(originExecutable, QLatin1String("libA.so"), rpath, isExistingSharedLibraryOp);
     REQUIRE( library.isNull() );
