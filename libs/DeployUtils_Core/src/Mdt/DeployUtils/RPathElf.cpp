@@ -47,7 +47,9 @@ RPathEntry RPathElf::rPathEntryFromString(const QString & path)
   }else if( entryString.startsWith( QLatin1String("${ORIGIN}") ) ){
     if(entryString.length() > 9){
       if( entryString.at(9) != QLatin1Char('/') ){
-        /// \todo error
+        const QString msg = tr("expected a '/' after ${ORIGIN}, got '%1'")
+                            .arg( entryString.at(7) );
+        throw RPathFormatError(msg);
       }
       rpathEntryString = entryString.right(entryString.length() - 10);
     }else{
