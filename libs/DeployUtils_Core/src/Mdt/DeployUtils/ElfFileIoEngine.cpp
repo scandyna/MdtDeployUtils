@@ -186,7 +186,7 @@ QStringList ElfFileIoEngine::doGetNeededSharedLibraries()
   return mImpl->getNeededSharedLibraries(map);
 }
 
-QStringList ElfFileIoEngine::doGetRunPath()
+RPath ElfFileIoEngine::doGetRunPath()
 {
   using Impl::ByteArraySpan;
 

@@ -33,6 +33,8 @@
 #include "FileWriter.h"
 #include "FileWriterFile.h"
 #include "Mdt/DeployUtils/ExecutableFileWriteError.h"
+#include "Mdt/DeployUtils/RPath.h"
+#include "Mdt/DeployUtils/RPathElf.h"
 #include <QLatin1Char>
 
 // #include "Debug.h"
@@ -146,8 +148,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
      *
      * \pre \a map must not be null
      * \exception ExecutableFileReadError
+     * \exception RPathFormatError
      */
-    QStringList getRunPath(const ByteArraySpan & map)
+    RPath getRunPath(const ByteArraySpan & map)
     {
       assert( !map.isNull() );
 
@@ -156,7 +159,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
       readSectionNameStringTableHeaderIfNull(map);
       readDynamicSectionIfNull(map);
 
-      return mDynamicSection.getRunPath().split(QChar::fromLatin1(':'), QString::SkipEmptyParts);
+      return RPathElf::rPathFromString( mDynamicSection.getRunPath() );
     }
 
     /*! \brief

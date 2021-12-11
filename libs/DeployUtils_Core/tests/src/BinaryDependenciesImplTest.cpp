@@ -356,7 +356,7 @@ class TestExecutableFileReader
     return mDependencies.currentDependencies();
   }
 
-  QStringList getRunPath()
+  RPath getRunPath()
   {
     return mRunPath;
   }
@@ -371,7 +371,7 @@ class TestExecutableFileReader
     mDependencies.addDependenciesToDirectDependency(directDependency, dependencies);
   }
 
-  void setRunPath(const QStringList & paths)
+  void setRunPath(const RPath & paths)
   {
     mRunPath = paths;
   }
@@ -380,7 +380,7 @@ class TestExecutableFileReader
 
   bool mIsOpen = false;
   TestDependencyTree mDependencies;
-  QStringList mRunPath;
+  RPath mRunPath;
 };
 
 

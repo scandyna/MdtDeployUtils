@@ -26,6 +26,7 @@
 #include "ExecutableFileWriteError.h"
 #include "ExecutableFileOpenMode.h"
 #include "Platform.h"
+#include "RPath.h"
 #include "Mdt/DeployUtils/Impl/FileMapper.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
@@ -142,11 +143,11 @@ namespace Mdt{ namespace DeployUtils{
      * \sa isExecutableOrSharedLibrary()
      * \exception ExecutableFileReadError
      */
-    QStringList getRunPath();
+    RPath getRunPath();
 
     /*! \brief Set the run path this engine refers to to \a rPath
      *
-     * For executable formats that do not support RPath,
+     * For executable formats that do not support rpath,
      * this method does nothing.
      *
      * \pre this engine must have a open file which is a executable or a shared library
@@ -219,9 +220,9 @@ namespace Mdt{ namespace DeployUtils{
     virtual bool doContainsDebugSymbols() = 0;
     virtual QStringList doGetNeededSharedLibraries() = 0;
 
-    virtual QStringList doGetRunPath()
+    virtual RPath doGetRunPath()
     {
-      return QStringList();
+      return RPath();
     }
 
     virtual void doSetRunPath(const QStringList & rPath);

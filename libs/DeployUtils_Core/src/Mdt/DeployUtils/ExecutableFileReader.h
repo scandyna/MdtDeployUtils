@@ -24,6 +24,7 @@
 #include "FileOpenError.h"
 #include "ExecutableFileReadError.h"
 #include "Platform.h"
+#include "RPath.h"
 #include "ExecutableFileIoEngine.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
@@ -157,7 +158,7 @@ namespace Mdt{ namespace DeployUtils{
      * \sa isExecutableOrSharedLibrary()
      * \exception ExecutableFileReadError
      */
-    QStringList getRunPath();
+    RPath getRunPath();
 
    private:
 

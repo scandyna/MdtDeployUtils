@@ -86,7 +86,7 @@ QStringList ExecutableFileReader::getNeededSharedLibraries()
   return mEngine.engine()->getNeededSharedLibraries();
 }
 
-QStringList ExecutableFileReader::getRunPath()
+RPath ExecutableFileReader::getRunPath()
 {
   assert( isOpen() );
   assert( isExecutableOrSharedLibrary() );

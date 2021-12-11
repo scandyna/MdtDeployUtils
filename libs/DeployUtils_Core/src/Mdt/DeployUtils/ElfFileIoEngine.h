@@ -24,6 +24,7 @@
 #include "AbstractExecutableFileIoEngine.h"
 #include "FileOpenError.h"
 #include "ExecutableFileReadError.h"
+#include "RPath.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -80,7 +81,7 @@ namespace Mdt{ namespace DeployUtils{
     bool doIsExecutableOrSharedLibrary() override;
     bool doContainsDebugSymbols() override;
     QStringList doGetNeededSharedLibraries() override;
-    QStringList doGetRunPath() override;
+    RPath doGetRunPath() override;
     void doSetRunPath(const QStringList & rPath) override;
 
     std::unique_ptr<Impl::Elf::FileIoEngine> mImpl;

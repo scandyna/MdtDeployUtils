@@ -115,7 +115,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Copy construct a rpath from \a other
      */
-    explicit RPath(const RPath & other) = default;
+    RPath(const RPath & other) = default;
 
     /*! \brief Copy assign \a other to this rpath
      */

@@ -43,8 +43,6 @@
 #include <vector>
 #include <algorithm>
 
-// #include <QDebug>
-
 namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
   /*! \internal
@@ -205,27 +203,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
   /*! \internal
    *
-   * \todo remove as soon as possible !!
-   */
-  template<typename IsExistingSharedLibraryOp>
-  ExecutableFileInfo findLibraryAbsolutePathByRpath(const ExecutableFileInfo & originExecutable,
-                                                    const QString & libraryName, const QStringList & rpathStringList,
-                                                    IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
-  {
-    assert( originExecutable.hasAbsoluteFilePath() );
-    assert( !libraryName.trimmed().isEmpty() );
-    assert( !rpathStringList.isEmpty() );
-
-    RPath rpath;
-    for(const QString & path : rpathStringList){
-      rpath.appendPath(path);
-    }
-
-    return findLibraryAbsolutePathByRpath(originExecutable, libraryName, rpath, isExistingSharedLibraryOp);
-  }
-
-  /*! \internal
-   *
    * \pre \a libraryName must not be empty
    * \pre \a searchPathList must not be empty
    * \exception FindDependencyError
@@ -269,7 +246,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
    */
   template<typename IsExistingSharedLibraryOp>
   ExecutableFileInfoList findLibrariesAbsolutePath(const ExecutableFileInfo & originExecutable, const QStringList & librariesNames,
-                                                   const QStringList & rpath, const PathList & searchPathList,
+                                                   const RPath & rpath, const PathList & searchPathList,
                                                    const Platform & platform,
                                                    IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
   {
@@ -401,7 +378,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
         removeLibrariesInExcludeListWindows(dependentLibraryNames);
       }
 
-      const QStringList runPath = reader.getRunPath();
+      const RPath runPath = reader.getRunPath();
       reader.close();
 
       ExecutableFileInfoList dependencies = findLibrariesAbsolutePath(currentFile, dependentLibraryNames, runPath, searchPathList, platform, isExistingSharedLibraryOp);

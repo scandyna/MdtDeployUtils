@@ -101,7 +101,7 @@ QStringList AbstractExecutableFileIoEngine::getNeededSharedLibraries()
   return doGetNeededSharedLibraries();
 }
 
-QStringList AbstractExecutableFileIoEngine::getRunPath()
+RPath AbstractExecutableFileIoEngine::getRunPath()
 {
   assert( isOpen() );
   assert( isExecutableOrSharedLibrary() );

@@ -22,6 +22,7 @@
 #include "Catch2QString.h"
 #include "TestUtils.h"
 #include "TestFileUtils.h"
+#include "Mdt/DeployUtils/RPath.h"
 #include "Mdt/DeployUtils/ExecutableFileWriter.h"
 #include "Mdt/DeployUtils/ExecutableFileReader.h"
 #include <QString>
@@ -34,12 +35,20 @@
 
 using namespace Mdt::DeployUtils;
 
+/// \todo move to RPath as soon as possible !!
 QStringList getFileRunPath(const QString & filePath)
 {
   ExecutableFileReader reader;
   reader.openFile(filePath);
 
-  return reader.getRunPath();
+  RPath rpath = reader.getRunPath();
+
+  QStringList rpathStringList;
+  for(const auto & rpathEntry : rpath){
+    rpathStringList.append( rpathEntry.path() );
+  }
+
+  return rpathStringList;
 }
 
 TEST_CASE("open_close")
@@ -127,7 +136,7 @@ TEST_CASE("setRunPath")
       REQUIRE( getFileRunPath(targetFilePath) == expectedRPath );
       /*
        * To run the executable on Windows,
-       * we would have to put all required dlls
+       * we would have to put all required dll's
        * beside the executable,
        * or provide a PATH for those.
        * ExecutableFileWriter::setRunPath()
