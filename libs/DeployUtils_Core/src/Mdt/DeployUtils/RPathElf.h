@@ -53,6 +53,16 @@ namespace Mdt{ namespace DeployUtils{
      */
     static
     RPath rPathFromString(const QString & rpathString);
+
+    /*! \brief Get the string version of \a rpathEntry
+     */
+    static
+    QString rPathEntryToString(const RPathEntry & rpathEntry) noexcept;
+
+    /*! \brief Get the string version of \a rpath
+     */
+    static
+    QString rPathToString(const RPath & rpath) noexcept;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

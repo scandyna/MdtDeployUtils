@@ -22,6 +22,7 @@
 #include <QStringList>
 #include <QLatin1Char>
 #include <QLatin1String>
+#include <QStringBuilder>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
@@ -76,6 +77,41 @@ RPath RPathElf::rPathFromString(const QString & rpathString)
   }
 
   return rpath;
+}
+
+QString RPathElf::rPathEntryToString(const RPathEntry & rpathEntry) noexcept
+{
+  assert( !rpathEntry.path().trimmed().isEmpty() );
+
+  QString path;
+
+  if( rpathEntry.isRelative() ){
+    if( rpathEntry.path() == QLatin1String(".") ){
+      path = QLatin1String("$ORIGIN");
+    }else if( rpathEntry.path().startsWith( QLatin1String("./") ) ){
+      path = QLatin1String("$ORIGIN") + rpathEntry.path().right(rpathEntry.path().length() - 1);
+    }else{
+      path = QLatin1String("$ORIGIN/") + rpathEntry.path();
+    }
+  }else{
+    path = rpathEntry.path();
+  }
+
+  return path;
+}
+
+QString RPathElf::rPathToString(const RPath & rpath) noexcept
+{
+  QString rpathString;
+
+  if( !rpath.isEmpty() ){
+    rpathString = rPathEntryToString( rpath.entryAt(0) );
+    for(size_t i=1; i < rpath.entriesCount(); ++i){
+      rpathString += QLatin1Char(':') % rPathEntryToString( rpath.entryAt(i) );
+    }
+  }
+
+  return rpathString;
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

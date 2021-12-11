@@ -25,6 +25,7 @@
 #include "ExecutableFileReadError.h"
 #include "ExecutableFileWriteError.h"
 #include "ExecutableFileIoEngine.h"
+#include "RPath.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QFileInfo>

@@ -223,6 +223,12 @@ TEST_CASE("ELF_rPathEntryFromString")
     const RPathEntry entry = RPathElf::rPathEntryFromString( QLatin1String("${ORIGIN}/lib") );
     REQUIRE( entry.path() == QLatin1String("lib") );
   }
+
+  SECTION("$ORIGIN/../lib")
+  {
+    const RPathEntry entry = RPathElf::rPathEntryFromString( QLatin1String("$ORIGIN/../lib") );
+    REQUIRE( entry.path() == QLatin1String("../lib") );
+  }
 }
 
 TEST_CASE("ELF_rPathFromString")
@@ -258,5 +264,77 @@ TEST_CASE("ELF_rPathFromString")
     rpath = RPathElf::rPathFromString( QLatin1String("$ORIGIN:opt/lib") );
     REQUIRE( rpath.entryAt(0).path() == QLatin1String(".") );
     REQUIRE( rpath.entryAt(1).path() == QLatin1String("opt/lib") );
+  }
+}
+
+TEST_CASE("ELF_rPathEntryToString")
+{
+  SECTION("/lib")
+  {
+    RPathEntry rpathEntry( QLatin1String("/lib") );
+
+    REQUIRE( RPathElf::rPathEntryToString(rpathEntry) == QLatin1String("/lib") );
+  }
+
+  SECTION(".")
+  {
+    RPathEntry rpathEntry( QLatin1String(".") );
+
+    REQUIRE( RPathElf::rPathEntryToString(rpathEntry) == QLatin1String("$ORIGIN") );
+  }
+
+  SECTION("lib")
+  {
+    RPathEntry rpathEntry( QLatin1String("lib") );
+
+    REQUIRE( RPathElf::rPathEntryToString(rpathEntry) == QLatin1String("$ORIGIN/lib") );
+  }
+
+  SECTION("./lib")
+  {
+    RPathEntry rpathEntry( QLatin1String("./lib") );
+
+    REQUIRE( RPathElf::rPathEntryToString(rpathEntry) == QLatin1String("$ORIGIN/lib") );
+  }
+
+  SECTION("../lib")
+  {
+    RPathEntry rpathEntry( QLatin1String("../lib") );
+
+    REQUIRE( RPathElf::rPathEntryToString(rpathEntry) == QLatin1String("$ORIGIN/../lib") );
+  }
+}
+
+TEST_CASE("ELF_rPathToString")
+{
+  RPath rpath;
+
+  SECTION("empty")
+  {
+    REQUIRE( RPathElf::rPathToString(rpath).isEmpty() );
+  }
+
+  SECTION("/lib")
+  {
+    rpath.appendPath( QLatin1String("/lib") );
+
+    REQUIRE( RPathElf::rPathToString(rpath) == QLatin1String("/lib") );
+  }
+
+  SECTION("/lib:opt/lib")
+  {
+    rpath.appendPath( QLatin1String("/lib") );
+    rpath.appendPath( QLatin1String("opt/lib") );
+
+    REQUIRE( RPathElf::rPathToString(rpath) == QLatin1String("/lib:$ORIGIN/opt/lib") );
+  }
+
+  SECTION("/lib:opt/lib:lib")
+  {
+    rpath.appendPath( QLatin1String("/lib") );
+    rpath.appendPath( QLatin1String("opt/lib") );
+    rpath.appendPath( QLatin1String("lib") );
+
+    REQUIRE( RPathElf::rPathToString(rpath) == QLatin1String("/lib:$ORIGIN/opt/lib:$ORIGIN/lib") );
   }
 }
