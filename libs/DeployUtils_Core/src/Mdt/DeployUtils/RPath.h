@@ -86,6 +86,20 @@ namespace Mdt{ namespace DeployUtils{
       return mPath;
     }
 
+    /*! \brief Check if RPath entry \a is equal to \a b
+     */
+    MDT_DEPLOYUTILSCORE_EXPORT
+    friend
+    bool operator==(const RPathEntry & a, const RPathEntry & b) noexcept;
+
+    /*! \brief Check if RPath entry \a is different to \a b
+     */
+    friend
+    bool operator!=(const RPathEntry & a, const RPathEntry & b) noexcept
+    {
+      return !(a == b);
+    }
+
    private:
 
     QString mPath;
@@ -177,6 +191,20 @@ namespace Mdt{ namespace DeployUtils{
     void clear() noexcept
     {
       mRPath.clear();
+    }
+
+    /*! \brief Check if RPath \a is equal to \a b
+     */
+    MDT_DEPLOYUTILSCORE_EXPORT
+    friend
+    bool operator==(const RPath & a, const RPath & b) noexcept;
+
+    /*! \brief Check if RPath \a is different to \a b
+     */
+    friend
+    bool operator!=(const RPath & a, const RPath & b) noexcept
+    {
+      return !(a == b);
     }
 
     /*! \brief Get a iterator to the beginning of this rpath

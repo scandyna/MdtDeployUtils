@@ -91,6 +91,95 @@ TEST_CASE("clear")
   REQUIRE( rpath.isEmpty() );
 }
 
+TEST_CASE("RPathEntry_compare_equal")
+{
+  SECTION("/tmp == /tmp")
+  {
+    RPathEntry a( QLatin1String("/tmp") );
+    RPathEntry b( QLatin1String("/tmp") );
+
+    REQUIRE( a == b );
+  }
+
+  SECTION("/tmp == /tmp/")
+  {
+    RPathEntry a( QLatin1String("/tmp") );
+    RPathEntry b( QLatin1String("/tmp/") );
+
+    REQUIRE( a == b );
+  }
+
+  SECTION("/tmp/ == /tmp")
+  {
+    RPathEntry a( QLatin1String("/tmp/") );
+    RPathEntry b( QLatin1String("/tmp") );
+
+    REQUIRE( a == b );
+  }
+
+  SECTION("/tmp != /lib")
+  {
+    RPathEntry a( QLatin1String("/tmp") );
+    RPathEntry b( QLatin1String("/lib") );
+
+    REQUIRE( !(a == b) );
+  }
+}
+
+TEST_CASE("RPath_compare_equal")
+{
+  RPath a, b;
+
+  SECTION("empty")
+  {
+    REQUIRE( a == b );
+  }
+
+  SECTION("/tmp == /tmp")
+  {
+    a.appendPath( QLatin1String("/tmp") );
+    b.appendPath( QLatin1String("/tmp") );
+
+    REQUIRE( a == b );
+  }
+
+  SECTION("/tmp != /lib")
+  {
+    a.appendPath( QLatin1String("/tmp") );
+    b.appendPath( QLatin1String("/lib") );
+
+    REQUIRE( !(a == b) );
+  }
+
+  SECTION("empty != /lib")
+  {
+    b.appendPath( QLatin1String("/lib") );
+
+    REQUIRE( !(a == b) );
+  }
+}
+
+TEST_CASE("RPath_compare_notEqual")
+{
+  RPath a, b;
+
+  SECTION("/tmp == /tmp")
+  {
+    a.appendPath( QLatin1String("/tmp") );
+    b.appendPath( QLatin1String("/tmp") );
+
+    REQUIRE( !(a != b) );
+  }
+
+  SECTION("/tmp != /lib")
+  {
+    a.appendPath( QLatin1String("/tmp") );
+    b.appendPath( QLatin1String("/lib") );
+
+    REQUIRE( a != b );
+  }
+}
+
 TEST_CASE("ELF_rPathEntryFromString")
 {
   SECTION("/lib")

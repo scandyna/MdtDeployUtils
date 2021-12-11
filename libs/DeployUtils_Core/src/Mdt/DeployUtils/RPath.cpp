@@ -19,6 +19,23 @@
  **
  ****************************************************************************/
 #include "RPath.h"
+#include <QDir>
+#include <algorithm>
 
 namespace Mdt{ namespace DeployUtils{
+
+bool operator==(const RPathEntry & a, const RPathEntry & b) noexcept
+{
+  return QDir::cleanPath( a.path() ) == QDir::cleanPath( b.path() );
+}
+
+bool operator==(const RPath & a, const RPath & b) noexcept
+{
+  if( a.entriesCount() != b.entriesCount() ){
+    return false;
+  }
+
+  return std::equal( a.cbegin(), a.cend(), b.cbegin() );
+}
+
 }} // namespace Mdt{ namespace DeployUtils{

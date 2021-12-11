@@ -41,6 +41,7 @@ QStringList getFileRunPath(const QString & filePath)
   ExecutableFileReader reader;
   reader.openFile(filePath);
 
+//   return reader.getRunPath();
   RPath rpath = reader.getRunPath();
 
   QStringList rpathStringList;
