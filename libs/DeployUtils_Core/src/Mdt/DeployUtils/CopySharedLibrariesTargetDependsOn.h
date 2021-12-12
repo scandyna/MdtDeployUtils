@@ -23,6 +23,7 @@
 
 #include "CopySharedLibrariesTargetDependsOnRequest.h"
 #include "OverwriteBehavior.h"
+#include "Platform.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -106,7 +107,9 @@ namespace Mdt{ namespace DeployUtils{
     static
     QString overwriteBehaviorToString(OverwriteBehavior overwriteBehavior) noexcept;
 
-    void setRPathToCopiedDependencies(const QStringList & destinationFilePathList, const CopySharedLibrariesTargetDependsOnRequest & request);
+    void setRPathToCopiedDependencies(const QStringList & destinationFilePathList,
+                                      const CopySharedLibrariesTargetDependsOnRequest & request,
+                                      const Platform & platform);
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

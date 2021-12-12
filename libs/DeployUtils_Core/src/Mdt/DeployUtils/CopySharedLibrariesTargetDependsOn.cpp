@@ -24,6 +24,7 @@
 #include "FileCopier.h"
 #include "PathList.h"
 #include "RPath.h"
+#include "ExecutableFileReader.h"
 #include "ExecutableFileWriter.h"
 #include <QLatin1String>
 #include <cassert>
@@ -39,6 +40,11 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   assert( !request.targetFilePath.trimmed().isEmpty() );
   assert( !request.destinationDirectoryPath.trimmed().isEmpty() );
 
+  ExecutableFileReader reader;
+  reader.openFile(request.targetFilePath);
+  const Platform platform = reader.getFilePlatform();
+  reader.close();
+
   const QString startMessage = tr("copy dependencies for %1").arg(request.targetFilePath);
   emit message(startMessage);
 
@@ -47,12 +53,14 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   const QString overwriteBehaviorMessage = tr("Overwrite behavior: %1").arg( overwriteBehaviorToString(request.overwriteBehavior) );
   emit verboseMessage(overwriteBehaviorMessage);
 
-  if(request.removeRpath){
-    const QString rpathMessage = tr("RPATH will be removed in copied libraries");
-    emit verboseMessage(rpathMessage);
-  }else{
-    const QString rpathMessage = tr("RPATH will be set to $ORIGIN in copied libraries");
-    emit verboseMessage(rpathMessage);
+  if( platform.supportsRPath() ){
+    if(request.removeRpath){
+      const QString rpathMessage = tr("RPATH will be removed in copied libraries");
+      emit verboseMessage(rpathMessage);
+    }else{
+      const QString rpathMessage = tr("RPATH will be set to $ORIGIN in copied libraries");
+      emit verboseMessage(rpathMessage);
+    }
   }
 
   BinaryDependencies binaryDependencies;
@@ -94,7 +102,9 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   connect(&fileCopier, &FileCopier::verboseMessage, this, &CopySharedLibrariesTargetDependsOn::verboseMessage);
   fileCopier.copyFiles(dependencies, request.destinationDirectoryPath);
 
-  setRPathToCopiedDependencies(fileCopier.copiedFilesDestinationPathList(), request);
+  if( platform.supportsRPath() ){
+    setRPathToCopiedDependencies(fileCopier.copiedFilesDestinationPathList(), request, platform);
+  }
 }
 
 void CopySharedLibrariesTargetDependsOn::emitSearchPrefixPathListMessage(const QStringList & pathList) const noexcept
@@ -134,8 +144,11 @@ QString CopySharedLibrariesTargetDependsOn::overwriteBehaviorToString(OverwriteB
 }
 
 void CopySharedLibrariesTargetDependsOn::setRPathToCopiedDependencies(const QStringList & destinationFilePathList,
-                                                                      const CopySharedLibrariesTargetDependsOnRequest & request)
+                                                                      const CopySharedLibrariesTargetDependsOnRequest & request,
+                                                                      const Platform & platform)
 {
+  assert( platform.supportsRPath() );
+
   RPath rpath;
   if(!request.removeRpath){
     rpath.appendPath( QLatin1String(".") );
@@ -146,11 +159,12 @@ void CopySharedLibrariesTargetDependsOn::setRPathToCopiedDependencies(const QStr
   connect(&writer, &ExecutableFileWriter::verboseMessage, this, &CopySharedLibrariesTargetDependsOn::verboseMessage);
 
   for(const QString & filePath : destinationFilePathList){
-    const QString msg = tr("update rpath for %1").arg(filePath);
-    emit verboseMessage(msg);
-
-    writer.openFile(filePath);
-    writer.setRunPath(rpath);
+    writer.openFile(filePath, platform);
+    if(writer.getRunPath() != rpath){
+      const QString msg = tr("update rpath for %1").arg(filePath);
+      emit verboseMessage(msg);
+      writer.setRunPath(rpath);
+    }
     writer.close();
   }
 }
