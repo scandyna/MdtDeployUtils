@@ -38,10 +38,14 @@ namespace Mdt{ namespace DeployUtils{
    * Here is a example to set the RPath to a executable
    * (if executable format supports RPath):
    * \code
+   * // rpath will be $ORIGIN on Linux like systems
+   * RPath rpath;
+   * rpath.appendPath(".");
+   *
    * ExecutableFileWriter writer;
    *
    * writer.openFile(targetLibrary);
-   * writer.setRunPath({"$ORIGIN"});
+   * writer.setRunPath(rpath);
    * writer.close();
    * \endcode
    *
