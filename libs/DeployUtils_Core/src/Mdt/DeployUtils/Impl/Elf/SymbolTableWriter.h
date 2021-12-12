@@ -64,6 +64,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
   {
     assert( !map.isNull() );
     assert( ident.isValid() );
+    assert( !table.isEmpty() );
     assert( map.size >= table.findMinimumSizeToAccessEntries(ident._class) );
 
     const int64_t entrySize = symbolTableEntrySize(ident._class);

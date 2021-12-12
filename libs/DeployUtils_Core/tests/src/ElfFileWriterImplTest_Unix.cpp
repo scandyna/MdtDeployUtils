@@ -450,7 +450,7 @@ TEST_CASE("editRunPath_SharedLibrary")
 
   QTemporaryDir dir;
   REQUIRE( dir.isValid() );
-  dir.setAutoRemove(false);
+  dir.setAutoRemove(true);
 
   FileWriterFile elfFile;
   QFile file;
@@ -477,6 +477,38 @@ TEST_CASE("editRunPath_SharedLibrary")
     REQUIRE( lintElfFile(targetFilePath) );
     REQUIRE( getExecutableRunPath(targetFilePath) == QLatin1String("/tmp") );
   }
+}
+
+TEST_CASE("sandboxWith_libasan", "[.]")
+{
+  using Impl::Elf::setFileToMap;
+
+  QTemporaryDir dir;
+  REQUIRE( dir.isValid() );
+  dir.setAutoRemove(false);
+
+  FileWriterFile elfFile;
+  QFile file;
+  ByteArraySpan map;
+
+  const QString targetFilePath = makePath(dir, "libasan.so");
+  copyAndReadElfFile(elfFile, targetFilePath, "/usr/lib/x86_64-linux-gnu/libasan.so.4");
+  REQUIRE( elfFile.seemsValid() );
+
+//   REQUIRE( readExecutable(targetFilePath) );
+  elfFile.setRunPath( QLatin1String("/tmp") );
+
+  openFileForWrite(file, targetFilePath);
+  resizeFile( file, elfFile.minimumSizeToWriteFile() );
+  map = mapFile(file);
+  REQUIRE( !map.isNull() );
+
+  setFileToMap(map, elfFile);
+
+  unmapAndCloseFile(file, map);
+  REQUIRE( readExecutable(targetFilePath) );
+  REQUIRE( lintElfFile(targetFilePath) );
+  REQUIRE( getExecutableRunPath(targetFilePath) == QLatin1String("/tmp") );
 }
 
 TEST_CASE("sandboxWithPatchelf", "[.]")

@@ -215,7 +215,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
 
     NoteSectionWriter::setNoteSectionTableToMap( map, file.noteSectionTable(), file.fileHeader() );
 
-    setSymbolTableToMap(map, file.symTab(), file.fileHeader().ident);
+    if( !file.symTab().isEmpty() ){
+      setSymbolTableToMap(map, file.symTab(), file.fileHeader().ident);
+    }
     setSymbolTableToMap(map, file.dynSym(), file.fileHeader().ident);
 
     setDynamicSectionToMap( map, file.dynamicSectionHeader(), file.dynamicSection(), file.fileHeader() );
