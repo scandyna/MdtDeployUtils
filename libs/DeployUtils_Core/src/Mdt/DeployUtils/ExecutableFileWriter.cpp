@@ -39,6 +39,15 @@ void ExecutableFileWriter::openFile(const QFileInfo & fileInfo)
   mEngine.openFile(fileInfo, ExecutableFileOpenMode::ReadWrite);
 }
 
+void ExecutableFileWriter::openFile(const QFileInfo & fileInfo, const Platform & platform)
+{
+  assert( !fileInfo.filePath().isEmpty() );
+  assert( !platform.isNull() );
+  assert( !isOpen() );
+
+  mEngine.openFile(fileInfo, ExecutableFileOpenMode::ReadWrite, platform);
+}
+
 bool ExecutableFileWriter::isOpen() const noexcept
 {
   return mEngine.isOpen();
@@ -54,6 +63,14 @@ bool ExecutableFileWriter::isExecutableOrSharedLibrary()
   assert( isOpen() );
 
   return mEngine.engine()->isExecutableOrSharedLibrary();
+}
+
+RPath ExecutableFileWriter::getRunPath()
+{
+  assert( isOpen() );
+  assert( isExecutableOrSharedLibrary() );
+
+  return mEngine.engine()->getRunPath();
 }
 
 void ExecutableFileWriter::setRunPath(const RPath & rPath)

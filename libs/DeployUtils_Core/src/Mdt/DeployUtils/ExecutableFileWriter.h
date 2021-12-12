@@ -75,7 +75,18 @@ namespace Mdt{ namespace DeployUtils{
      */
     void openFile(const QFileInfo & fileInfo);
 
-    /*! \brief Check if this reader has a open file
+    /*! \brief Open a file for a expected platform
+     *
+     * \pre \a fileInfo must have a file path set
+     * \pre \a platform must be valid
+     * \pre this writer must not allready have a file open
+     * \sa isOpen()
+     * \sa close()
+     * \exception FileOpenError
+     */
+    void openFile(const QFileInfo & fileInfo, const Platform & platform);
+
+    /*! \brief Check if this writer has a open file
      *
      * \sa openFile()
      * \sa close()
@@ -94,6 +105,17 @@ namespace Mdt{ namespace DeployUtils{
      * \sa ExecutableFileReader::isExecutableOrSharedLibrary()
      */
     bool isExecutableOrSharedLibrary();
+
+    /*! \brief Get the run path for the file this writer refers to
+     *
+     * Will only return a result for executable formats that supports run path
+     *
+     * \pre this writer must have a open file which is a executable or a shared library
+     * \sa isOpen()
+     * \sa isExecutableOrSharedLibrary()
+     * \exception ExecutableFileReadError
+     */
+    RPath getRunPath();
 
     /*! \brief Set the run path this writer refers to to \a rPath
      *
