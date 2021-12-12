@@ -48,6 +48,28 @@ TEST_CASE("isNull")
   }
 }
 
+TEST_CASE("supportsRPath")
+{
+  SECTION("Null")
+  {
+    Platform pf;
+    REQUIRE( pf.isNull() );
+    REQUIRE( !pf.supportsRPath() );
+  }
+
+  SECTION("Linux")
+  {
+    Platform pf(OperatingSystem::Linux, ExecutableFileFormat::Elf, Compiler::Gcc, ProcessorISA::X86_64);
+    REQUIRE( pf.supportsRPath() );
+  }
+
+  SECTION("Windows")
+  {
+    Platform pf(OperatingSystem::Windows, ExecutableFileFormat::Pe, Compiler::Gcc, ProcessorISA::X86_64);
+    REQUIRE( !pf.supportsRPath() );
+  }
+}
+
 TEST_CASE("nativePlatformTest")
 {
   Platform pf = Platform::nativePlatform();

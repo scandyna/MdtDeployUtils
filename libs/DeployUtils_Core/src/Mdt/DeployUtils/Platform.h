@@ -123,6 +123,21 @@ namespace Mdt{ namespace DeployUtils{
       return false;
     }
 
+    /*! \brief Check if this platform supports rpath
+     */
+    bool supportsRPath() const noexcept
+    {
+      switch(mExecutableFileFormat){
+        case ExecutableFileFormat::Elf:
+          return true;
+        case ExecutableFileFormat::Pe:
+        case ExecutableFileFormat::Unknown:
+          break;
+      }
+
+      return false;
+    }
+
     /*! \brief Check if platform a and be are equal
      *
      * \note the compiler is not taken into account here.
