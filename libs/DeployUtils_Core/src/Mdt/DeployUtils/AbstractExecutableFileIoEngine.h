@@ -155,7 +155,7 @@ namespace Mdt{ namespace DeployUtils{
      * \sa isExecutableOrSharedLibrary()
      * \exception ExecutableFileWriteError
      */
-    void setRunPath(const QStringList & rPath);
+    void setRunPath(const RPath & rPath);
 
    signals:
 
@@ -225,7 +225,7 @@ namespace Mdt{ namespace DeployUtils{
       return RPath();
     }
 
-    virtual void doSetRunPath(const QStringList & rPath);
+    virtual void doSetRunPath(const RPath & rPath);
 
     static
     QIODevice::OpenMode qIoDeviceOpenModeFromOpenMode(ExecutableFileOpenMode mode) noexcept;

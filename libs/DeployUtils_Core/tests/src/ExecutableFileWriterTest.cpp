@@ -35,22 +35,21 @@
 
 using namespace Mdt::DeployUtils;
 
-/// \todo move to RPath as soon as possible !!
-QStringList getFileRunPath(const QString & filePath)
+RPath getFileRunPath(const QString & filePath)
 {
   ExecutableFileReader reader;
   reader.openFile(filePath);
 
-//   return reader.getRunPath();
-  RPath rpath = reader.getRunPath();
-
-  QStringList rpathStringList;
-  for(const auto & rpathEntry : rpath){
-    rpathStringList.append( rpathEntry.path() );
-  }
-
-  return rpathStringList;
+  return reader.getRunPath();
 }
+
+void appendRPathToRPath(const RPath & source, RPath & destination)
+{
+  for(const RPathEntry & entry : source){
+    destination.appendEntry(entry);
+  }
+}
+
 
 TEST_CASE("open_close")
 {
@@ -110,8 +109,8 @@ TEST_CASE("setRunPath")
   dir.setAutoRemove(true);
   const QString targetFilePath = makePath(dir, "targetFile");
   ExecutableFileWriter writer;
-  QStringList originalRPath;
-  QStringList expectedRPath;
+  RPath originalRPath;
+  RPath expectedRPath;
 
 //   MessageLogger messageLogger;
 //   QObject::connect(&writer, &ExecutableFileWriter::message, &MessageLogger::info);
@@ -127,7 +126,8 @@ TEST_CASE("setRunPath")
   {
     REQUIRE( copyFile(QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH), targetFilePath) );
     originalRPath = getFileRunPath(targetFilePath);
-    expectedRPath << dir.path() << originalRPath;
+    expectedRPath.appendPath( dir.path() );
+    appendRPathToRPath(originalRPath, expectedRPath);
     REQUIRE(originalRPath != expectedRPath);
 
     writer.openFile(targetFilePath);
@@ -155,7 +155,8 @@ TEST_CASE("setRunPath")
 
     SECTION("add temp dir to the original RunPath")
     {
-      expectedRPath << dir.path() << originalRPath;
+      expectedRPath.appendPath( dir.path() );
+      appendRPathToRPath(originalRPath, expectedRPath);
       REQUIRE(originalRPath != expectedRPath);
 
       writer.openFile(targetFilePath);

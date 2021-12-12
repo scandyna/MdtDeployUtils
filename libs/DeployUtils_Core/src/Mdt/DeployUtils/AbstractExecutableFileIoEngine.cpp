@@ -109,7 +109,7 @@ RPath AbstractExecutableFileIoEngine::getRunPath()
   return doGetRunPath();
 }
 
-void AbstractExecutableFileIoEngine::setRunPath(const QStringList & rPath)
+void AbstractExecutableFileIoEngine::setRunPath(const RPath & rPath)
 {
   assert( isOpen() );
   assert( isExecutableOrSharedLibrary() );
@@ -152,7 +152,7 @@ Impl::ByteArraySpan AbstractExecutableFileIoEngine::mapIfRequired(qint64 offset,
   return mFileMapper.mapIfRequired(mFile, offset, size);
 }
 
-void AbstractExecutableFileIoEngine::doSetRunPath(const QStringList &)
+void AbstractExecutableFileIoEngine::doSetRunPath(const RPath &)
 {
 }
 

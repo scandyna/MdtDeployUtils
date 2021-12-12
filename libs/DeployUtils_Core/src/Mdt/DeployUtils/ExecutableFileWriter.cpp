@@ -56,7 +56,7 @@ bool ExecutableFileWriter::isExecutableOrSharedLibrary()
   return mEngine.engine()->isExecutableOrSharedLibrary();
 }
 
-void ExecutableFileWriter::setRunPath(const QStringList & rPath)
+void ExecutableFileWriter::setRunPath(const RPath & rPath)
 {
   assert( isOpen() );
   assert( isExecutableOrSharedLibrary() );

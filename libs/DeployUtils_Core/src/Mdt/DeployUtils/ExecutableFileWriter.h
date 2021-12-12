@@ -101,7 +101,7 @@ namespace Mdt{ namespace DeployUtils{
      * \sa isExecutableOrSharedLibrary()
      * \exception ExecutableFileWriteError
      */
-    void setRunPath(const QStringList & rPath);
+    void setRunPath(const RPath & rPath);
 
    signals:
 

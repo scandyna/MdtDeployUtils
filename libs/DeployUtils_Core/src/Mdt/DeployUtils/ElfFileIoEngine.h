@@ -82,7 +82,7 @@ namespace Mdt{ namespace DeployUtils{
     bool doContainsDebugSymbols() override;
     QStringList doGetNeededSharedLibraries() override;
     RPath doGetRunPath() override;
-    void doSetRunPath(const QStringList & rPath) override;
+    void doSetRunPath(const RPath & rPath) override;
 
     std::unique_ptr<Impl::Elf::FileIoEngine> mImpl;
   };

@@ -19,6 +19,7 @@
  **
  ****************************************************************************/
 #include "ElfFileIoEngine.h"
+#include "RPathElf.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileIoEngine.h"
 #include "Mdt/DeployUtils/Impl/Elf/FileWriterFile.h"
 #include "Mdt/DeployUtils/Impl/ByteArraySpan.h"
@@ -197,7 +198,7 @@ RPath ElfFileIoEngine::doGetRunPath()
   return mImpl->getRunPath(map);
 }
 
-void ElfFileIoEngine::doSetRunPath(const QStringList & rPath)
+void ElfFileIoEngine::doSetRunPath(const RPath & rPath)
 {
   using Impl::ByteArraySpan;
   using Impl::Elf::FileWriterFile;
@@ -212,7 +213,7 @@ void ElfFileIoEngine::doSetRunPath(const QStringList & rPath)
 
   mImpl->readToFileWriterFile(file, map);
 
-  file.setRunPath( rPath.join( QLatin1Char(':') ) );
+  file.setRunPath( RPathElf::rPathToString(rPath) );
 
   const qint64 newSize = file.minimumSizeToWriteFile();
   if(newSize > size){
