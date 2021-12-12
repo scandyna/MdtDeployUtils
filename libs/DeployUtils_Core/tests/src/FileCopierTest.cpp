@@ -127,14 +127,18 @@ TEST_CASE("copyFile")
   SECTION("copy libA to a empty directory")
   {
     fc.copyFile(libASourceFilePath, destinationDirectoryPath);
+
     REQUIRE( fileExists(libADestinationFilePath) );
     REQUIRE( readTextFileUtf8(libADestinationFilePath) == QLatin1String("A") );
+    REQUIRE( fc.copiedFilesDestinationPathList() == QStringList({libADestinationFilePath}) );
   }
 
   SECTION("copy libA to itself (destination file path == source file path)")
   {
     fc.copyFile( libASourceFilePath, sourceRoot.path() );
+
     REQUIRE( readTextFileUtf8(libASourceFilePath) == QLatin1String("A") );
+    REQUIRE( fc.copiedFilesDestinationPathList().isEmpty() );
   }
 
   SECTION("copy libA to a existing file")
@@ -145,14 +149,18 @@ TEST_CASE("copyFile")
     {
       fc.setOverwriteBehavior(OverwriteBehavior::Keep);
       fc.copyFile(libASourceFilePath, destinationDirectoryPath);
+
       REQUIRE( readTextFileUtf8(libADestinationFilePath) == QLatin1String("other A") );
+      REQUIRE( fc.copiedFilesDestinationPathList().isEmpty() );
     }
 
     SECTION("overwrite behavior: Overwrite")
     {
       fc.setOverwriteBehavior(OverwriteBehavior::Overwrite);
       fc.copyFile(libASourceFilePath, destinationDirectoryPath);
+
       REQUIRE( readTextFileUtf8(libADestinationFilePath) == QLatin1String("A") );
+      REQUIRE( fc.copiedFilesDestinationPathList() == QStringList({libADestinationFilePath}) );
     }
   }
 }

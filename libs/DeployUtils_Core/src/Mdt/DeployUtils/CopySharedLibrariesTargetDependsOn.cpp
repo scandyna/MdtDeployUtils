@@ -23,10 +23,13 @@
 #include "CompilerFinder.h"
 #include "FileCopier.h"
 #include "PathList.h"
+#include "RPath.h"
+#include "ExecutableFileWriter.h"
+#include <QLatin1String>
 #include <cassert>
 #include <memory>
 
-#include <QDebug>
+// #include <QDebug>
 // #include <iostream>
 
 namespace Mdt{ namespace DeployUtils{
@@ -91,7 +94,7 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   connect(&fileCopier, &FileCopier::verboseMessage, this, &CopySharedLibrariesTargetDependsOn::verboseMessage);
   fileCopier.copyFiles(dependencies, request.destinationDirectoryPath);
 
-  /// \todo RPATH !
+  setRPathToCopiedDependencies(fileCopier.copiedFilesDestinationPathList(), request);
 }
 
 void CopySharedLibrariesTargetDependsOn::emitSearchPrefixPathListMessage(const QStringList & pathList) const noexcept
@@ -128,6 +131,28 @@ QString CopySharedLibrariesTargetDependsOn::overwriteBehaviorToString(OverwriteB
   }
 
   return QString();
+}
+
+void CopySharedLibrariesTargetDependsOn::setRPathToCopiedDependencies(const QStringList & destinationFilePathList,
+                                                                      const CopySharedLibrariesTargetDependsOnRequest & request)
+{
+  RPath rpath;
+  if(!request.removeRpath){
+    rpath.appendPath( QLatin1String(".") );
+  }
+
+  ExecutableFileWriter writer;
+  connect(&writer, &ExecutableFileWriter::message, this, &CopySharedLibrariesTargetDependsOn::verboseMessage);
+  connect(&writer, &ExecutableFileWriter::verboseMessage, this, &CopySharedLibrariesTargetDependsOn::verboseMessage);
+
+  for(const QString & filePath : destinationFilePathList){
+    const QString msg = tr("update rpath for %1").arg(filePath);
+    emit verboseMessage(msg);
+
+    writer.openFile(filePath);
+    writer.setRunPath(rpath);
+    writer.close();
+  }
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

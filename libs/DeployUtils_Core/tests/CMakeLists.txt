@@ -5,6 +5,7 @@
 #  https://www.boost.org/LICENSE_1_0.txt)
 ##############################################################
 include(MdtAddTest)
+include(MdtRuntimeEnvironment)
 include(GenerateExportHeader)
 
 # MOC (or CMake?) does not support having ;

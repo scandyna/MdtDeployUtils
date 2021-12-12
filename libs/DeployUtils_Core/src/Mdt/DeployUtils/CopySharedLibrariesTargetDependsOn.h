@@ -50,7 +50,8 @@ namespace Mdt{ namespace DeployUtils{
    * By default, the \a overwriteBehavior is OverwriteBehavior::Fail.
    *
    * By default, on platform that supports rpath,
-   * the rpath informations is set to $ORIGIN for each shared library that has been copied.
+   * the rpath informations is set to the relative location of the shared library
+   * (i.e. $ORIGIN for ELF files on platforms like Linux) for each one that has been copied.
    * If \a removeRpath is true, the rpath informations are removed for each shared library that has been copied.
    *
    * To find dependencies, \a searchPrefixPathList will be used.
@@ -87,6 +88,8 @@ namespace Mdt{ namespace DeployUtils{
      * \exception FileOpenError
      * \exception ExecutableFileReadError
      * \exception FindDependencyError
+     * \exception FileCopyError
+     * \exception ExecutableFileWriteError
      */
     void execute(const CopySharedLibrariesTargetDependsOnRequest & request);
 
@@ -102,6 +105,8 @@ namespace Mdt{ namespace DeployUtils{
 
     static
     QString overwriteBehaviorToString(OverwriteBehavior overwriteBehavior) noexcept;
+
+    void setRPathToCopiedDependencies(const QStringList & destinationFilePathList, const CopySharedLibrariesTargetDependsOnRequest & request);
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

@@ -105,6 +105,8 @@ void FileCopier::copyFile(const QString & sourceFilePath, const QString & destin
                         .arg( sourceFileInfo.absoluteFilePath(), destinationDirectoryPath, sourceFile.errorString() );
     throw FileCopyError(msg);
   }
+
+  mCopiedFilesDestinationPathList.append(destinationFilePath);
 }
 
 void FileCopier::copyFiles(const QStringList & sourceFilePathList, const QString & destinationDirectoryPath)

@@ -21,16 +21,58 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "TestUtils.h"
+#include "TestFileUtils.h"
 #include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.h"
 #include "Mdt/DeployUtils/MessageLogger.h"
 #include "Mdt/DeployUtils/ConsoleMessageLogger.h"
+#include "Mdt/DeployUtils/RPath.h"
+#include "Mdt/DeployUtils/ExecutableFileWriter.h"
+#include "Mdt/DeployUtils/ExecutableFileReader.h"
 #include <QTemporaryDir>
 
 using namespace Mdt::DeployUtils;
 
-TEST_CASE("sandbox")
+#ifdef Q_OS_WIN
+  constexpr bool checkRPath = false;
+#else
+  constexpr bool checkRPath = true;
+#endif
+
+bool installExecutable(const QString & sourceExecutablePath, const QString & destinationExecutablePath)
+{
+  if( !copyFile(sourceExecutablePath, destinationExecutablePath) ){
+    return false;
+  }
+
+  RPath rpath;
+  rpath.appendPath( QLatin1String(".") );
+
+  ExecutableFileWriter writer;
+  writer.openFile(destinationExecutablePath);
+  writer.setRunPath(rpath);
+  writer.close();
+
+  return true;
+}
+
+RPath getTestSharedLibraryRunPath(const QTemporaryDir & dir)
+{
+  ExecutableFileReader reader;
+  reader.openFile( makePath(dir, "libtestSharedLibrary.so") );
+
+  return reader.getRunPath();
+}
+
+
+/*
+ * It was a atempt to run the test executable once copied.
+ * On some builds this not worked because of a assertion in QLibraryInfo
+ * see https://bugreports.qt.io/browse/QTBUG-86380
+ */
+TEST_CASE("CopySharedLibrariesTargetDependsOn")
 {
   QTemporaryDir destinationDir;
+  destinationDir.setAutoRemove(true);
   REQUIRE( destinationDir.isValid() );
 
   CopySharedLibrariesTargetDependsOnRequest request;
@@ -39,7 +81,6 @@ TEST_CASE("sandbox")
   request.searchPrefixPathList = getTestPrefixPath(PREFIX_PATH);
   request.destinationDirectoryPath = destinationDir.path();
   request.overwriteBehavior = OverwriteBehavior::Overwrite;
-  request.removeRpath = false;
 
   MessageLogger messageLogger;
   MessageLogger::setBackend<ConsoleMessageLogger>();
@@ -49,10 +90,41 @@ TEST_CASE("sandbox")
   QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::message, MessageLogger::info);
   QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::verboseMessage, MessageLogger::info);
 
-  useCase.execute(request);
+  /*
+   * Install the executable with its rpath allaways set to
+   * the relative location where it is installed ($ORIGIN on Linux).
+   * This way, we can check the use case.
+   */
+  const QString installedExecutable = makePath(destinationDir, "installedExecutable");
+  REQUIRE( installExecutable(request.targetFilePath, installedExecutable) );
 
-  REQUIRE( dirContainsTestSharedLibrary(destinationDir) );
-  REQUIRE( dirContainsQt5Core(destinationDir) );
+  SECTION("libraries have rpath set to the relative directory where installed - executable should run")
+  {
+    request.removeRpath = false;
+    useCase.execute(request);
+
+    REQUIRE( dirContainsTestSharedLibrary(destinationDir) );
+    REQUIRE( dirContainsQt5Core(destinationDir) );
+
+    if(checkRPath){
+      REQUIRE( getTestSharedLibraryRunPath(destinationDir).entryAt(0).path() == QLatin1String(".") );
+    }
+    //REQUIRE( runExecutable(installedExecutable, {QLatin1String("25")}) );
+  }
+
+  SECTION("libraries have no rpath - executable should not run")
+  {
+    request.removeRpath = true;
+    useCase.execute(request);
+
+    REQUIRE( dirContainsTestSharedLibrary(destinationDir) );
+    REQUIRE( dirContainsQt5Core(destinationDir) );
+
+    if(checkRPath){
+      REQUIRE( getTestSharedLibraryRunPath(destinationDir).isEmpty() );
+    }
+//     REQUIRE( !runExecutable(installedExecutable, {QLatin1String("25")}) );
+  }
 }
 
 /*
