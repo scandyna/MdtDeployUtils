@@ -24,9 +24,15 @@
 
 namespace Mdt{ namespace DeployUtils{
 
+RPathEntry::RPathEntry(const QString & path) noexcept
+  : mPath( QDir::cleanPath( path.trimmed() ) )
+{
+  assert( !mPath.isEmpty() );
+}
+
 bool operator==(const RPathEntry & a, const RPathEntry & b) noexcept
 {
-  return QDir::cleanPath( a.path() ) == QDir::cleanPath( b.path() );
+  return a.path() == b.path();
 }
 
 bool operator==(const RPath & a, const RPath & b) noexcept

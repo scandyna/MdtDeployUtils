@@ -43,11 +43,7 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \pre \a path must not be empty
      */
-    RPathEntry(const QString & path) noexcept
-     : mPath( path.trimmed() )
-    {
-      assert( !mPath.isEmpty() );
-    }
+    RPathEntry(const QString & path) noexcept;
 
     /*! \brief Copy construct a path from \a other
      */
