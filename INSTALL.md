@@ -1,5 +1,6 @@
 
-This section explains how to build and install MdtDeployUtils.
+This section explains the overview of various packages
+and also how to build and install them.
 
 Note: if you use Conan in your project,
 you don't need to install MdtDeployUtils.
@@ -27,3 +28,45 @@ To create packages that depend on Conan Qt:
 ```bash
 conan create . scandyna/testing -o MdtDeployUtils:use_conan_qt=True
 ```
+
+# Conan packages
+
+## MdtDeployUtils (tools)
+
+Contains the `mdtdeployutils` executable,
+the required shared libraries,
+the CMake scripts for usage with CMake (i.e. CMake integration)
+and the bash auto-completion script.
+
+## MdtDeployUtilsCore
+
+Contains the `MdtDeployUtils` core libraries, headers
+and CMake files required to build projects using `MdtDeployUtilsCore`.
+
+Depends on:
+MdtCommandLineParser, MdtConsoleApplication, Qt5Core
+
+
+# Debian packages
+
+## mdtdeployutils-standalone (tools)
+
+Contains the `mdtdeployutils` executable,
+the required shared libraries,
+the CMake scripts for usage with CMake (i.e. CMake integration)
+and the bash auto-completion script.
+
+## libmdt0deployutilscore
+
+Contains the `MdtDeployUtils` core libraries.
+
+Depends on:
+libmdt0commandlineparser, libmdt0consoleapplication, libqt5core
+
+## libmdt0deployutilscore-dev
+
+Contains the headers and CMake files
+required to build projects using `MdtDeployUtilsCore`.
+
+Depends on:
+libmdt0deployutilscore

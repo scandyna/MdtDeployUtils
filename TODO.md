@@ -128,54 +128,6 @@ ${CMAKE_INSTALL_PREFIX}
              |-Mdt0DeployUtilsLibsConfig.cmake
              |-Mdt0DeployUtilsLibsConfigVersion.cmake
 
-
-## MdtDeployUtils (tools)
-
-Contains the `mdtdeployutils` executable,
-the CMake scripts for usage with CMake (i.e. CMake integration)
-and the bash auto-completion script.
-
-Depends on:
-MdtDeployUtilsCore
-
-Debian package name: mdt 0 deployutils
-
-Conan package
-Name: MdtDeployUtils
-NOTE: should be n/a
-
-## MdtDeployUtils (tools) - standalone
-
-Contains the same as `MdtDeployUtils`,
-but also all the required shared libraries.
-
-Debian package name: mdtdeployutils-standalone
-
-Conan package:
-Name: MdtDeployUtils
-
-## MdtDeployUtilsCore (core libraries)
-
-Contains the `MdtDeployUtils` core libraries.
-
-Depends on:
-MdtCommandLineParser, MdtConsoleApplication, Qt5Core
-
-Debian package name: libmdt0deployutilscore
-
-Conan package:
-
-## MdtDeployUtilsCore-dev
-
-Contains the headers and CMake files
-required to build projects using `MdtDeployUtilsCore`.
-
-Depends on:
-MdtDeployUtilsCore
-
-Debian package name: libmdt 0 deployutilscore-dev
-
-
 # Conan file
 
 settings should not allways depend on compiler etc..
