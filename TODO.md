@@ -24,7 +24,20 @@ when the new RPath is to big.
 
 See comments in README about why.
 
+# dependencies resolution
+
+In BinaryDependencies
+
+Rules to solve dependencies with RPath is not allaways the same:
+- DT_RPATH: one way
+- DT_RUNPATH: one way
+- Apple RPATH: one way
+
+Also considere env vars like LD_LIBRARY_PATH
+
 # Install
+
+NOTE: Impl headers should not be installed
 
 Remove RPATH for copied shared libraries
 
@@ -115,6 +128,52 @@ ${CMAKE_INSTALL_PREFIX}
              |-Mdt0DeployUtilsLibsConfig.cmake
              |-Mdt0DeployUtilsLibsConfigVersion.cmake
 
+
+## MdtDeployUtils (tools)
+
+Contains the `mdtdeployutils` executable,
+the CMake scripts for usage with CMake (i.e. CMake integration)
+and the bash auto-completion script.
+
+Depends on:
+MdtDeployUtilsCore
+
+Debian package name: mdt 0 deployutils
+
+Conan package
+Name: MdtDeployUtils
+NOTE: should be n/a
+
+## MdtDeployUtils (tools) - standalone
+
+Contains the same as `MdtDeployUtils`,
+but also all the required shared libraries.
+
+Debian package name: mdtdeployutils-standalone
+
+Conan package:
+Name: MdtDeployUtils
+
+## MdtDeployUtilsCore (core libraries)
+
+Contains the `MdtDeployUtils` core libraries.
+
+Depends on:
+MdtCommandLineParser, MdtConsoleApplication, Qt5Core
+
+Debian package name: libmdt0deployutilscore
+
+Conan package:
+
+## MdtDeployUtilsCore-dev
+
+Contains the headers and CMake files
+required to build projects using `MdtDeployUtilsCore`.
+
+Depends on:
+MdtDeployUtilsCore
+
+Debian package name: libmdt 0 deployutilscore-dev
 
 
 # Conan file
