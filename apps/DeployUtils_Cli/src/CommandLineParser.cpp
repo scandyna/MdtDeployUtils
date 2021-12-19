@@ -68,7 +68,7 @@ CommandLineParser::CommandLineParser(QObject *parent)
 
 void CommandLineParser::process(const QStringList & arguments)
 {
-  std::cout << "cmd args: " << arguments.join(QLatin1Char(' ')).toStdString() << std::endl;
+//   std::cout << "cmd args: " << arguments.join(QLatin1Char(' ')).toStdString() << std::endl;
 
   Parser parser(mParserDefinition);
   parser.parse(arguments);

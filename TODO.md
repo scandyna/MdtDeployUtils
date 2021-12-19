@@ -134,6 +134,9 @@ settings should not allways depend on compiler etc..
 
 See how to create a conanfile for a tool !
  --> See https://docs.conan.io/en/latest/devtools.html
+ --> Also: https://github.com/conan-io/conan-center-index/blob/master/recipes/cmake/3.x.x/conanfile.py
+
+For bash completions, see remarks in cmake sources: cmake/Auxiliary/bash-completion/
 
 
 # Command line tools

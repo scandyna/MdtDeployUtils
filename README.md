@@ -22,6 +22,8 @@ To deploy Qt applications, some tools are available:
 - [windeployqt](https://doc.qt.io/qt-5/windows-deployment.html)
 - [macdeployqt](https://doc.qt.io/qt-5/macos-deployment.html)
 
+
+
 # Usage
 
 ## CMake API
@@ -75,6 +77,11 @@ For the available CMake modules, and their usage,
 see [the CMake API documentation](https://scandyna.gitlab.io/mdtdeployutils/cmake-api)
 
 ## Command line tools
+
+The command-line tool, `mdtdeployutils`, should be installed first.
+On Linux, it also supports Bash completion.
+
+See [INSTALL](INSTALL.md).
 
 To deploy a application:
 ```bash
