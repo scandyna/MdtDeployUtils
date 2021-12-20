@@ -31,7 +31,8 @@
 # Will install `target` using :command:`mdt_install_executable()`.
 #
 # For the usage of arguments not documented here,
-# see :command:`mdt_install_executable()`.
+# see :command:`mdt_install_executable()` from the
+# `Mdt CMake Modules MdtInstallExecutable module <https://scandyna.gitlab.io/mdt-cmake-modules/Modules/MdtInstallExecutable.html>`_ .
 #
 # The shared libraries the executable depends on
 # are also installed using :command:`mdt_install_shared_libraries_target_depends_on()`.
