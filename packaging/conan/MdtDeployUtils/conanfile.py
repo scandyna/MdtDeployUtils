@@ -31,7 +31,7 @@ class MdtDeployUtilsConan(ConanFile):
 
   # See: https://docs.conan.io/en/latest/reference/conanfile/attributes.html#short-paths
   # Should only be enabled if building with MSVC on Windows causes problems
-  short_paths = False
+  short_paths = True
 
   def set_version(self):
     if not self.version:
