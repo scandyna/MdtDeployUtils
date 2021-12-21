@@ -315,6 +315,8 @@ conan_deployutils_windows_gcc7_x86_64_debug:
   variables:
     CONAN_PROFILE: windows_gcc7_x86_64
     BUILD_TYPE: Debug
+    BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
+    QT_PREFIX_PATH: "C:/Qt/5.14.2/mingw73_64"
   extends: .conan_create_deployutils_windows
 
 conan_deployutils_windows_msvc16_x86_64_debug:
@@ -322,6 +324,8 @@ conan_deployutils_windows_msvc16_x86_64_debug:
   variables:
     CONAN_PROFILE: windows_msvc16_x86_64
     BUILD_TYPE: Debug
+    BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
+    QT_PREFIX_PATH: "C:/Qt/5.14.2/msvc2017_64"
   extends: .conan_create_deployutils_windows
 
 
