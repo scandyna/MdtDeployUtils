@@ -236,7 +236,7 @@ deploy_linux_gcc7_x86_64_relwithdebinfo:
 
 .conan_create_deployutils_windows:
   extends:
-    - .deploy_conan
+    - .conan_create_deployutils
     - .windows_runner
   before_script:
     - $env:PATH += ";$QT_PREFIX_PATH;$BOOST_PREFIX_PATH"
