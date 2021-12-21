@@ -80,8 +80,9 @@ class MdtDeployUtilsConan(ConanFile):
 
   # TODO: check component install ?
   def package(self):
-    cmake = self.configure_cmake()
-    cmake.install()
+    #cmake = self.configure_cmake()
+    #cmake.install()
+    self.run('cmake --install . --component MdtDeployUtils_Runtime')
 
   def package_info(self):
     self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))

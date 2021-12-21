@@ -78,25 +78,25 @@ This version should be the winner:
 ${CMAKE_INSTALL_PREFIX}
   |
   |-bin
-  |  |-mdtdeployutils   (Runtime)
+  |  |-mdtdeployutils   (MdtDeployUtils_Runtime)
   |
-  |-include   (Dev)
+  |-include   (MdtDeployUtilsCore_Dev)  (maybe also MdtDeployUtilsGui_Dev)
   |
   |-lib
-     |-libMdt0DeployUtilsCore.so  (Runtime)
-     |-libDepA.so                 (Runtime)
-     |-libDepB.so                 (Runtime)
+     |-libMdt0DeployUtilsCore.so  (MdtDeployUtils_Runtime) OR (MdtDeployUtilsCore_Runtime)
+     |-libDepA.so                 (MdtDeployUtils_Runtime)
+     |-libDepB.so                 (MdtDeployUtils_Runtime)
      |-cmake
-         |-Modules            (Runtime)
+         |-Modules            (MdtDeployUtils_Runtime)
          |-Mdt0DeployUtils
-         |   |-Mdt0DeployUtilsExecutable.cmake          (Runtime) adds mdtdeployutils IMPORTED TARGET
-         |   |-Mdt0DeployUtilsModules.cmake             (Runtime)
-         |   |-Mdt0DeployUtilsConfig.cmake              (Runtime)
-         |   |-Mdt0DeployUtilsConfigVersion.cmake       (Runtime)
+         |   |-Mdt0DeployUtilsExecutable.cmake          (MdtDeployUtils_Runtime) adds mdtdeployutils IMPORTED TARGET
+         |   |-Mdt0DeployUtilsModules.cmake             (MdtDeployUtils_Runtime)
+         |   |-Mdt0DeployUtilsConfig.cmake              (MdtDeployUtils_Runtime)
+         |   |-Mdt0DeployUtilsConfigVersion.cmake       (MdtDeployUtils_Runtime)
          |-Mdt0DeployUtilsCore
-             |-Mdt0DeployUtilsCoreTargets.cmake         (Dev) adds libMdt0DeployUtilsCore.so IMPORTED TARGET
-             |-Mdt0DeployUtilsCoreConfig.cmake          (Dev)
-             |-Mdt0DeployUtilsCoreConfigVersion.cmake   (Dev)
+             |-Mdt0DeployUtilsCoreTargets.cmake         (MdtDeployUtilsCore_Dev) adds libMdt0DeployUtilsCore.so IMPORTED TARGET
+             |-Mdt0DeployUtilsCoreConfig.cmake          (MdtDeployUtilsCore_Dev)
+             |-Mdt0DeployUtilsCoreConfigVersion.cmake   (MdtDeployUtilsCore_Dev)
 ```
 
 Usage as tool:

@@ -224,7 +224,7 @@ unset(DeployUtilsPackageConfigFileName)
 mdt_install_namespace_package_config_file(
   INSTALL_NAMESPACE ${MDT_INSTALL_PACKAGE_NAME}
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${MDT_INSTALL_PACKAGE_NAME}"
-  COMPONENT Mdt_Dev
+  COMPONENT ${PROJECT_NAME}_Runtime
 )
 
 #######################
