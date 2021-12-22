@@ -78,7 +78,6 @@ class MdtDeployUtilsConan(ConanFile):
     cmake.build()
 
 
-  # TODO: check component install ?
   def package(self):
     #cmake = self.configure_cmake()
     #cmake.install()
