@@ -9,7 +9,7 @@ class MdtDeployUtilsConan(ConanFile):
   url = "https://gitlab.com/scandyna/mdtdeployutils"
   description = "Tools to help deploy C/C++ application binaries and their dependencies."
   # TODO: see TODO.md
-  settings = "os","arch"
+  settings = "os", "compiler", "build_type", "arch"
   options = {"shared": [True, False],
              "use_conan_boost": [True, False],
              "use_conan_qt": [True, False]}
@@ -30,7 +30,7 @@ class MdtDeployUtilsConan(ConanFile):
   no_copy_source = True
 
   # See: https://docs.conan.io/en/latest/reference/conanfile/attributes.html#short-paths
-  # Should only be enabled if building with MSVC on Windows causes problems
+  # Should only be enabled if building on Windows causes problems
   short_paths = True
 
   def set_version(self):
@@ -82,7 +82,14 @@ class MdtDeployUtilsConan(ConanFile):
   def package(self):
     #cmake = self.configure_cmake()
     #cmake.install()
-    self.run('cmake --install . --component MdtDeployUtils_Runtime')
+    self.run("cmake --install . --config %s --component MdtDeployUtils_Runtime" % self.settings.build_type)
+
+  def package_id(self):
+    del self.info.settings.compiler
+    del self.info.settings.build_type
+    del self.info.options.shared
+    del self.info.options.use_conan_boost
+    del self.info.options.use_conan_qt
 
   def package_info(self):
     self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
