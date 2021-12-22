@@ -3,11 +3,11 @@ from conans.errors import ConanInvalidConfiguration
 import os
 
 
-class MdtDeployUtilsConan(ConanFile):
-  name = "MdtDeployUtils"
+class MdtDeployUtilsCoreConan(ConanFile):
+  name = "MdtDeployUtilsCore"
   license = "BSD 3-Clause"
   url = "https://gitlab.com/scandyna/mdtdeployutils"
-  description = "Tools to help deploy C/C++ application binaries and their dependencies."
+  description = "Library to create tools to help deploy C/C++ application binaries and their dependencies."
   # TODO: see TODO.md
   settings = "os", "compiler", "build_type", "arch"
   options = {"shared": [True, False],
@@ -21,7 +21,8 @@ class MdtDeployUtilsConan(ConanFile):
   # version ranges are not possible.
   # See https://gitlab.com/gitlab-org/gitlab/-/issues/333638
   # TODO: is Catch required here ? Only for builds with tests, probably not when building packages
-  build_requires = "MdtApplication/0.3.5@scandyna/testing","MdtCMakeModules/0.16.0@scandyna/testing","Catch2/v2.13.7x@scandyna/testing"
+  requires = "MdtApplication/0.3.5@scandyna/testing"
+  build_requires = "MdtCMakeModules/0.16.0@scandyna/testing","Catch2/v2.13.7x@scandyna/testing"
   generators = "cmake", "cmake_paths", "virtualenv"
 
   # If no_copy_source is False, conan copies sources to build directory and does in-source build,
@@ -40,33 +41,23 @@ class MdtDeployUtilsConan(ConanFile):
       git = tools.Git()
       self.version = "%s" % (git.get_tag())
 
+
   # The export exports_sources attributes does not work if the conanfile.py is in a sub-folder.
   # See https://github.com/conan-io/conan/issues/3635
   # and https://github.com/conan-io/conan/pull/2676
   def export_sources(self):
-    self.copy("*", src="../../../apps", dst="apps")
     self.copy("*", src="../../../libs", dst="libs")
     self.copy("*", src="../../../cmake", dst="cmake")
     self.copy("MdtDeployUtilsConfig.cmake.in", src="../../../", dst=".")
     self.copy("CMakeLists.txt", src="../../../", dst=".")
     self.copy("LICENSE*", src="../../../", dst=".")
 
-  def requirements(self):
-
-    if self.options.use_conan_boost:
-      self.requires("boost/[>=1.65.1]@conan/stable")
-
-    # Building 5.14.x causes currently problems (8.04.2020)
-    # As workaround, try fix a known version that we can build
-    if self.options.use_conan_qt:
-      self.requires("qt/5.14.2@bincrafters/stable")
-      self.options["MdtApplication"].use_conan_qt = True
-
 
   def configure_cmake(self):
     cmake = CMake(self)
     cmake.definitions["FROM_CONAN_PROJECT_VERSION"] = self.version
     cmake.definitions["WARNING_AS_ERROR"] = "ON"
+    cmake.definitions["BUILD_APPS"] = "OFF"
     # TODO: should be conditional (not for Debug build). What about multi-config ?
     cmake.definitions["BUILD_USE_IPO_LTO_IF_AVAILABLE"] = "ON"
 
@@ -82,14 +73,5 @@ class MdtDeployUtilsConan(ConanFile):
   def package(self):
     #cmake = self.configure_cmake()
     #cmake.install()
-    self.run("cmake --install . --config %s --component MdtDeployUtils_Runtime" % self.settings.build_type)
-
-  def package_id(self):
-    del self.info.settings.compiler
-    del self.info.settings.build_type
-    del self.info.options.shared
-    del self.info.options.use_conan_boost
-    del self.info.options.use_conan_qt
-
-  def package_info(self):
-    self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
+    self.run("cmake --install . --config %s --component MdtDeployUtilsCore_Runtime" % self.settings.build_type)
+    self.run("cmake --install . --config %s --component MdtDeployUtilsCore_Dev" % self.settings.build_type)

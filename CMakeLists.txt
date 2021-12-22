@@ -49,6 +49,7 @@ include(MdtSanitizers)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
 
+option(BUILD_APPS "Build the applications (tools)" ON)
 option(BUILD_TESTS "Build the tests" OFF)
 option(BUILD_BENCHMARKS "Build the benchmarks" OFF)
 option(BUILD_DOCS "Build the documentations" OFF)
@@ -274,11 +275,13 @@ add_subdirectory(libs/DeployUtils_Core)
 
 add_subdirectory(libs/CommandLineParser)
 
-add_subdirectory(apps/DeployUtils_Cli)
 add_subdirectory(cmake)
 
-if(UNIX)
-  add_subdirectory(apps/DeployUtils_Cli_BashCompletion)
+if(BUILD_APPS)
+  add_subdirectory(apps/DeployUtils_Cli)
+  if(UNIX)
+    add_subdirectory(apps/DeployUtils_Cli_BashCompletion)
+  endif()
 endif()
 
 if(BUILD_DOCS)
