@@ -207,6 +207,7 @@ include(GNUInstallDirs)
 include(MdtInstallDirs)
 include(MdtPackageConfigHelpers)
 
+# TODO: is this required ?
 set(DeployUtilsPackageConfigFileName ${MDT_INSTALL_PACKAGE_NAME}DeployUtilsConfig.cmake)
 
 configure_file(

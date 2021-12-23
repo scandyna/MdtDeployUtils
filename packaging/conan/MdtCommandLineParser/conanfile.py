@@ -4,11 +4,10 @@ import os
 
 
 class MdtDeployUtilsCoreConan(ConanFile):
-  name = "MdtDeployUtilsCore"
+  name = "MdtCommandLineParser"
   license = "BSD 3-Clause"
-  url = "https://gitlab.com/scandyna/mdtdeployutils"
-  description = "Library to create tools to help deploy C/C++ application binaries and their dependencies."
-  # TODO: see TODO.md
+  url = "https://gitlab.com/scandyna/mdtcommandlineparser"
+  description = "Library to help to create a command-line parser in a C++ application."
   settings = "os", "compiler", "build_type", "arch"
   options = {"shared": [True, False],
              "use_conan_boost": [True, False],
@@ -20,9 +19,9 @@ class MdtDeployUtilsCoreConan(ConanFile):
   # Due to a issue using GitLab Conan repository,
   # version ranges are not possible.
   # See https://gitlab.com/gitlab-org/gitlab/-/issues/333638
-  # TODO: is Catch required here ? Only for builds with tests, probably not when building packages
-  requires = "MdtApplication/0.3.5@scandyna/testing"
-  build_requires = "MdtCMakeModules/0.16.0@scandyna/testing","Catch2/v2.13.7x@scandyna/testing"
+  # TODO: Catch and MdtApplication should only be required for tests, so not in this package
+  #requires = "MdtApplication/0.3.5@scandyna/testing"
+  build_requires = "MdtCMakeModules/0.16.0@scandyna/testing","Catch2/v2.13.7x@scandyna/testing","MdtApplication/0.3.5@scandyna/testing"
   generators = "cmake", "cmake_paths", "virtualenv"
 
   # If no_copy_source is False, conan copies sources to build directory and does in-source build,
@@ -45,22 +44,22 @@ class MdtDeployUtilsCoreConan(ConanFile):
   # The export exports_sources attributes does not work if the conanfile.py is in a sub-folder.
   # See https://github.com/conan-io/conan/issues/3635
   # and https://github.com/conan-io/conan/pull/2676
-  # TODO: for libs, should only copy ../../../libs/DeployUtils_Core/src and CMakeLists.txt
   def export_sources(self):
     self.copy("*", src="../../../libs", dst="libs")
-    self.copy("*", src="../../../cmake", dst="cmake")
-    self.copy("MdtDeployUtilsConfig.cmake.in", src="../../../", dst=".")
     self.copy("CMakeLists.txt", src="../../../", dst=".")
     self.copy("LICENSE*", src="../../../", dst=".")
-
+    # TODO: remove once library is out of MdtDeployUtils
+    self.copy("MdtDeployUtilsConfig.cmake.in", src="../../../", dst=".")
+    self.copy("*", src="../../../cmake", dst="cmake")
 
   def configure_cmake(self):
     cmake = CMake(self)
     cmake.definitions["FROM_CONAN_PROJECT_VERSION"] = self.version
     cmake.definitions["WARNING_AS_ERROR"] = "ON"
-    cmake.definitions["BUILD_APPS"] = "OFF"
     # TODO: should be conditional (not for Debug build). What about multi-config ?
     cmake.definitions["BUILD_USE_IPO_LTO_IF_AVAILABLE"] = "ON"
+    # TODO: remove once library is out of MdtDeployUtils
+    cmake.definitions["BUILD_APPS"] = "OFF"
 
     return cmake
 
@@ -74,5 +73,5 @@ class MdtDeployUtilsCoreConan(ConanFile):
   def package(self):
     #cmake = self.configure_cmake()
     #cmake.install()
-    self.run("cmake --install . --config %s --component MdtDeployUtilsCore_Runtime" % self.settings.build_type)
-    self.run("cmake --install . --config %s --component MdtDeployUtilsCore_Dev" % self.settings.build_type)
+    self.run("cmake --install . --config %s --component MdtCommandLineParser_Runtime" % self.settings.build_type)
+    self.run("cmake --install . --config %s --component MdtCommandLineParser_Dev" % self.settings.build_type)
