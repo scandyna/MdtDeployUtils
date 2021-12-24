@@ -51,7 +51,6 @@ stages:
     - conan create packaging/conan/MdtCommandLineParser 0.0.0@scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
 
 
-# TODO: split + update to use new packages
 .deploy_conan:
   stage: deploy
   rules:
@@ -60,9 +59,15 @@ stages:
     - when: never
   script:
     - !reference [.setup_conan, script]
+    - conan create packaging/conan/MdtDeployUtils scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
+    - conan create packaging/conan/MdtDeployUtilsCore scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
+    - conan create packaging/conan/MdtCommandLineParser scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
     - conan user --password ${CI_JOB_TOKEN} --remote scandyna ci_user
-    - conan create . scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS
     - conan upload MdtDeployUtils/* --remote scandyna --all -c
+    - conan upload MdtDeployUtilsCore/* --remote scandyna --all -c
+    # TODO: remove once MdtCommandLineParser is standelone
+    - conan upload MdtCommandLineParser/* --remote scandyna --all -c
+
 
 ###############################
 # Linux
