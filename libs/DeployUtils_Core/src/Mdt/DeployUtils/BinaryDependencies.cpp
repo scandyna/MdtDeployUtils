@@ -146,6 +146,7 @@ PathList BinaryDependencies::buildSearchPathListWindows(const QFileInfo & binary
     pathSearchPathList.setIncludePathPrefixes(true);
     pathSearchPathList.setPathSuffixList({QLatin1String("bin"),QLatin1String("qt5/bin")});
     pathSearchPathList.appendPath( binaryFilePath.absoluteDir().path() );
+    /// \is this correct ?
     pathSearchPathList.setPathPrefixList( PathList::getSystemExecutablePathList() );
     searchPathList.appendPathList( pathSearchPathList.pathList() );
   }
