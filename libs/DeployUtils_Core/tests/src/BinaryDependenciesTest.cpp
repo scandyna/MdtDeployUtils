@@ -23,6 +23,7 @@
 #include "TestUtils.h"
 #include "Mdt/DeployUtils/BinaryDependencies.h"
 #include "Mdt/DeployUtils/PathList.h"
+#include "Mdt/DeployUtils/MessageLogger.h"
 // #include "Mdt/DeployUtils/Platform.h"
 #include <QString>
 #include <QLatin1String>
@@ -79,6 +80,10 @@ TEST_CASE("buildSearchPathListWindows")
 TEST_CASE("findDependencies")
 {
   BinaryDependencies solver;
+
+  MessageLogger messageLogger;
+  QObject::connect(&solver, &BinaryDependencies::message, MessageLogger::info);
+  QObject::connect(&solver, &BinaryDependencies::verboseMessage, MessageLogger::info);
 
   PathList searchFirstPathPrefixList = PathList::fromStringList( getTestPrefixPath(PREFIX_PATH) );
   QStringList dependencies;
