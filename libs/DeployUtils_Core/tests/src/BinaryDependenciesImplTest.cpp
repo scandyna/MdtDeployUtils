@@ -40,19 +40,6 @@ BinaryDependenciesFile binaryDependenciesFileFromFullPath(const std::string & fi
   return BinaryDependenciesFile::fromQFileInfo( QString::fromStdString(filePath) );
 }
 
-// [[deprecated]]
-// ExecutableFileInfo executableFileInfoFromFullPath(const std::string & filePath)
-// {
-//   ExecutableFileInfo efi;
-//   QFileInfo fi( QString::fromStdString(filePath) );
-//   assert( !fi.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
-//   assert( !fi.absoluteFilePath().isEmpty() );
-//   efi.fileName = fi.fileName();
-//   efi.directoryPath = fi.absoluteDir().path();
-//
-//   return efi;
-// }
-
 bool dependenciesEquals(const ExecutableFileInfoList & efis, const std::vector<std::string> & list)
 {
   if( efis.size() != list.size() ){

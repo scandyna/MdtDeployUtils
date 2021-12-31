@@ -81,14 +81,6 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Build and returns a list of path to directories where to find shared libraries
      *
-     * \sa PathList::getSystemLibraryKnownPathListLinux()
-     * \sa https://man7.org/linux/man-pages/man8/ld.so.8.html
-     */
-//     [[deprecated]]
-//     PathList buildSearchPathListLinux(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) const noexcept;
-
-    /*! \brief Build and returns a list of path to directories where to find shared libraries
-     *
      * \sa PathList::getSystemLibraryKnownPathListWindows()
      */
     PathList buildSearchPathListWindows(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList,

@@ -89,21 +89,6 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
   return Impl::qStringListFromExecutableFileInfoList(dependencies);
 }
 
-// PathList BinaryDependencies::buildSearchPathListLinux(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) const noexcept
-// {
-//   PathList searchPathList;
-//
-//   SearchPathList searchFirstPathList;
-//   searchFirstPathList.setIncludePathPrefixes(true);
-//   searchFirstPathList.setPathSuffixList({QLatin1String("lib"),QLatin1String("qt5/lib")});
-//   searchFirstPathList.setPathPrefixList(searchFirstPathPrefixList);
-//
-//   searchPathList.appendPathList( searchFirstPathList.pathList() );
-//   searchPathList.appendPathList( PathList::getSystemLibraryKnownPathListLinux(processorISA) );
-//
-//   return searchPathList;
-// }
-
 PathList BinaryDependencies::buildSearchPathListWindows(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList,
                                                         ProcessorISA processorISA) const noexcept
 {
