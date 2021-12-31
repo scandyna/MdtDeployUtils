@@ -72,7 +72,7 @@ namespace Mdt{ namespace DeployUtils{
      *
      * Each library returned in the result will have its absolute file path.
      *
-     * \pre \a binaryFilePath must have its path set
+     * \pre \a binaryFilePath must have its absolute path set
      * \exception FindDependencyError
      * \sa buildSearchPathListLinux()
      * \sa https://man7.org/linux/man-pages/man8/ld.so.8.html
@@ -84,7 +84,8 @@ namespace Mdt{ namespace DeployUtils{
      * \sa PathList::getSystemLibraryKnownPathListLinux()
      * \sa https://man7.org/linux/man-pages/man8/ld.so.8.html
      */
-    PathList buildSearchPathListLinux(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) const noexcept;
+//     [[deprecated]]
+//     PathList buildSearchPathListLinux(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) const noexcept;
 
     /*! \brief Build and returns a list of path to directories where to find shared libraries
      *

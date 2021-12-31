@@ -22,6 +22,7 @@
 #include "Catch2QString.h"
 #include "BinaryDependenciesTestCommon.h"
 #include "TestUtils.h"
+#include "Mdt/DeployUtils/BinaryDependenciesFile.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
 #include <QFileInfo>
 #include <QDir>
@@ -34,17 +35,23 @@ using namespace Mdt::DeployUtils;
 using Impl::ExecutableFileInfo;
 using Impl::ExecutableFileInfoList;
 
-ExecutableFileInfo executableFileInfoFromFullPath(const std::string & filePath)
+BinaryDependenciesFile binaryDependenciesFileFromFullPath(const std::string & filePath)
 {
-  ExecutableFileInfo efi;
-  QFileInfo fi( QString::fromStdString(filePath) );
-  assert( !fi.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
-  assert( !fi.absoluteFilePath().isEmpty() );
-  efi.fileName = fi.fileName();
-  efi.directoryPath = fi.absoluteDir().path();
-
-  return efi;
+  return BinaryDependenciesFile::fromQFileInfo( QString::fromStdString(filePath) );
 }
+
+// [[deprecated]]
+// ExecutableFileInfo executableFileInfoFromFullPath(const std::string & filePath)
+// {
+//   ExecutableFileInfo efi;
+//   QFileInfo fi( QString::fromStdString(filePath) );
+//   assert( !fi.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
+//   assert( !fi.absoluteFilePath().isEmpty() );
+//   efi.fileName = fi.fileName();
+//   efi.directoryPath = fi.absoluteDir().path();
+//
+//   return efi;
+// }
 
 bool dependenciesEquals(const ExecutableFileInfoList & efis, const std::vector<std::string> & list)
 {
@@ -618,7 +625,7 @@ TEST_CASE("findDependencies")
 //   using Impl::findDependencies;
 
   Impl::FindDependenciesImpl impl;
-  ExecutableFileInfo target;
+//   BinaryDependenciesFile target;
   PathList searchPathList;
   TestExecutableFileReader reader;
   const auto platform = Platform::nativePlatform();
@@ -627,7 +634,7 @@ TEST_CASE("findDependencies")
 
   SECTION("no dependencies")
   {
-    target = executableFileInfoFromFullPath("/tmp/libm.so");
+    BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/libm.so");
 //     debugExecutableFileInfo(target);
     impl.findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
 //     debugExecutableFileInfoList(dependencies);
@@ -641,7 +648,7 @@ TEST_CASE("findDependencies")
    */
   SECTION("myapp depends on MyLibA")
   {
-    target = executableFileInfoFromFullPath("/tmp/myapp");
+    BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/myapp");
     searchPathList.appendPath( QLatin1String("/opt/MyLibs/") );
     reader.setDirectDependencies({"libMyLibA.so"});
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so"});
@@ -661,7 +668,7 @@ TEST_CASE("findDependencies")
    */
   SECTION("myapp depends on MyLibA which depends on Qt5Core")
   {
-    target = executableFileInfoFromFullPath("/tmp/myapp");
+    BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/myapp");
     searchPathList.appendPathList( {QLatin1String("/opt/MyLibs/"),QLatin1String("/opt/qt/")} );
     reader.setDirectDependencies({"libMyLibA.so"});
     reader.addDependenciesToDirectDependency("libMyLibA.so",{"libQt5Core.so"});

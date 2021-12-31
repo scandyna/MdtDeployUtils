@@ -727,6 +727,46 @@ if(MSVC)
 endif()
 
 mdt_add_test(
+  NAME SharedLibraryFinderLinuxTest
+  TARGET sharedLibraryFinderLinuxTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/SharedLibraryFinderLinuxTest.cpp
+)
+
+mdt_add_test(
+  NAME SharedLibraryFinderLinuxErrorTest
+  TARGET sharedLibraryFinderLinuxErrorTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/SharedLibraryFinderLinuxErrorTest.cpp
+)
+
+mdt_add_test(
+  NAME SharedLibraryFinderWindowsTest
+  TARGET sharedLibraryFinderWindowsTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/SharedLibraryFinderWindowsTest.cpp
+)
+
+mdt_add_test(
+  NAME SharedLibraryFinderWindowsErrorTest
+  TARGET sharedLibraryFinderWindowsErrorTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/SharedLibraryFinderWindowsErrorTest.cpp
+)
+
+mdt_add_test(
+  NAME BinaryDependenciesFileTest
+  TARGET binaryDependenciesFileTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BinaryDependenciesFileTest.cpp
+)
+
+mdt_add_test(
   NAME BinaryDependenciesImplTest
   TARGET binaryDependenciesImplTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

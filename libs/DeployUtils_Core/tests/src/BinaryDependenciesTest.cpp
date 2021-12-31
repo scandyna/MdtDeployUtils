@@ -37,24 +37,24 @@
 
 using namespace Mdt::DeployUtils;
 
-TEST_CASE("buildSearchPathListLinux")
-{
-  BinaryDependencies binaryDependencies;
-  PathList searchFirstPathPrefixList;
-  PathList searchPathList;
-
-  SECTION("x86")
-  {
-    searchPathList = binaryDependencies.buildSearchPathListLinux(searchFirstPathPrefixList, ProcessorISA::X86_32);
-    REQUIRE( !searchPathList.isEmpty() );
-  }
-
-  SECTION("x86_64")
-  {
-    searchPathList = binaryDependencies.buildSearchPathListLinux(searchFirstPathPrefixList, ProcessorISA::X86_64);
-    REQUIRE( !searchPathList.isEmpty() );
-  }
-}
+// TEST_CASE("buildSearchPathListLinux")
+// {
+//   BinaryDependencies binaryDependencies;
+//   PathList searchFirstPathPrefixList;
+//   PathList searchPathList;
+//
+//   SECTION("x86")
+//   {
+//     searchPathList = binaryDependencies.buildSearchPathListLinux(searchFirstPathPrefixList, ProcessorISA::X86_32);
+//     REQUIRE( !searchPathList.isEmpty() );
+//   }
+//
+//   SECTION("x86_64")
+//   {
+//     searchPathList = binaryDependencies.buildSearchPathListLinux(searchFirstPathPrefixList, ProcessorISA::X86_64);
+//     REQUIRE( !searchPathList.isEmpty() );
+//   }
+// }
 
 TEST_CASE("buildSearchPathListWindows")
 {

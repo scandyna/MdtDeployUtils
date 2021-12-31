@@ -23,6 +23,8 @@
 
 #include "LibraryExcludeListLinux.h"
 #include "LibraryExcludeListWindows.h"
+
+#include "Mdt/DeployUtils/BinaryDependenciesFile.h"
 #include "Mdt/DeployUtils/FindDependencyError.h"
 #include "Mdt/DeployUtils/ExecutableFileReader.h"
 #include "Mdt/DeployUtils/PathList.h"
@@ -30,6 +32,8 @@
 #include "Mdt/DeployUtils/RPath.h"
 #include "Mdt/DeployUtils/RPathElf.h"
 #include "Mdt/DeployUtils/Platform.h"
+#include "Mdt/DeployUtils/SharedLibraryFinderLinux.h"
+#include "Mdt/DeployUtils/SharedLibraryFinderWindows.h"
 #include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QLatin1String>
@@ -42,6 +46,8 @@
 #include <cassert>
 #include <vector>
 #include <algorithm>
+
+// #include <QDebug>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
@@ -163,6 +169,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
   /*! \internal
    */
+  [[deprecated]]
   inline
   QString makeDirectoryFromRpathEntry(const ExecutableFileInfo & originExecutable, const RPathEntry & rpathEntry) noexcept
   {
@@ -245,7 +252,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
   /*! \internal
    */
   template<typename IsExistingSharedLibraryOp>
-  ExecutableFileInfoList findLibrariesAbsolutePath(const ExecutableFileInfo & originExecutable, const QStringList & librariesNames,
+  ExecutableFileInfoList findLibrariesAbsolutePath_OLD(const ExecutableFileInfo & originExecutable, const QStringList & librariesNames,
                                                    const RPath & rpath, const PathList & searchPathList,
                                                    const Platform & platform,
                                                    IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
@@ -270,6 +277,31 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
   /*! \internal
    */
+  template<typename IsExistingSharedLibraryOp>
+  BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & originExecutable,
+                                                       const PathList & searchPathList,
+                                                       const Platform & platform,
+                                                       IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+  {
+    assert( !platform.isNull() );
+
+    switch( platform.operatingSystem() ){
+      case OperatingSystem::Linux:
+        return SharedLibraryFinderLinux::findLibrariesAbsolutePath(originExecutable, searchPathList, isExistingSharedLibraryOp);
+      case OperatingSystem::Windows:
+        return SharedLibraryFinderWindows::findLibrariesAbsolutePath(originExecutable, searchPathList, isExistingSharedLibraryOp);
+      case OperatingSystem::Unknown:
+        break;
+    }
+
+    const QString message = QCoreApplication::translate("Mdt::DeployUtils::Impl::findLibrariesAbsolutePath()",
+                                                        "requested platform is not supported");
+    throw FindDependencyError(message);
+  }
+
+  /*! \internal
+   */
+  [[deprecated]]
   inline
   void removeLibrariesInExcludeListLinux(QStringList & libraryNames) noexcept
   {
@@ -341,35 +373,59 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     /*! \internal
      */
     template<typename Reader, typename IsExistingSharedLibraryOp>
-    void findDependencies(const ExecutableFileInfo & currentFile, ExecutableFileInfoList & allDependencies, PathList searchPathList,
+    void findDependencies(/*const*/ BinaryDependenciesFile & currentFile, ExecutableFileInfoList & allDependencies, PathList searchPathList,
                           Reader & reader, const Platform & platform, IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
     {
-      assert( currentFile.hasAbsoluteFilePath() );
       assert( !reader.isOpen() );
+
+      ExecutableFileInfo currentFile_OLD;
+      currentFile_OLD.fileName = currentFile.fileName();
+      currentFile_OLD.directoryPath = currentFile.absoluteDirectoryPath();
+
+      assert( currentFile_OLD.hasAbsoluteFilePath() );
+
 
       if( directDependenciesAreSolved(currentFile) ){
         return;
       }
 
-      QFileInfo currentFileInfo = currentFile.toFileInfo();
-      if( !currentFileInfo.exists() ){
-        if( platform.operatingSystem() == OperatingSystem::Windows ){
-          currentFileInfo = tryAlternativeFileNamesWindows(currentFileInfo);
-        }
-      }
+      /** \todo
+       *
+       * The first call of this function IS with a existing file (see caller in BinaryDependencies)
+       *
+       * Then, if a dependency (on Windows)
+       * is called LIBA.dll liba.dll, libA.DLL, etc...,
+       * this must be fixed in the function finding the library.
+       *
+       * (info: this is usefull to solve for cross-deploy.
+       *  on Windows, file names are case insensitive.
+       *  If we deploy windows apps from a Linux machine,
+       *  then we care about this)
+       *
+       * BUT: this block below should go away
+       */
+//       QFileInfo currentFileInfo = currentFile_OLD.toFileInfo();
+//       if( !currentFileInfo.exists() ){
+//         if( platform.operatingSystem() == OperatingSystem::Windows ){
+//           currentFileInfo = tryAlternativeFileNamesWindows(currentFileInfo);
+//         }
+//       }
 
-      emitProcessingCurrentFileMessage(currentFileInfo);
+      emitProcessingCurrentFileMessage(currentFile);
 
-      reader.openFile(currentFileInfo, platform);
+      reader.openFile(currentFile.fileInfo(), platform);
       if( !reader.isExecutableOrSharedLibrary() ){
         const QString message = tr("'%1' is not a executable or a shared library")
-                                .arg( currentFileInfo.absoluteFilePath() );
+                                .arg( currentFile.absoluteFilePath() );
         throw FindDependencyError(message);
       }
 
-      QStringList dependentLibraryNames = reader.getNeededSharedLibraries();
+      currentFile.setDependenciesFileNames( reader.getNeededSharedLibraries() );
 
-      emitDirectDependenciesMessage(currentFileInfo, dependentLibraryNames);
+      /// \todo remove
+      QStringList dependentLibraryNames = currentFile.dependenciesFileNames();
+
+      emitDirectDependenciesMessage(currentFile);
 
       if( platform.operatingSystem() == OperatingSystem::Linux ){
         removeLibrariesInExcludeListLinux(dependentLibraryNames);
@@ -378,16 +434,21 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
         removeLibrariesInExcludeListWindows(dependentLibraryNames);
       }
 
-      const RPath runPath = reader.getRunPath();
+      currentFile.setRPath( reader.getRunPath() );
+
+      /// \todo remove
+      const RPath runPath = currentFile.rPath();
       reader.close();
 
-      ExecutableFileInfoList dependencies = findLibrariesAbsolutePath(currentFile, dependentLibraryNames, runPath, searchPathList, platform, isExistingSharedLibraryOp);
+      ExecutableFileInfoList dependencies = findLibrariesAbsolutePath_OLD(currentFile_OLD, dependentLibraryNames, runPath, searchPathList, platform, isExistingSharedLibraryOp);
 
       setDirectDependenciesSolved(currentFile);
       removeDuplicates(allDependencies);
 
-      for(const ExecutableFileInfo & library : dependencies){
-        allDependencies.push_back(library);
+      for(const ExecutableFileInfo & library_OLD : dependencies){
+        allDependencies.push_back(library_OLD);
+
+        auto library = BinaryDependenciesFile::fromQFileInfo( library_OLD.toFileInfo() );
         findDependencies(library, allDependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
       }
 
@@ -400,40 +461,55 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
    private:
 
-    bool directDependenciesAreSolved(const ExecutableFileInfo & file) const noexcept
+    bool directDependenciesAreSolved(const BinaryDependenciesFile & file) const noexcept
     {
-      const auto pred = [&file](const ExecutableFileInfo & currentFile){
-        return executableFileInfoAreEqual(currentFile, file);
+      const auto pred = [&file](const QFileInfo & currentFile){
+        return file.absoluteFilePath() == currentFile.absoluteFilePath();
       };
 
       return std::find_if(mSolvedFiles.cbegin(), mSolvedFiles.cend(), pred) != mSolvedFiles.cend();
     }
 
-    void setDirectDependenciesSolved(const ExecutableFileInfo & file) noexcept
+//     bool directDependenciesAreSolved(const ExecutableFileInfo & file) const noexcept
+//     {
+//       const auto pred = [&file](const ExecutableFileInfo & currentFile){
+//         return executableFileInfoAreEqual(currentFile, file);
+//       };
+//
+//       return std::find_if(mSolvedFiles.cbegin(), mSolvedFiles.cend(), pred) != mSolvedFiles.cend();
+//     }
+
+    void setDirectDependenciesSolved(const BinaryDependenciesFile & file) noexcept
     {
-      mSolvedFiles.push_back(file);
+      mSolvedFiles.push_back( file.fileInfo() );
     }
 
-    void emitProcessingCurrentFileMessage(const QFileInfo & file) const noexcept
+//     void setDirectDependenciesSolved(const ExecutableFileInfo & file) noexcept
+//     {
+//       mSolvedFiles.push_back(file);
+//     }
+
+    void emitProcessingCurrentFileMessage(const BinaryDependenciesFile & file) const noexcept
     {
       const QString message = tr("searching dependencies for %1").arg( file.fileName() );
       emit verboseMessage(message);
     }
 
-    void emitDirectDependenciesMessage(const QFileInfo & currentFile, const QStringList & dependencies) const noexcept
+    void emitDirectDependenciesMessage(const BinaryDependenciesFile & currentFile) const noexcept
     {
-      if( dependencies.isEmpty() ){
+      if( currentFile.dependenciesFileNames().isEmpty() ){
         return;
       }
       const QString startMessage = tr("%1 has following direct dependencies:").arg( currentFile.fileName() );
       emit verboseMessage(startMessage);
-      for(const QString & dependency : dependencies){
+      for( const QString & dependency : currentFile.dependenciesFileNames() ){
         const QString msg = tr(" %1").arg(dependency);
         emit verboseMessage(msg);
       }
     }
 
-    ExecutableFileInfoList mSolvedFiles;
+    std::vector<QFileInfo> mSolvedFiles;
+//     ExecutableFileInfoList mSolvedFiles;
   };
 
 }}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{

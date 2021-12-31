@@ -19,14 +19,38 @@
  **
  ****************************************************************************/
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
+#include "Mdt/DeployUtils/BinaryDependenciesFile.h"
+#include "Mdt/DeployUtils/PathList.h"
+#include <QString>
 #include <QFileInfo>
 #include <QDir>
 #include <QMap>
+#include <vector>
 #include <string>
 
 using namespace Mdt::DeployUtils;
 using Impl::ExecutableFileInfo;
 using Impl::ExecutableFileInfoList;
+
+
+inline
+BinaryDependenciesFile makeBinaryDependenciesFileFromUtf8Path(const std::string & path)
+{
+  return BinaryDependenciesFile::fromQFileInfo( QString::fromStdString(path) );
+}
+
+inline
+PathList makePathListFromUtf8Paths(const std::vector<std::string> & paths)
+{
+  PathList pathList;
+
+  for(const std::string & path : paths){
+    pathList.appendPath( QString::fromStdString(path) );
+  }
+
+  return pathList;
+}
+
 
 class TestIsExistingSharedLibrary
 {

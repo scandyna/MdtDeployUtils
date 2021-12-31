@@ -105,6 +105,9 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/MsvcFinder.cpp
   Mdt/DeployUtils/CompilerFinder.cpp
 #   Mdt/DeployUtils/BinaryDependenciesImplementationInterface.cpp
+  Mdt/DeployUtils/SharedLibraryFinderLinux.cpp
+  Mdt/DeployUtils/SharedLibraryFinderWindows.cpp
+  Mdt/DeployUtils/BinaryDependenciesFile.cpp
   Mdt/DeployUtils/Impl/BinaryDependencies.cpp
   Mdt/DeployUtils/BinaryDependencies.cpp
   Mdt/DeployUtils/FileCopyError.cpp

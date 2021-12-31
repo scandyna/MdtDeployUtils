@@ -19,7 +19,10 @@
  **
  ****************************************************************************/
 #include "BinaryDependencies.h"
+#include "BinaryDependenciesFile.h"
 #include "SearchPathList.h"
+#include "SharedLibraryFinderLinux.h"
+#include "SharedLibraryFinderWindows.h"
 #include "LibraryName.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
 #include "Mdt/DeployUtils/Platform.h"
@@ -48,12 +51,14 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
   using Impl::ExecutableFileInfoList;
 
   assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
+  assert( binaryFilePath.isAbsolute() );
 
   ExecutableFileInfoList dependencies;
 
-  ExecutableFileInfo target;
-  target.fileName = binaryFilePath.fileName();
-  target.directoryPath = binaryFilePath.absoluteDir().path();
+  auto target = BinaryDependenciesFile::fromQFileInfo(binaryFilePath);
+//   ExecutableFileInfo target;
+//   target.fileName = binaryFilePath.fileName();
+//   target.directoryPath = binaryFilePath.absoluteDir().path();
 
   ExecutableFileReader reader;
   reader.openFile(binaryFilePath);
@@ -68,7 +73,8 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
 
   PathList searchPathList;
   if( platform.operatingSystem() == OperatingSystem::Linux ){
-    searchPathList = buildSearchPathListLinux( searchFirstPathPrefixList, platform.processorISA() );
+//     searchPathList = buildSearchPathListLinux( searchFirstPathPrefixList, platform.processorISA() );
+    searchPathList = SharedLibraryFinderLinux::buildSearchPathListLinux( searchFirstPathPrefixList, platform.processorISA() );
   }else if( platform.operatingSystem() == OperatingSystem::Windows ){
     searchPathList = buildSearchPathListWindows( binaryFilePath, searchFirstPathPrefixList, platform.processorISA() );
   }
@@ -83,20 +89,20 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
   return Impl::qStringListFromExecutableFileInfoList(dependencies);
 }
 
-PathList BinaryDependencies::buildSearchPathListLinux(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) const noexcept
-{
-  PathList searchPathList;
-
-  SearchPathList searchFirstPathList;
-  searchFirstPathList.setIncludePathPrefixes(true);
-  searchFirstPathList.setPathSuffixList({QLatin1String("lib"),QLatin1String("qt5/lib")});
-  searchFirstPathList.setPathPrefixList(searchFirstPathPrefixList);
-
-  searchPathList.appendPathList( searchFirstPathList.pathList() );
-  searchPathList.appendPathList( PathList::getSystemLibraryKnownPathListLinux(processorISA) );
-
-  return searchPathList;
-}
+// PathList BinaryDependencies::buildSearchPathListLinux(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) const noexcept
+// {
+//   PathList searchPathList;
+//
+//   SearchPathList searchFirstPathList;
+//   searchFirstPathList.setIncludePathPrefixes(true);
+//   searchFirstPathList.setPathSuffixList({QLatin1String("lib"),QLatin1String("qt5/lib")});
+//   searchFirstPathList.setPathPrefixList(searchFirstPathPrefixList);
+//
+//   searchPathList.appendPathList( searchFirstPathList.pathList() );
+//   searchPathList.appendPathList( PathList::getSystemLibraryKnownPathListLinux(processorISA) );
+//
+//   return searchPathList;
+// }
 
 PathList BinaryDependencies::buildSearchPathListWindows(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList,
                                                         ProcessorISA processorISA) const noexcept
