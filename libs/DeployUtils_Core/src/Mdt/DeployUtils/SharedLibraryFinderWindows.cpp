@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "SharedLibraryFinderWindows.h"
 #include "SearchPathList.h"
+#include "Mdt/DeployUtils/Impl/LibraryExcludeListWindows.h"
 #include <QDir>
 
 namespace Mdt{ namespace DeployUtils{
@@ -43,6 +44,7 @@ PathList SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binar
   searchFirstPathList.setPathSuffixList({QLatin1String("bin"),QLatin1String("qt5/bin")});
   /// \todo this is done twice on Windows
   searchFirstPathList.appendPath( binaryFilePath.absoluteDir().path() );
+  /// \todo this could pick redist dll's from a other package !
   searchFirstPathList.setPathPrefixList(searchFirstPathPrefixList);
 
   searchPathList.appendPathList( searchFirstPathList.pathList() );
@@ -78,13 +80,23 @@ PathList SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binar
     SearchPathList pathSearchPathList;
     pathSearchPathList.setIncludePathPrefixes(true);
     pathSearchPathList.setPathSuffixList({QLatin1String("bin"),QLatin1String("qt5/bin")});
+    /// \todo allready done, see above
     pathSearchPathList.appendPath( binaryFilePath.absoluteDir().path() );
-    /// \is this correct ?
+    /// \todo is this correct ?
     pathSearchPathList.setPathPrefixList( PathList::getSystemExecutablePathList() );
     searchPathList.appendPathList( pathSearchPathList.pathList() );
   }
 
   return searchPathList;
+}
+
+void SharedLibraryFinderWindows::removeLibrariesInExcludeList(BinaryDependenciesFile & file) noexcept
+{
+  const auto pred = [](const QString & libraryName){
+    return libraryExcludelistWindows.contains(libraryName, Qt::CaseInsensitive);
+  };
+
+  file.removeDependenciesFileNames(pred);
 }
 
 bool SharedLibraryFinderWindows::hasCompilerInstallDir(const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept

@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -18,25 +18,21 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "catch2/catch.hpp"
-#include "Catch2QString.h"
-#include "SharedLibraryFinderWindowsTestCommon.h"
 #include "Mdt/DeployUtils/SharedLibraryFinderWindows.h"
+#include "BinaryDependenciesTestCommon.h"
 
 using namespace Mdt::DeployUtils;
 
-TEST_CASE("findLibraryAbsolutePath")
+BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName,
+                                               const PathList & searchPathList,
+                                               TestIsExistingSharedLibrary & isExistingSharedLibraryOp)
 {
-  QString libraryName;
-  PathList pathList;
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  return SharedLibraryFinderWindows::findLibraryAbsolutePath(libraryName, searchPathList, isExistingSharedLibraryOp);
+}
 
-  SECTION("A.dll - pathList:/tmp - not exists in given pathList")
-  {
-    libraryName = QLatin1String("A.dll");
-    pathList = makePathListFromUtf8Paths({"/tmp"});
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/B.dll","/opt/A.dll"});
-
-    REQUIRE_THROWS_AS( findLibraryAbsolutePath(libraryName, pathList, isExistingSharedLibraryOp), FindDependencyError );
-  }
+BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & file,
+                                                     const PathList & searchPathList,
+                                                     TestIsExistingSharedLibrary & isExistingSharedLibraryOp)
+{
+  return SharedLibraryFinderWindows::findLibrariesAbsolutePath(file, searchPathList, isExistingSharedLibraryOp);
 }

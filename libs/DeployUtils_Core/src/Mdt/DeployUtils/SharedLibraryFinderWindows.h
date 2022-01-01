@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_SHARED_LIBRARY_FINDER_WINDOWS_H
 
 #include "BinaryDependenciesFile.h"
+#include "FindDependencyError.h"
 #include "PathList.h"
 #include "ProcessorISA.h"
 #include "CompilerFinder.h"
@@ -60,14 +61,35 @@ namespace Mdt{ namespace DeployUtils{
                                  ProcessorISA processorISA,
                                  const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept;
 
-    /*! \brief
+    /*! \brief Find the absolute path for given \a libraryName
      *
+     * \pre \a libraryName must not be empty
+     * \exception FindDependencyError
      * \sa https://docs.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order
+     *
+     * \todo case of \a libraryName containing a full path is not implemented
      */
-    QString findLibraryAbsolutePath();
+    template<typename IsExistingSharedLibraryOp>
+    static
+    BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName,
+                                                   const PathList & searchPathList,
+                                                   IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+    {
+//       assert( !originFile.isNull() );
+      assert( !libraryName.trimmed().isEmpty() );
 
-    
-    
+      for(const QString & directory : searchPathList){
+        QFileInfo libraryFile(directory, libraryName);
+        if( isExistingSharedLibraryOp(libraryFile) ){
+          return BinaryDependenciesFile::fromQFileInfo(libraryFile);
+        }
+      }
+
+      const QString message = tr("could not find the absolute path for %1")
+                              .arg(libraryName);
+      throw FindDependencyError(message);
+    }
+
     /*! \brief Find the absolute path for each direct dependency of \a file
      */
     template<typename IsExistingSharedLibraryOp>
@@ -76,10 +98,21 @@ namespace Mdt{ namespace DeployUtils{
                                                          const PathList & searchPathList,
                                                          IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
     {
-      /// \todo remove libraries in exclude list
+      BinaryDependenciesFileList libraries;
+
+      removeLibrariesInExcludeList(file);
+
+      for( const QString & libraryName : file.dependenciesFileNames() ){
+        libraries.push_back( findLibraryAbsolutePath(libraryName, searchPathList, isExistingSharedLibraryOp) );
+      }
+
+      return libraries;
     }
 
    private:
+
+    static
+    void removeLibrariesInExcludeList(BinaryDependenciesFile & file) noexcept;
 
     static
     bool hasCompilerInstallDir(const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept;

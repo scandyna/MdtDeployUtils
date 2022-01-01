@@ -20,7 +20,7 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
-#include "BinaryDependenciesTestCommon.h"
+#include "SharedLibraryFinderWindowsTestCommon.h"
 #include "Mdt/DeployUtils/SharedLibraryFinderWindows.h"
 
 using namespace Mdt::DeployUtils;
@@ -43,5 +43,54 @@ TEST_CASE("buildSearchPathListWindows")
   {
     searchPathList = SharedLibraryFinderWindows::buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_64, compilerFinder);
     REQUIRE( !searchPathList.isEmpty() );
+  }
+}
+
+TEST_CASE("findLibraryAbsolutePath")
+{
+  QString libraryName;
+  PathList pathList;
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+
+  SECTION("A.dll - pathList:/tmp - exists")
+  {
+    libraryName = QLatin1String("A.dll");
+    pathList = makePathListFromUtf8Paths({"/tmp"});
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll"});
+
+    auto library = findLibraryAbsolutePath(libraryName, pathList, isExistingSharedLibraryOp);
+
+    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/A.dll") );
+  }
+
+  SECTION("A.dll - pathList:/tmp,/opt - exists in both path - must pick the first one")
+  {
+    libraryName = QLatin1String("A.dll");
+    pathList = makePathListFromUtf8Paths({"/tmp","/opt"});
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll","/opt/A.dll"});
+
+    auto library = findLibraryAbsolutePath(libraryName, pathList, isExistingSharedLibraryOp);
+
+    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/A.dll") );
+  }
+}
+
+TEST_CASE("findLibrariesAbsolutePath")
+{
+  PathList pathList;
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  BinaryDependenciesFileList libraries;
+
+  SECTION("A.dll,KERNEL32.DLL - pathList:/tmp - exists - KERNEL32.DLL must be excluded")
+  {
+    auto executable = makeBinaryDependenciesFileFromUtf8Path("/tmp/executable.exe");
+    executable.setDependenciesFileNames({QLatin1String("A.dll"),QLatin1String("KERNEL32.DLL")});
+    pathList = makePathListFromUtf8Paths({"/tmp"});
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll","/tmp/KERNEL32.DLL"});
+
+    libraries = findLibrariesAbsolutePath(executable, pathList, isExistingSharedLibraryOp);
+
+    REQUIRE( libraries.size() == 1 );
+    REQUIRE( libraries[0].absoluteFilePath() == QLatin1String("/tmp/A.dll") );
   }
 }
