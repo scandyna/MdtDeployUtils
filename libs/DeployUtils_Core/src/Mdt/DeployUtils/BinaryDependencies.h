@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2021 Philippe Steinmann.
+ ** Copyright (C) 2015-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -79,13 +79,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     QStringList findDependencies(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList);
 
-    /*! \brief Build and returns a list of path to directories where to find shared libraries
-     *
-     * \sa PathList::getSystemLibraryKnownPathListWindows()
-     */
-    PathList buildSearchPathListWindows(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList,
-                                        ProcessorISA processorISA) const noexcept;
-
    signals:
 
     void message(const QString & message) const;
@@ -94,7 +87,6 @@ namespace Mdt{ namespace DeployUtils{
    private:
 
     void emitSearchPathListMessage(const PathList & pathList) const;
-    bool hasCompilerInstallDir() const noexcept;
 
     std::shared_ptr<CompilerFinder> mCompilerFinder;
   };

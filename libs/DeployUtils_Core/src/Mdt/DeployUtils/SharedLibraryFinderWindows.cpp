@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -19,12 +19,80 @@
  **
  ****************************************************************************/
 #include "SharedLibraryFinderWindows.h"
+#include "SearchPathList.h"
+#include <QDir>
 
 namespace Mdt{ namespace DeployUtils{
 
 SharedLibraryFinderWindows::SharedLibraryFinderWindows(QObject *parent)
  : QObject(parent)
 {
+}
+
+PathList SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binaryFilePath,
+                                                         const PathList & searchFirstPathPrefixList,
+                                                         ProcessorISA processorISA,
+                                                         const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept
+{
+  assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
+
+  PathList searchPathList;
+
+  SearchPathList searchFirstPathList;
+  searchFirstPathList.setIncludePathPrefixes(true);
+  searchFirstPathList.setPathSuffixList({QLatin1String("bin"),QLatin1String("qt5/bin")});
+  /// \todo this is done twice on Windows
+  searchFirstPathList.appendPath( binaryFilePath.absoluteDir().path() );
+  searchFirstPathList.setPathPrefixList(searchFirstPathPrefixList);
+
+  searchPathList.appendPathList( searchFirstPathList.pathList() );
+  if( hasCompilerInstallDir(compilerFinder) ){
+    /*
+     * The main use-case to find specific redist directories is MSVC,
+     * which can be several different directories.
+     * (To see more about it, see MsvcFinder.cpp).
+     *
+     * Try to deduce if a executable was some sort of Debug build is not possible.
+     * For example, MSVC, by default (when used with CMake),
+     * will add some debug symbols for Release builds anyway.
+     *
+     * See also: https://stackoverflow.com/questions/11115832/how-to-check-if-an-executable-or-dll-is-build-in-release-or-debug-mode-c
+     *
+     * Anyway, DLL's like Qt and also MSVC runtimes
+     * are suffixed with a d (or D),
+     * so we better add both build types directores here in the search paths.
+     */
+    searchPathList.appendPath( compilerFinder->findRedistDirectory(processorISA, BuildType::Release) );
+    searchPathList.appendPath( compilerFinder->findRedistDirectory(processorISA, BuildType::Debug) );
+  }
+  /*
+   * One possible way to build on Windows is to prepare a shell
+   * with a environment that has several dependencies in the PATH.
+   *
+   * For cross-compilation, this has no sense.
+   * The user will probably have to give some prefixes anyway
+   * (like for example CMAKE_PREFIX_PATH),
+   * which will then be in searchFirstPathPrefixList
+   */
+  if(Platform::nativeOperatingSystem() == OperatingSystem::Windows){
+    SearchPathList pathSearchPathList;
+    pathSearchPathList.setIncludePathPrefixes(true);
+    pathSearchPathList.setPathSuffixList({QLatin1String("bin"),QLatin1String("qt5/bin")});
+    pathSearchPathList.appendPath( binaryFilePath.absoluteDir().path() );
+    /// \is this correct ?
+    pathSearchPathList.setPathPrefixList( PathList::getSystemExecutablePathList() );
+    searchPathList.appendPathList( pathSearchPathList.pathList() );
+  }
+
+  return searchPathList;
+}
+
+bool SharedLibraryFinderWindows::hasCompilerInstallDir(const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept
+{
+  if( compilerFinder.get() == nullptr ){
+    return false;
+  }
+  return compilerFinder->hasInstallDir();
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -23,8 +23,13 @@
 
 #include "BinaryDependenciesFile.h"
 #include "PathList.h"
+#include "ProcessorISA.h"
+#include "CompilerFinder.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
+#include <QFileInfo>
+#include <memory>
+#include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -39,6 +44,21 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Constructor
      */
     explicit SharedLibraryFinderWindows(QObject *parent = nullptr);
+
+    /*! \brief Build and returns a list of path to directories where to find shared libraries
+     *
+     * \note \a compilerFinder has not be a valid.
+     *  If it is valid (valid pointer and its install dir is set),
+     *  it will be used to locate the redist directories
+     *  (mostly used for MSVC).
+     *
+     * \sa PathList::getSystemLibraryKnownPathListWindows()
+     */
+    static
+    PathList buildSearchPathList(const QFileInfo & binaryFilePath,
+                                 const PathList & searchFirstPathPrefixList,
+                                 ProcessorISA processorISA,
+                                 const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept;
 
     /*! \brief
      *
@@ -59,6 +79,10 @@ namespace Mdt{ namespace DeployUtils{
       /// \todo remove libraries in exclude list
     }
 
+   private:
+
+    static
+    bool hasCompilerInstallDir(const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

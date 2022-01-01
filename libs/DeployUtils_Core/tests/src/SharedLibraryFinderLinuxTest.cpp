@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -28,20 +28,20 @@
 
 using namespace Mdt::DeployUtils;
 
-TEST_CASE("buildSearchPathListLinux")
+TEST_CASE("buildSearchPathList")
 {
   PathList searchFirstPathPrefixList;
   PathList searchPathList;
 
   SECTION("x86")
   {
-    searchPathList = SharedLibraryFinderLinux::buildSearchPathListLinux(searchFirstPathPrefixList, ProcessorISA::X86_32);
+    searchPathList = SharedLibraryFinderLinux::buildSearchPathList(searchFirstPathPrefixList, ProcessorISA::X86_32);
     REQUIRE( !searchPathList.isEmpty() );
   }
 
   SECTION("x86_64")
   {
-    searchPathList = SharedLibraryFinderLinux::buildSearchPathListLinux(searchFirstPathPrefixList, ProcessorISA::X86_64);
+    searchPathList = SharedLibraryFinderLinux::buildSearchPathList(searchFirstPathPrefixList, ProcessorISA::X86_64);
     REQUIRE( !searchPathList.isEmpty() );
   }
 }
