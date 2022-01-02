@@ -21,7 +21,6 @@
 #include "SharedLibraryFinderLinux.h"
 #include "SearchPathList.h"
 #include "Mdt/DeployUtils/Impl/LibraryExcludeListLinux.h"
-#include <QDir>
 
 namespace Mdt{ namespace DeployUtils{
 

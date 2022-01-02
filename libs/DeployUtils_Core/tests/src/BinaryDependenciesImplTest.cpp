@@ -32,33 +32,11 @@
 #include <algorithm>
 
 using namespace Mdt::DeployUtils;
-using Impl::ExecutableFileInfo;
-using Impl::ExecutableFileInfoList;
 
 BinaryDependenciesFile binaryDependenciesFileFromFullPath(const std::string & filePath)
 {
   return BinaryDependenciesFile::fromQFileInfo( QString::fromStdString(filePath) );
 }
-
-// bool dependenciesEquals(const ExecutableFileInfoList & efis, const std::vector<std::string> & list)
-// {
-//   if( efis.size() != list.size() ){
-//     std::cerr << "dependencies list differs in size. actual: " << efis.size() << ", expected: " << list.size() << std::endl;
-//     return false;
-//   }
-//   for(size_t i = 0; i < efis.size(); ++i){
-//     const QFileInfo actualFile = efis.at(i).toFileInfo();
-//     const QFileInfo expectedFile( QString::fromStdString( list.at(i) ) );
-//     if(actualFile != expectedFile){
-//       std::cerr << "dependencies differs at index " << i << ":";
-//       std::cerr << "\nactual  : " << actualFile.absoluteFilePath().toStdString();
-//       std::cerr << "\nexpected: " << expectedFile.absoluteFilePath().toStdString() << std::endl;
-//       return false;
-//     }
-//   }
-// 
-//   return true;
-// }
 
 bool dependenciesEquals(const BinaryDependenciesFileList & files, const std::vector<std::string> & list)
 {
@@ -67,8 +45,6 @@ bool dependenciesEquals(const BinaryDependenciesFileList & files, const std::vec
     return false;
   }
   for(size_t i = 0; i < files.size(); ++i){
-//     const QFileInfo actualFile = efis.at(i).toFileInfo();
-//     const QFileInfo expectedFile( QString::fromStdString( list.at(i) ) );
     const BinaryDependenciesFile actualFile = files[i];
     const QString expectedFile = QString::fromStdString( list.at(i) );
     if(actualFile.absoluteFilePath() != expectedFile){
@@ -400,144 +376,6 @@ class TestExecutableFileReader
 };
 
 
-TEST_CASE("ExecutableFileInfo")
-{
-  ExecutableFileInfo efi;
-
-  SECTION("default constructed")
-  {
-    REQUIRE( !efi.hasAbsoluteFilePath() );
-  }
-
-  SECTION("only file name")
-  {
-    efi.fileName = QLatin1String("libm.so");
-    REQUIRE( !efi.hasAbsoluteFilePath() );
-  }
-
-  SECTION("full path")
-  {
-    efi.fileName = QLatin1String("libm.so");
-    efi.directoryPath = QLatin1String("/tmp");
-    REQUIRE( efi.hasAbsoluteFilePath() );
-  }
-}
-
-TEST_CASE("compareExecutableFileInfo")
-{
-  using Impl::compareExecutableFileInfo;
-
-  ExecutableFileInfo a, b;
-
-  SECTION("a:/a - b:/a")
-  {
-    a.directoryPath = QLatin1String("/");
-    a.fileName = QLatin1String("a");
-    b.directoryPath = QLatin1String("/");
-    b.fileName = QLatin1String("a");
-
-    REQUIRE( !compareExecutableFileInfo(a, b) );
-    REQUIRE( !compareExecutableFileInfo(b, a) );
-    REQUIRE( !compareExecutableFileInfo(a, a) );
-    REQUIRE( !compareExecutableFileInfo(b, b) );
-  }
-
-  SECTION("a:/a - b:/b")
-  {
-    a.directoryPath = QLatin1String("/");
-    a.fileName = QLatin1String("a");
-    b.directoryPath = QLatin1String("/");
-    b.fileName = QLatin1String("b");
-
-    REQUIRE( compareExecutableFileInfo(a, b) );
-    REQUIRE( !compareExecutableFileInfo(b, a) );
-    REQUIRE( !compareExecutableFileInfo(a, a) );
-    REQUIRE( !compareExecutableFileInfo(b, b) );
-  }
-
-  SECTION("a:/a/a - b:/a/a")
-  {
-    a.directoryPath = QLatin1String("/a");
-    a.fileName = QLatin1String("a");
-    b.directoryPath = QLatin1String("/a");
-    b.fileName = QLatin1String("a");
-
-    REQUIRE( !compareExecutableFileInfo(a, b) );
-    REQUIRE( !compareExecutableFileInfo(b, a) );
-    REQUIRE( !compareExecutableFileInfo(a, a) );
-    REQUIRE( !compareExecutableFileInfo(b, b) );
-  }
-
-  SECTION("a:/a/a - b:/a/b")
-  {
-    a.directoryPath = QLatin1String("/a");
-    a.fileName = QLatin1String("a");
-    b.directoryPath = QLatin1String("/a");
-    b.fileName = QLatin1String("b");
-
-    REQUIRE( compareExecutableFileInfo(a, b) );
-    REQUIRE( !compareExecutableFileInfo(b, a) );
-    REQUIRE( !compareExecutableFileInfo(a, a) );
-    REQUIRE( !compareExecutableFileInfo(b, b) );
-  }
-
-  SECTION("a:/a/a - b:/b/a")
-  {
-    a.directoryPath = QLatin1String("/a");
-    a.fileName = QLatin1String("a");
-    b.directoryPath = QLatin1String("/b");
-    b.fileName = QLatin1String("a");
-
-    REQUIRE( compareExecutableFileInfo(a, b) );
-    REQUIRE( !compareExecutableFileInfo(b, a) );
-    REQUIRE( !compareExecutableFileInfo(a, a) );
-    REQUIRE( !compareExecutableFileInfo(b, b) );
-  }
-
-  /*
-   * Caused a assertion failure 'invalid comparator' on MSVC
-   */
-  SECTION("C:/Qt/5.14.2/msvc2017_64/bin/Qt5Cored.dll - C:/windows/system32/MSVCP140D.dll")
-  {
-    a.directoryPath = QLatin1String("C:/Qt/5.14.2/msvc2017_64/bin/");
-    a.fileName = QLatin1String("Qt5Cored.dll");
-    b.directoryPath = QLatin1String("C:/windows/system32/");
-    b.fileName = QLatin1String("MSVCP140D.dll");
-
-    REQUIRE( compareExecutableFileInfo(a, b) );
-    REQUIRE( !compareExecutableFileInfo(b, a) );
-    REQUIRE( !compareExecutableFileInfo(a, a) );
-    REQUIRE( !compareExecutableFileInfo(b, b) );
-  }
-}
-
-TEST_CASE("executableFileInfoAreEqual")
-{
-  using Impl::executableFileInfoAreEqual;
-
-  ExecutableFileInfo a, b;
-
-  SECTION("a:/a - b:/a")
-  {
-    a.fileName = QLatin1String("a");
-    a.directoryPath = QLatin1String("/");
-    b.fileName = QLatin1String("a");
-    b.directoryPath = QLatin1String("/");
-
-    REQUIRE( executableFileInfoAreEqual(a, b) );
-  }
-
-  SECTION("a:/a - b:/b")
-  {
-    a.fileName = QLatin1String("a");
-    a.directoryPath = QLatin1String("/");
-    b.fileName = QLatin1String("b");
-    b.directoryPath = QLatin1String("/");
-
-    REQUIRE( !executableFileInfoAreEqual(a, b) );
-  }
-}
-
 TEST_CASE("compareBinaryDependenciesFiles")
 {
   using Impl::compareBinaryDependenciesFiles;
@@ -635,97 +473,6 @@ TEST_CASE("binaryDependenciesFilesAreEqual")
     b = binaryDependenciesFileFromFullPath("/b");
 
     REQUIRE( !binaryDependenciesFilesAreEqual(a, b) );
-  }
-}
-
-TEST_CASE("findLibraryAbsolutePath")
-{
-  using Impl::findLibraryAbsolutePath;
-
-  PathList pathList;
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  ExecutableFileInfo library;
-  const auto platform = Platform::nativePlatform();
-
-  SECTION("libA.so - pathList:/tmp - exists")
-  {
-    pathList.appendPath( QLatin1String("/tmp") );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so"});
-    library = findLibraryAbsolutePath( QLatin1String("libA.so"), pathList, platform, isExistingSharedLibraryOp );
-    REQUIRE( library.hasAbsoluteFilePath() );
-    REQUIRE( library.toFileInfo().absoluteFilePath() == QFileInfo( QLatin1String("/tmp/libA.so") ).absoluteFilePath() );
-  }
-
-  SECTION("libA.so - pathList:/tmp,/opt - exists in both path - must pick the first one")
-  {
-    pathList.appendPathList( {QLatin1String("/tmp"),QLatin1String("/opt")} );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so","/opt/libA.so"});
-    library = findLibraryAbsolutePath( QLatin1String("libA.so"), pathList, platform, isExistingSharedLibraryOp );
-    REQUIRE( library.hasAbsoluteFilePath() );
-    REQUIRE( library.toFileInfo().absoluteFilePath() == QFileInfo( QLatin1String("/tmp/libA.so") ).absoluteFilePath() );
-  }
-}
-
-TEST_CASE("makeDirectoryFromRpathEntry")
-{
-  using Impl::makeDirectoryFromRpathEntry;
-
-  ExecutableFileInfo originExecutable;
-  originExecutable.fileName = QLatin1String("myapp");
-  originExecutable.directoryPath = QLatin1String("/opt");
-
-  SECTION("rpath entry:/tmp")
-  {
-    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( QLatin1String("/tmp") ) ) == QLatin1String("/tmp") );
-  }
-
-  SECTION("rpath entry:. (relative to binary, like ELF $ORIGIN)")
-  {
-    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( QLatin1String(".") ) ) == QLatin1String("/opt") );
-  }
-
-  SECTION("rpath entry:../lib")
-  {
-    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( QLatin1String("../lib") ) ) == QLatin1String("/lib") );
-  }
-}
-
-TEST_CASE("findLibraryAbsolutePathByRpath")
-{
-  using Impl::findLibraryAbsolutePathByRpath;
-
-  RPath rpath;
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  ExecutableFileInfo library;
-
-  ExecutableFileInfo originExecutable;
-  originExecutable.fileName = QLatin1String("myapp");
-  originExecutable.directoryPath = QLatin1String("/opt");
-
-  SECTION("libA.so - rpath:/tmp - exists")
-  {
-    rpath.appendPath( QLatin1String("/tmp") );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so"});
-    library = findLibraryAbsolutePathByRpath(originExecutable, QLatin1String("libA.so"), rpath, isExistingSharedLibraryOp);
-    REQUIRE( library.hasAbsoluteFilePath() );
-    REQUIRE( library.toFileInfo().absoluteFilePath() == QFileInfo( QLatin1String("/tmp/libA.so") ).absoluteFilePath() );
-  }
-
-  SECTION("libA.so - rpath:. - exists")
-  {
-    rpath.appendPath( QLatin1String(".") );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/libA.so"});
-    library = findLibraryAbsolutePathByRpath(originExecutable, QLatin1String("libA.so"), rpath, isExistingSharedLibraryOp);
-    REQUIRE( library.hasAbsoluteFilePath() );
-    REQUIRE( library.toFileInfo().absoluteFilePath() == QFileInfo( QLatin1String("/opt/libA.so") ).absoluteFilePath() );
-  }
-
-  SECTION("libA.so - rpath:/tmp - not exists")
-  {
-    rpath.appendPath( QLatin1String("/tmp") );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/lib/libA.so"});
-    library = findLibraryAbsolutePathByRpath(originExecutable, QLatin1String("libA.so"), rpath, isExistingSharedLibraryOp);
-    REQUIRE( library.isNull() );
   }
 }
 

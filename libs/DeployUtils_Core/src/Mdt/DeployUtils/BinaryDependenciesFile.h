@@ -52,7 +52,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Move construct a file from \a other
      */
-    BinaryDependenciesFile(BinaryDependenciesFile && other) noexcept = default;
+    BinaryDependenciesFile(BinaryDependenciesFile && other) = default;
 
     /*! \brief Move assign \a other to this file
      */

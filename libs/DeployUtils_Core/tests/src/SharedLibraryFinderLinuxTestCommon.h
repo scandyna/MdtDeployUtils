@@ -38,6 +38,14 @@ RPath makeRPathFromUtf8Paths(const std::vector<std::string> & paths)
 }
 
 inline
+BinaryDependenciesFile findLibraryAbsolutePathByRPath(const BinaryDependenciesFile & originFile,
+                                                      const QString & libraryName,
+                                                      TestIsExistingSharedLibrary & isExistingSharedLibraryOp)
+{
+  return SharedLibraryFinderLinux::findLibraryAbsolutePathByRPath(originFile, libraryName, isExistingSharedLibraryOp);
+}
+
+inline
 BinaryDependenciesFile findLibraryAbsolutePath(const BinaryDependenciesFile & originFile,
                                                const QString & libraryName,
                                                const PathList & searchPathList,

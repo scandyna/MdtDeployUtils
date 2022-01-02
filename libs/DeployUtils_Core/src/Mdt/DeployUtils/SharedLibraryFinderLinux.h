@@ -31,6 +31,7 @@
 #include <QString>
 #include <QStringList>
 #include <QFileInfo>
+#include <QDir>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
@@ -54,6 +55,27 @@ namespace Mdt{ namespace DeployUtils{
      */
     static
     PathList buildSearchPathList(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) noexcept;
+
+    /*! \internal
+     */
+    template<typename IsExistingSharedLibraryOp>
+    static
+    BinaryDependenciesFile findLibraryAbsolutePathByRPath(const BinaryDependenciesFile & originFile,
+                                                          const QString & libraryName,
+                                                          IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+    {
+      assert( !libraryName.trimmed().isEmpty() );
+
+      for( const auto & rpathEntry : originFile.rPath() ){
+        const QString directory = makeDirectoryFromRpathEntry(originFile, rpathEntry);
+        const QFileInfo libraryFile(directory, libraryName);
+        if( isExistingSharedLibraryOp(libraryFile) ){
+          return BinaryDependenciesFile::fromQFileInfo(libraryFile);
+        }
+      }
+
+      return BinaryDependenciesFile();
+    }
 
     /*! \brief Find the absolute path for given \a libraryName
      *
@@ -115,24 +137,6 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
-    template<typename IsExistingSharedLibraryOp>
-    static
-    BinaryDependenciesFile findLibraryAbsolutePathByRPath(const BinaryDependenciesFile & originFile,
-                                                          const QString & libraryName,
-                                                          IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
-    {
-      assert( !libraryName.trimmed().isEmpty() );
-
-      for( const auto & rpathEntry : originFile.rPath() ){
-        const QString directory = makeDirectoryFromRpathEntry(originFile, rpathEntry);
-        const QFileInfo libraryFile(directory, libraryName);
-        if( isExistingSharedLibraryOp(libraryFile) ){
-          return BinaryDependenciesFile::fromQFileInfo(libraryFile);
-        }
-      }
-
-      return BinaryDependenciesFile();
-    }
 
     template<typename IsExistingSharedLibraryOp>
     static

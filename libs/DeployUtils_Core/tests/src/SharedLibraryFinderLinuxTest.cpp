@@ -66,6 +66,45 @@ TEST_CASE("makeDirectoryFromRpathEntry")
   }
 }
 
+TEST_CASE("findLibraryAbsolutePathByRPath")
+{
+//   RPath rpath;
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  BinaryDependenciesFile library;
+
+  auto originExecutable = makeBinaryDependenciesFileFromUtf8Path("/opt/myapp");
+
+  SECTION("libA.so - rpath:/tmp - exists")
+  {
+    originExecutable.setRPath( makeRPathFromUtf8Paths({"/tmp"}) );
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so"});
+
+    library = findLibraryAbsolutePathByRPath(originExecutable, QLatin1String("libA.so"), isExistingSharedLibraryOp);
+
+    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/libA.so") );
+  }
+
+  SECTION("libA.so - rpath:. - exists")
+  {
+    originExecutable.setRPath( makeRPathFromUtf8Paths({"."}) );
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/libA.so"});
+
+    library = findLibraryAbsolutePathByRPath(originExecutable, QLatin1String("libA.so"), isExistingSharedLibraryOp);
+
+    REQUIRE( library.absoluteFilePath() == QLatin1String("/opt/libA.so") );
+  }
+
+  SECTION("libA.so - rpath:/tmp - not exists")
+  {
+    originExecutable.setRPath( makeRPathFromUtf8Paths({"/tmp"}) );
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/lib/libA.so"});
+
+    library = findLibraryAbsolutePathByRPath(originExecutable, QLatin1String("libA.so"), isExistingSharedLibraryOp);
+
+    REQUIRE( library.isNull() );
+  }
+}
+
 TEST_CASE("findLibraryAbsolutePath")
 {
   QString libraryName;

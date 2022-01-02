@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2021 Philippe Steinmann.
+ ** Copyright (C) 2015-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -23,21 +23,3 @@
 #include "BinaryDependenciesTestCommon.h"
 #include "TestUtils.h"
 #include "Mdt/DeployUtils/FindDependencyError.h"
-
-TEST_CASE("findLibraryAbsolutePath")
-{
-  using Impl::findLibraryAbsolutePath;
-
-  PathList pathList;
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  const auto platform = Platform::nativePlatform();
-//   ExecutableFileInfo library;
-
-  SECTION("libA.so - pathList:/tmp - not exists in given pathList")
-  {
-    pathList.appendPathList( {QLatin1String("/tmp")} );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libB.so","/opt/libA.so"});
-//     library = findLibraryAbsolutePath( QLatin1String("libA.so"), pathList, isExistingSharedLibraryOp );
-    REQUIRE_THROWS_AS( findLibraryAbsolutePath( QLatin1String("libA.so"), pathList, platform, isExistingSharedLibraryOp ), FindDependencyError );
-  }
-}
