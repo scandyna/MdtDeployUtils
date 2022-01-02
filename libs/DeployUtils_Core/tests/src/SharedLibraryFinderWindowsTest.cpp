@@ -123,7 +123,7 @@ TEST_CASE("findLibraryAbsolutePath")
 
     auto library = findLibraryAbsolutePath(libraryName, pathList, isExistingSharedLibraryOp);
 
-    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/a.dll") );
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/a.dll") );
   }
 
   SECTION("A.dll - pathList:/tmp,/opt - exists in both path - must pick the first one")
@@ -134,7 +134,7 @@ TEST_CASE("findLibraryAbsolutePath")
 
     auto library = findLibraryAbsolutePath(libraryName, pathList, isExistingSharedLibraryOp);
 
-    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/A.dll") );
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
   }
 }
 
@@ -154,6 +154,6 @@ TEST_CASE("findLibrariesAbsolutePath")
     libraries = findLibrariesAbsolutePath(executable, pathList, isExistingSharedLibraryOp);
 
     REQUIRE( libraries.size() == 1 );
-    REQUIRE( libraries[0].absoluteFilePath() == QLatin1String("/tmp/A.dll") );
+    REQUIRE( libraries[0].absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
   }
 }

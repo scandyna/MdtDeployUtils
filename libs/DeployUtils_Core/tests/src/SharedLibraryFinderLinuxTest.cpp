@@ -52,7 +52,7 @@ TEST_CASE("makeDirectoryFromRpathEntry")
 
   SECTION("rpath entry:/tmp")
   {
-    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( QLatin1String("/tmp") ) ) == makeAbsolutePath("/tmp") );
+    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( makeAbsolutePath("/tmp") ) ) == makeAbsolutePath("/tmp") );
   }
 
   SECTION("rpath entry:. (relative to binary, like ELF $ORIGIN)")

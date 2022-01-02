@@ -36,6 +36,8 @@
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Helper to find a shared library on Windows
+   *
+   * \todo see https://bugreports.qt.io/browse/QTBUG-56566?jql=project%20%3D%20QTBUG%20AND%20text%20~%20%22windeployqt%22
    */
   class MDT_DEPLOYUTILSCORE_EXPORT SharedLibraryFinderWindows : public QObject
   {
