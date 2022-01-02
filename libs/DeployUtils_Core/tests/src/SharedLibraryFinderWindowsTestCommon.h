@@ -23,6 +23,14 @@
 
 using namespace Mdt::DeployUtils;
 
+inline
+BinaryDependenciesFile findLibraryAbsolutePathByAlternateNames(const QFileInfo & libraryFile,
+                                                               TestIsExistingSharedLibrary & isExistingSharedLibraryOp)
+{
+  return SharedLibraryFinderWindows::findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
+}
+
+inline
 BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName,
                                                const PathList & searchPathList,
                                                TestIsExistingSharedLibrary & isExistingSharedLibraryOp)
@@ -30,6 +38,7 @@ BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName,
   return SharedLibraryFinderWindows::findLibraryAbsolutePath(libraryName, searchPathList, isExistingSharedLibraryOp);
 }
 
+inline
 BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & file,
                                                      const PathList & searchPathList,
                                                      TestIsExistingSharedLibrary & isExistingSharedLibraryOp)

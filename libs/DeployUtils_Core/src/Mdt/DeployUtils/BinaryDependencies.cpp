@@ -47,13 +47,14 @@ void BinaryDependencies::setCompilerFinder(const std::shared_ptr<CompilerFinder>
 
 QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList)
 {
-  using Impl::ExecutableFileInfo;
-  using Impl::ExecutableFileInfoList;
+//   using Impl::ExecutableFileInfo;
+//   using Impl::ExecutableFileInfoList;
 
   assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
   assert( binaryFilePath.isAbsolute() );
 
-  ExecutableFileInfoList dependencies;
+//   ExecutableFileInfoList dependencies;
+  BinaryDependenciesFileList dependencies;
 
   auto target = BinaryDependenciesFile::fromQFileInfo(binaryFilePath);
 //   ExecutableFileInfo target;
@@ -86,7 +87,7 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
   connect(&impl, &Impl::FindDependenciesImpl::verboseMessage, this, &BinaryDependencies::verboseMessage);
   impl.findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibrary);
 
-  return Impl::qStringListFromExecutableFileInfoList(dependencies);
+  return Impl::qStringListFromBinaryDependenciesFileList(dependencies);
 }
 
 void BinaryDependencies::emitSearchPathListMessage(const PathList & pathList) const

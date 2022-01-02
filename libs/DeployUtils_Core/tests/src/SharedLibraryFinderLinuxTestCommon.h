@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -25,6 +25,7 @@
 
 using namespace Mdt::DeployUtils;
 
+inline
 RPath makeRPathFromUtf8Paths(const std::vector<std::string> & paths)
 {
   RPath rpath;
@@ -36,6 +37,7 @@ RPath makeRPathFromUtf8Paths(const std::vector<std::string> & paths)
   return rpath;
 }
 
+inline
 BinaryDependenciesFile findLibraryAbsolutePath(const BinaryDependenciesFile & originFile,
                                                const QString & libraryName,
                                                const PathList & searchPathList,
@@ -44,6 +46,7 @@ BinaryDependenciesFile findLibraryAbsolutePath(const BinaryDependenciesFile & or
   return SharedLibraryFinderLinux::findLibraryAbsolutePath(originFile, libraryName, searchPathList, isExistingSharedLibraryOp);
 }
 
+inline
 BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & file,
                                                      const PathList & searchPathList,
                                                      TestIsExistingSharedLibrary & isExistingSharedLibraryOp)
@@ -51,6 +54,7 @@ BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & fi
   return SharedLibraryFinderLinux::findLibrariesAbsolutePath(file, searchPathList, isExistingSharedLibraryOp);
 }
 
+inline
 QString makeDirectoryFromRpathEntry(const BinaryDependenciesFile & originFile, const RPathEntry & rpathEntry) noexcept
 {
   return SharedLibraryFinderLinux::makeDirectoryFromRpathEntry(originFile, rpathEntry);

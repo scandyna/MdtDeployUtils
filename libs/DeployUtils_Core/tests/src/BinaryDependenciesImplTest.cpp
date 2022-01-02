@@ -40,19 +40,41 @@ BinaryDependenciesFile binaryDependenciesFileFromFullPath(const std::string & fi
   return BinaryDependenciesFile::fromQFileInfo( QString::fromStdString(filePath) );
 }
 
-bool dependenciesEquals(const ExecutableFileInfoList & efis, const std::vector<std::string> & list)
+// bool dependenciesEquals(const ExecutableFileInfoList & efis, const std::vector<std::string> & list)
+// {
+//   if( efis.size() != list.size() ){
+//     std::cerr << "dependencies list differs in size. actual: " << efis.size() << ", expected: " << list.size() << std::endl;
+//     return false;
+//   }
+//   for(size_t i = 0; i < efis.size(); ++i){
+//     const QFileInfo actualFile = efis.at(i).toFileInfo();
+//     const QFileInfo expectedFile( QString::fromStdString( list.at(i) ) );
+//     if(actualFile != expectedFile){
+//       std::cerr << "dependencies differs at index " << i << ":";
+//       std::cerr << "\nactual  : " << actualFile.absoluteFilePath().toStdString();
+//       std::cerr << "\nexpected: " << expectedFile.absoluteFilePath().toStdString() << std::endl;
+//       return false;
+//     }
+//   }
+// 
+//   return true;
+// }
+
+bool dependenciesEquals(const BinaryDependenciesFileList & files, const std::vector<std::string> & list)
 {
-  if( efis.size() != list.size() ){
-    std::cerr << "dependencies list differs in size. actual: " << efis.size() << ", expected: " << list.size() << std::endl;
+  if( files.size() != list.size() ){
+    std::cerr << "dependencies list differs in size. actual: " << files.size() << ", expected: " << list.size() << std::endl;
     return false;
   }
-  for(size_t i = 0; i < efis.size(); ++i){
-    const QFileInfo actualFile = efis.at(i).toFileInfo();
-    const QFileInfo expectedFile( QString::fromStdString( list.at(i) ) );
-    if(actualFile != expectedFile){
+  for(size_t i = 0; i < files.size(); ++i){
+//     const QFileInfo actualFile = efis.at(i).toFileInfo();
+//     const QFileInfo expectedFile( QString::fromStdString( list.at(i) ) );
+    const BinaryDependenciesFile actualFile = files[i];
+    const QString expectedFile = QString::fromStdString( list.at(i) );
+    if(actualFile.absoluteFilePath() != expectedFile){
       std::cerr << "dependencies differs at index " << i << ":";
       std::cerr << "\nactual  : " << actualFile.absoluteFilePath().toStdString();
-      std::cerr << "\nexpected: " << expectedFile.absoluteFilePath().toStdString() << std::endl;
+      std::cerr << "\nexpected: " << expectedFile.toStdString() << std::endl;
       return false;
     }
   }
@@ -516,6 +538,106 @@ TEST_CASE("executableFileInfoAreEqual")
   }
 }
 
+TEST_CASE("compareBinaryDependenciesFiles")
+{
+  using Impl::compareBinaryDependenciesFiles;
+
+  BinaryDependenciesFile a, b;
+
+  SECTION("a:/a - b:/a")
+  {
+    a = binaryDependenciesFileFromFullPath("/a");
+    b = binaryDependenciesFileFromFullPath("/a");
+
+    REQUIRE( !compareBinaryDependenciesFiles(a, b) );
+    REQUIRE( !compareBinaryDependenciesFiles(b, a) );
+    REQUIRE( !compareBinaryDependenciesFiles(a, a) );
+    REQUIRE( !compareBinaryDependenciesFiles(b, b) );
+  }
+
+  SECTION("a:/a - b:/b")
+  {
+    a = binaryDependenciesFileFromFullPath("/a");
+    b = binaryDependenciesFileFromFullPath("/b");
+
+    REQUIRE( compareBinaryDependenciesFiles(a, b) );
+    REQUIRE( !compareBinaryDependenciesFiles(b, a) );
+    REQUIRE( !compareBinaryDependenciesFiles(a, a) );
+    REQUIRE( !compareBinaryDependenciesFiles(b, b) );
+  }
+
+  SECTION("a:/a/a - b:/a/a")
+  {
+    a = binaryDependenciesFileFromFullPath("/a/a");
+    b = binaryDependenciesFileFromFullPath("/a/a");
+
+    REQUIRE( !compareBinaryDependenciesFiles(a, b) );
+    REQUIRE( !compareBinaryDependenciesFiles(b, a) );
+    REQUIRE( !compareBinaryDependenciesFiles(a, a) );
+    REQUIRE( !compareBinaryDependenciesFiles(b, b) );
+  }
+
+  SECTION("a:/a/a - b:/a/b")
+  {
+    a = binaryDependenciesFileFromFullPath("/a/a");
+    b = binaryDependenciesFileFromFullPath("/a/b");
+
+    REQUIRE( compareBinaryDependenciesFiles(a, b) );
+    REQUIRE( !compareBinaryDependenciesFiles(b, a) );
+    REQUIRE( !compareBinaryDependenciesFiles(a, a) );
+    REQUIRE( !compareBinaryDependenciesFiles(b, b) );
+  }
+
+  SECTION("a:/a/a - b:/b/a")
+  {
+    a = binaryDependenciesFileFromFullPath("/a/a");
+    b = binaryDependenciesFileFromFullPath("/b/a");
+
+    REQUIRE( compareBinaryDependenciesFiles(a, b) );
+    REQUIRE( !compareBinaryDependenciesFiles(b, a) );
+    REQUIRE( !compareBinaryDependenciesFiles(a, a) );
+    REQUIRE( !compareBinaryDependenciesFiles(b, b) );
+  }
+
+  /*
+   * Caused a assertion failure 'invalid comparator' on MSVC
+   * with a previous version (was ExecutableFileInfo class)
+   */
+  SECTION("C:/Qt/5.14.2/msvc2017_64/bin/Qt5Cored.dll - C:/windows/system32/MSVCP140D.dll")
+  {
+    a = binaryDependenciesFileFromFullPath("/Qt/5.14.2/msvc2017_64/bin/Qt5Cored.dll");
+    b = binaryDependenciesFileFromFullPath("/windows/system32/MSVCP140D.dll");
+
+    REQUIRE( compareBinaryDependenciesFiles(a, b) );
+    REQUIRE( !compareBinaryDependenciesFiles(b, a) );
+    REQUIRE( !compareBinaryDependenciesFiles(a, a) );
+    REQUIRE( !compareBinaryDependenciesFiles(b, b) );
+  }
+}
+
+TEST_CASE("binaryDependenciesFilesAreEqual")
+{
+  using Impl::binaryDependenciesFilesAreEqual;
+
+  BinaryDependenciesFile a, b;
+
+  SECTION("a:/a - b:/a")
+  {
+    a = binaryDependenciesFileFromFullPath("/a");
+    b = binaryDependenciesFileFromFullPath("/a");
+
+    REQUIRE( binaryDependenciesFilesAreEqual(a, b) );
+  }
+
+  SECTION("a:/a - b:/b")
+  {
+    a = binaryDependenciesFileFromFullPath("/a");
+    b = binaryDependenciesFileFromFullPath("/b");
+
+    REQUIRE( !binaryDependenciesFilesAreEqual(a, b) );
+  }
+}
+
 TEST_CASE("findLibraryAbsolutePath")
 {
   using Impl::findLibraryAbsolutePath;
@@ -617,7 +739,7 @@ TEST_CASE("findDependencies")
   TestExecutableFileReader reader;
   const auto platform = Platform::nativePlatform();
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  ExecutableFileInfoList dependencies;
+  BinaryDependenciesFileList dependencies;
 
   SECTION("no dependencies")
   {

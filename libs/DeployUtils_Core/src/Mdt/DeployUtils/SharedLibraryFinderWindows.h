@@ -29,6 +29,7 @@
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QFileInfo>
+#include <QDir>
 #include <memory>
 #include <cassert>
 
@@ -61,6 +62,47 @@ namespace Mdt{ namespace DeployUtils{
                                  ProcessorISA processorISA,
                                  const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept;
 
+    /*! \brief Find the absolute path for given \a libraryFile for various possible names
+     *
+     * On Windows, file names are not case sensitive.
+     * The required libraries can be given upper-case in a Pe file,
+     * but it will match the lower-case one.
+     * For example, MSVCRT.DLL can be in C:/path/msvcrt.dll
+     *
+     * If the search is done on a Windows machine, this is not a issue.
+     * But, if we search dependencies for a Windows binary
+     * on a non Windows machine, this must be taken in to account.
+     *
+     * \pre \a libraryFile must have a absolute path
+     */
+    template<typename IsExistingSharedLibraryOp>
+    static
+    BinaryDependenciesFile findLibraryAbsolutePathByAlternateNames(const QFileInfo & libraryFile,
+                                                                   IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+    {
+      assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
+      assert( libraryFile.isAbsolute() );
+
+      if( isExistingSharedLibraryOp(libraryFile) ){
+        return BinaryDependenciesFile::fromQFileInfo(libraryFile);
+      }
+
+      QFileInfo alternativeFile = libraryFile;
+      const QDir directory = libraryFile.absoluteDir();
+
+      alternativeFile.setFile( directory, libraryFile.fileName().toLower() );
+      if( isExistingSharedLibraryOp(alternativeFile) ){
+        return BinaryDependenciesFile::fromQFileInfo(alternativeFile);
+      }
+
+      alternativeFile.setFile( directory, libraryFile.fileName().toUpper() );
+      if( isExistingSharedLibraryOp(alternativeFile) ){
+        return BinaryDependenciesFile::fromQFileInfo(alternativeFile);
+      }
+
+      return BinaryDependenciesFile();
+    }
+
     /*! \brief Find the absolute path for given \a libraryName
      *
      * \pre \a libraryName must not be empty
@@ -80,8 +122,9 @@ namespace Mdt{ namespace DeployUtils{
 
       for(const QString & directory : searchPathList){
         QFileInfo libraryFile(directory, libraryName);
-        if( isExistingSharedLibraryOp(libraryFile) ){
-          return BinaryDependenciesFile::fromQFileInfo(libraryFile);
+        const BinaryDependenciesFile library = findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
+        if( !library.isNull() ){
+          return library;
         }
       }
 

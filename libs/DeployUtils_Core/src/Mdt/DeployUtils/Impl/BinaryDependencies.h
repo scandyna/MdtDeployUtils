@@ -21,8 +21,8 @@
 #ifndef MDT_DEPLOY_UTILS_IMPL_BINARY_DEPENDENCIES_H
 #define MDT_DEPLOY_UTILS_IMPL_BINARY_DEPENDENCIES_H
 
-#include "LibraryExcludeListLinux.h"
-#include "LibraryExcludeListWindows.h"
+// #include "LibraryExcludeListLinux.h"
+// #include "LibraryExcludeListWindows.h"
 
 #include "Mdt/DeployUtils/BinaryDependenciesFile.h"
 #include "Mdt/DeployUtils/FindDependencyError.h"
@@ -91,13 +91,27 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
   /*! \internal
    */
+//   inline
+//   QStringList qStringListFromExecutableFileInfoList(const ExecutableFileInfoList & executables)
+//   {
+//     QStringList list;
+// 
+//     for(const auto & file : executables){
+//       list.push_back( file.toFileInfo().absoluteFilePath() );
+//     }
+// 
+//     return list;
+//   }
+
+  /*! \internal
+   */
   inline
-  QStringList qStringListFromExecutableFileInfoList(const ExecutableFileInfoList & executables)
+  QStringList qStringListFromBinaryDependenciesFileList(const BinaryDependenciesFileList & files) noexcept
   {
     QStringList list;
 
-    for(const auto & file : executables){
-      list.push_back( file.toFileInfo().absoluteFilePath() );
+    for(const auto & file : files){
+      list.push_back( file.absoluteFilePath() );
     }
 
     return list;
@@ -301,32 +315,33 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
   /*! \internal
    */
-  [[deprecated]]
-  inline
-  void removeLibrariesInExcludeListLinux(QStringList & libraryNames) noexcept
-  {
-    const auto pred = [](const QString & libraryName){
-      return libraryExcludelistLinux.contains(libraryName);
-    };
+//   [[deprecated]]
+//   inline
+//   void removeLibrariesInExcludeListLinux(QStringList & libraryNames) noexcept
+//   {
+//     const auto pred = [](const QString & libraryName){
+//       return libraryExcludelistLinux.contains(libraryName);
+//     };
+// 
+//     libraryNames.erase( std::remove_if( libraryNames.begin(), libraryNames.end(), pred), libraryNames.end() );
+//   }
 
-    libraryNames.erase( std::remove_if( libraryNames.begin(), libraryNames.end(), pred), libraryNames.end() );
-  }
+  /*! \internal
+   */
+//   [[deprecated]]
+//   inline
+//   void removeLibrariesInExcludeListWindows(QStringList & libraryNames) noexcept
+//   {
+//     const auto pred = [](const QString & libraryName){
+//       return libraryExcludelistWindows.contains(libraryName, Qt::CaseInsensitive);
+//     };
+// 
+//     libraryNames.erase( std::remove_if( libraryNames.begin(), libraryNames.end(), pred), libraryNames.end() );
+//   }
 
   /*! \internal
    */
   [[deprecated]]
-  inline
-  void removeLibrariesInExcludeListWindows(QStringList & libraryNames) noexcept
-  {
-    const auto pred = [](const QString & libraryName){
-      return libraryExcludelistWindows.contains(libraryName, Qt::CaseInsensitive);
-    };
-
-    libraryNames.erase( std::remove_if( libraryNames.begin(), libraryNames.end(), pred), libraryNames.end() );
-  }
-
-  /*! \internal
-   */
   inline
   bool compareExecutableFileInfo(const ExecutableFileInfo & a, const ExecutableFileInfo & b) noexcept
   {
@@ -343,6 +358,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
   /*! \internal
    */
+  [[deprecated]]
   inline
   bool executableFileInfoAreEqual(const ExecutableFileInfo & a, const ExecutableFileInfo & b) noexcept
   {
@@ -351,11 +367,37 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
   /*! \internal
    */
+  [[deprecated]]
   inline
   void removeDuplicates(ExecutableFileInfoList & executables) noexcept
   {
     std::sort(executables.begin(), executables.end(), compareExecutableFileInfo);
     executables.erase( std::unique(executables.begin(), executables.end(), executableFileInfoAreEqual), executables.end() );
+  }
+
+  /*! \internal
+   */
+  inline
+  bool compareBinaryDependenciesFiles(const BinaryDependenciesFile & a, const BinaryDependenciesFile & b) noexcept
+  {
+    return (QString::compare( a.absoluteFilePath(), b.absoluteFilePath() ) < 0);
+  }
+
+  /*! \internal
+   */
+  inline
+  bool binaryDependenciesFilesAreEqual(const BinaryDependenciesFile & a, const BinaryDependenciesFile & b) noexcept
+  {
+    return a.absoluteFilePath() == b.absoluteFilePath();
+  }
+
+  /*! \internal
+   */
+  inline
+  void removeDuplicates(BinaryDependenciesFileList & files) noexcept
+  {
+    std::sort(files.begin(), files.end(), compareBinaryDependenciesFiles);
+    files.erase( std::unique(files.begin(), files.end(), binaryDependenciesFilesAreEqual), files.end() );
   }
 
   /*! \internal
@@ -374,16 +416,16 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     /*! \internal
      */
     template<typename Reader, typename IsExistingSharedLibraryOp>
-    void findDependencies(/*const*/ BinaryDependenciesFile & currentFile, ExecutableFileInfoList & allDependencies, PathList searchPathList,
+    void findDependencies(/*const*/ BinaryDependenciesFile & currentFile, BinaryDependenciesFileList & allDependencies, PathList searchPathList,
                           Reader & reader, const Platform & platform, IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
     {
       assert( !reader.isOpen() );
 
-      ExecutableFileInfo currentFile_OLD;
-      currentFile_OLD.fileName = currentFile.fileName();
-      currentFile_OLD.directoryPath = currentFile.absoluteDirectoryPath();
+//       ExecutableFileInfo currentFile_OLD;
+//       currentFile_OLD.fileName = currentFile.fileName();
+//       currentFile_OLD.directoryPath = currentFile.absoluteDirectoryPath();
 
-      assert( currentFile_OLD.hasAbsoluteFilePath() );
+//       assert( currentFile_OLD.hasAbsoluteFilePath() );
 
 
       if( directDependenciesAreSolved(currentFile) ){
@@ -428,12 +470,12 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
       emitDirectDependenciesMessage(currentFile);
 
-      if( platform.operatingSystem() == OperatingSystem::Linux ){
-        removeLibrariesInExcludeListLinux(dependentLibraryNames);
-      }
-      if( platform.operatingSystem() == OperatingSystem::Windows ){
-        removeLibrariesInExcludeListWindows(dependentLibraryNames);
-      }
+//       if( platform.operatingSystem() == OperatingSystem::Linux ){
+//         removeLibrariesInExcludeListLinux(dependentLibraryNames);
+//       }
+//       if( platform.operatingSystem() == OperatingSystem::Windows ){
+//         removeLibrariesInExcludeListWindows(dependentLibraryNames);
+//       }
 
       currentFile.setRPath( reader.getRunPath() );
 
@@ -441,17 +483,24 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
       const RPath runPath = currentFile.rPath();
       reader.close();
 
-      ExecutableFileInfoList dependencies = findLibrariesAbsolutePath_OLD(currentFile_OLD, dependentLibraryNames, runPath, searchPathList, platform, isExistingSharedLibraryOp);
+      BinaryDependenciesFileList dependencies = findLibrariesAbsolutePath(currentFile, searchPathList, platform, isExistingSharedLibraryOp);
+      /// \todo remove
+//       ExecutableFileInfoList dependencies = findLibrariesAbsolutePath_OLD(currentFile_OLD, dependentLibraryNames, runPath, searchPathList, platform, isExistingSharedLibraryOp);
 
       setDirectDependenciesSolved(currentFile);
       removeDuplicates(allDependencies);
 
-      for(const ExecutableFileInfo & library_OLD : dependencies){
-        allDependencies.push_back(library_OLD);
-
-        auto library = BinaryDependenciesFile::fromQFileInfo( library_OLD.toFileInfo() );
+      for(BinaryDependenciesFile & library : dependencies){
+        allDependencies.push_back(library);
         findDependencies(library, allDependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
       }
+
+//       for(const ExecutableFileInfo & library_OLD : dependencies){
+//         allDependencies.push_back(library_OLD);
+// 
+//         auto library = BinaryDependenciesFile::fromQFileInfo( library_OLD.toFileInfo() );
+//         findDependencies(library, allDependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
+//       }
 
       removeDuplicates(allDependencies);
     }

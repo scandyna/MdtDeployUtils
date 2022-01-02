@@ -22,6 +22,7 @@
 #include "Catch2QString.h"
 #include "SharedLibraryFinderWindowsTestCommon.h"
 #include "Mdt/DeployUtils/SharedLibraryFinderWindows.h"
+#include <QLatin1String>
 
 using namespace Mdt::DeployUtils;
 
@@ -46,6 +47,53 @@ TEST_CASE("buildSearchPathListWindows")
   }
 }
 
+TEST_CASE("findLibraryAbsolutePathByAlternateNames")
+{
+  BinaryDependenciesFile library;
+  QFileInfo libraryFile;
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+
+  SECTION("A.dll exists as /tmp/A.dll")
+  {
+    libraryFile.setFile( QLatin1String("/tmp/A.dll") );
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll"});
+
+    library = findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
+
+    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/A.dll") );
+  }
+
+  SECTION("A.dll exists as /tmp/a.dll")
+  {
+    libraryFile.setFile( QLatin1String("/tmp/A.dll") );
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/a.dll"});
+
+    library = findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
+
+    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/a.dll") );
+  }
+
+  SECTION("A.DLL exists as /tmp/a.dll")
+  {
+    libraryFile.setFile( QLatin1String("/tmp/A.DLL") );
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/a.dll"});
+
+    library = findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
+
+    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/a.dll") );
+  }
+
+  SECTION("a.dll exists as /tmp/A.DLL")
+  {
+    libraryFile.setFile( QLatin1String("/tmp/a.dll") );
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.DLL"});
+
+    library = findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
+
+    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/A.DLL") );
+  }
+}
+
 TEST_CASE("findLibraryAbsolutePath")
 {
   QString libraryName;
@@ -61,6 +109,21 @@ TEST_CASE("findLibraryAbsolutePath")
     auto library = findLibraryAbsolutePath(libraryName, pathList, isExistingSharedLibraryOp);
 
     REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/A.dll") );
+  }
+
+  /*
+   * This is important if we search dependencies for a Windows binary
+   * from a non Windows machine.
+   */
+  SECTION("A.DLL - pathList:/tmp - exists as /tmp/a.dll")
+  {
+    libraryName = QLatin1String("A.DLL");
+    pathList = makePathListFromUtf8Paths({"/tmp"});
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/a.dll"});
+
+    auto library = findLibraryAbsolutePath(libraryName, pathList, isExistingSharedLibraryOp);
+
+    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/a.dll") );
   }
 
   SECTION("A.dll - pathList:/tmp,/opt - exists in both path - must pick the first one")
