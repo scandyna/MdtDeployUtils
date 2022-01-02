@@ -26,7 +26,7 @@
 
 using namespace Mdt::DeployUtils;
 
-TEST_CASE("buildSearchPathListWindows")
+TEST_CASE("buildSearchPathList")
 {
   PathList searchFirstPathPrefixList;
   PathList searchPathList;
@@ -60,7 +60,7 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
 
     library = findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
 
-    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/A.dll") );
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
   }
 
   SECTION("A.dll exists as /tmp/a.dll")
@@ -70,7 +70,7 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
 
     library = findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
 
-    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/a.dll") );
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/a.dll") );
   }
 
   SECTION("A.DLL exists as /tmp/a.dll")
@@ -80,7 +80,7 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
 
     library = findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
 
-    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/a.dll") );
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/a.dll") );
   }
 
   SECTION("a.dll exists as /tmp/A.DLL")
@@ -90,7 +90,7 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
 
     library = findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
 
-    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/A.DLL") );
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.DLL") );
   }
 }
 
@@ -108,7 +108,7 @@ TEST_CASE("findLibraryAbsolutePath")
 
     auto library = findLibraryAbsolutePath(libraryName, pathList, isExistingSharedLibraryOp);
 
-    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/A.dll") );
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
   }
 
   /*

@@ -49,6 +49,17 @@ PathList makePathListFromUtf8Paths(const std::vector<std::string> & paths)
   return pathList;
 }
 
+/*
+ * Make a absolute path that retruns the correct result
+ * on Linux and also on Windows.
+ * As example: /tmp/file.txt will become C:/tmp/file.txt on Windows
+ * See https://gitlab.com/scandyna/mdtdeployutils/-/jobs/1934576156
+ */
+inline
+QString makeAbsolutePath(const std::string & path)
+{
+  return QFileInfo( QString::fromStdString(path) ).absoluteFilePath();
+}
 
 class TestIsExistingSharedLibrary
 {

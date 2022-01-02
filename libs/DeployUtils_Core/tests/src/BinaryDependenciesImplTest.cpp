@@ -46,7 +46,7 @@ bool dependenciesEquals(const BinaryDependenciesFileList & files, const std::vec
   }
   for(size_t i = 0; i < files.size(); ++i){
     const BinaryDependenciesFile actualFile = files[i];
-    const QString expectedFile = QString::fromStdString( list.at(i) );
+    const QString expectedFile = makeAbsolutePath( list.at(i) );
     if(actualFile.absoluteFilePath() != expectedFile){
       std::cerr << "dependencies differs at index " << i << ":";
       std::cerr << "\nactual  : " << actualFile.absoluteFilePath().toStdString();

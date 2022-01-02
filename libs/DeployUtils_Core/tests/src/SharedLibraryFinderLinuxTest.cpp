@@ -52,17 +52,17 @@ TEST_CASE("makeDirectoryFromRpathEntry")
 
   SECTION("rpath entry:/tmp")
   {
-    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( QLatin1String("/tmp") ) ) == QLatin1String("/tmp") );
+    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( QLatin1String("/tmp") ) ) == makeAbsolutePath("/tmp") );
   }
 
   SECTION("rpath entry:. (relative to binary, like ELF $ORIGIN)")
   {
-    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( QLatin1String(".") ) ) == QLatin1String("/opt") );
+    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( QLatin1String(".") ) ) == makeAbsolutePath("/opt") );
   }
 
   SECTION("rpath entry:../lib")
   {
-    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( QLatin1String("../lib") ) ) == QLatin1String("/lib") );
+    REQUIRE( makeDirectoryFromRpathEntry( originExecutable, RPathEntry( QLatin1String("../lib") ) ) == makeAbsolutePath("/lib") );
   }
 }
 
@@ -81,7 +81,7 @@ TEST_CASE("findLibraryAbsolutePathByRPath")
 
     library = findLibraryAbsolutePathByRPath(originExecutable, QLatin1String("libA.so"), isExistingSharedLibraryOp);
 
-    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/libA.so") );
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
   }
 
   SECTION("libA.so - rpath:. - exists")
@@ -91,7 +91,7 @@ TEST_CASE("findLibraryAbsolutePathByRPath")
 
     library = findLibraryAbsolutePathByRPath(originExecutable, QLatin1String("libA.so"), isExistingSharedLibraryOp);
 
-    REQUIRE( library.absoluteFilePath() == QLatin1String("/opt/libA.so") );
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/opt/libA.so") );
   }
 
   SECTION("libA.so - rpath:/tmp - not exists")
@@ -120,7 +120,7 @@ TEST_CASE("findLibraryAbsolutePath")
 
     auto library = findLibraryAbsolutePath(executable, libraryName, pathList, isExistingSharedLibraryOp);
 
-    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/libA.so") );
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
   }
 
   SECTION("libA.so - rpath:/tmp - exists")
@@ -132,7 +132,7 @@ TEST_CASE("findLibraryAbsolutePath")
 
     auto library = findLibraryAbsolutePath(executable, libraryName, pathList, isExistingSharedLibraryOp);
 
-    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/libA.so") );
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
   }
 
   SECTION("libA.so - pathList:/tmp,/opt - exists in both path - must pick the first one")
@@ -144,7 +144,7 @@ TEST_CASE("findLibraryAbsolutePath")
 
     auto library = findLibraryAbsolutePath(executable, libraryName, pathList, isExistingSharedLibraryOp);
 
-    REQUIRE( library.absoluteFilePath() == QLatin1String("/tmp/libA.so") );
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
   }
 }
 
@@ -164,6 +164,6 @@ TEST_CASE("findLibrariesAbsolutePath")
     libraries = findLibrariesAbsolutePath(executable, pathList, isExistingSharedLibraryOp);
 
     REQUIRE( libraries.size() == 1 );
-    REQUIRE( libraries[0].absoluteFilePath() == QLatin1String("/tmp/libA.so") );
+    REQUIRE( libraries[0].absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
   }
 }
