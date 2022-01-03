@@ -71,6 +71,7 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
   }else if( platform.operatingSystem() == OperatingSystem::Windows ){
     searchPathList = SharedLibraryFinderWindows::buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, platform.processorISA(), mCompilerFinder);
   }
+  searchPathList.removeNonExistingDirectories();
 
   emitSearchPathListMessage(searchPathList);
 

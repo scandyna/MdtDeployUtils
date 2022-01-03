@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2021 Philippe Steinmann.
+ ** Copyright (C) 2015-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -25,6 +25,7 @@
 #include <QLibraryInfo>
 #include <QDir>
 #include <QChar>
+#include <algorithm>
 #include <cassert>
 
 // #include <QDebug>
@@ -66,6 +67,15 @@ void PathList::prependPathList(const PathList& pathList)
     }
   }
   appendPathList(existingPaths);
+}
+
+void PathList::removeNonExistingDirectories() noexcept
+{
+  const auto pred = [](const QString & path){
+    return !QDir(path).exists();
+  };
+
+  mList.erase( std::remove_if(mList.begin(), mList.end(), pred) , mList.end() );
 }
 
 void PathList::clear()

@@ -61,6 +61,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME PathListTest
+  TARGET pathListTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/PathListTest.cpp
+)
+
+mdt_add_test(
   NAME LibraryVersionTest
   TARGET libraryVersionTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

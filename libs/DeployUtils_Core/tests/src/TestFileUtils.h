@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -36,6 +36,13 @@
 QString makePath(const QTemporaryDir & dir, const char * const subPath)
 {
   return QDir::cleanPath( dir.path() + QLatin1Char('/') + QLatin1String(subPath) );
+}
+
+bool createDirectoryFromPath(const QString & path)
+{
+  QDir dir;
+
+  return dir.mkpath(path);
 }
 
 bool isExistingDirectory(const QString & path)

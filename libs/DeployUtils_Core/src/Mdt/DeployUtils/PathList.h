@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2021 Philippe Steinmann.
+ ** Copyright (C) 2015-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -105,6 +105,10 @@ namespace Mdt{ namespace DeployUtils{
      *  it will not be added to this list.
      */
     void prependPathList(const PathList & pathList);
+
+    /*! \brief Remove paths that are not existing directories from this list
+     */
+    void removeNonExistingDirectories() noexcept;
 
     /*! \brief Clear this path list
      */
