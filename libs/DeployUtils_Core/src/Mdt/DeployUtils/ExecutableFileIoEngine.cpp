@@ -95,7 +95,7 @@ void ExecutableFileIoEngine::openFile(const QFileInfo & fileInfo, ExecutableFile
   }
 
   if( filePlatform != platform ){
-    const QString message = tr("File '%1' is not of the requested platorm")
+    const QString message = tr("File '%1' is not of the requested platform")
                             .arg( fileInfo.absoluteFilePath() );
     throw FileOpenError(message);
   }
