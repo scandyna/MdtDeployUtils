@@ -52,6 +52,11 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Build and returns a list of path to directories where to find shared libraries
      *
+     * \note \a compilerFinder has not be a valid.
+     *  If it is valid (valid pointer and its install dir is set),
+     *  it will be used to locate the redist directories
+     *  (mostly used for MSVC).
+     *
      * Building C++ code can require having some tools in the PATH:
      * - Using CMake with the "MinGW Makefiles" generator requires MinGW in the PATH.
      * - Using CMake with a "Visual Studio 1x 20xy" generator seems not to require something special in the PATH.
@@ -78,16 +83,7 @@ namespace Mdt{ namespace DeployUtils{
      * In above case, we have to make shure that the MSVC VC redist is in the PATH,
      * before anything else.
      *
-     * \todo describe:
-     * - Build with a terminal with custom PATH
-     * - Build using CMake, which can require minimal entries in PATH
-     *
      * \todo automate using compiler finder when MSVC, only on CMAKE ?
-     *
-     * \note \a compilerFinder has not be a valid.
-     *  If it is valid (valid pointer and its install dir is set),
-     *  it will be used to locate the redist directories
-     *  (mostly used for MSVC).
      *
      * \sa https://docs.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order
      * \sa PathList::getSystemLibraryKnownPathListWindows()
