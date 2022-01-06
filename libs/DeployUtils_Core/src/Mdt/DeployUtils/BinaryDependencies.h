@@ -36,8 +36,6 @@
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Find dependencies for a executable or a library
-   *
-   * \todo See various todo in CPP file
    */
   class MDT_DEPLOYUTILSCORE_EXPORT BinaryDependencies : public QObject
   {

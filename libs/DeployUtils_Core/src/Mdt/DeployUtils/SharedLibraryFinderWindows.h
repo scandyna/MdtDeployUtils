@@ -38,6 +38,7 @@ namespace Mdt{ namespace DeployUtils{
   /*! \brief Helper to find a shared library on Windows
    *
    * \todo see https://bugreports.qt.io/browse/QTBUG-56566?jql=project%20%3D%20QTBUG%20AND%20text%20~%20%22windeployqt%22
+   * \todo see https://bugreports.qt.io/browse/QTBUG-87677?jql=project%20%3D%20QTBUG%20AND%20text%20~%20%22windeployqt%22
    */
   class MDT_DEPLOYUTILSCORE_EXPORT SharedLibraryFinderWindows : public QObject
   {
@@ -51,11 +52,44 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Build and returns a list of path to directories where to find shared libraries
      *
+     * Building C++ code can require having some tools in the PATH:
+     * - Using CMake with the "MinGW Makefiles" generator requires MinGW in the PATH.
+     * - Using CMake with a "Visual Studio 1x 20xy" generator seems not to require something special in the PATH.
+     *
+     * \sa https://cmake.org/cmake/help/latest/generator/MinGW%20Makefiles.html
+     * \sa https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2015%202017.html
+     * \sa The \ref libs_DeployUtils page
+     *
+     * Above we can see that some build processes require having some additional entries in the PATH.
+     *
+     * When using CMake, dependencies are also searched in CMAKE_PREFIX_PATH.
+     *
+     * Searching dependencies in the PATH should be done at last,
+     * because we can end-up picking the wrong dll's.
+     * For example, if we search VCRUNTIME140.dll with this PATH:
+     * \code
+     * C:/Qt/5.14.2/msvc2017_64/bin
+     * C:/tools/python3.8/
+     * \endcode
+     * we could find it in the python3.8 installation.
+     *
+     * \sa https://gitlab.com/scandyna/mdtdeployutils/-/jobs/1937042537
+     *
+     * In above case, we have to make shure that the MSVC VC redist is in the PATH,
+     * before anything else.
+     *
+     * \todo describe:
+     * - Build with a terminal with custom PATH
+     * - Build using CMake, which can require minimal entries in PATH
+     *
+     * \todo automate using compiler finder when MSVC, only on CMAKE ?
+     *
      * \note \a compilerFinder has not be a valid.
      *  If it is valid (valid pointer and its install dir is set),
      *  it will be used to locate the redist directories
      *  (mostly used for MSVC).
      *
+     * \sa https://docs.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order
      * \sa PathList::getSystemLibraryKnownPathListWindows()
      */
     static
