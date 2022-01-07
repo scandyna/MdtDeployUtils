@@ -24,6 +24,7 @@
 #include "Mdt/DeployUtils/BinaryDependencies.h"
 #include "Mdt/DeployUtils/PathList.h"
 #include "Mdt/DeployUtils/MessageLogger.h"
+#include "Mdt/DeployUtils/CompilerFinder.h"
 // #include "Mdt/DeployUtils/Platform.h"
 #include <QString>
 #include <QLatin1String>
@@ -31,6 +32,7 @@
 #include <QFileInfo>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <iostream>
 // #include <QDebug>
@@ -45,6 +47,11 @@ TEST_CASE("findDependencies")
   MessageLogger messageLogger;
   QObject::connect(&solver, &BinaryDependencies::message, MessageLogger::info);
   QObject::connect(&solver, &BinaryDependencies::verboseMessage, MessageLogger::info);
+
+#ifdef COMPILER_IS_MSVC
+  auto compilerFinder = std::make_shared<CompilerFinder>();
+  solver.setCompilerFinder(compilerFinder);
+#endif // #ifdef COMPILER_IS_MSVC
 
   PathList searchFirstPathPrefixList = PathList::fromStringList( getTestPrefixPath(PREFIX_PATH) );
   QStringList dependencies;

@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2020-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -59,8 +59,19 @@ namespace Mdt{ namespace DeployUtils{
    *
    * \sa BinaryDependencies
    *
-   * \todo Document compiler location
-   * 
+   * Some compiler specific shared libraries could be necessary to be copied.
+   * Those libraries are probably provided in the installation of the compiler
+   * used to build the project.
+   *
+   * To find those libraries, the locations of the used compiler should be provided.
+   * This is done by setting \a compilerLocationType and \a compilerLocationValue :
+   * - CompilerLocationType::Undefined: \a compilerLocationValue is not used.
+   * - CompilerLocationType::FromEnv: \a compilerLocationValue is the name of a environment variable, like VcInstallDir .
+   * - CompilerLocationType::CompilerPath: \a compilerLocationValue is the full path to the compiler. This can be used with CMAKE_CXX_COMPILER .
+   *
+   * \note This is mostly required for MSVC
+   * \sa CompilerFinder
+   *
    * \todo See various todo in CPP file
    *
    * \todo Should also require full path to tools, like ldd, objdump, etc..

@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2020-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -78,6 +78,10 @@ TEST_CASE("CopySharedLibrariesTargetDependsOn")
   CopySharedLibrariesTargetDependsOnRequest request;
 
   request.targetFilePath = QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH);
+#ifdef COMPILER_IS_MSVC
+  request.compilerLocationType = CompilerLocationType::CompilerPath;
+  request.compilerLocationValue = QString::fromLocal8Bit(CXX_COMPILER_PATH);
+#endif // #ifdef COMPILER_IS_MSVC
   request.searchPrefixPathList = getTestPrefixPath(PREFIX_PATH);
   request.destinationDirectoryPath = destinationDir.path();
   request.overwriteBehavior = OverwriteBehavior::Overwrite;

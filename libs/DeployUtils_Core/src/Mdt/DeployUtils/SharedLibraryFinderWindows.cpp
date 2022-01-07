@@ -48,6 +48,7 @@ PathList SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binar
   searchFirstPathList.setPathPrefixList(searchFirstPathPrefixList);
 
   searchPathList.appendPathList( searchFirstPathList.pathList() );
+  /// \todo should go first !
   if( hasCompilerInstallDir(compilerFinder) ){
     /*
      * The main use-case to find specific redist directories is MSVC,

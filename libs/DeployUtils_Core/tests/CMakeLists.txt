@@ -1,5 +1,5 @@
 ##############################################################
-#  Copyright Philippe Steinmann 2020 - 2020.
+#  Copyright Philippe Steinmann 2020 - 2022.
 #  Distributed under the Boost Software License, Version 1.0.
 #  (See accompanying file LICENSE.txt or copy at
 #  https://www.boost.org/LICENSE_1_0.txt)
@@ -792,6 +792,9 @@ mdt_add_test(
 target_compile_definitions(binaryDependenciesTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
 target_compile_definitions(binaryDependenciesTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 target_compile_definitions(binaryDependenciesTest PRIVATE PREFIX_PATH="${TEST_PREFIX_PATH}")
+if(MSVC)
+  target_compile_definitions(binaryDependenciesTest PRIVATE COMPILER_IS_MSVC=1)
+endif()
 
 mdt_add_test(
   NAME BinaryDependenciesErrorTest
@@ -826,6 +829,9 @@ mdt_add_test(
 )
 target_compile_definitions(copySharedLibrariesTargetDependsOnTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 target_compile_definitions(copySharedLibrariesTargetDependsOnTest PRIVATE PREFIX_PATH="${TEST_PREFIX_PATH}")
+if(MSVC)
+  target_compile_definitions(copySharedLibrariesTargetDependsOnTest PRIVATE COMPILER_IS_MSVC=1)
+endif()
 
 if(MSVC)
   mdt_add_test(

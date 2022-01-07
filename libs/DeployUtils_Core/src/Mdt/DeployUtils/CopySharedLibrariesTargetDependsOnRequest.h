@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2020-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -28,14 +28,16 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-  /*! \brief
+  /*! \brief Type of compiler location request for CopySharedLibrariesTargetDependsOn
+   *
+   * \todo Should VcInstallDir be removed ?
    */
   enum class CompilerLocationType
   {
-    Undefined,
-    FromEnv,
-    VcInstallDir,
-    CompilerPath
+    Undefined,    /*!< Compiler will not be located */
+    FromEnv,      /*!< Use a environment variable name */
+    VcInstallDir, /*!<  */
+    CompilerPath  /*!< Use the full path to the compiler. This can be used with CMAKE_CXX_COMPILER */
   };
 
   /*! \brief DTO for CopySharedLibrariesTargetDependsOn
