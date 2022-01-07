@@ -794,6 +794,7 @@ target_compile_definitions(binaryDependenciesTest PRIVATE TEST_DYNAMIC_EXECUTABL
 target_compile_definitions(binaryDependenciesTest PRIVATE PREFIX_PATH="${TEST_PREFIX_PATH}")
 if(MSVC)
   target_compile_definitions(binaryDependenciesTest PRIVATE COMPILER_IS_MSVC=1)
+  target_compile_definitions(binaryDependenciesTest PRIVATE CXX_COMPILER_PATH="${CMAKE_CXX_COMPILER}")
 endif()
 
 mdt_add_test(
@@ -831,6 +832,7 @@ target_compile_definitions(copySharedLibrariesTargetDependsOnTest PRIVATE TEST_D
 target_compile_definitions(copySharedLibrariesTargetDependsOnTest PRIVATE PREFIX_PATH="${TEST_PREFIX_PATH}")
 if(MSVC)
   target_compile_definitions(copySharedLibrariesTargetDependsOnTest PRIVATE COMPILER_IS_MSVC=1)
+  target_compile_definitions(copySharedLibrariesTargetDependsOnTest PRIVATE CXX_COMPILER_PATH="${CMAKE_CXX_COMPILER}")
 endif()
 
 if(MSVC)

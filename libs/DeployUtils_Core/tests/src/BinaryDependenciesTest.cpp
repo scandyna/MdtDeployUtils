@@ -50,6 +50,7 @@ TEST_CASE("findDependencies")
 
 #ifdef COMPILER_IS_MSVC
   auto compilerFinder = std::make_shared<CompilerFinder>();
+  compilerFinder->findFromCxxCompilerPath( QString::fromLocal8Bit(CXX_COMPILER_PATH) );
   solver.setCompilerFinder(compilerFinder);
 #endif // #ifdef COMPILER_IS_MSVC
 
