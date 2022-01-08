@@ -39,16 +39,6 @@ PathList SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binar
 
   PathList searchPathList;
 
-  SearchPathList searchFirstPathList;
-  searchFirstPathList.setIncludePathPrefixes(true);
-  searchFirstPathList.setPathSuffixList({QLatin1String("bin"),QLatin1String("qt5/bin")});
-  /// \todo this is done twice on Windows
-  searchFirstPathList.appendPath( binaryFilePath.absoluteDir().path() );
-  /// \todo this could pick redist dll's from a other package !
-  searchFirstPathList.setPathPrefixList(searchFirstPathPrefixList);
-
-  searchPathList.appendPathList( searchFirstPathList.pathList() );
-  /// \todo should go first !
   if( hasCompilerInstallDir(compilerFinder) ){
     /*
      * The main use-case to find specific redist directories is MSVC,
@@ -68,11 +58,23 @@ PathList SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binar
     searchPathList.appendPath( compilerFinder->findRedistDirectory(processorISA, BuildType::Release) );
     searchPathList.appendPath( compilerFinder->findRedistDirectory(processorISA, BuildType::Debug) );
   }
+
+  SearchPathList searchFirstPathList;
+  searchFirstPathList.setIncludePathPrefixes(true);
+  searchFirstPathList.setPathSuffixList({QLatin1String("bin"),QLatin1String("qt5/bin")});
+  searchFirstPathList.appendPath( binaryFilePath.absoluteDir().path() );
+  /// \todo this could pick some dll's from a other package !
+  searchFirstPathList.setPathPrefixList(searchFirstPathPrefixList);
+
+  searchPathList.appendPathList( searchFirstPathList.pathList() );
+
   /*
    * One possible way to build on Windows is to prepare a shell
    * with a environment that has several dependencies in the PATH.
    *
-   * For cross-compilation, this has no sense.
+   * For cross-compilation, for example
+   * building a Windows application on a Linux machine,
+   * getting the Linux PATH has no sense.
    * The user will probably have to give some prefixes anyway
    * (like for example CMAKE_PREFIX_PATH),
    * which will then be in searchFirstPathPrefixList
@@ -81,8 +83,6 @@ PathList SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binar
     SearchPathList pathSearchPathList;
     pathSearchPathList.setIncludePathPrefixes(true);
     pathSearchPathList.setPathSuffixList({QLatin1String("bin"),QLatin1String("qt5/bin")});
-    /// \todo allready done, see above
-    pathSearchPathList.appendPath( binaryFilePath.absoluteDir().path() );
     /// \todo is this correct ?
     pathSearchPathList.setPathPrefixList( PathList::getSystemExecutablePathList() );
     searchPathList.appendPathList( pathSearchPathList.pathList() );
