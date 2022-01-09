@@ -55,8 +55,8 @@ PathList SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binar
      * are suffixed with a d (or D),
      * so we better add both build types directores here in the search paths.
      */
-    searchPathList.appendPath( compilerFinder->findRedistDirectory(processorISA, BuildType::Release) );
-    searchPathList.appendPath( compilerFinder->findRedistDirectory(processorISA, BuildType::Debug) );
+    searchPathList.appendPathList( compilerFinder->findRedistDirectories(processorISA, BuildType::Release) );
+    searchPathList.appendPathList( compilerFinder->findRedistDirectories(processorISA, BuildType::Debug) );
   }
 
   SearchPathList searchFirstPathList;

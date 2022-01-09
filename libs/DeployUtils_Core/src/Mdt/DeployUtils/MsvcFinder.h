@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -87,7 +87,21 @@ namespace Mdt{ namespace DeployUtils{
       return mVcInstallDir;
     }
 
-    QString doFindRedistDirectory(ProcessorISA cpu, BuildType buildType) const override;
+    PathList doFindRedistDirectories(ProcessorISA cpu, BuildType buildType) const override;
+
+    QString findRedistDirectory(ProcessorISA cpu, BuildType buildType) const;
+
+    /*! \brief Find the redist directory of the Windows Universal C Runtime
+     *
+     * This directory contains some runtime libraries,
+     * like api-ms-win-crt-runtime-l1-1-0.dll .
+     *
+     * Those libraries should only be necessary for MSVC release builds
+     *
+     * \sa https://stackoverflow.com/questions/38125376/no-api-ms-win-crt-runtime-l1-1-0-dll-on-windows-10-after-visual-c-2015-redistr
+     * \sa https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c
+     */
+    QString findWindowsUcrtRedistDirectory(ProcessorISA cpu) const;
 
     static
     bool isDirectoryContainingDebugNonRedist(const QFileInfo & fi) noexcept;
@@ -111,6 +125,9 @@ namespace Mdt{ namespace DeployUtils{
 
     static
     bool useDebugRedist(BuildType buildType) noexcept;
+
+    static
+    bool useReleaseRedist(BuildType buildType) noexcept;
 
     QString mVcInstallDir;
   };

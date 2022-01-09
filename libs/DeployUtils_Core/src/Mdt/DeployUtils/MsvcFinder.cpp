@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -60,7 +60,20 @@ void MsvcFinder::doFindFromCxxCompilerPath(const QFileInfo & executablePath)
   mVcInstallDir = dir.absolutePath();
 }
 
-QString MsvcFinder::doFindRedistDirectory(ProcessorISA cpu, BuildType buildType) const
+PathList MsvcFinder::doFindRedistDirectories(ProcessorISA cpu, BuildType buildType) const
+{
+  PathList pathList;
+
+  pathList.appendPath( findRedistDirectory(cpu, buildType) );
+
+  if( useReleaseRedist(buildType) ){
+    pathList.appendPath( findWindowsUcrtRedistDirectory(cpu) );
+  }
+
+  return pathList;
+}
+
+QString MsvcFinder::findRedistDirectory(ProcessorISA cpu, BuildType buildType) const
 {
   /*
    * Example of MSVC 2017 installation:
@@ -97,6 +110,27 @@ QString MsvcFinder::doFindRedistDirectory(ProcessorISA cpu, BuildType buildType)
   assert( vcCrtDir.exists() );
 
   return vcCrtDir.absolutePath();
+}
+
+QString MsvcFinder::findWindowsUcrtRedistDirectory(ProcessorISA cpu) const
+{
+  /*
+   * Example of Windows 10 ucrt installation:
+   * C:\Program Files (x86)\Windows Kits\10\Redist\ucrt\DLLs\<arch>
+   */
+
+  QDir dir = QDir( QLatin1String("C:/Program Files (x86)/Windows Kits/10/Redist/ucrt/DLLs") );
+  if( !dir.exists() ){
+    const QString msg = tr("could not find Windows Universal C Runtime (ucrt) redist directory: '%1'").arg( dir.absolutePath() );
+    throw FindCompilerError(msg);
+  }
+
+  if( !dir.cd( processorISADirectoryName(cpu) ) ){
+    const QString msg = tr("could not find Windows Universal C Runtime (ucrt) redist directory: '%1'").arg( dir.absolutePath() );
+    throw FindCompilerError(msg);
+  }
+
+  return dir.absolutePath();
 }
 
 bool MsvcFinder::isDirectoryContainingDebugNonRedist(const QFileInfo & fi) noexcept
@@ -167,6 +201,11 @@ QString MsvcFinder::processorISADirectoryName(ProcessorISA cpu) noexcept
 bool MsvcFinder::useDebugRedist(BuildType buildType) noexcept
 {
   return buildType == BuildType::Debug;
+}
+
+bool MsvcFinder::useReleaseRedist(BuildType buildType) noexcept
+{
+  return !useDebugRedist(buildType);
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

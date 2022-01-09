@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -60,13 +60,16 @@ TEST_CASE("setInstallDir")
   REQUIRE( !finderToTest.installDir().isEmpty() );
 }
 
-TEST_CASE("findRedistDirectory")
+TEST_CASE("findRedistDirectories")
 {
   const auto platform = Platform::nativePlatform();
   CompilerFinder finder;
   finder.findFromCxxCompilerPath( QString::fromLocal8Bit(CXX_COMPILER_PATH) );
   REQUIRE( finder.hasInstallDir() );
 
-  const QString redistPath = finder.findRedistDirectory( platform.processorISA(), currentBuildType() );
-  REQUIRE( isExistingDirectory(redistPath) );
+  const PathList redistPaths = finder.findRedistDirectories( platform.processorISA(), currentBuildType() );
+  REQUIRE( !redistPaths.isEmpty() );
+  for(const QString & path : redistPaths){
+    REQUIRE( isExistingDirectory(path) );
+  }
 }

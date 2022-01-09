@@ -186,6 +186,15 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
+    /*! \todo Should create a method like removeLibrariesToNotRedistribute()
+     *
+     * This should call removeLibrariesInExcludeList(),
+     * but also filter out things like api-ms-win-crt-runtime-l1-1-0.dll
+     * if the target platform is Windows 10 (or maybe 11).
+     *
+     * \sa https://stackoverflow.com/questions/38125376/no-api-ms-win-crt-runtime-l1-1-0-dll-on-windows-10-after-visual-c-2015-redistr
+     * \sa https://docs.microsoft.com/en-us/windows/win32/apiindex/windows-apisets
+     */
     static
     void removeLibrariesInExcludeList(BinaryDependenciesFile & file) noexcept;
 

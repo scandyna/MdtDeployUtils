@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -25,6 +25,7 @@
 #include "Compiler.h"
 #include "ProcessorISA.h"
 #include "BuildType.h"
+#include "PathList.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QFileInfo>
@@ -78,14 +79,14 @@ namespace Mdt{ namespace DeployUtils{
      */
     QString installDir() const noexcept;
 
-    /*! \brief Find the path to the redistributable libraries
+    /*! \brief Find a list of paths to the redistributable libraries
      *
      * \pre the install dir must be defined
      * \sa hasInstallDir()
      * \pre \a cpu must be defined
      * \exception FindCompilerError
      */
-    QString findRedistDirectory(ProcessorISA cpu, BuildType buildType) const;
+    PathList findRedistDirectories(ProcessorISA cpu, BuildType buildType) const;
 
    private:
 
