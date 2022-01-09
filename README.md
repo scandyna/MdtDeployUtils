@@ -73,6 +73,11 @@ cmake
 virtualenv
 ```
 
+Also add scandyna remote:
+```bash
+conan remote add scandyna https://gitlab.com/api/v4/projects/25668674/packages/conan
+```
+
 For the available CMake modules, and their usage,
 see [the CMake API documentation](https://scandyna.gitlab.io/mdtdeployutils/cmake-api)
 

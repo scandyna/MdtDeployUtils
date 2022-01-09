@@ -10,6 +10,11 @@ you don't need to install MdtDeployUtils.
 
 # Conan packages
 
+To use the conan packages, add scandyna remote:
+```bash
+conan remote add scandyna https://gitlab.com/api/v4/projects/25668674/packages/conan
+```
+
 ## MdtDeployUtils (tools)
 
 Contains the `mdtdeployutils` executable,
