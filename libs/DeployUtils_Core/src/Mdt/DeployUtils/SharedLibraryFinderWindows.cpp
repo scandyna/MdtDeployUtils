@@ -21,13 +21,26 @@
 #include "SharedLibraryFinderWindows.h"
 #include "SearchPathList.h"
 #include "Mdt/DeployUtils/Impl/LibraryExcludeListWindows.h"
+#include <QLatin1String>
+#include <QStringList>
 #include <QDir>
+#include <algorithm>
 
 namespace Mdt{ namespace DeployUtils{
 
 SharedLibraryFinderWindows::SharedLibraryFinderWindows(QObject *parent)
  : QObject(parent)
 {
+}
+
+void SharedLibraryFinderWindows::setExcludeMsvcLibraries(bool exclude) noexcept
+{
+  mExcludeMsvcLibraries = exclude;
+}
+
+void SharedLibraryFinderWindows::setExcludeWindowsApiSets(bool exclude) noexcept
+{
+  mExcludeWindowsApiSets = exclude;
 }
 
 PathList SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binaryFilePath,
@@ -89,6 +102,64 @@ PathList SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binar
   }
 
   return searchPathList;
+}
+
+bool SharedLibraryFinderWindows::libraryHasToBeExcluded(const QString & library) const noexcept
+{
+  if( hasToExcludeMsvcLibraries() && isMsvcLibrary(library) ){
+    return true;
+  }
+  if( hasToExcludeWindowsApiSets() && isWindowsApiSet(library) ){
+    return true;
+  }
+
+  return false;
+}
+
+bool SharedLibraryFinderWindows::isMsvcLibrary(const QString & library) noexcept
+{
+  assert( !library.trimmed().isEmpty() );
+
+  static const QStringList msvcLibrariesBaseNames{
+    QLatin1String("concrt"),
+    QLatin1String("msvcp"),
+    QLatin1String("vccorlib"),
+    QLatin1String("vcruntime"),
+    QLatin1String("vcamp"),
+    QLatin1String("vcomp")
+  };
+
+  const auto pred = [&library](const QString & msvcLibraryBaseName){
+    return library.startsWith(msvcLibraryBaseName, Qt::CaseInsensitive);
+  };
+
+  const auto it = std::find_if(msvcLibrariesBaseNames.cbegin(), msvcLibrariesBaseNames.cend(), pred);
+
+  return it != msvcLibrariesBaseNames.cend();
+}
+
+bool SharedLibraryFinderWindows::isWindowsApiSet(const QString & library) noexcept
+{
+  assert( !library.trimmed().isEmpty() );
+
+  if( library.startsWith(QLatin1String("api-"), Qt::CaseInsensitive) ){
+    return true;
+  }
+  if( library.startsWith(QLatin1String("ext-"), Qt::CaseInsensitive) ){
+    return true;
+  }
+
+  return false;
+}
+
+void SharedLibraryFinderWindows::removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept
+{
+  removeLibrariesInExcludeList(file);
+
+  const auto pred = [this](const QString & library){
+    return libraryHasToBeExcluded(library);
+  };
+  file.removeDependenciesFileNames(pred);
 }
 
 void SharedLibraryFinderWindows::removeLibrariesInExcludeList(BinaryDependenciesFile & file) noexcept

@@ -27,6 +27,7 @@
 #include "ProcessorISA.h"
 #include "CompilerFinder.h"
 #include "mdt_deployutilscore_export.h"
+#include <QString>
 #include <QObject>
 #include <QFileInfo>
 #include <QDir>
@@ -175,6 +176,7 @@ namespace Mdt{ namespace DeployUtils{
     {
       BinaryDependenciesFileList libraries;
 
+      /// \todo replace with removeLibrariesToNotRedistribute(file);
       removeLibrariesInExcludeList(file);
 
       for( const QString & libraryName : file.dependenciesFileNames() ){
@@ -184,22 +186,92 @@ namespace Mdt{ namespace DeployUtils{
       return libraries;
     }
 
-   private:
+    /*! \brief If \a exclude is true, dependencies that are part of MSVC runtime are excluded
+     *
+     * By default, dependencies that are part of the MSVC runtime
+     * will be part of the dependencies.
+     *
+     * Microsoft recommends using central deployment of MSVC runtime.
+     * This means the user should install the redistributable package itself.
+     * The advantage of this, is that the libraries will be part of Windows updates.
+     *
+     * \sa setExcludeWindowsApiSets()
+     * \sa https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist
+     * \sa https://docs.microsoft.com/en-us/cpp/windows/universal-crt-deployment
+     * \sa https://docs.microsoft.com/en-us/cpp/windows/determining-which-dlls-to-redistribute
+     */
+    void setExcludeMsvcLibraries(bool exclude) noexcept;
 
-    /*! \todo Should create a method like removeLibrariesToNotRedistribute()
+    /*! \brief If \a exclude is true,dependencies that are part of Windows API sets are excluded
      *
-     * This should call removeLibrariesInExcludeList(),
-     * but also filter out things like api-ms-win-crt-runtime-l1-1-0.dll
-     * if the target platform is Windows 10 (or maybe 11).
+     * Some (pseudo-) libraries, starting for example with api-xx ,
+     * have not to be deployed on Windows 10 or later.
      *
+     * Be default, Windows API sets are excluded.
+     *
+     * \note this property is ignored if MSVC libraries are excluded.
+     *
+     * \sa setExcludeMsvcLibraries()
      * \sa https://stackoverflow.com/questions/38125376/no-api-ms-win-crt-runtime-l1-1-0-dll-on-windows-10-after-visual-c-2015-redistr
      * \sa https://docs.microsoft.com/en-us/windows/win32/apiindex/windows-apisets
      */
+    void setExcludeWindowsApiSets(bool exclude) noexcept;
+
+    /*! \brief Check if MSVC libraries have to be excluded.
+     *
+     * \sa setExcludeMsvcLibraries()
+     */
+    bool hasToExcludeMsvcLibraries() const noexcept
+    {
+      return mExcludeMsvcLibraries;
+    }
+
+    /*! \brief Check if Windows API sets have to be excluded
+     *
+     * \sa setExcludeWindowsApiSets()
+     */
+    bool hasToExcludeWindowsApiSets() const noexcept
+    {
+      if( hasToExcludeMsvcLibraries() ){
+        return true;
+      }
+
+      return mExcludeWindowsApiSets;
+    }
+
+    /*! \brief Check if \a library has to be excluded
+     */
+    bool libraryHasToBeExcluded(const QString & library) const noexcept;
+
+    /*! \brief Check if \a library is a MSVC library
+     *
+     * \pre \a library must not be empty
+     */
+    static
+    bool isMsvcLibrary(const QString & library) noexcept;
+
+    /*! \brief Check if \a library is a Windows API set
+     *
+     * \pre \a library must not be empty
+     * \sa https://docs.microsoft.com/en-us/windows/win32/apiindex/windows-apisets
+     */
+    static
+    bool isWindowsApiSet(const QString & library) noexcept;
+
+   private:
+
+    /*! \brief Remove libraries that should not be distributed
+     */
+    void removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept;
+
     static
     void removeLibrariesInExcludeList(BinaryDependenciesFile & file) noexcept;
 
     static
     bool hasCompilerInstallDir(const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept;
+
+    bool mExcludeMsvcLibraries = false;
+    bool mExcludeWindowsApiSets = true;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
