@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -18,28 +18,17 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "Mdt/DeployUtils/SharedLibraryFinderLinux.h"
-#include "BinaryDependenciesTestCommon.h"
-#include "TestIsExistingSharedLibrary.h"
-#include <vector>
-#include <string>
+#include "AbstractSharedLibraryFinder.h"
+#include "Mdt/DeployUtils/Impl/AbstractIsExistingSharedLibrary.h"
 
-using namespace Mdt::DeployUtils;
+namespace Mdt{ namespace DeployUtils{
 
-inline
-RPath makeRPathFromUtf8Paths(const std::vector<std::string> & paths)
+bool AbstractSharedLibraryFinder::isExistingSharedLibrary(const QFileInfo & libraryFile) const
 {
-  RPath rpath;
+  assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
+  assert( libraryFile.isAbsolute() );
 
-  for(const std::string & path : paths){
-    rpath.appendPath( QString::fromStdString(path) );
-  }
-
-  return rpath;
+  return mIsExistingShLibOp.isExistingSharedLibrary(libraryFile);
 }
 
-inline
-QString makeDirectoryFromRpathEntry(const BinaryDependenciesFile & originFile, const RPathEntry & rpathEntry) noexcept
-{
-  return SharedLibraryFinderLinux::makeDirectoryFromRpathEntry(originFile, rpathEntry);
-}
+}} // namespace Mdt{ namespace DeployUtils{

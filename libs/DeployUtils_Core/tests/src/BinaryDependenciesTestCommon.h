@@ -18,8 +18,10 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
+#include "TestIsExistingSharedLibrary.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
 #include "Mdt/DeployUtils/BinaryDependenciesFile.h"
+#include "Mdt/DeployUtils/AbstractSharedLibraryFinder.h"
 #include "Mdt/DeployUtils/PathList.h"
 #include <QString>
 #include <QFileInfo>
@@ -61,32 +63,49 @@ QString makeAbsolutePath(const std::string & path)
   return QFileInfo( QString::fromStdString(path) ).absoluteFilePath();
 }
 
-class TestIsExistingSharedLibrary
+
+class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
 {
  public:
 
-  void setExistingSharedLibraries(const std::vector<std::string> & libraries)
+  explicit SharedLibraryFinderBDTest(const Impl::AbstractIsExistingSharedLibrary & isExistingShLibOp, QObject *parent = nullptr)
+   : AbstractSharedLibraryFinder(isExistingShLibOp, parent)
   {
-    for(const auto & library : libraries){
-      const QFileInfo libraryFile( QString::fromStdString(library) );
-      assert( libraryFile.isAbsolute() );
-      mExistingSharedLibraries.append( libraryFile.absoluteFilePath() );
-    }
   }
 
-  /*! \internal
-   *
-   * \pre \a libraryFile must be a absolute file path
-   */
-  bool operator()(const QFileInfo & libraryFile) const
+  void setSearchPathList(const std::vector<std::string> & pathList)
   {
-    assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
-    assert( libraryFile.isAbsolute() );
-
-    return mExistingSharedLibraries.contains( libraryFile.absoluteFilePath() );
+    for(const std::string & path : pathList){
+      mSearchPathList.appendPath( QString::fromStdString(path) );
+    }
   }
 
  private:
 
-  QStringList mExistingSharedLibraries;
+  BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName) const
+  {
+    assert( !libraryName.trimmed().isEmpty() );
+
+    for(const QString & directory : mSearchPathList){
+      QFileInfo libraryFile(directory, libraryName);
+      if( isExistingSharedLibrary(libraryFile) ){
+        return BinaryDependenciesFile::fromQFileInfo(libraryFile);
+      }
+    }
+
+    return BinaryDependenciesFile();
+  }
+
+  BinaryDependenciesFileList doFindLibrariesAbsolutePath(BinaryDependenciesFile & file) const override
+  {
+    BinaryDependenciesFileList libraries;
+
+    for( const QString & libraryName : file.dependenciesFileNames() ){
+      libraries.push_back( findLibraryAbsolutePath(libraryName) );
+    }
+
+    return libraries;
+  }
+
+  PathList mSearchPathList;
 };

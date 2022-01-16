@@ -478,21 +478,18 @@ TEST_CASE("binaryDependenciesFilesAreEqual")
 
 TEST_CASE("findDependencies")
 {
-//   using Impl::findDependencies;
-
-  Impl::FindDependenciesImpl impl;
-//   BinaryDependenciesFile target;
-  PathList searchPathList;
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  SharedLibraryFinderBDTest shLibFinder(isExistingSharedLibraryOp);
+  Impl::FindDependenciesImpl impl(shLibFinder);
   TestExecutableFileReader reader;
   const auto platform = Platform::nativePlatform();
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
   BinaryDependenciesFileList dependencies;
 
   SECTION("no dependencies")
   {
     BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/libm.so");
 //     debugExecutableFileInfo(target);
-    impl.findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
+    impl.findDependencies(target, dependencies, reader, platform);
 //     debugExecutableFileInfoList(dependencies);
     REQUIRE( dependencies.size() == 0 );
   }
@@ -505,11 +502,11 @@ TEST_CASE("findDependencies")
   SECTION("myapp depends on MyLibA")
   {
     BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/myapp");
-    searchPathList.appendPath( QLatin1String("/opt/MyLibs/") );
-    reader.setDirectDependencies({"libMyLibA.so"});
+    shLibFinder.setSearchPathList({"/opt/MyLibs/"});
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so"});
+    reader.setDirectDependencies({"libMyLibA.so"});
 
-    impl.findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
+    impl.findDependencies(target, dependencies, reader, platform);
 
     REQUIRE( dependencies.size() == 1 );
     REQUIRE( dependenciesEquals(dependencies, {"/opt/MyLibs/libMyLibA.so"}) );
@@ -525,12 +522,12 @@ TEST_CASE("findDependencies")
   SECTION("myapp depends on MyLibA which depends on Qt5Core")
   {
     BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/myapp");
-    searchPathList.appendPathList( {QLatin1String("/opt/MyLibs/"),QLatin1String("/opt/qt/")} );
+    shLibFinder.setSearchPathList({"/opt/MyLibs/","/opt/qt/"});
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so","/opt/qt/libQt5Core.so"});
     reader.setDirectDependencies({"libMyLibA.so"});
     reader.addDependenciesToDirectDependency("libMyLibA.so",{"libQt5Core.so"});
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so","/opt/qt/libQt5Core.so"});
 
-    impl.findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
+    impl.findDependencies(target, dependencies, reader, platform);
 
     REQUIRE( dependencies.size() == 2 );
     REQUIRE( dependenciesEquals(dependencies, {"/opt/MyLibs/libMyLibA.so","/opt/qt/libQt5Core.so"}) );

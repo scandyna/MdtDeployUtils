@@ -28,8 +28,8 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-SharedLibraryFinderWindows::SharedLibraryFinderWindows(QObject *parent)
- : QObject(parent)
+SharedLibraryFinderWindows::SharedLibraryFinderWindows(const Impl::AbstractIsExistingSharedLibrary & isExistingShLibOp, QObject *parent)
+ : AbstractSharedLibraryFinder(isExistingShLibOp, parent)
 {
 }
 
@@ -43,10 +43,10 @@ void SharedLibraryFinderWindows::setExcludeWindowsApiSets(bool exclude) noexcept
   mExcludeWindowsApiSets = exclude;
 }
 
-PathList SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binaryFilePath,
-                                                         const PathList & searchFirstPathPrefixList,
-                                                         ProcessorISA processorISA,
-                                                         const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept
+void SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binaryFilePath,
+                                                     const PathList & searchFirstPathPrefixList,
+                                                     ProcessorISA processorISA,
+                                                     const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept
 {
   assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
 
@@ -101,7 +101,9 @@ PathList SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binar
     searchPathList.appendPathList( pathSearchPathList.pathList() );
   }
 
-  return searchPathList;
+  searchPathList.removeNonExistingDirectories();
+
+  setSearchPathList(searchPathList);
 }
 
 bool SharedLibraryFinderWindows::libraryHasToBeExcluded(const QString & library) const noexcept
@@ -150,6 +152,20 @@ bool SharedLibraryFinderWindows::isWindowsApiSet(const QString & library) noexce
   }
 
   return false;
+}
+
+BinaryDependenciesFileList SharedLibraryFinderWindows::doFindLibrariesAbsolutePath(BinaryDependenciesFile & file) const
+{
+  BinaryDependenciesFileList libraries;
+
+  /// \todo replace with removeLibrariesToNotRedistribute(file);
+  removeLibrariesInExcludeList(file);
+
+  for( const QString & libraryName : file.dependenciesFileNames() ){
+    libraries.push_back( findLibraryAbsolutePath(libraryName) );
+  }
+
+  return libraries;
 }
 
 void SharedLibraryFinderWindows::removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept

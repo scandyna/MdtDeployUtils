@@ -21,6 +21,7 @@
 #ifndef MDT_DEPLOY_UTILS_SHARED_LIBRARY_FINDER_LINUX_H
 #define MDT_DEPLOY_UTILS_SHARED_LIBRARY_FINDER_LINUX_H
 
+#include "AbstractSharedLibraryFinder.h"
 #include "BinaryDependenciesFile.h"
 #include "FindDependencyError.h"
 #include "PathList.h"
@@ -38,7 +39,7 @@ namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Helper to find a shared library on Linux
    */
-  class MDT_DEPLOYUTILSCORE_EXPORT SharedLibraryFinderLinux : public QObject
+  class MDT_DEPLOYUTILSCORE_EXPORT SharedLibraryFinderLinux : public AbstractSharedLibraryFinder
   {
     Q_OBJECT
 
@@ -46,30 +47,26 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Constructor
      */
-    explicit SharedLibraryFinderLinux(QObject *parent = nullptr);
+    explicit SharedLibraryFinderLinux(const Impl::AbstractIsExistingSharedLibrary & isExistingShLibOp, QObject *parent = nullptr) noexcept;
 
-    /*! \brief Build and returns a list of path to directories where to find shared libraries
+    /*! \brief Build a list of path to directories where to find shared libraries
      *
      * \sa PathList::getSystemLibraryKnownPathListLinux()
      * \sa https://man7.org/linux/man-pages/man8/ld.so.8.html
      */
-    static
-    PathList buildSearchPathList(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) noexcept;
+    void buildSearchPathList(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) noexcept;
 
     /*! \internal
      */
-    template<typename IsExistingSharedLibraryOp>
-    static
     BinaryDependenciesFile findLibraryAbsolutePathByRPath(const BinaryDependenciesFile & originFile,
-                                                          const QString & libraryName,
-                                                          IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+                                                          const QString & libraryName) const
     {
       assert( !libraryName.trimmed().isEmpty() );
 
       for( const auto & rpathEntry : originFile.rPath() ){
         const QString directory = makeDirectoryFromRpathEntry(originFile, rpathEntry);
         const QFileInfo libraryFile(directory, libraryName);
-        if( isExistingSharedLibraryOp(libraryFile) ){
+        if( isExistingSharedLibrary(libraryFile) ){
           return BinaryDependenciesFile::fromQFileInfo(libraryFile);
         }
       }
@@ -86,20 +83,16 @@ namespace Mdt{ namespace DeployUtils{
      * \todo case of \a libraryName containing slashes is not implemented
      * \todo LD_LIBRARY_PATH is not implemented
      */
-    template<typename IsExistingSharedLibraryOp>
-    static
     BinaryDependenciesFile findLibraryAbsolutePath(const BinaryDependenciesFile & originFile,
-                                                   const QString & libraryName,
-                                                   const PathList & searchPathList,
-                                                   IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+                                                   const QString & libraryName) const
     {
       assert( !originFile.isNull() );
       assert( !libraryName.trimmed().isEmpty() );
 
-      BinaryDependenciesFile library = findLibraryAbsolutePathByRPath(originFile, libraryName, isExistingSharedLibraryOp);
+      BinaryDependenciesFile library = findLibraryAbsolutePathByRPath(originFile, libraryName);
 
       if( library.isNull() ){
-        library = findLibraryAbsolutePathBySearchPath(libraryName, searchPathList, isExistingSharedLibraryOp);
+        library = findLibraryAbsolutePathBySearchPath(libraryName);
       }
 
       if( library.isNull() ){
@@ -111,25 +104,6 @@ namespace Mdt{ namespace DeployUtils{
       return library;
     }
 
-    /*! \brief Find the absolute path for each direct dependency of \a file
-     */
-    template<typename IsExistingSharedLibraryOp>
-    static
-    BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & file,
-                                                         const PathList & searchPathList,
-                                                         IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
-    {
-      BinaryDependenciesFileList libraries;
-
-      removeLibrariesInExcludeList(file);
-
-      for( const QString & libraryName : file.dependenciesFileNames() ){
-        libraries.push_back( findLibraryAbsolutePath(file, libraryName, searchPathList, isExistingSharedLibraryOp) );
-      }
-
-      return libraries;
-    }
-
     /*! \internal
      */
     static
@@ -137,24 +111,21 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
-
-    template<typename IsExistingSharedLibraryOp>
-    static
-    BinaryDependenciesFile findLibraryAbsolutePathBySearchPath(const QString & libraryName,
-                                                               const PathList & searchPathList,
-                                                               IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+    BinaryDependenciesFile findLibraryAbsolutePathBySearchPath(const QString & libraryName) const
     {
       assert( !libraryName.trimmed().isEmpty() );
 
-      for(const QString & directory : searchPathList){
+      for( const QString & directory : searchPathList() ){
         QFileInfo libraryFile(directory, libraryName);
-        if( isExistingSharedLibraryOp(libraryFile) ){
+        if( isExistingSharedLibrary(libraryFile) ){
           return BinaryDependenciesFile::fromQFileInfo(libraryFile);
         }
       }
 
       return BinaryDependenciesFile();
     }
+
+    BinaryDependenciesFileList doFindLibrariesAbsolutePath(BinaryDependenciesFile & file) const override;
 
     static
     void removeLibrariesInExcludeList(BinaryDependenciesFile & file) noexcept;

@@ -23,12 +23,14 @@
 #include "SharedLibraryFinderWindowsTestCommon.h"
 #include "Mdt/DeployUtils/SharedLibraryFinderWindows.h"
 #include <QLatin1String>
+#include <QtGlobal>
 
 using namespace Mdt::DeployUtils;
 
 TEST_CASE("ExcludeMsvcLibraries")
 {
-  SharedLibraryFinderWindows finder;
+  TestIsExistingSharedLibrary isExistingShLibOp;
+  SharedLibraryFinderWindows finder(isExistingShLibOp);
 
   SECTION("by default MSVC libraries are included but Windows API sets not")
   {
@@ -153,7 +155,8 @@ TEST_CASE("isWindowsApiSet")
 
 TEST_CASE("libraryHasToBeExcluded")
 {
-  SharedLibraryFinderWindows finder;
+  TestIsExistingSharedLibrary isExistingShLibOp;
+  SharedLibraryFinderWindows finder(isExistingShLibOp);
 
   SECTION("exclude MSVC (and also Windows API sets)")
   {
@@ -221,22 +224,38 @@ TEST_CASE("libraryHasToBeExcluded")
 
 TEST_CASE("buildSearchPathList")
 {
+/*
+ * SharedLibraryFinderWindows::buildSearchPathList()
+ * will remove non existing directories, which is good.
+ * But, this test would probably fail on non Windows platform
+ */
+#ifdef Q_OS_WIN
+  constexpr bool checkResult = true;
+#else
+  constexpr bool checkResult = false;
+#endif // #ifdef Q_OS_WIN
+
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp);
   PathList searchFirstPathPrefixList;
-  PathList searchPathList;
   std::shared_ptr<CompilerFinder> compilerFinder;
 
   QFileInfo binaryFilePath( QLatin1String("/some/path/to/app.exe") );
 
   SECTION("x86 (compiler finder is null)")
   {
-    searchPathList = SharedLibraryFinderWindows::buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_32, compilerFinder);
-    REQUIRE( !searchPathList.isEmpty() );
+    finder.buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_32, compilerFinder);
+    if(checkResult){
+      REQUIRE( !finder.searchPathList().isEmpty() );
+    }
   }
 
   SECTION("x86_64 (compiler finder is null)")
   {
-    searchPathList = SharedLibraryFinderWindows::buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_64, compilerFinder);
-    REQUIRE( !searchPathList.isEmpty() );
+    finder.buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, ProcessorISA::X86_64, compilerFinder);
+    if(checkResult){
+      REQUIRE( !finder.searchPathList().isEmpty() );
+    }
   }
 }
 
@@ -245,13 +264,14 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
   BinaryDependenciesFile library;
   QFileInfo libraryFile;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp);
 
   SECTION("A.dll exists as /tmp/A.dll")
   {
     libraryFile.setFile( QLatin1String("/tmp/A.dll") );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll"});
 
-    library = findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
+    library = finder.findLibraryAbsolutePathByAlternateNames(libraryFile);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
   }
@@ -261,7 +281,7 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
     libraryFile.setFile( QLatin1String("/tmp/A.dll") );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/a.dll"});
 
-    library = findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
+    library = finder.findLibraryAbsolutePathByAlternateNames(libraryFile);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/a.dll") );
   }
@@ -271,7 +291,7 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
     libraryFile.setFile( QLatin1String("/tmp/A.DLL") );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/a.dll"});
 
-    library = findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
+    library = finder.findLibraryAbsolutePathByAlternateNames(libraryFile);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/a.dll") );
   }
@@ -281,7 +301,7 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
     libraryFile.setFile( QLatin1String("/tmp/a.dll") );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.DLL"});
 
-    library = findLibraryAbsolutePathByAlternateNames(libraryFile, isExistingSharedLibraryOp);
+    library = finder.findLibraryAbsolutePathByAlternateNames(libraryFile);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.DLL") );
   }
@@ -290,16 +310,16 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
 TEST_CASE("findLibraryAbsolutePath")
 {
   QString libraryName;
-  PathList pathList;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp);
 
   SECTION("A.dll - pathList:/tmp - exists")
   {
     libraryName = QLatin1String("A.dll");
-    pathList = makePathListFromUtf8Paths({"/tmp"});
+    finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll"});
 
-    auto library = findLibraryAbsolutePath(libraryName, pathList, isExistingSharedLibraryOp);
+    auto library = finder.findLibraryAbsolutePath(libraryName);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
   }
@@ -311,10 +331,10 @@ TEST_CASE("findLibraryAbsolutePath")
   SECTION("A.DLL - pathList:/tmp - exists as /tmp/a.dll")
   {
     libraryName = QLatin1String("A.DLL");
-    pathList = makePathListFromUtf8Paths({"/tmp"});
+    finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/a.dll"});
 
-    auto library = findLibraryAbsolutePath(libraryName, pathList, isExistingSharedLibraryOp);
+    auto library = finder.findLibraryAbsolutePath(libraryName);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/a.dll") );
   }
@@ -322,10 +342,10 @@ TEST_CASE("findLibraryAbsolutePath")
   SECTION("A.dll - pathList:/tmp,/opt - exists in both path - must pick the first one")
   {
     libraryName = QLatin1String("A.dll");
-    pathList = makePathListFromUtf8Paths({"/tmp","/opt"});
+    finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp","/opt"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll","/opt/A.dll"});
 
-    auto library = findLibraryAbsolutePath(libraryName, pathList, isExistingSharedLibraryOp);
+    auto library = finder.findLibraryAbsolutePath(libraryName);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
   }
@@ -333,18 +353,18 @@ TEST_CASE("findLibraryAbsolutePath")
 
 TEST_CASE("findLibrariesAbsolutePath")
 {
-  PathList pathList;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp);
   BinaryDependenciesFileList libraries;
 
   SECTION("A.dll,KERNEL32.DLL - pathList:/tmp - exists - KERNEL32.DLL must be excluded")
   {
     auto executable = makeBinaryDependenciesFileFromUtf8Path("/tmp/executable.exe");
     executable.setDependenciesFileNames({QLatin1String("A.dll"),QLatin1String("KERNEL32.DLL")});
-    pathList = makePathListFromUtf8Paths({"/tmp"});
+    finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll","/tmp/KERNEL32.DLL"});
 
-    libraries = findLibrariesAbsolutePath(executable, pathList, isExistingSharedLibraryOp);
+    libraries = finder.findLibrariesAbsolutePath(executable);
 
     REQUIRE( libraries.size() == 1 );
     REQUIRE( libraries[0].absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );

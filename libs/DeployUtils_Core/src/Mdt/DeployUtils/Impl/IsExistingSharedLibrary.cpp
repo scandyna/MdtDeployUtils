@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -18,28 +18,4 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "Mdt/DeployUtils/SharedLibraryFinderLinux.h"
-#include "BinaryDependenciesTestCommon.h"
-#include "TestIsExistingSharedLibrary.h"
-#include <vector>
-#include <string>
-
-using namespace Mdt::DeployUtils;
-
-inline
-RPath makeRPathFromUtf8Paths(const std::vector<std::string> & paths)
-{
-  RPath rpath;
-
-  for(const std::string & path : paths){
-    rpath.appendPath( QString::fromStdString(path) );
-  }
-
-  return rpath;
-}
-
-inline
-QString makeDirectoryFromRpathEntry(const BinaryDependenciesFile & originFile, const RPathEntry & rpathEntry) noexcept
-{
-  return SharedLibraryFinderLinux::makeDirectoryFromRpathEntry(originFile, rpathEntry);
-}
+#include "IsExistingSharedLibrary.h"

@@ -24,13 +24,8 @@
 #include "Mdt/DeployUtils/BinaryDependenciesFile.h"
 #include "Mdt/DeployUtils/FindDependencyError.h"
 #include "Mdt/DeployUtils/ExecutableFileReader.h"
-#include "Mdt/DeployUtils/PathList.h"
-#include "Mdt/DeployUtils/SearchPathList.h"
-#include "Mdt/DeployUtils/RPath.h"
-#include "Mdt/DeployUtils/RPathElf.h"
+#include "Mdt/DeployUtils/AbstractSharedLibraryFinder.h"
 #include "Mdt/DeployUtils/Platform.h"
-#include "Mdt/DeployUtils/SharedLibraryFinderLinux.h"
-#include "Mdt/DeployUtils/SharedLibraryFinderWindows.h"
 #include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QLatin1String>
@@ -60,77 +55,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     }
 
     return list;
-  }
-
-  /*! \internal
-   */
-  struct IsExistingSharedLibraryFunc
-  {
-    IsExistingSharedLibraryFunc(ExecutableFileReader & reader, const Platform & platform) noexcept
-     : mReader(reader),
-       mPlatform(platform)
-    {
-    }
-
-    /*! \internal
-     *
-     * \pre \a libraryFile must be a absolute file path
-     */
-    bool operator()(const QFileInfo & libraryFile)
-    {
-      assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
-      assert( libraryFile.isAbsolute() );
-      assert( !mReader.isOpen() );
-
-      if( !libraryFile.exists() ){
-        return false;
-      }
-
-      try{
-        mReader.openFile(libraryFile,mPlatform);
-
-        const bool isSharedLibrary = mReader.isExecutableOrSharedLibrary();
-
-        const Platform libraryPlatform = mReader.getFilePlatform();
-        const bool isCorrectProcessorISA = ( libraryPlatform.processorISA() == mPlatform.processorISA() );
-
-        mReader.close();
-
-        return isSharedLibrary && isCorrectProcessorISA;
-      }catch(...){
-        mReader.close();
-        throw;
-      }
-    }
-
-   private:
-
-    ExecutableFileReader & mReader;
-    Platform mPlatform;
-  };
-
-  /*! \internal
-   */
-  template<typename IsExistingSharedLibraryOp>
-  BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & originExecutable,
-                                                       const PathList & searchPathList,
-                                                       const Platform & platform,
-                                                       IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
-  {
-    assert( !platform.isNull() );
-
-    switch( platform.operatingSystem() ){
-      case OperatingSystem::Linux:
-        return SharedLibraryFinderLinux::findLibrariesAbsolutePath(originExecutable, searchPathList, isExistingSharedLibraryOp);
-      case OperatingSystem::Windows:
-        return SharedLibraryFinderWindows::findLibrariesAbsolutePath(originExecutable, searchPathList, isExistingSharedLibraryOp);
-      case OperatingSystem::Unknown:
-        break;
-    }
-
-    const QString message = QCoreApplication::translate("Mdt::DeployUtils::Impl::findLibrariesAbsolutePath()",
-                                                        "requested platform is not supported");
-    throw FindDependencyError(message);
   }
 
   /*! \internal
@@ -166,16 +90,24 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
    public:
 
-    FindDependenciesImpl(QObject *parent = nullptr)
-     : QObject(parent)
+    /*! \brief Constructor
+     *
+     * \warning \a shLibFinder must be valid as long
+     *  as findDependencies() is called
+     */
+    FindDependenciesImpl(const AbstractSharedLibraryFinder & shLibFinder, QObject *parent = nullptr)
+     : QObject(parent),
+       mShLibFinder(shLibFinder)
     {
     }
 
     /*! \internal
+     *
+     * \todo remove IsExistingSharedLibraryOp once possible
      */
-    template<typename Reader, typename IsExistingSharedLibraryOp>
-    void findDependencies(BinaryDependenciesFile & currentFile, BinaryDependenciesFileList & allDependencies, PathList searchPathList,
-                          Reader & reader, const Platform & platform, IsExistingSharedLibraryOp & isExistingSharedLibraryOp)
+    template<typename Reader>
+    void findDependencies(BinaryDependenciesFile & currentFile, BinaryDependenciesFileList & allDependencies,
+                          Reader & reader, const Platform & platform)
     {
       assert( !reader.isOpen() );
 
@@ -200,14 +132,14 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
       reader.close();
 
-      BinaryDependenciesFileList dependencies = findLibrariesAbsolutePath(currentFile, searchPathList, platform, isExistingSharedLibraryOp);
+      BinaryDependenciesFileList dependencies = mShLibFinder.findLibrariesAbsolutePath(currentFile);
 
       setDirectDependenciesSolved(currentFile);
       removeDuplicates(allDependencies);
 
       for(BinaryDependenciesFile & library : dependencies){
         allDependencies.push_back(library);
-        findDependencies(library, allDependencies, searchPathList, reader, platform, isExistingSharedLibraryOp);
+        findDependencies(library, allDependencies, reader, platform);
       }
 
       removeDuplicates(allDependencies);
@@ -252,6 +184,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
       }
     }
 
+    const AbstractSharedLibraryFinder & mShLibFinder;
     std::vector<QFileInfo> mSolvedFiles;
   };
 

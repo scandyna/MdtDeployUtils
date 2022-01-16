@@ -25,9 +25,11 @@
 #include "SharedLibraryFinderWindows.h"
 #include "LibraryName.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
+#include "Mdt/DeployUtils/Impl/IsExistingSharedLibrary.h"
 #include "Mdt/DeployUtils/Platform.h"
 #include "ExecutableFileReader.h"
 #include <QDir>
+#include <memory>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
@@ -65,20 +67,28 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
     throw FindDependencyError(message);
   }
 
-  PathList searchPathList;
+  Impl::IsExistingSharedLibrary isExistingShLibOp(reader, platform);
+  std::unique_ptr<AbstractSharedLibraryFinder> shLibFinder;
+
   if( platform.operatingSystem() == OperatingSystem::Linux ){
-    searchPathList = SharedLibraryFinderLinux::buildSearchPathList( searchFirstPathPrefixList, platform.processorISA() );
+
+    shLibFinder = std::make_unique<SharedLibraryFinderLinux>(isExistingShLibOp);
+    SharedLibraryFinderLinux *shLibFinderLinux = static_cast<SharedLibraryFinderLinux*>( shLibFinder.get() );
+    shLibFinderLinux->buildSearchPathList( searchFirstPathPrefixList, platform.processorISA() );
+
   }else if( platform.operatingSystem() == OperatingSystem::Windows ){
-    searchPathList = SharedLibraryFinderWindows::buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, platform.processorISA(), mCompilerFinder);
+
+    shLibFinder = std::make_unique<SharedLibraryFinderWindows>(isExistingShLibOp);
+    SharedLibraryFinderWindows *shLibFinderWindows = static_cast<SharedLibraryFinderWindows*>( shLibFinder.get() );
+    shLibFinderWindows->buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, platform.processorISA(), mCompilerFinder);
+
   }
-  searchPathList.removeNonExistingDirectories();
 
-  emitSearchPathListMessage(searchPathList);
+  emitSearchPathListMessage( shLibFinder->searchPathList() );
 
-  Impl::IsExistingSharedLibraryFunc isExistingSharedLibrary(reader, platform);
-  Impl::FindDependenciesImpl impl;
+  Impl::FindDependenciesImpl impl(*shLibFinder);
   connect(&impl, &Impl::FindDependenciesImpl::verboseMessage, this, &BinaryDependencies::verboseMessage);
-  impl.findDependencies(target, dependencies, searchPathList, reader, platform, isExistingSharedLibrary);
+  impl.findDependencies(target, dependencies, reader, platform);
 
   return Impl::qStringListFromBinaryDependenciesFileList(dependencies);
 }

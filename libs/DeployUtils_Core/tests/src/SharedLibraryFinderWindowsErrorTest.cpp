@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -28,15 +28,15 @@ using namespace Mdt::DeployUtils;
 TEST_CASE("findLibraryAbsolutePath")
 {
   QString libraryName;
-  PathList pathList;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp);
 
   SECTION("A.dll - pathList:/tmp - not exists in given pathList")
   {
     libraryName = QLatin1String("A.dll");
-    pathList = makePathListFromUtf8Paths({"/tmp"});
+    finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/B.dll","/opt/A.dll"});
 
-    REQUIRE_THROWS_AS( findLibraryAbsolutePath(libraryName, pathList, isExistingSharedLibraryOp), FindDependencyError );
+    REQUIRE_THROWS_AS( finder.findLibraryAbsolutePath(libraryName), FindDependencyError );
   }
 }

@@ -24,12 +24,12 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-SharedLibraryFinderLinux::SharedLibraryFinderLinux(QObject *parent)
- : QObject(parent)
+SharedLibraryFinderLinux::SharedLibraryFinderLinux(const Impl::AbstractIsExistingSharedLibrary & isExistingShLibOp, QObject *parent) noexcept
+ : AbstractSharedLibraryFinder(isExistingShLibOp, parent)
 {
 }
 
-PathList SharedLibraryFinderLinux::buildSearchPathList(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) noexcept
+void SharedLibraryFinderLinux::buildSearchPathList(const PathList & searchFirstPathPrefixList, ProcessorISA processorISA) noexcept
 {
   PathList searchPathList;
 
@@ -40,8 +40,9 @@ PathList SharedLibraryFinderLinux::buildSearchPathList(const PathList & searchFi
 
   searchPathList.appendPathList( searchFirstPathList.pathList() );
   searchPathList.appendPathList( PathList::getSystemLibraryKnownPathListLinux(processorISA) );
+  searchPathList.removeNonExistingDirectories();
 
-  return searchPathList;
+  setSearchPathList(searchPathList);
 }
 
 QString SharedLibraryFinderLinux::makeDirectoryFromRpathEntry(const BinaryDependenciesFile & originFile, const RPathEntry & rpathEntry) noexcept
@@ -53,6 +54,19 @@ QString SharedLibraryFinderLinux::makeDirectoryFromRpathEntry(const BinaryDepend
   }
 
   return rpathEntry.path();
+}
+
+BinaryDependenciesFileList SharedLibraryFinderLinux::doFindLibrariesAbsolutePath(BinaryDependenciesFile & file) const
+{
+  BinaryDependenciesFileList libraries;
+
+  removeLibrariesInExcludeList(file);
+
+  for( const QString & libraryName : file.dependenciesFileNames() ){
+    libraries.push_back( findLibraryAbsolutePath(file, libraryName) );
+  }
+
+  return libraries;
 }
 
 void SharedLibraryFinderLinux::removeLibrariesInExcludeList(BinaryDependenciesFile & file) noexcept
