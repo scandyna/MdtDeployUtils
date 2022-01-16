@@ -158,8 +158,7 @@ BinaryDependenciesFileList SharedLibraryFinderWindows::doFindLibrariesAbsolutePa
 {
   BinaryDependenciesFileList libraries;
 
-  /// \todo replace with removeLibrariesToNotRedistribute(file);
-  removeLibrariesInExcludeList(file);
+  removeLibrariesToNotRedistribute(file);
 
   for( const QString & libraryName : file.dependenciesFileNames() ){
     libraries.push_back( findLibraryAbsolutePath(libraryName) );
