@@ -1,7 +1,7 @@
 from conans import ConanFile, CMake
 import os
 
-class MdtDeployUtilsCoreTest(ConanFile):
+class MdtCommandLineParserTest(ConanFile):
   settings = "os", "compiler", "build_type", "arch"
   generators = "cmake", "virtualenv"
   build_requires = "MdtCMakeModules/[0.16.0]@scandyna/testing"

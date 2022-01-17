@@ -3,7 +3,7 @@ from conans.errors import ConanInvalidConfiguration
 import os
 
 
-class MdtDeployUtilsCoreConan(ConanFile):
+class MdtCommandLineParserConan(ConanFile):
   name = "MdtCommandLineParser"
   license = "BSD 3-Clause"
   url = "https://gitlab.com/scandyna/mdtcommandlineparser"
