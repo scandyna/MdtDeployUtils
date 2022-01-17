@@ -43,7 +43,7 @@ stages:
     - !reference [.setup_conan, script]
     - conan create packaging/conan/MdtDeployUtilsCore 0.0.0@scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
 
-# TODO: remove once MdtCommandLineParser is standelone
+# TODO: remove once MdtCommandLineParser is standalone
 .conan_create_CommandlineParser:
   stage: build
   script:
@@ -51,23 +51,55 @@ stages:
     - conan create packaging/conan/MdtCommandLineParser 0.0.0@scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
 
 
-.deploy_conan:
+.deploy_base:
   stage: deploy
   rules:
     - if: $CI_COMMIT_TAG
       when: on_success
     - when: never
+
+.deploy_apps:
+  extends: .deploy_base
   script:
     - !reference [.setup_conan, script]
-    - conan create packaging/conan/MdtDeployUtils scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
-    - conan create packaging/conan/MdtDeployUtilsCore scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
+    - conan create packaging/conan/MdtDeployUtils 0.0.0@scandyna/testing --profile $CONAN_PROFILE -s build_type=Release
+    - conan user --password ${CI_JOB_TOKEN} --remote scandyna ci_user
+    - conan upload MdtDeployUtils/* --remote scandyna --all -c
+
+.deploy_libs:
+  extends: .deploy_base
+  script:
+    - !reference [.setup_conan, script]
+    - conan create packaging/conan/MdtDeployUtilsCore 0.0.0@scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
     # TODO: remove once MdtCommandLineParser is standelone
     - conan create packaging/conan/MdtCommandLineParser scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
     - conan user --password ${CI_JOB_TOKEN} --remote scandyna ci_user
-    - conan upload MdtDeployUtils/* --remote scandyna --all -c
     - conan upload MdtDeployUtilsCore/* --remote scandyna --all -c
     # TODO: remove once MdtCommandLineParser is standelone
     - conan upload MdtCommandLineParser/* --remote scandyna --all -c
+
+
+# TODO: deploy MdtDeployUtils is not necessary for all combinations
+#       only 1 release build per platform
+# For libs, like MdtDeployUtilsCore, it makes sens to deploy all combinations
+# of compiler/build types etc..
+#.deploy_conan:
+  #stage: deploy
+  #rules:
+    #- if: $CI_COMMIT_TAG
+      #when: on_success
+    #- when: never
+  #script:
+    #- !reference [.setup_conan, script]
+    #- conan create packaging/conan/MdtDeployUtils scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
+    #- conan create packaging/conan/MdtDeployUtilsCore scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
+    ## TODO: remove once MdtCommandLineParser is standelone
+    #- conan create packaging/conan/MdtCommandLineParser scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
+    #- conan user --password ${CI_JOB_TOKEN} --remote scandyna ci_user
+    #- conan upload MdtDeployUtils/* --remote scandyna --all -c
+    #- conan upload MdtDeployUtilsCore/* --remote scandyna --all -c
+    ## TODO: remove once MdtCommandLineParser is standelone
+    #- conan upload MdtCommandLineParser/* --remote scandyna --all -c
 
 
 ###############################
@@ -109,9 +141,13 @@ stages:
     paths:
       - build
 
-.deploy_linux_conan:
+#.deploy_linux_conan:
+  #image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-cpp-gui:latest
+  #extends: .deploy_conan
+
+.deploy_linux_libs:
   image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-cpp-gui:latest
-  extends: .deploy_conan
+  extends: .deploy_libs
 
 
 build_linux_gcc7_x86_64_debug:
@@ -207,23 +243,29 @@ conan_CommandlineParser_linux_gcc7_x86_64_debug:
   extends: .conan_create_CommandlineParser
 
 
-deploy_linux_gcc7_x86_64_debug:
+deploy_linux_apps:
+  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-cpp-gui:latest
+  variables:
+    CONAN_PROFILE: linux_gcc7_x86_64
+  extends: .deploy_apps
+
+deploy_linux_libs_gcc7_x86_64_debug:
   variables:
     CONAN_PROFILE: linux_gcc7_x86_64
     BUILD_TYPE: Debug
-  extends: .deploy_linux_conan
+  extends: .deploy_linux_libs
 
-deploy_linux_gcc7_x86_64_release:
+deploy_linux_libs_gcc7_x86_64_release:
   variables:
     CONAN_PROFILE: linux_gcc7_x86_64
     BUILD_TYPE: Release
-  extends: .deploy_linux_conan
+  extends: .deploy_linux_libs
 
-deploy_linux_gcc7_x86_64_relwithdebinfo:
+deploy_linux_libs_gcc7_x86_64_relwithdebinfo:
   variables:
     CONAN_PROFILE: linux_gcc7_x86_64
     BUILD_TYPE: RelWithDebInfo
-  extends: .deploy_linux_conan
+  extends: .deploy_linux_libs
 
 
 ###############################
@@ -296,9 +338,9 @@ deploy_linux_gcc7_x86_64_relwithdebinfo:
     - $env:PATH += ";$QT_PREFIX_PATH;$BOOST_PREFIX_PATH"
 
 
-.deploy_windows_conan:
+.deploy_windows_libs:
   extends:
-    - .deploy_conan
+    - .deploy_libs
     - .windows_runner
   before_script:
     - $env:PATH += ";$QT_PREFIX_PATH;$BOOST_PREFIX_PATH"
@@ -451,32 +493,44 @@ conan_CommandLineParser_windows_msvc16_x86_64_debug:
   extends: .conan_create_CommandLineParser_windows
 
 
-deploy_windows_gcc7_x86_64_debug:
+deploy_windows_apps:
+  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
+  extends:
+    - .deploy_apps
+    - .windows_runner
+  variables:
+    CONAN_PROFILE: windows_gcc7_x86_64
+    BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
+    QT_PREFIX_PATH: "C:/Qt/5.14.2/mingw73_64"
+  before_script:
+    - $env:PATH += ";$QT_PREFIX_PATH;$BOOST_PREFIX_PATH"
+
+deploy_windows_libs_gcc7_x86_64_debug:
   image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
   variables:
     CONAN_PROFILE: windows_gcc7_x86_64
     BUILD_TYPE: Debug
     BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
     QT_PREFIX_PATH: "C:/Qt/5.14.2/mingw73_64"
-  extends: .deploy_windows_conan
+  extends: .deploy_windows_libs
 
-deploy_windows_gcc7_x86_64_release:
+deploy_windows_libs_gcc7_x86_64_release:
   image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
   variables:
     CONAN_PROFILE: windows_gcc7_x86_64
     BUILD_TYPE: Release
     BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
     QT_PREFIX_PATH: "C:/Qt/5.14.2/mingw73_64"
-  extends: .deploy_windows_conan
+  extends: .deploy_windows_libs
 
-deploy_windows_gcc7_x86_64_relwithdebinfo:
+deploy_windows_libs_gcc7_x86_64_relwithdebinfo:
   image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
   variables:
     CONAN_PROFILE: windows_gcc7_x86_64
     BUILD_TYPE: RelWithDebInfo
     BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
     QT_PREFIX_PATH: "C:/Qt/5.14.2/mingw73_64"
-  extends: .deploy_windows_conan
+  extends: .deploy_windows_libs
 
 
 #deploy_windows_gcc7_x86_32_debug:
@@ -507,23 +561,23 @@ deploy_windows_gcc7_x86_64_relwithdebinfo:
   #extends: .deploy_windows_conan
 
 
-deploy_windows_msvc_x86_64_debug:
+deploy_windows_libs_msvc_x86_64_debug:
   image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
   variables:
     CONAN_PROFILE: windows_msvc16_x86_64
     BUILD_TYPE: Debug
     BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
     QT_PREFIX_PATH: "C:/Qt/5.14.2/msvc2017_64"
-  extends: .deploy_windows_conan
+  extends: .deploy_windows_libs
 
-deploy_windows_msvc_x86_64_release:
+deploy_windows_libs_msvc_x86_64_release:
   image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
   variables:
     CONAN_PROFILE: windows_msvc16_x86_64
     BUILD_TYPE: Release
     BOOST_PREFIX_PATH: "C:/Libraries/boost_1_73_0"
     QT_PREFIX_PATH: "C:/Qt/5.14.2/msvc2017_64"
-  extends: .deploy_windows_conan
+  extends: .deploy_windows_libs
 
 ###############################
 # API doc
