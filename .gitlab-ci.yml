@@ -62,7 +62,7 @@ stages:
   extends: .deploy_base
   script:
     - !reference [.setup_conan, script]
-    - conan create packaging/conan/MdtDeployUtils 0.0.0@scandyna/testing --profile $CONAN_PROFILE -s build_type=Release
+    - conan create packaging/conan/MdtDeployUtils scandyna/testing --profile $CONAN_PROFILE -s build_type=Release
     - conan user --password ${CI_JOB_TOKEN} --remote scandyna ci_user
     - conan upload MdtDeployUtils/* --remote scandyna --all -c
 
@@ -70,7 +70,7 @@ stages:
   extends: .deploy_base
   script:
     - !reference [.setup_conan, script]
-    - conan create packaging/conan/MdtDeployUtilsCore 0.0.0@scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
+    - conan create packaging/conan/MdtDeployUtilsCore scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
     # TODO: remove once MdtCommandLineParser is standelone
     - conan create packaging/conan/MdtCommandLineParser scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
     - conan user --password ${CI_JOB_TOKEN} --remote scandyna ci_user
