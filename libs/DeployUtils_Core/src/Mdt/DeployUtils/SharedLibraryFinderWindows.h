@@ -52,7 +52,7 @@ namespace Mdt{ namespace DeployUtils{
      */
     explicit SharedLibraryFinderWindows(const Impl::AbstractIsExistingSharedLibrary & isExistingShLibOp, QObject *parent = nullptr);
 
-    /*! \brief Build and returns a list of path to directories where to find shared libraries
+    /*! \brief Build a list of path to directories where to find shared libraries
      *
      * \note \a compilerFinder has not be a valid.
      *  If it is valid (valid pointer and its install dir is set),

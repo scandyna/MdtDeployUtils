@@ -72,8 +72,9 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \pre \a binaryFilePath must have its absolute path set
      * \exception FindDependencyError
-     * \sa buildSearchPathListLinux()
-     * \sa https://man7.org/linux/man-pages/man8/ld.so.8.html
+     *
+     * \sa SharedLibraryFinderLinux
+     * \sa SharedLibraryFinderWindows
      */
     QStringList findDependencies(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList);
 
