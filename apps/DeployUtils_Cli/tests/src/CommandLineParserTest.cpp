@@ -52,7 +52,24 @@ TEST_CASE("Logger backend")
 
 TEST_CASE("verbose option")
 {
-  REQUIRE(false);
+  CommandLineParser parser;
+  QStringList arguments = qStringListFromUtf8Strings({"mdtdeployutils"});
+  const QStringList subCommandArguments = qStringListFromUtf8Strings({"copy-shared-libraries-target-depends-on","/tmp/lib.so","/tmp"});
+
+  SECTION("by default, verbose option is disabled")
+  {
+    arguments << subCommandArguments;
+    parser.process(arguments);
+    REQUIRE( !parser.verboseOptionIsSet() );
+  }
+
+  SECTION("enable verbose option")
+  {
+    arguments << qStringListFromUtf8Strings({"--verbose"});
+    arguments << subCommandArguments;
+    parser.process(arguments);
+    REQUIRE( parser.verboseOptionIsSet() );
+  }
 }
 
 TEST_CASE("CopySharedLibrariesTargetDependsOn")

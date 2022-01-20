@@ -54,6 +54,13 @@ class CommandLineParserDefinition : public QObject
     return mParserDefinition.optionAt(1);
   }
 
+  /*! \brief Get the verbose option
+   */
+  const Mdt::CommandLineParser::ParserDefinitionOption & verboseOption() const noexcept
+  {
+    return mParserDefinition.optionAt(2);
+  }
+
   /*! \brief Get the help text for the "Get Shared Libraries Target Depends On" command
    */
   QString getGetSharedLibrariesTargetDependsOnHelpText() const noexcept;

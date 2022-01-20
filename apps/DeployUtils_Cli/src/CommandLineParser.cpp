@@ -82,6 +82,10 @@ void CommandLineParser::process(const QStringList & arguments)
     }
   }
 
+  if( parserResult.isSet( mParserDefinition.verboseOption() ) ){
+    mVerboseOptionIsSet = true;
+  }
+
   const CommandLineCommand command = commandFromString( parserResult.subCommand().name() );
   switch(command){
     case CommandLineCommand::GetSharedLibrariesTargetDependsOn:

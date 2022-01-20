@@ -75,6 +75,13 @@ class CommandLineParser : public QObject
     return mMessageLoggerBackend;
   }
 
+  /*! \brief Check if the verbose option is set
+   */
+  bool verboseOptionIsSet() const noexcept
+  {
+    return mVerboseOptionIsSet;
+  }
+
   /*! \brief Get the DTO to copy shared libraries a target depends on
    *
    * \pre processedCommand() must be CopySharedLibrariesTargetDependsOn
@@ -102,6 +109,7 @@ class CommandLineParser : public QObject
 
   CommandLineCommand mCommand = CommandLineCommand::Unknown;
   MessageLoggerBackend mMessageLoggerBackend = MessageLoggerBackend::Console;
+  bool mVerboseOptionIsSet = false;
   Mdt::DeployUtils::CopySharedLibrariesTargetDependsOnRequest mCopySharedLibrariesTargetDependsOnRequest;
   CommandLineParserDefinition mParserDefinition;
 };
