@@ -50,6 +50,11 @@ TEST_CASE("Logger backend")
   }
 }
 
+TEST_CASE("verbose option")
+{
+  REQUIRE(false);
+}
+
 TEST_CASE("CopySharedLibrariesTargetDependsOn")
 {
   MessageLogger messageLogger;

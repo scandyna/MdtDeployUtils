@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
  **
- ** Copyright (C) 2020-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 #include <cstdlib>
 
 // #include <QDebug>
-#include <iostream>
+// #include <iostream>
 
 using namespace Mdt::CommandLineParser;
 using namespace Mdt::DeployUtils;
@@ -41,39 +41,16 @@ using namespace Mdt::DeployUtils;
 CommandLineParser::CommandLineParser(QObject *parent)
  : QObject(parent)
 {
-  mParserDefinition.setApplicationName( QLatin1String("mdtdeployutils") );
-  setApplicationDescription();
-
-  mParserDefinition.addHelpOption();
-
-  const QString loggerBackendDescription = tr(
-    "Message logger backend to use.\n"
-    "Available backends:\n"
-    "- console (the default): messages are printed to stdout and errors to stderr\n"
-    "- cmake: like console, but imitates the CMake style messaging."
-  );
-  ParserDefinitionOption loggerBackendOption( QLatin1String("logger-backend"), loggerBackendDescription );
-  loggerBackendOption.setValueName( QLatin1String("backend") );
-  loggerBackendOption.setPossibleValues({QLatin1String("console"),QLatin1String("cmake")});
-  mParserDefinition.addOption(loggerBackendOption);
-
-  addGetSharedLibrariesTargetDependsOnCommand();
-
-  mCopySharedLibrariesTargetDependsOnDefinition.setApplicationName( mParserDefinition.applicationName() );
-  mCopySharedLibrariesTargetDependsOnDefinition.setup();
-  mParserDefinition.addSubCommand( mCopySharedLibrariesTargetDependsOnDefinition.command() );
-
-  addDeployApplicationCommand();
 }
 
 void CommandLineParser::process(const QStringList & arguments)
 {
 //   std::cout << "cmd args: " << arguments.join(QLatin1Char(' ')).toStdString() << std::endl;
 
-  Parser parser(mParserDefinition);
+  Parser parser( mParserDefinition.parserDefinition() );
   parser.parse(arguments);
 
-  if( handleBashCompletion(parser.commandLine(), mParserDefinition) ){
+  if( handleBashCompletion( parser.commandLine(), mParserDefinition.parserDefinition() ) ){
     return;
   }
 
@@ -88,7 +65,7 @@ void CommandLineParser::process(const QStringList & arguments)
     std::exit(0);
   }
 
-  const QStringList loggerBackendOptionValues = parserResult.getValues( loggerBackendOption() );
+  const QStringList loggerBackendOptionValues = parserResult.getValues( mParserDefinition.loggerBackendOption() );
   if( !loggerBackendOptionValues.isEmpty() ){
     if( loggerBackendOptionValues.count() > 1 ){
       const QString message = tr("logger-backend option given more than once");
@@ -136,7 +113,7 @@ void CommandLineParser::process(const QStringList & arguments)
 void CommandLineParser::processGetSharedLibrariesTargetDependsOn(const ParserResultCommand & resultCommand)
 {
   if( resultCommand.isHelpOptionSet() ){
-    showInfo( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
+    showInfo( mParserDefinition.getGetSharedLibrariesTargetDependsOnHelpText() );
     std::exit(0);
   }
 
@@ -150,11 +127,13 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
   mCommand = CommandLineCommand::CopySharedLibrariesTargetDependsOn;
 
   if( resultCommand.isHelpOptionSet() ){
-    showInfo( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
+    showInfo( mParserDefinition.getCopySharedLibrariesTargetDependsOnHelpText() );
     std::exit(0);
   }
 
-  const QStringList overwriteBehaviorValues = resultCommand.getValues( mCopySharedLibrariesTargetDependsOnDefinition.overwriteBehaviorOption() );
+  const CopySharedLibrariesTargetDependsOnCommandLineParserDefinition & definition = mParserDefinition.copySharedLibrariesTargetDependsOn();
+
+  const QStringList overwriteBehaviorValues = resultCommand.getValues( definition.overwriteBehaviorOption() );
   if( !overwriteBehaviorValues.isEmpty() ){
     if( overwriteBehaviorValues.count() > 1 ){
       const QString message = tr("overwrite-behavior option given more than once");
@@ -173,11 +152,11 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
     }
   }
 
-  if( resultCommand.isSet( mCopySharedLibrariesTargetDependsOnDefinition.removeRpathOption() ) ){
+  if( resultCommand.isSet( definition.removeRpathOption() ) ){
     mCopySharedLibrariesTargetDependsOnRequest.removeRpath = true;
   }
 
-  const QStringList searchPrefixPathListValues = resultCommand.getValues( mCopySharedLibrariesTargetDependsOnDefinition.searchPrefixPathListOption() );
+  const QStringList searchPrefixPathListValues = resultCommand.getValues( definition.searchPrefixPathListOption() );
   if( !searchPrefixPathListValues.isEmpty() ){
     if( searchPrefixPathListValues.count() > 1 ){
       const QString message = tr("search-prefix-path-list option given more than once");
@@ -187,7 +166,7 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
       = searchPrefixPathListValues.at(0).split( QChar::fromLatin1(';'), QString::SkipEmptyParts );
   }
 
-  processCopySharedLibrariesTargetDependsOnCompilerLocation( resultCommand.getValues( mCopySharedLibrariesTargetDependsOnDefinition.compilerLocationOption() ) );
+  processCopySharedLibrariesTargetDependsOnCompilerLocation( resultCommand.getValues( definition.compilerLocationOption() ) );
 
   if( resultCommand.positionalArgumentCount() != 2 ){
     const QString message = tr(
@@ -255,55 +234,7 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOnCompilerLocatio
 void CommandLineParser::processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand& resultCommand)
 {
   if( resultCommand.isHelpOptionSet() ){
-    showInfo( mParserDefinition.getSubCommandHelpText( resultCommand.name() ) );
+    showInfo( mParserDefinition.getDeployApplicationHelpText() );
     std::exit(0);
   }
-}
-
-void CommandLineParser::setApplicationDescription()
-{
-  const QString description = tr(
-    "\nHelper tool to deploy binary targets and its dependencies, like shared libraries and plugins.\n"
-    "This tool is divided in commands (subcommands). Each command has its own positional arguments and options.\n"
-    "To get help, pass command --help (or command -h).\n"
-    "Example:\n"
-    "%1 %2 --help"
-  ).arg( QCoreApplication::applicationName(), commandName(CommandLineCommand::GetSharedLibrariesTargetDependsOn) );
-
-  mParserDefinition.setApplicationDescription(description);
-}
-
-void CommandLineParser::addGetSharedLibrariesTargetDependsOnCommand()
-{
-  mGetSharedLibrariesTargetDependsOnCommand.setName( commandName(CommandLineCommand::GetSharedLibrariesTargetDependsOn) );
-
-  const QString description = tr(
-    "Get shared libraries a target depends on.\n"
-    "The list of shared libraries is returned HOW ??\n"
-    "Example:\n"
-    "%1 %2 /home/me/opt/libs/someLib.so"
-  ).arg( mParserDefinition.applicationName(), mGetSharedLibrariesTargetDependsOnCommand.name() );
-  mGetSharedLibrariesTargetDependsOnCommand.setDescription(description);
-
-  mGetSharedLibrariesTargetDependsOnCommand.addPositionalArgument( ValueType::File, QLatin1String("target"), tr("Path to a executable or a shared library.") );
-  mGetSharedLibrariesTargetDependsOnCommand.addHelpOption();
-
-  mParserDefinition.addSubCommand(mGetSharedLibrariesTargetDependsOnCommand);
-}
-
-void CommandLineParser::addDeployApplicationCommand()
-{
-  mDeployApplicationCommand.setName( commandName(CommandLineCommand::DeployApplication) );
-
-  const QString description = tr(
-    "Deploy a application on the base of given executable.\n"
-    "Example:\n"
-    "%1 %2 ./myApp"
-  ).arg( mParserDefinition.applicationName(), mDeployApplicationCommand.name() );
-  mDeployApplicationCommand.setDescription(description);
-
-  mDeployApplicationCommand.addPositionalArgument( ValueType::File, QLatin1String("executable"), tr("Path to the application  executable.") );
-  mDeployApplicationCommand.addHelpOption();
-
-  mParserDefinition.addSubCommand(mDeployApplicationCommand);
 }

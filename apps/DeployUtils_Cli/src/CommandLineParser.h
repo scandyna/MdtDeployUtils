@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
  **
- ** Copyright (C) 2020-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 
 #include "CommandLineCommand.h"
 #include "CommandLineParseError.h"
-#include "CopySharedLibrariesTargetDependsOnCommandLineParserDefinition.h"
+#include "CommandLineParserDefinition.h"
 #include "Mdt/CommandLineParser/ParserDefinition.h"
 #include "Mdt/CommandLineParser/ParserDefinitionOption.h"
 #include "Mdt/CommandLineParser/ParserDefinitionCommand.h"
@@ -90,31 +90,20 @@ class CommandLineParser : public QObject
    */
   const Mdt::CommandLineParser::ParserDefinition & parserDefinition() const noexcept
   {
-    return mParserDefinition;
+    return mParserDefinition.parserDefinition();
   }
 
  private:
 
-  void setApplicationDescription();
-  void addGetSharedLibrariesTargetDependsOnCommand();
-  void addDeployApplicationCommand();
   void processGetSharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
   void processCopySharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
   void processCopySharedLibrariesTargetDependsOnCompilerLocation(const QStringList & compilerLocationValues);
   void processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
 
-  const Mdt::CommandLineParser::ParserDefinitionOption & loggerBackendOption() const noexcept
-  {
-    return mParserDefinition.optionAt(1);
-  }
-
   CommandLineCommand mCommand = CommandLineCommand::Unknown;
   MessageLoggerBackend mMessageLoggerBackend = MessageLoggerBackend::Console;
   Mdt::DeployUtils::CopySharedLibrariesTargetDependsOnRequest mCopySharedLibrariesTargetDependsOnRequest;
-  Mdt::CommandLineParser::ParserDefinition mParserDefinition;
-  CopySharedLibrariesTargetDependsOnCommandLineParserDefinition mCopySharedLibrariesTargetDependsOnDefinition;
-  Mdt::CommandLineParser::ParserDefinitionCommand mGetSharedLibrariesTargetDependsOnCommand;
-  Mdt::CommandLineParser::ParserDefinitionCommand mDeployApplicationCommand;
+  CommandLineParserDefinition mParserDefinition;
 };
 
 #endif // #ifndef MDT_COMMAND_LINE_PARSER_H

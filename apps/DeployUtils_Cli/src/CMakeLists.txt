@@ -7,6 +7,7 @@ include(MdtInstallExecutable) # TODO: remove
 add_library(Mdt_DeployUtils_Cli STATIC
   DeployUtilsMain.cpp
   CopySharedLibrariesTargetDependsOnCommandLineParserDefinition.cpp
+  CommandLineParserDefinition.cpp
   CommandLineParser.cpp
   CommandLineCommand.cpp
 )
