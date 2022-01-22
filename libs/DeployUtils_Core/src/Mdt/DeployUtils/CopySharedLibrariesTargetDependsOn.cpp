@@ -45,7 +45,7 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   const Platform platform = reader.getFilePlatform();
   reader.close();
 
-  const QString startMessage = tr("copy dependencies for %1").arg(request.targetFilePath);
+  const QString startMessage = tr("Copy dependencies for %1").arg(request.targetFilePath);
   emit statusMessage(startMessage);
 
   emitSearchPrefixPathListMessage(request.searchPrefixPathList);
