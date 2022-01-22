@@ -1,29 +1,31 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
 
-message("HI, install...........")
+set(CMAKE_MESSAGE_LOG_LEVEL @CMAKE_MESSAGE_LOG_LEVEL@)
+
+message(VERBOSE "Running mdt_install_shared_libraries_target_depends_on() script")
 
 # set(CMAKE_MODULE_PATH @CMAKE_MODULE_PATH@)
 # message("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 
 # include(MdtRuntimeEnvironment)
 
-message("DESTDIR: $ENV{DESTDIR}")
+message(VERBOSE "DESTDIR: $ENV{DESTDIR}")
 
-message("CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
+message(VERBOSE "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
-message("CMAKE_PREFIX_PATH: @CMAKE_PREFIX_PATH@")
-message("CMAKE_CXX_COMPILER: @CMAKE_CXX_COMPILER@")
+message(VERBOSE "CMAKE_PREFIX_PATH: @CMAKE_PREFIX_PATH@")
+message(DEBUG "CMAKE_CXX_COMPILER: @CMAKE_CXX_COMPILER@")
 
 set(IS_MSVC @MSVC@)
-message("Is MSVC: ${IS_MSVC}")
+message(DEBUG "Is MSVC: ${IS_MSVC}")
 
 # TODO: update to take either deployUtilsExecutable
 set(mdtDeployUtilsCommand "$<TARGET_FILE:mdtdeployutils>")
-message("mdtDeployUtilsCommand: ${mdtDeployUtilsCommand}")
+message(DEBUG "mdtDeployUtilsCommand: ${mdtDeployUtilsCommand}")
 
 set(targetFile "$<TARGET_FILE:@ARG_TARGET@>")
-message("targetFile: ${targetFile}")
+message(DEBUG "targetFile: ${targetFile}")
 
 ###########################################
 # PATH environment to run mdtdeployutils
@@ -36,7 +38,7 @@ if(WIN32)
   string(REPLACE ";" "\\;" runPath "${runPath}")
 endif()
 
-message("runPath: ${runPath}")
+message(DEBUG "runPath: ${runPath}")
 
 ###########################################
 # Destination and install path
@@ -44,7 +46,7 @@ message("runPath: ${runPath}")
 
 set(DESTINATION "@MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_DESTINATION@")
 
-message("DESTINATION: ${DESTINATION}")
+message(DEBUG "DESTINATION: ${DESTINATION}")
 
 if(NOT DESTINATION)
   message(FATAL_ERROR "MdtInstallSharedLibrariesScript: missing DESTINATION")
@@ -68,7 +70,7 @@ else()
   get_filename_component(librariesDestination "${CMAKE_INSTALL_PREFIX}/${DESTINATION}" ABSOLUTE)
 endif()
 
-message("librariesDestination: ${librariesDestination}")
+message(VERBOSE "librariesDestination: ${librariesDestination}")
 
 ###########################################
 # Options
@@ -76,21 +78,21 @@ message("librariesDestination: ${librariesDestination}")
 
 set(INSTALL_IS_UNIX_SYSTEM_WIDE @MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_INSTALL_IS_UNIX_SYSTEM_WIDE@)
 if(INSTALL_IS_UNIX_SYSTEM_WIDE)
-  message("Install is Unix system wide")
+  message(DEBUG "Install is Unix system wide")
   set(overwriteBehavior keep)
   set(removeRpathOptionArgument --remove-rpath)
 else()
-  message("Install is NOT Unix system wide")
+  message(DEBUG "Install is NOT Unix system wide")
   set(overwriteBehavior overwrite)
   set(removeRpathOptionArgument)
 endif()
 
-message("overwriteBehavior: ${overwriteBehavior}")
-message("removeRpathOptionArgument: ${removeRpathOptionArgument}")
+message(VERBOSE "overwriteBehavior: ${overwriteBehavior}")
+message(VERBOSE "removeRpathOptionArgument: ${removeRpathOptionArgument}")
 
 set(compilerLocationArguments)
 if(IS_MSVC)
-  message("Is MSVC, use compiler finder to locate redist dirs")
+  message(DEBUG "Is MSVC, use compiler finder to locate redist dirs")
   set(compilerLocationArguments --compiler-location "compiler-path=@CMAKE_CXX_COMPILER@")
 endif()
 
