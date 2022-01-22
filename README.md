@@ -92,17 +92,28 @@ To deploy a application:
 ```bash
 mdtdeployutils deploy-application "appExecutable"
 ```
+Status: not implemented yet
 
+Copy shared libraries a target depends on:
+```bash
+mdtdeployutils copy-shared-libraries-target-depends-on "path/to/some/executable" "path/to/destination/directory"
+```
 
-
-
+Get a list of shared libraries a target depends on:
 ```bash
 mdtdeployutils get-shared-libraries-target-depends-on "path/to/some/executable"
+```
+Status: not implemented.
+Should see if it is usefull, and also how the list should be returned
+(maybe a file ?).
 
-mdtdeployutils copy-shared-libraries-target-depends-on "path/to/some/executable" "path/to/destination/directory"
 
+Install a executable:
+```bash
 mdtdeployutils install-executable "someExe"
 ```
+Status: not implemented. Probably not usefull.
+
 
 ## C++ API
 
