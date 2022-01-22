@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -48,7 +48,7 @@ TEST_CASE("sandbox")
 
   CopySharedLibrariesTargetDependsOn useCase;
 
-  QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::message, MessageLogger::info);
+  QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::statusMessage, MessageLogger::info);
   QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::verboseMessage, MessageLogger::info);
 
   useCase.execute(request);
