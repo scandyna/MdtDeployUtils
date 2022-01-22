@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_COPY_SHARED_LIBRARIES_TARGET_DEPENDS_ON_REQUEST_H
 
 #include "OverwriteBehavior.h"
+// #include "LogLevel.h"
 #include "mdt_deployutilscore_export.h"
 #include <QStringList>
 #include <QString>
@@ -45,6 +46,7 @@ namespace Mdt{ namespace DeployUtils{
   struct MDT_DEPLOYUTILSCORE_EXPORT CopySharedLibrariesTargetDependsOnRequest
   {
     OverwriteBehavior overwriteBehavior = OverwriteBehavior::Fail;
+//     LogLevel mLogLevel = LogLevel::Status;
     bool removeRpath = false;
     QStringList searchPrefixPathList;
     CompilerLocationType compilerLocationType = CompilerLocationType::Undefined;

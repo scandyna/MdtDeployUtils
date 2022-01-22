@@ -50,25 +50,73 @@ TEST_CASE("Logger backend")
   }
 }
 
-TEST_CASE("verbose option")
+TEST_CASE("log level option")
 {
   CommandLineParser parser;
   QStringList arguments = qStringListFromUtf8Strings({"mdtdeployutils"});
   const QStringList subCommandArguments = qStringListFromUtf8Strings({"copy-shared-libraries-target-depends-on","/tmp/lib.so","/tmp"});
 
-  SECTION("by default, verbose option is disabled")
+  SECTION("by default, log level is STATUS")
   {
     arguments << subCommandArguments;
     parser.process(arguments);
-    REQUIRE( !parser.verboseOptionIsSet() );
+    REQUIRE( parser.logLevel() == LogLevel::Status );
   }
 
-  SECTION("enable verbose option")
+  SECTION("choose ERROR level")
   {
-    arguments << qStringListFromUtf8Strings({"--verbose"});
+    arguments << qStringListFromUtf8Strings({"--log-level","ERROR"});
     arguments << subCommandArguments;
     parser.process(arguments);
-    REQUIRE( parser.verboseOptionIsSet() );
+    REQUIRE( parser.logLevel() == LogLevel::Error );
+  }
+
+  SECTION("choose WARNING level")
+  {
+    arguments << qStringListFromUtf8Strings({"--log-level","WARNING"});
+    arguments << subCommandArguments;
+    parser.process(arguments);
+    REQUIRE( parser.logLevel() == LogLevel::Status );
+  }
+
+  SECTION("choose NOTICE level")
+  {
+    arguments << qStringListFromUtf8Strings({"--log-level","NOTICE"});
+    arguments << subCommandArguments;
+    parser.process(arguments);
+    REQUIRE( parser.logLevel() == LogLevel::Status );
+  }
+
+  SECTION("choose STATUS level")
+  {
+    arguments << qStringListFromUtf8Strings({"--log-level","STATUS"});
+    arguments << subCommandArguments;
+    parser.process(arguments);
+    REQUIRE( parser.logLevel() == LogLevel::Status );
+  }
+
+  SECTION("choose VERBOSE level")
+  {
+    arguments << qStringListFromUtf8Strings({"--log-level","VERBOSE"});
+    arguments << subCommandArguments;
+    parser.process(arguments);
+    REQUIRE( parser.logLevel() == LogLevel::Verbose );
+  }
+
+  SECTION("choose DEBUG level")
+  {
+    arguments << qStringListFromUtf8Strings({"--log-level","DEBUG"});
+    arguments << subCommandArguments;
+    parser.process(arguments);
+    REQUIRE( parser.logLevel() == LogLevel::Debug );
+  }
+
+  SECTION("choose TRACE level")
+  {
+    arguments << qStringListFromUtf8Strings({"--log-level","TRACE"});
+    arguments << subCommandArguments;
+    parser.process(arguments);
+    REQUIRE( parser.logLevel() == LogLevel::Debug );
   }
 }
 

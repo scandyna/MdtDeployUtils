@@ -82,9 +82,35 @@ void CommandLineParser::process(const QStringList & arguments)
     }
   }
 
-  if( parserResult.isSet( mParserDefinition.verboseOption() ) ){
-    mVerboseOptionIsSet = true;
+  const QStringList logLevelOptionValues = parserResult.getValues( mParserDefinition.logLevelOption() );
+  if( !logLevelOptionValues.isEmpty() ){
+    if( logLevelOptionValues.count() > 1 ){
+      const QString message = tr("log-level option given more than once");
+      throw CommandLineParseError(message);
+    }
+    const QString level = logLevelOptionValues.at(0);
+    if( level == QLatin1String("ERROR") ){
+      mLogLevel = LogLevel::Error;
+    }else if( level == QLatin1String("WARNING") ){
+      mLogLevel = LogLevel::Status;
+    }else if( level == QLatin1String("NOTICE") ){
+      mLogLevel = LogLevel::Status;
+    }else if( level == QLatin1String("STATUS") ){
+      mLogLevel = LogLevel::Status;
+    }else if( level == QLatin1String("VERBOSE") ){
+      mLogLevel = LogLevel::Verbose;
+    }else if( level == QLatin1String("DEBUG") ){
+      mLogLevel = LogLevel::Debug;
+    }else if( level == QLatin1String("TRACE") ){
+      mLogLevel = LogLevel::Debug;
+    }else{
+      const QString message = tr("given log level '%1' is not supported").arg(level);
+      throw CommandLineParseError(message);
+    }
   }
+//   if( parserResult.isSet( mParserDefinition.verboseOption() ) ){
+//     mVerboseOptionIsSet = true;
+//   }
 
   const CommandLineCommand command = commandFromString( parserResult.subCommand().name() );
   switch(command){

@@ -19,6 +19,7 @@
  **
  ****************************************************************************/
 #include "DeployUtilsMain.h"
+#include "Mdt/DeployUtils/LogLevel.h"
 #include "Mdt/DeployUtils/MessageLogger.h"
 #include "Mdt/DeployUtils/CMakeStyleMessageLogger.h"
 #include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.h"
@@ -83,6 +84,17 @@ void DeployUtilsMain::copySharedLibrariesTargetDependsOn(const CommandLineParser
   const auto request = commandLineParser.copySharedLibrariesTargetDependsOnRequest();
 
   CopySharedLibrariesTargetDependsOn csltdo;
-  QObject::connect(&csltdo, &CopySharedLibrariesTargetDependsOn::message, MessageLogger::info);
+
+  const LogLevel logLevel = commandLineParser.logLevel();
+  if( shouldOutputStatusMessages(logLevel) ){
+    QObject::connect(&csltdo, &CopySharedLibrariesTargetDependsOn::statusMessage, MessageLogger::info);
+  }
+  if( shouldOutputVerboseMessages(logLevel) ){
+    QObject::connect(&csltdo, &CopySharedLibrariesTargetDependsOn::verboseMessage, MessageLogger::info);
+  }
+  if( shouldOutputDebugMessages(logLevel) ){
+    QObject::connect(&csltdo, &CopySharedLibrariesTargetDependsOn::debugMessage, MessageLogger::info);
+  }
+
   csltdo.execute(request);
 }

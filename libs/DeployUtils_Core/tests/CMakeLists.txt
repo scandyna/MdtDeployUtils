@@ -822,6 +822,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME LogLevelTest
+  TARGET logLevelTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/LogLevelTest.cpp
+)
+
+mdt_add_test(
   NAME CopySharedLibrariesTargetDependsOnTest
   TARGET copySharedLibrariesTargetDependsOnTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

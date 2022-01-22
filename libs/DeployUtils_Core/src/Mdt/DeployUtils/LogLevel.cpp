@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2020-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -18,20 +18,50 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "CMakeStyleMessageLogger.h"
-#include <QByteArray>
-#include <iostream>
+#include "LogLevel.h"
 
 namespace Mdt{ namespace DeployUtils{
 
-void CMakeStyleMessageLogger::info(const QString & message)
+bool shouldOutputStatusMessages(LogLevel level) noexcept
 {
-  std::cout << "-- " << message.toLocal8Bit().toStdString() << std::endl;
+  switch(level){
+    case LogLevel::Error:
+      return false;
+    case LogLevel::Status:
+    case LogLevel::Verbose:
+    case LogLevel::Debug:
+      break;
+  }
+
+  return true;
 }
 
-void CMakeStyleMessageLogger::error(const QString & message)
+bool shouldOutputVerboseMessages(LogLevel level) noexcept
 {
-  std::cerr << "[CMake style ERROR]: " << message.toLocal8Bit().toStdString() << std::endl;
+  switch(level){
+    case LogLevel::Error:
+    case LogLevel::Status:
+      return false;
+    case LogLevel::Verbose:
+    case LogLevel::Debug:
+      break;
+  }
+
+  return true;
+}
+
+bool shouldOutputDebugMessages(LogLevel level) noexcept
+{
+  switch(level){
+    case LogLevel::Error:
+    case LogLevel::Status:
+    case LogLevel::Verbose:
+      return false;
+    case LogLevel::Debug:
+      break;
+  }
+
+  return true;
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

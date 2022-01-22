@@ -107,8 +107,9 @@ namespace Mdt{ namespace DeployUtils{
 
    signals:
 
-    void message(const QString & message) const;
+    void statusMessage(const QString & message) const;
     void verboseMessage(const QString & message) const;
+    void debugMessage(const QString & message) const;
 
    private:
 

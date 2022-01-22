@@ -43,9 +43,24 @@ CommandLineParserDefinition::CommandLineParserDefinition(QObject *parent) noexce
   loggerBackendOption.setPossibleValues({QLatin1String("console"),QLatin1String("cmake")});
   mParserDefinition.addOption(loggerBackendOption);
 
-  const QString verboseDescription = tr("Enable verbose output");
-  ParserDefinitionOption verboseOption( QLatin1String("verbose"), verboseDescription );
-  mParserDefinition.addOption(verboseOption);
+  const QString logLevelDescription = tr(
+    "Set the log level.\n"
+    "The log level is inspired by CMake. Available levels are:\n"
+    "- ERROR: only output error messages\n"
+    "- WARNING: the same as STATUS\n"
+    "- NOTICE: the same as STATUS\n"
+    "- STATUS (the default): output the main interesting messages that project users might be interested in,"
+    " and higher level messages (like errors)\n"
+    "- VERBOSE: output detailed informational messages intended for project users,"
+    " and higher level messages (those defined by the STATUS level)\n"
+    "- DEBUG: Detailed informational messages intended for developers working on the project itself,"
+    " and higher level messages (those defined by the VERBOSE level)\n"
+    "- TRACE: the same as DEBUG"
+  );
+  ParserDefinitionOption logLevelOption( QLatin1String("log-level"), logLevelDescription );
+  logLevelOption.setValueName( QLatin1String("level") );
+  logLevelOption.setPossibleValues({QLatin1String("STATUS"),QLatin1String("VERBOSE"),QLatin1String("DEBUG")});
+  mParserDefinition.addOption(logLevelOption);
 
   addGetSharedLibrariesTargetDependsOnCommand();
 

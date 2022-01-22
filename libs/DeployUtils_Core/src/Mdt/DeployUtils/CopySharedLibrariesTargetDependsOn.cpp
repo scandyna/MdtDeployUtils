@@ -46,7 +46,7 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   reader.close();
 
   const QString startMessage = tr("copy dependencies for %1").arg(request.targetFilePath);
-  emit message(startMessage);
+  emit statusMessage(startMessage);
 
   emitSearchPrefixPathListMessage(request.searchPrefixPathList);
 
@@ -64,7 +64,7 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   }
 
   BinaryDependencies binaryDependencies;
-  connect(&binaryDependencies, &BinaryDependencies::message, this, &CopySharedLibrariesTargetDependsOn::message);
+  connect(&binaryDependencies, &BinaryDependencies::message, this, &CopySharedLibrariesTargetDependsOn::statusMessage);
   connect(&binaryDependencies, &BinaryDependencies::verboseMessage, this, &CopySharedLibrariesTargetDependsOn::verboseMessage);
 
   if( request.compilerLocationType != CompilerLocationType::Undefined ){

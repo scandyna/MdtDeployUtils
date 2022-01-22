@@ -115,6 +115,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/BinaryDependencies.cpp
   Mdt/DeployUtils/FileCopyError.cpp
   Mdt/DeployUtils/FileCopier.cpp
+  Mdt/DeployUtils/LogLevel.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.cpp
 )

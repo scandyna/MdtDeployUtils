@@ -96,10 +96,14 @@ if(IS_MSVC)
   set(compilerLocationArguments --compiler-location "compiler-path=@CMAKE_CXX_COMPILER@")
 endif()
 
+set(logLevelArguments)
+if(CMAKE_MESSAGE_LOG_LEVEL)
+  set(logLevelArguments --log-level ${CMAKE_MESSAGE_LOG_LEVEL})
+endif()
 
 execute_process(
   COMMAND "${CMAKE_COMMAND}" -E env "${runPath}"
-          "${mdtDeployUtilsCommand}" --logger-backend cmake copy-shared-libraries-target-depends-on
+          "${mdtDeployUtilsCommand}" --logger-backend cmake ${logLevelArguments} copy-shared-libraries-target-depends-on
             --overwrite-behavior ${overwriteBehavior}
             ${removeRpathOptionArgument}
             --search-prefix-path-list "@CMAKE_PREFIX_PATH@"

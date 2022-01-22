@@ -28,6 +28,7 @@
 #include "Mdt/CommandLineParser/ParserDefinitionOption.h"
 #include "Mdt/CommandLineParser/ParserDefinitionCommand.h"
 #include "Mdt/CommandLineParser/ParserResultCommand.h"
+#include "Mdt/DeployUtils/LogLevel.h"
 #include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.h"
 #include <QObject>
 #include <QStringList>
@@ -42,6 +43,7 @@ enum class MessageLoggerBackend
   Console,  /*!< Use the ConsoleMessageLogger backend */
   CMake     /*!< Use the CMakeStyleMessageLogger backend */
 };
+
 
 /*! \brief Command line parser for mdtdeployutils
  */
@@ -75,12 +77,19 @@ class CommandLineParser : public QObject
     return mMessageLoggerBackend;
   }
 
+  /*! \brief get the choosen log level
+   */
+  Mdt::DeployUtils::LogLevel logLevel() const noexcept
+  {
+    return mLogLevel;
+  }
+
   /*! \brief Check if the verbose option is set
    */
-  bool verboseOptionIsSet() const noexcept
-  {
-    return mVerboseOptionIsSet;
-  }
+//   bool verboseOptionIsSet() const noexcept
+//   {
+//     return mVerboseOptionIsSet;
+//   }
 
   /*! \brief Get the DTO to copy shared libraries a target depends on
    *
@@ -109,7 +118,8 @@ class CommandLineParser : public QObject
 
   CommandLineCommand mCommand = CommandLineCommand::Unknown;
   MessageLoggerBackend mMessageLoggerBackend = MessageLoggerBackend::Console;
-  bool mVerboseOptionIsSet = false;
+  Mdt::DeployUtils::LogLevel mLogLevel = Mdt::DeployUtils::LogLevel::Status;
+//   bool mVerboseOptionIsSet = false;
   Mdt::DeployUtils::CopySharedLibrariesTargetDependsOnRequest mCopySharedLibrariesTargetDependsOnRequest;
   CommandLineParserDefinition mParserDefinition;
 };

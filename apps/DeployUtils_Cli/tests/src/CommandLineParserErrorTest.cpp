@@ -53,6 +53,27 @@ TEST_CASE("Logger backend")
   }
 }
 
+TEST_CASE("log level option")
+{
+  CommandLineParser parser;
+  QStringList arguments = qStringListFromUtf8Strings({"mdtdeployutils"});
+  const QStringList subCommandArguments = qStringListFromUtf8Strings({"copy-shared-libraries-target-depends-on","/tmp/lib.so","/tmp"});
+
+  SECTION("log level not sepcified")
+  {
+    arguments << qStringListFromUtf8Strings({"--log-level"});
+    arguments << subCommandArguments;
+    REQUIRE_THROWS_AS( parser.process(arguments), CommandLineParseError );
+  }
+
+  SECTION("unknown log level")
+  {
+    arguments << qStringListFromUtf8Strings({"--log-level","unknown"});
+    arguments << subCommandArguments;
+    REQUIRE_THROWS_AS( parser.process(arguments), CommandLineParseError );
+  }
+}
+
 TEST_CASE("CopySharedLibrariesTargetDependsOn")
 {
   CommandLineParser parser;

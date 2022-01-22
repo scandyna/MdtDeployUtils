@@ -91,8 +91,9 @@ TEST_CASE("CopySharedLibrariesTargetDependsOn")
 
   CopySharedLibrariesTargetDependsOn useCase;
 
-  QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::message, MessageLogger::info);
+  QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::statusMessage, MessageLogger::info);
   QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::verboseMessage, MessageLogger::info);
+  QObject::connect(&useCase, &CopySharedLibrariesTargetDependsOn::debugMessage, MessageLogger::info);
 
   /*
    * Install the executable with its rpath allaways set to

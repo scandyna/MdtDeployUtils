@@ -54,9 +54,9 @@ class CommandLineParserDefinition : public QObject
     return mParserDefinition.optionAt(1);
   }
 
-  /*! \brief Get the verbose option
+  /*! \brief Get the log-level option
    */
-  const Mdt::CommandLineParser::ParserDefinitionOption & verboseOption() const noexcept
+  const Mdt::CommandLineParser::ParserDefinitionOption & logLevelOption() const noexcept
   {
     return mParserDefinition.optionAt(2);
   }
