@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2021 Philippe Steinmann.
+ ** Copyright (C) 2015-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -79,7 +79,7 @@ void FileCopier::copyFile(const QString & sourceFilePath, const QString & destin
       return;
     }
     if( mOverwriteBehavior == OverwriteBehavior::Fail ){
-      const QString msg = tr("copy file '%1' to '%2' failed because the destination file extsis (overwrite behavior is Fail)")
+      const QString msg = tr("Copy file '%1' to '%2' failed because the destination file extsis (overwrite behavior is Fail)")
                           .arg( sourceFileInfo.absoluteFilePath(), destinationFileInfo.absoluteFilePath() );
       throw FileCopyError(msg);
     }
@@ -96,7 +96,7 @@ void FileCopier::copyFile(const QString & sourceFilePath, const QString & destin
     }
   }
 
-  const QString copyFileMsg = tr("copy %1 to %2").arg( sourceFileInfo.fileName(), destinationDirectoryPath );
+  const QString copyFileMsg = tr("Copy %1 to %2").arg( sourceFileInfo.fileName(), destinationDirectoryPath );
   emit verboseMessage(copyFileMsg);
 
   QFile sourceFile( sourceFileInfo.absoluteFilePath() );
