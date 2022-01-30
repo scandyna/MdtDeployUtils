@@ -22,6 +22,7 @@
 #define COMMAND_LINE_PARSER_DEFINITION_H
 
 #include "CopySharedLibrariesTargetDependsOnCommandLineParserDefinition.h"
+#include "DeployApplicationCommandLineParserDefinition.h"
 #include "Mdt/CommandLineParser/ParserDefinition.h"
 #include "Mdt/CommandLineParser/ParserDefinitionOption.h"
 #include <QObject>
@@ -87,6 +88,13 @@ class CommandLineParserDefinition : public QObject
     return mCopySharedLibrariesTargetDependsOnDefinition;
   }
 
+  /*! \brief Get the "Deploy Application" command
+   */
+  const DeployApplicationCommandLineParserDefinition & deployApplication() const noexcept
+  {
+    return mDeployApplicationCommandLineParserDefinition;
+  }
+
  private:
 
   void setApplicationDescription();
@@ -96,7 +104,7 @@ class CommandLineParserDefinition : public QObject
   Mdt::CommandLineParser::ParserDefinition mParserDefinition;
   CopySharedLibrariesTargetDependsOnCommandLineParserDefinition mCopySharedLibrariesTargetDependsOnDefinition;
   Mdt::CommandLineParser::ParserDefinitionCommand mGetSharedLibrariesTargetDependsOnCommand;
-  Mdt::CommandLineParser::ParserDefinitionCommand mDeployApplicationCommand;
+  DeployApplicationCommandLineParserDefinition mDeployApplicationCommandLineParserDefinition;
 };
 
 #endif // #ifndef COMMAND_LINE_PARSER_DEFINITION_H

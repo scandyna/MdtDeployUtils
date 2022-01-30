@@ -37,8 +37,8 @@ TEST_CASE("sandbox")
 
   request.targetFilePath = QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH);
   request.searchPrefixPathList = getTestPrefixPath(PREFIX_PATH);
-  request.compilerLocationType = CompilerLocationType::CompilerPath;
-  request.compilerLocationValue = QString::fromLocal8Bit(CXX_COMPILER_PATH);
+  request.compilerLocation.setType(CompilerLocationType::CompilerPath);
+  request.compilerLocation.setValue( QString::fromLocal8Bit(CXX_COMPILER_PATH) );
   request.destinationDirectoryPath = destinationDir.path();
   request.overwriteBehavior = OverwriteBehavior::Overwrite;
   request.removeRpath = false;

@@ -57,6 +57,8 @@
  *
  * \subsection HelperClasses Helper classes
  *
+ * To deploy a application, see Mdt::DeployUtils::DeployApplication.
+ *
  * To copy shared libraries a executable depends on,
  * see Mdt::DeployUtils::CopySharedLibrariesTargetDependsOn.
  *

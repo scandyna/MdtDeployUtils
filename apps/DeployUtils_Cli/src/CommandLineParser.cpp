@@ -140,6 +140,93 @@ void CommandLineParser::process(const QStringList & arguments)
   throw CommandLineParseError(message);
 }
 
+void CommandLineParser::parseOverwriteBehaviour(OverwriteBehavior & overwriteBehavior,
+                                                const ParserResultCommand & resultCommand,
+                                                const ParserDefinitionOption & option)
+{
+  const QStringList overwriteBehaviorValues = resultCommand.getValues(option);
+  if( !overwriteBehaviorValues.isEmpty() ){
+    if( overwriteBehaviorValues.count() > 1 ){
+      const QString message = tr("%1 option given more than once")
+                              .arg( option.name() );
+      throw CommandLineParseError(message);
+    }
+    const QString overwriteBehaviorStr = overwriteBehaviorValues.at(0);
+    if( overwriteBehaviorStr == QLatin1String("keep") ){
+      overwriteBehavior = OverwriteBehavior::Keep;
+    }else if( overwriteBehaviorStr == QLatin1String("overwrite") ){
+      overwriteBehavior = OverwriteBehavior::Overwrite;
+    }else if( overwriteBehaviorStr == QLatin1String("fail") ){
+      overwriteBehavior = OverwriteBehavior::Fail;
+    }else{
+      const QString message = tr("unknown %1 '%2'")
+                              .arg(option.name(),  overwriteBehaviorStr);
+      throw CommandLineParseError(message);
+    }
+  }
+}
+
+QStringList CommandLineParser::parseSearchPrefixPathList(const ParserResultCommand & resultCommand,
+                                                         const ParserDefinitionOption & option)
+{
+  const QStringList searchPrefixPathListValues = resultCommand.getValues(option);
+  if( !searchPrefixPathListValues.isEmpty() ){
+    if( searchPrefixPathListValues.count() > 1 ){
+      const QString message = tr("%1 option given more than once")
+                              .arg( option.name() );
+      throw CommandLineParseError(message);
+    }
+    return searchPrefixPathListValues.at(0).split( QChar::fromLatin1(';'), QString::SkipEmptyParts );
+  }
+
+  return QStringList();
+}
+
+CompilerLocationRequest CommandLineParser::parseCompilerLocation(const ParserResultCommand & resultCommand,
+                                                                 const ParserDefinitionOption & option)
+{
+  CompilerLocationRequest location;
+  const QStringList optionValues = resultCommand.getValues(option);
+
+  if( optionValues.isEmpty() ){
+    return location;
+  }
+
+  if( optionValues.count() > 1 ){
+    const QString message = tr("%1 option given more than once")
+                            .arg( option.name() );
+    throw CommandLineParseError(message);
+  }
+
+  const QStringList compilerLocationKeyAndValue = optionValues.at(0).split( QLatin1Char('=') );
+
+  if( compilerLocationKeyAndValue.count() != 2 ){
+    const QString message = tr("%1: expected type=value syntax, got '%2'")
+                            .arg( option.name(),  optionValues.at(0) );
+    throw CommandLineParseError(message);
+  }
+
+  const QString compilerLocationType = compilerLocationKeyAndValue.at(0);
+  QString compilerLocationValue = compilerLocationKeyAndValue.at(1);
+  compilerLocationValue.remove( QLatin1Char('"') );
+
+  if( compilerLocationType == QLatin1String("from-env") ){
+    location.setType(CompilerLocationType::FromEnv);
+    location.setValue(compilerLocationValue);
+  }else if( compilerLocationType == QLatin1String("vc-install-dir") ){
+    location.setType(CompilerLocationType::VcInstallDir);
+    location.setValue(compilerLocationValue);
+  }else if( compilerLocationType == QLatin1String("compiler-path") ){
+    location.setType(CompilerLocationType::CompilerPath);
+    location.setValue(compilerLocationValue);
+  }else{
+    const QString message = tr("unknown compiler-location type '%1'").arg(compilerLocationType);
+    throw CommandLineParseError(message);
+  }
+
+  return location;
+}
+
 void CommandLineParser::processGetSharedLibrariesTargetDependsOn(const ParserResultCommand & resultCommand)
 {
   if( resultCommand.isHelpOptionSet() ){
@@ -163,40 +250,17 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
 
   const CopySharedLibrariesTargetDependsOnCommandLineParserDefinition & definition = mParserDefinition.copySharedLibrariesTargetDependsOn();
 
-  const QStringList overwriteBehaviorValues = resultCommand.getValues( definition.overwriteBehaviorOption() );
-  if( !overwriteBehaviorValues.isEmpty() ){
-    if( overwriteBehaviorValues.count() > 1 ){
-      const QString message = tr("overwrite-behavior option given more than once");
-      throw CommandLineParseError(message);
-    }
-    const QString overwriteBehavior = overwriteBehaviorValues.at(0);
-    if( overwriteBehavior == QLatin1String("keep") ){
-      mCopySharedLibrariesTargetDependsOnRequest.overwriteBehavior = OverwriteBehavior::Keep;
-    }else if( overwriteBehavior == QLatin1String("overwrite") ){
-      mCopySharedLibrariesTargetDependsOnRequest.overwriteBehavior = OverwriteBehavior::Overwrite;
-    }else if( overwriteBehavior == QLatin1String("fail") ){
-      mCopySharedLibrariesTargetDependsOnRequest.overwriteBehavior = OverwriteBehavior::Fail;
-    }else{
-      const QString message = tr("unknown overwrite-behavior '%1'").arg(overwriteBehavior);
-      throw CommandLineParseError(message);
-    }
-  }
+  parseOverwriteBehaviour( mCopySharedLibrariesTargetDependsOnRequest.overwriteBehavior, resultCommand, definition.overwriteBehaviorOption() );
 
   if( resultCommand.isSet( definition.removeRpathOption() ) ){
     mCopySharedLibrariesTargetDependsOnRequest.removeRpath = true;
   }
 
-  const QStringList searchPrefixPathListValues = resultCommand.getValues( definition.searchPrefixPathListOption() );
-  if( !searchPrefixPathListValues.isEmpty() ){
-    if( searchPrefixPathListValues.count() > 1 ){
-      const QString message = tr("search-prefix-path-list option given more than once");
-      throw CommandLineParseError(message);
-    }
-    mCopySharedLibrariesTargetDependsOnRequest.searchPrefixPathList
-      = searchPrefixPathListValues.at(0).split( QChar::fromLatin1(';'), QString::SkipEmptyParts );
-  }
+  mCopySharedLibrariesTargetDependsOnRequest.searchPrefixPathList
+   = parseSearchPrefixPathList( resultCommand, definition.searchPrefixPathListOption() );
 
-  processCopySharedLibrariesTargetDependsOnCompilerLocation( resultCommand.getValues( definition.compilerLocationOption() ) );
+  mCopySharedLibrariesTargetDependsOnRequest.compilerLocation
+   = parseCompilerLocation( resultCommand, definition.compilerLocationOption() );
 
   if( resultCommand.positionalArgumentCount() != 2 ){
     const QString message = tr(
@@ -210,61 +274,38 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
   mCopySharedLibrariesTargetDependsOnRequest.destinationDirectoryPath = resultCommand.positionalArgumentAt(1);
 }
 
-void CommandLineParser::processCopySharedLibrariesTargetDependsOnCompilerLocation(const QStringList & compilerLocationValues)
+void CommandLineParser::processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand & resultCommand)
 {
-  if( compilerLocationValues.isEmpty() ){
-    return;
-  }
+  mCommand = CommandLineCommand::DeployApplication;
 
-  if( compilerLocationValues.count() > 1 ){
-    const QString message = tr("compiler-location option given more than once");
-    throw CommandLineParseError(message);
-  }
-
-  const QStringList compilerLocationKeyAndValue = compilerLocationValues.at(0).split( QLatin1Char('=') );
-
-//   if( compilerLocationKeyAndValue.count() == 1 ){
-//     const QString compilerLocationType = compilerLocationKeyAndValue.at(0);
-//     if( compilerLocationType == QLatin1String("from-env") ){
-//       mCopySharedLibrariesTargetDependsOnRequest.compilerLocationType = CompilerLocationType::FromEnv;
-//       return;
-//     }else{
-//       const QString message = tr("unknown compiler-location type '%1'").arg(compilerLocationType);
-//       throw CommandLineParseError(message);
-//     }
-//   }
-
-  if( compilerLocationKeyAndValue.count() != 2 ){
-    const QString message = tr("compiler-location: expected type=value syntax, got '%1'").arg( compilerLocationValues.at(0) );
-    throw CommandLineParseError(message);
-  }
-
-  const QString compilerLocationType = compilerLocationKeyAndValue.at(0);
-  if( compilerLocationType == QLatin1String("from-env") ){
-    mCopySharedLibrariesTargetDependsOnRequest.compilerLocationType = CompilerLocationType::FromEnv;
-    QString varName = compilerLocationKeyAndValue.at(1);
-    varName.remove( QLatin1Char('"') );
-    mCopySharedLibrariesTargetDependsOnRequest.compilerLocationValue = varName;
-  }else if( compilerLocationType == QLatin1String("vc-install-dir") ){
-    mCopySharedLibrariesTargetDependsOnRequest.compilerLocationType = CompilerLocationType::VcInstallDir;
-    QString path = compilerLocationKeyAndValue.at(1);
-    path.remove( QLatin1Char('"') );
-    mCopySharedLibrariesTargetDependsOnRequest.compilerLocationValue = path;
-  }else if( compilerLocationType == QLatin1String("compiler-path") ){
-    mCopySharedLibrariesTargetDependsOnRequest.compilerLocationType = CompilerLocationType::CompilerPath;
-    QString path = compilerLocationKeyAndValue.at(1);
-    path.remove( QLatin1Char('"') );
-    mCopySharedLibrariesTargetDependsOnRequest.compilerLocationValue = path;
-  }else{
-    const QString message = tr("unknown compiler-location type '%1'").arg(compilerLocationType);
-    throw CommandLineParseError(message);
-  }
-}
-
-void CommandLineParser::processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand& resultCommand)
-{
   if( resultCommand.isHelpOptionSet() ){
     showInfo( mParserDefinition.getDeployApplicationHelpText() );
     std::exit(0);
   }
+
+  const DeployApplicationCommandLineParserDefinition & definition = mParserDefinition.deployApplication();
+
+  parseOverwriteBehaviour( mDeployApplicationRequest.shLibOverwriteBehavior, resultCommand, definition.shLibOverwriteBehaviorOption() );
+
+  if( resultCommand.isSet( definition.removeRpathOption() ) ){
+    mDeployApplicationRequest.removeRpath = true;
+  }
+
+  mDeployApplicationRequest.searchPrefixPathList
+   = parseSearchPrefixPathList( resultCommand, definition.searchPrefixPathListOption() );
+
+  mDeployApplicationRequest.compilerLocation
+   = parseCompilerLocation( resultCommand, definition.compilerLocationOption() );
+
+  if( resultCommand.positionalArgumentCount() != 2 ){
+    const QString message = tr(
+      "expected 2 (positional) arguments: target file and destination directory.\n"
+      "given: %1"
+    ).arg( resultCommand.positionalArguments().join( QLatin1Char(',') ) );
+    throw CommandLineParseError(message);
+  }
+
+  mDeployApplicationRequest.targetFilePath = resultCommand.positionalArgumentAt(0);
+  mDeployApplicationRequest.destinationDirectoryPath = resultCommand.positionalArgumentAt(1);
+
 }

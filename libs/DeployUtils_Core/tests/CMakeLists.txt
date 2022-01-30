@@ -863,3 +863,19 @@ mdt_add_test(
   SOURCE_FILES
     src/CopySharedLibrariesTargetDependsOnErrorTest.cpp
 )
+
+mdt_add_test(
+  NAME DeployApplicationTest
+  TARGET deployApplicationTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/DeployApplicationTest.cpp
+)
+
+mdt_add_test(
+  NAME DeployApplicationErrorTest
+  TARGET deployApplicationErrorTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/DeployApplicationErrorTest.cpp
+)

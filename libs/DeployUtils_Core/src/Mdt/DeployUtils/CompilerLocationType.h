@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2020-2022 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -18,31 +18,23 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_COPY_SHARED_LIBRARIES_TARGET_DEPENDS_ON_REQUEST_H
-#define MDT_DEPLOY_UTILS_COPY_SHARED_LIBRARIES_TARGET_DEPENDS_ON_REQUEST_H
-
-#include "OverwriteBehavior.h"
-#include "CompilerLocationRequest.h"
-#include "mdt_deployutilscore_export.h"
-#include <QStringList>
-#include <QString>
+#ifndef MDT_DEPLOY_UTILS_COMPILER_LOCATION_TYPE_H
+#define MDT_DEPLOY_UTILS_COMPILER_LOCATION_TYPE_H
 
 namespace Mdt{ namespace DeployUtils{
 
-  /*! \brief DTO for CopySharedLibrariesTargetDependsOn
+  /*! \brief Type of compiler location
+   *
+   * \todo Should VcInstallDir be removed ?
    */
-  struct MDT_DEPLOYUTILSCORE_EXPORT CopySharedLibrariesTargetDependsOnRequest
+  enum class CompilerLocationType
   {
-    OverwriteBehavior overwriteBehavior = OverwriteBehavior::Fail;
-    bool removeRpath = false;
-//     CompilerLocationType compilerLocationType = CompilerLocationType::Undefined;
-//     QString compilerLocationValue;
-    CompilerLocationRequest compilerLocation;
-    QStringList searchPrefixPathList;
-    QString targetFilePath;
-    QString destinationDirectoryPath;
+    Undefined,    /*!< Compiler will not be located */
+    FromEnv,      /*!< Use a environment variable name */
+    VcInstallDir, /*!<  */
+    CompilerPath  /*!< Use the full path to the compiler. This can be used with CMAKE_CXX_COMPILER */
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
 
-#endif // #ifndef MDT_DEPLOY_UTILS_COPY_SHARED_LIBRARIES_TARGET_DEPENDS_ON_REQUEST_H
+#endif // #ifndef MDT_DEPLOY_UTILS_COMPILER_LOCATION_TYPE_H

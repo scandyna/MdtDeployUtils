@@ -119,17 +119,7 @@ void CommandLineParserDefinition::addGetSharedLibrariesTargetDependsOnCommand()
 
 void CommandLineParserDefinition::addDeployApplicationCommand()
 {
-  mDeployApplicationCommand.setName( commandName(CommandLineCommand::DeployApplication) );
-
-  const QString description = tr(
-    "Deploy a application on the base of given executable.\n"
-    "Example:\n"
-    "%1 %2 ./myApp"
-  ).arg( mParserDefinition.applicationName(), mDeployApplicationCommand.name() );
-  mDeployApplicationCommand.setDescription(description);
-
-  mDeployApplicationCommand.addPositionalArgument( ValueType::File, QLatin1String("executable"), tr("Path to the application  executable.") );
-  mDeployApplicationCommand.addHelpOption();
-
-  mParserDefinition.addSubCommand(mDeployApplicationCommand);
+  mDeployApplicationCommandLineParserDefinition.setApplicationName( mParserDefinition.applicationName() );
+  mDeployApplicationCommandLineParserDefinition.setup();
+  mParserDefinition.addSubCommand( mDeployApplicationCommandLineParserDefinition.command() );
 }

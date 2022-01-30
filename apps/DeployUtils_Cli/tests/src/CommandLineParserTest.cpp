@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
  **
- ** Copyright (C) 2020-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU General Public License as published by
@@ -164,8 +164,8 @@ TEST_CASE("CopySharedLibrariesTargetDependsOn")
       parser.process(arguments);
 
       request = parser.copySharedLibrariesTargetDependsOnRequest();
-      REQUIRE( request.compilerLocationType == CompilerLocationType::FromEnv );
-      REQUIRE( request.compilerLocationValue == QLatin1String("VcInstallDir") );
+      REQUIRE( request.compilerLocation.type() == CompilerLocationType::FromEnv );
+      REQUIRE( request.compilerLocation.value() == QLatin1String("VcInstallDir") );
     }
 
     SECTION("vc-install-dir")
@@ -176,8 +176,8 @@ TEST_CASE("CopySharedLibrariesTargetDependsOn")
       parser.process(arguments);
 
       request = parser.copySharedLibrariesTargetDependsOnRequest();
-      REQUIRE( request.compilerLocationType == CompilerLocationType::VcInstallDir );
-      REQUIRE( request.compilerLocationValue == expectedVcInstallDirValue );
+      REQUIRE( request.compilerLocation.type() == CompilerLocationType::VcInstallDir );
+      REQUIRE( request.compilerLocation.value() == expectedVcInstallDirValue );
     }
 
     SECTION("compiler-path")
@@ -188,8 +188,8 @@ TEST_CASE("CopySharedLibrariesTargetDependsOn")
       parser.process(arguments);
 
       request = parser.copySharedLibrariesTargetDependsOnRequest();
-      REQUIRE( request.compilerLocationType == CompilerLocationType::CompilerPath );
-      REQUIRE( request.compilerLocationValue == expectedCompilerPath );
+      REQUIRE( request.compilerLocation.type() == CompilerLocationType::CompilerPath );
+      REQUIRE( request.compilerLocation.value() == expectedCompilerPath );
     }
   }
 
@@ -212,4 +212,87 @@ TEST_CASE("CopySharedLibrariesTargetDependsOn")
     REQUIRE( request.targetFilePath == QLatin1String("/tmp/lib.so") );
     REQUIRE( request.destinationDirectoryPath == QLatin1String("/tmp") );
   }
+}
+
+TEST_CASE("DeployApplication")
+{
+  CommandLineParser parser;
+  QStringList arguments = qStringListFromUtf8Strings({"mdtdeployutils","deploy-application"});
+  DeployApplicationRequest request;
+
+  SECTION("processed command")
+  {
+    arguments << qStringListFromUtf8Strings({"/build/app","/tmp"});
+
+    parser.process(arguments);
+
+    REQUIRE( parser.processedCommand() == CommandLineCommand::DeployApplication );
+  }
+
+  SECTION("Default options")
+  {
+    arguments << qStringListFromUtf8Strings({"/build/app","/tmp"});
+    parser.process(arguments);
+
+    request = parser.deployApplicationRequest();
+    REQUIRE( request.shLibOverwriteBehavior == OverwriteBehavior::Fail );
+    REQUIRE( !request.removeRpath );
+  }
+
+  SECTION("Specify shlib-overwrite-behavior")
+  {
+    arguments << qStringListFromUtf8Strings({"--shlib-overwrite-behavior","overwrite","/build/app","/tmp"});
+
+    parser.process(arguments);
+
+    request = parser.deployApplicationRequest();
+    REQUIRE( request.shLibOverwriteBehavior == OverwriteBehavior::Overwrite );
+  }
+
+  SECTION("Specify to remove RPATH")
+  {
+    arguments << qStringListFromUtf8Strings({"--remove-rpath","/build/app","/tmp"});
+
+    parser.process(arguments);
+
+    request = parser.deployApplicationRequest();
+    REQUIRE( request.removeRpath );
+  }
+
+  SECTION("Specify search-prefix-path-list")
+  {
+    arguments << qStringListFromUtf8Strings({"--search-prefix-path-list","/opt;/tmp","/build/app","/tmp"});
+    parser.process(arguments);
+
+    request = parser.deployApplicationRequest();
+    const QStringList expectedPaths = qStringListFromUtf8Strings({"/opt","/tmp"});
+    REQUIRE( request.searchPrefixPathList == expectedPaths );
+  }
+
+  SECTION("Specify compiler location")
+  {
+    SECTION("compiler-path")
+    {
+      const std::string compilerPath = "compiler-path=\"/opt/qt/Tools/mingw730_64/bin/g++\"";
+      const QString expectedCompilerPath = QLatin1String("/opt/qt/Tools/mingw730_64/bin/g++");
+      arguments << qStringListFromUtf8Strings({"--compiler-location",compilerPath,"/build/app","/tmp"});
+      parser.process(arguments);
+
+      request = parser.deployApplicationRequest();
+      REQUIRE( request.compilerLocation.type() == CompilerLocationType::CompilerPath );
+      REQUIRE( request.compilerLocation.value() == expectedCompilerPath );
+    }
+  }
+
+  SECTION("Positional arguments")
+  {
+    arguments << qStringListFromUtf8Strings({"/build/app","/tmp"});
+
+    parser.process(arguments);
+
+    request = parser.deployApplicationRequest();
+    REQUIRE( request.targetFilePath == QLatin1String("/build/app") );
+    REQUIRE( request.destinationDirectoryPath == QLatin1String("/tmp") );
+  }
+
 }

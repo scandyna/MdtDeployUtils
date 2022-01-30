@@ -67,17 +67,17 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   connect(&binaryDependencies, &BinaryDependencies::message, this, &CopySharedLibrariesTargetDependsOn::statusMessage);
   connect(&binaryDependencies, &BinaryDependencies::verboseMessage, this, &CopySharedLibrariesTargetDependsOn::verboseMessage);
 
-  if( request.compilerLocationType != CompilerLocationType::Undefined ){
+  if( !request.compilerLocation.isNull() ){
     auto compilerFinder = std::make_shared<CompilerFinder>();
-    switch(request.compilerLocationType){
+    switch( request.compilerLocation.type() ){
       case CompilerLocationType::FromEnv:
         /// \todo Implement
         break;
       case CompilerLocationType::VcInstallDir:
-        compilerFinder->setInstallDir(request.compilerLocationValue, Compiler::Msvc);
+        compilerFinder->setInstallDir(request.compilerLocation.value(), Compiler::Msvc);
         break;
       case CompilerLocationType::CompilerPath:
-        compilerFinder->findFromCxxCompilerPath(request.compilerLocationValue);
+        compilerFinder->findFromCxxCompilerPath( request.compilerLocation.value() );
         break;
       case CompilerLocationType::Undefined:
         // Just to avoid compiler warnings
@@ -85,7 +85,7 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
     }
     if( !compilerFinder->hasInstallDir() ){
       const QString msg = tr(
-        "it was requested to find the compiler redistribute directory, but this failed"
+        "it was requested to find the compiler redistribute directory, but this failed "
         "(maybe your compiler is currently not supported for this feature)"
       );
       throw FindCompilerError(msg);
@@ -93,9 +93,43 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
     binaryDependencies.setCompilerFinder(compilerFinder);
   }
 
+//   if( request.compilerLocationType != CompilerLocationType::Undefined ){
+//     auto compilerFinder = std::make_shared<CompilerFinder>();
+//     switch(request.compilerLocationType){
+//       case CompilerLocationType::FromEnv:
+//         /// \todo Implement
+//         break;
+//       case CompilerLocationType::VcInstallDir:
+//         compilerFinder->setInstallDir(request.compilerLocationValue, Compiler::Msvc);
+//         break;
+//       case CompilerLocationType::CompilerPath:
+//         compilerFinder->findFromCxxCompilerPath(request.compilerLocationValue);
+//         break;
+//       case CompilerLocationType::Undefined:
+//         // Just to avoid compiler warnings
+//         break;
+//     }
+//     if( !compilerFinder->hasInstallDir() ){
+//       const QString msg = tr(
+//         "it was requested to find the compiler redistribute directory, but this failed"
+//         "(maybe your compiler is currently not supported for this feature)"
+//       );
+//       throw FindCompilerError(msg);
+//     }
+//     binaryDependencies.setCompilerFinder(compilerFinder);
+//   }
+
   const QStringList dependencies = binaryDependencies.findDependencies( request.targetFilePath, PathList::fromStringList(request.searchPrefixPathList) );
 
   emitFoundDependenciesMessage(dependencies);
+
+  /** \todo Is the overwrite behaviour correct (as documented) ?
+   *
+   * Mainly, review the case of destination == source
+   *
+   * This for copy and RPath
+   * \note RPath only applies to copied libs, so should be ok
+   */
 
   FileCopier fileCopier;
   fileCopier.setOverwriteBehavior(request.overwriteBehavior);

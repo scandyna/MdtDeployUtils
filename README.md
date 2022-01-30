@@ -19,7 +19,7 @@ This requires to install at least an executable and its shared libraries.
 
 To deploy Qt applications, some tools are available:
 - [linuxdeployqt](https://github.com/probonopd/linuxdeployqt)
-- [windeployqt](https://doc.qt.io/qt-5/windows-deployment.html)
+- [windeployqt](https://doc.qt.io/qt-6/windows-deployment.html)
 - [macdeployqt](https://doc.qt.io/qt-5/macos-deployment.html)
 
 
@@ -88,16 +88,44 @@ On Linux, it also supports Bash completion.
 
 See [INSTALL](INSTALL.md).
 
-To deploy a application:
+
+The tools have to find some dependencies, like shared libraries, in some way.
+One possibility is to give a list of paths to the command-line.
+A other one is to set a custom `PATH`, sometimes also required to build the code.
+Some details are available in the [C++ documentation](https://scandyna.gitlab.io/mdtdeployutils/cpp-api/libs_DeployUtils.html).
+
+### Deploy a application
+
+If you call `mdtdeployutils` from a build environment
+which has every dependencies in the `PATH`,
+this should work:
 ```bash
-mdtdeployutils deploy-application "appExecutable"
+mdtdeployutils deploy-application "path/to/some/executable" "path/to/destination/directory"
 ```
-Status: not implemented yet
+
+Setting a build environment is not allways required,
+in which case some more informations have to be passed:
+```bash
+mdtdeployutils deploy-application --search-prefix-path-list "C:/Qt/5.14.2/msvc2017_64;C:/.conan/1234df/1" --compiler-location vc-install-dir="C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC" "path/to/some/executable" "path/to/destination/directory"
+```
+
+For more details:
+```bash
+mdtdeployutils deploy-application --help
+```
+
+Note that this tool will not generate, neither install, any CMake files.
+If the application to deploy should be usable by CMake,
+considere the [MdtDeployApplication CMake module](https://scandyna.gitlab.io/mdtdeployutils/cmake-api/Modules/MdtDeployApplication.html).
+
+### Helpers for shared libraries
 
 Copy shared libraries a target depends on:
 ```bash
 mdtdeployutils copy-shared-libraries-target-depends-on "path/to/some/executable" "path/to/destination/directory"
 ```
+
+### Other commands
 
 Get a list of shared libraries a target depends on:
 ```bash
@@ -106,7 +134,6 @@ mdtdeployutils get-shared-libraries-target-depends-on "path/to/some/executable"
 Status: not implemented.
 Should see if it is usefull, and also how the list should be returned
 (maybe a file ?).
-
 
 Install a executable:
 ```bash

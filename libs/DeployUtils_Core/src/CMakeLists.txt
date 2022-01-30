@@ -100,6 +100,8 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/ExecutableFileReader.cpp
   Mdt/DeployUtils/ExecutableFileWriter.cpp
   Mdt/DeployUtils/FindCompilerError.cpp
+  Mdt/DeployUtils/CompilerLocationType.cpp
+  Mdt/DeployUtils/CompilerLocationRequest.cpp
   Mdt/DeployUtils/AbstractCompilerFinderEngine.cpp
   Mdt/DeployUtils/MsvcVersion.cpp
   Mdt/DeployUtils/MsvcFinder.cpp
@@ -118,6 +120,8 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/LogLevel.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.cpp
+  Mdt/DeployUtils/DeployApplicationRequest.cpp
+  Mdt/DeployUtils/DeployApplication.cpp
 )
 add_library(Mdt::DeployUtilsCore ALIAS Mdt_DeployUtilsCore)
 

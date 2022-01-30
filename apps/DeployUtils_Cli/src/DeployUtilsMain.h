@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
  **
- ** Copyright (C) 2020-2020 Philippe Steinmann.
+ ** Copyright (C) 2020-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@ class DeployUtilsMain : public Mdt::AbstractConsoleApplicationMainFunction
 
   int runMain() override;
   void copySharedLibrariesTargetDependsOn(const CommandLineParser & commandLineParser);
+  void deployApplication(const CommandLineParser & commandLineParser);
 };
 
 #endif // #ifndef MDT_DEPLOY_UTILS_MAIN_H

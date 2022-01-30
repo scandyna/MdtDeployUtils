@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
  **
- ** Copyright (C) 2020-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU General Public License as published by
@@ -105,6 +105,27 @@ TEST_CASE("CopySharedLibrariesTargetDependsOn")
   SECTION("More than 2 positional arguments given")
   {
     arguments << positionalArguments << QLatin1String("/opt");
+    REQUIRE_THROWS_AS( parser.process(arguments), CommandLineParseError );
+  }
+}
+
+TEST_CASE("DeployApplication")
+{
+  CommandLineParser parser;
+  QStringList arguments = qStringListFromUtf8Strings({"mdtdeployutils","deploy-application"});
+  const QStringList positionalArguments = qStringListFromUtf8Strings({"/build/app","/tmp"});
+
+  SECTION("1 positional argument missing")
+  {
+    arguments << QLatin1String("/build/app");
+
+    REQUIRE_THROWS_AS( parser.process(arguments), CommandLineParseError );
+  }
+
+  SECTION("More than 2 positional arguments given")
+  {
+    arguments << positionalArguments << QLatin1String("/opt");
+
     REQUIRE_THROWS_AS( parser.process(arguments), CommandLineParseError );
   }
 }

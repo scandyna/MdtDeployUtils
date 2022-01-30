@@ -29,7 +29,10 @@
 #include "Mdt/CommandLineParser/ParserDefinitionCommand.h"
 #include "Mdt/CommandLineParser/ParserResultCommand.h"
 #include "Mdt/DeployUtils/LogLevel.h"
+#include "Mdt/DeployUtils/OverwriteBehavior.h"
+#include "Mdt/DeployUtils/CompilerLocationRequest.h"
 #include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.h"
+#include "Mdt/DeployUtils/DeployApplicationRequest.h"
 #include <QObject>
 #include <QStringList>
 #include <cassert>
@@ -84,13 +87,6 @@ class CommandLineParser : public QObject
     return mLogLevel;
   }
 
-  /*! \brief Check if the verbose option is set
-   */
-//   bool verboseOptionIsSet() const noexcept
-//   {
-//     return mVerboseOptionIsSet;
-//   }
-
   /*! \brief Get the DTO to copy shared libraries a target depends on
    *
    * \pre processedCommand() must be CopySharedLibrariesTargetDependsOn
@@ -102,6 +98,17 @@ class CommandLineParser : public QObject
     return mCopySharedLibrariesTargetDependsOnRequest;
   }
 
+  /*! \brief Get the DTO to deploy a application
+   *
+   * \pre processedCommand() must be DeployApplication
+   */
+  const Mdt::DeployUtils::DeployApplicationRequest & deployApplicationRequest() const noexcept
+  {
+    assert( processedCommand() == CommandLineCommand::DeployApplication );
+
+    return mDeployApplicationRequest;
+  }
+
   /*! \brief Get the parser definition
    */
   const Mdt::CommandLineParser::ParserDefinition & parserDefinition() const noexcept
@@ -111,16 +118,28 @@ class CommandLineParser : public QObject
 
  private:
 
+  static
+  void parseOverwriteBehaviour(Mdt::DeployUtils::OverwriteBehavior & overwriteBehavior,
+                               const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
+                               const Mdt::CommandLineParser::ParserDefinitionOption & option);
+
+  static
+  QStringList parseSearchPrefixPathList(const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
+                                        const Mdt::CommandLineParser::ParserDefinitionOption & option);
+
+  static
+  Mdt::DeployUtils::CompilerLocationRequest parseCompilerLocation(const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
+                                                                  const Mdt::CommandLineParser::ParserDefinitionOption & option);
+
   void processGetSharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
   void processCopySharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
-  void processCopySharedLibrariesTargetDependsOnCompilerLocation(const QStringList & compilerLocationValues);
   void processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
 
   CommandLineCommand mCommand = CommandLineCommand::Unknown;
   MessageLoggerBackend mMessageLoggerBackend = MessageLoggerBackend::Console;
   Mdt::DeployUtils::LogLevel mLogLevel = Mdt::DeployUtils::LogLevel::Status;
-//   bool mVerboseOptionIsSet = false;
   Mdt::DeployUtils::CopySharedLibrariesTargetDependsOnRequest mCopySharedLibrariesTargetDependsOnRequest;
+  Mdt::DeployUtils::DeployApplicationRequest mDeployApplicationRequest;
   CommandLineParserDefinition mParserDefinition;
 };
 

@@ -3,6 +3,10 @@
 
 Add InstallSharedLibrariesTargetDendsOnTest to cmake/tests
 
+NOTE: should make something with mdtdeployutils deploy-application
+Something like:
+- ctest . -R Apps_DeployUtils_Cli_Run_DeployedApplication -V
+
 In CI, add a test that executes on a machine without Qt installed
 (should fail if Qt plugins not installed)
 

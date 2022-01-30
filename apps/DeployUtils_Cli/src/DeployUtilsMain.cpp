@@ -24,6 +24,8 @@
 #include "Mdt/DeployUtils/CMakeStyleMessageLogger.h"
 #include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.h"
 #include "Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.h"
+#include "Mdt/DeployUtils/DeployApplicationRequest.h"
+#include "Mdt/DeployUtils/DeployApplication.h"
 #include <QLatin1String>
 #include <QCoreApplication>
 #include <QObject>
@@ -67,7 +69,7 @@ int DeployUtilsMain::runMain()
       /// \todo to implement
       break;
     case CommandLineCommand::DeployApplication:
-      /// \todo to implement
+      deployApplication(commandLineParser);
       break;
     case CommandLineCommand::Unknown:
       // Maybe just Bash completion
@@ -97,4 +99,26 @@ void DeployUtilsMain::copySharedLibrariesTargetDependsOn(const CommandLineParser
   }
 
   csltdo.execute(request);
+}
+
+void DeployUtilsMain::deployApplication(const CommandLineParser & commandLineParser)
+{
+  assert( commandLineParser.processedCommand() == CommandLineCommand::DeployApplication );
+
+  DeployApplication useCase;
+
+  const DeployApplicationRequest request = commandLineParser.deployApplicationRequest();
+
+  const LogLevel logLevel = commandLineParser.logLevel();
+  if( shouldOutputStatusMessages(logLevel) ){
+    QObject::connect(&useCase, &DeployApplication::statusMessage, MessageLogger::info);
+  }
+  if( shouldOutputVerboseMessages(logLevel) ){
+    QObject::connect(&useCase, &DeployApplication::verboseMessage, MessageLogger::info);
+  }
+  if( shouldOutputDebugMessages(logLevel) ){
+    QObject::connect(&useCase, &DeployApplication::debugMessage, MessageLogger::info);
+  }
+
+  useCase.execute(request);
 }
