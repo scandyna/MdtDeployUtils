@@ -192,6 +192,32 @@ test_linux_clang6.0_x86_64_release:
   extends: .test_linux
 
 
+build_StandaloneInstallTest_Linux_x86_64:
+  stage: build
+  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-cpp:latest
+  before_script:
+    - !reference [.setup_conan, script]
+  script:
+    - mkdir build
+    - cd build
+    - conan install --profile linux_gcc7_x86_64 -s build_type=Release ..
+    - source activate.sh
+    - cmake -G"Unix Makefiles" -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_BUILD_TYPE=Release -DWARNING_AS_ERROR=ON -DBUILD_USE_IPO_LTO=ON -DCMAKE_INSTALL_PREFIX="opt/MdtDeployUtils" ..
+    - make -j4
+    - cmake --install . --component MdtDeployUtils_Runtime
+    - source deactivate.sh
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - build/opt
+
+StandaloneInstallTest_Linux_x86_64:
+  stage: test
+  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-minimal:latest
+  script:
+    - opt/MdtDeployUtils/bin/mdtdeployutils --help
+
+
 conan_deployutils_linux_gcc7_x86_64_debug:
   image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-cpp:latest
   variables:
