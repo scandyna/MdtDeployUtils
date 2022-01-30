@@ -196,7 +196,7 @@ See https://scandyna.gitlab.io/mdtdeployutils/cpp-api/html/todo.html
 
 See cmake/tests for the reason
 
-Also install and run on a dicker image without Qt installed.
+Also install and run on a docker image without Qt installed.
 
 # Impl header files
 
