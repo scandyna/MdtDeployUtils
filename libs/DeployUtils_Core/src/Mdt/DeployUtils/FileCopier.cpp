@@ -79,7 +79,7 @@ void FileCopier::copyFile(const QString & sourceFilePath, const QString & destin
       return;
     }
     if( mOverwriteBehavior == OverwriteBehavior::Fail ){
-      const QString msg = tr("Copy file '%1' to '%2' failed because the destination file extsis (overwrite behavior is Fail)")
+      const QString msg = tr("Copy file '%1' to '%2' failed because the destination file exists (overwrite behavior is Fail)")
                           .arg( sourceFileInfo.absoluteFilePath(), destinationFileInfo.absoluteFilePath() );
       throw FileCopyError(msg);
     }
