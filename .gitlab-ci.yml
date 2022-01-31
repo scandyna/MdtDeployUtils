@@ -219,7 +219,7 @@ StandaloneInstallTest_Linux_x86_64:
   stage: test
   image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-minimal:latest
   script:
-    - ls -l
+    - cd build
     - opt/MdtDeployUtils/bin/mdtdeployutils --help
   dependencies:
     - build_StandaloneInstallTest_Linux_x86_64
