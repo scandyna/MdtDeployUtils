@@ -218,6 +218,7 @@ StandaloneInstallTest_Linux_x86_64:
     - opt/MdtDeployUtils/bin/mdtdeployutils --help
   dependencies:
     - build_StandaloneInstallTest_Linux_x86_64
+  needs: ["build_StandaloneInstallTest_Linux_x86_64"]
 
 
 conan_deployutils_linux_gcc7_x86_64_debug:
