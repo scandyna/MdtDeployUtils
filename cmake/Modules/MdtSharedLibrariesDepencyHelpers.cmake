@@ -305,7 +305,7 @@ function(mdt_install_shared_libraries_target_depends_on)
   # So, to have both worlds, we have to generate a intermediate script
 
   set(intermediateInstallScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript.cmake.intermediate")
-  configure_file("${PROJECT_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in" "${intermediateInstallScript}" @ONLY)
+  configure_file("${MdtDeployUtils_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in" "${intermediateInstallScript}" @ONLY)
 
   set(installScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript-$<CONFIG>.cmake")
   file(GENERATE
