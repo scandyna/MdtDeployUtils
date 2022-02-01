@@ -377,6 +377,7 @@ test_windows_gcc7_x86_64_debug:
   dependencies:
     - build_windows_gcc7_x86_64_debug
   extends: .test_windows
+  needs: ["build_windows_gcc7_x86_64_debug"]
 
 
 #build_windows_gcc7_x86_32_debug:
@@ -418,6 +419,7 @@ test_windows_msvc16_x86_64_debug:
   dependencies:
     - build_windows_msvc16_x86_64_debug
   extends: .test_windows
+  needs: ["build_windows_msvc16_x86_64_debug"]
 
 
 # MSVC: also build and test Release config
@@ -442,6 +444,7 @@ test_windows_msvc16_x86_64_release:
   dependencies:
     - build_windows_msvc16_x86_64_release
   extends: .test_windows
+  needs: ["build_windows_msvc16_x86_64_release"]
 
 
 conan_deployutils_windows_gcc7_x86_64_debug:
