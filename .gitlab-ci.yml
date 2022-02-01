@@ -459,7 +459,10 @@ build_StandaloneInstallTest_Windows_x86_64:
     - cd build
     - conan install --profile windows_gcc7_x86_64 -s build_type=Release ..
     - ./activate
-    - cmake -G"MinGW Makefiles" -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_BUILD_TYPE=Release -DWARNING_AS_ERROR=ON -DBUILD_USE_IPO_LTO=ON -DCMAKE_INSTALL_PREFIX="opt/MdtDeployUtils" ..
+    - cmake -G"MinGW Makefiles" -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_BUILD_TYPE=Release
+            -DWARNING_AS_ERROR=ON -DBUILD_USE_IPO_LTO=ON
+            -DCMAKE_PREFIX_PATH="C:/Libraries/boost_1_73_0;C:/Qt/5.14.2/mingw73_64"
+            -DCMAKE_INSTALL_PREFIX="opt/MdtDeployUtils" ..
     - make -j4
     - cmake --install . --component MdtDeployUtils_Runtime
     - ./deactivate
