@@ -1,3 +1,3 @@
 
 add_subdirectory(QtCoreApp)
-# add_subdirectory(QtWidgetsApp)
+add_subdirectory(QtWidgetsApp)

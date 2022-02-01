@@ -158,6 +158,10 @@ if(BUILD_BENCHMARKS)
   find_package(Qt5 COMPONENTS Test REQUIRED)
 endif()
 
+if(BUILD_TESTS AND BUILD_APPS)
+  find_package(Qt5 COMPONENTS Widgets REQUIRED)
+endif()
+
 if(BUILD_DOCS)
   find_package(Sphinx REQUIRED)
 
