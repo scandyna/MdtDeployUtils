@@ -285,6 +285,10 @@ if(BUILD_APPS)
   endif()
 endif()
 
+if(BUILD_TESTS AND BUILD_APPS)
+  add_subdirectory(tests)
+endif()
+
 if(BUILD_DOCS)
   add_subdirectory("doc")
 endif()
