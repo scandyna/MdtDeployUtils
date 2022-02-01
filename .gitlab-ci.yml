@@ -447,6 +447,41 @@ test_windows_msvc16_x86_64_release:
   needs: ["build_windows_msvc16_x86_64_release"]
 
 
+build_StandaloneInstallTest_Windows_x86_64:
+  stage: build
+  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
+  before_script:
+    - !reference [.setup_conan, script]
+  script:
+    - mkdir build
+    - cd build
+    - conan install --profile windows_gcc7_x86_64 -s build_type=Release ..
+    - ./activate
+    - cmake -G"MinGW Makefiles" -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_BUILD_TYPE=Release -DWARNING_AS_ERROR=ON -DBUILD_USE_IPO_LTO=ON -DCMAKE_INSTALL_PREFIX="opt/MdtDeployUtils" ..
+    - make -j4
+    - cmake --install . --component MdtDeployUtils_Runtime
+    - ./deactivate
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - build/opt
+
+StandaloneInstallTest_Windows_x86_64:
+  stage: test
+  image: mcr.microsoft.com/windows/servercore:ltsc2019
+  script:
+    - cd build
+    - opt/MdtDeployUtils/bin/mdtdeployutils.exe --help
+  dependencies:
+    - build_StandaloneInstallTest_Windows_x86_64
+  needs: ["build_StandaloneInstallTest_Windows_x86_64"]
+  artifacts:
+    when: on_failure
+    expire_in: 1 week
+    paths:
+      - build
+
+
 conan_deployutils_windows_gcc7_x86_64_debug:
   image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
   variables:
