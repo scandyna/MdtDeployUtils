@@ -108,6 +108,7 @@ stages:
   image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-cpp-gui:latest
   before_script:
     - !reference [.setup_conan, script]
+    - /etc/init.d/xdummy-server start
   script:
     - cd build
     - conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
