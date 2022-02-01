@@ -463,7 +463,7 @@ build_StandaloneInstallTest_Windows_x86_64:
             -DWARNING_AS_ERROR=ON -DBUILD_USE_IPO_LTO=ON
             -DCMAKE_PREFIX_PATH="C:/Libraries/boost_1_73_0;C:/Qt/5.14.2/mingw73_64"
             -DCMAKE_INSTALL_PREFIX="opt/MdtDeployUtils" ..
-    - make -j4
+    - cmake --build . -j4
     - cmake --install . --component MdtDeployUtils_Runtime
     - ./deactivate
   artifacts:
