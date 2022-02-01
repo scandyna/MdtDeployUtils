@@ -27,7 +27,7 @@ set_tests_properties(System_DeployUtils_CMake_Deploy_QtCoreApp
 
 
 add_test(NAME System_DeployUtils_CMake_Run_QtCoreApp
-  COMMAND "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}/bin/qtcoreapp"
+  COMMAND "${CMAKE_CURRENT_BINARY_DIR}/${MDT_SYSTEM_TESTS_INSTALL_PREFIX}/bin/qtcoreapp"
 )
 
 set_tests_properties(System_DeployUtils_CMake_Run_QtCoreApp

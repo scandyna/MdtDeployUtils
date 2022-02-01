@@ -27,7 +27,7 @@ set_tests_properties(System_DeployUtils_CMake_Deploy_QtWidgetsApp
 
 
 add_test(NAME System_DeployUtils_CMake_Run_QtWidgetsApp
-  COMMAND "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}/bin/qtwidgetsapp"
+  COMMAND "${CMAKE_CURRENT_BINARY_DIR}/${MDT_SYSTEM_TESTS_INSTALL_PREFIX}/bin/qtwidgetsapp"
 )
 
 set_tests_properties(System_DeployUtils_CMake_Run_QtWidgetsApp
