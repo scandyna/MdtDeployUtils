@@ -450,6 +450,8 @@ test_windows_msvc16_x86_64_release:
 build_StandaloneInstallTest_Windows_x86_64:
   stage: build
   image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
+  extends:
+    - .windows_runner
   before_script:
     - !reference [.setup_conan, script]
   script:
@@ -469,6 +471,8 @@ build_StandaloneInstallTest_Windows_x86_64:
 StandaloneInstallTest_Windows_x86_64:
   stage: test
   image: mcr.microsoft.com/windows/servercore:ltsc2019
+  extends:
+    - .windows_runner
   script:
     - cd build
     - opt/MdtDeployUtils/bin/mdtdeployutils.exe --help
