@@ -4,7 +4,7 @@ import os
 class MdtCommandLineParserTest(ConanFile):
   settings = "os", "compiler", "build_type", "arch"
   generators = "cmake", "virtualenv"
-  build_requires = "MdtCMakeModules/[0.16.0]@scandyna/testing"
+  build_requires = "MdtCMakeModules/[0.17.0]@scandyna/testing"
 
   def configure_cmake(self):
     cmake = CMake(self)
