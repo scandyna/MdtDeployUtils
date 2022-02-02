@@ -12,12 +12,15 @@ mdt_deploy_application(
   RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
   INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
+  RUNTIME_COMPONENT SystemTest_QtWidgetsApp
+  EXCLUDE_FROM_ALL
 )
 
 add_test(NAME System_DeployUtils_CMake_Deploy_QtWidgetsApp
   COMMAND "${CMAKE_COMMAND}"
     --install "${CMAKE_CURRENT_BINARY_DIR}"
     --config $<CONFIG>
+    --component SystemTest_QtWidgetsApp
 )
 
 set_tests_properties(System_DeployUtils_CMake_Deploy_QtWidgetsApp
