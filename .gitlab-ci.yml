@@ -18,6 +18,8 @@
 stages:
   - build
   - test
+  - system_test
+  - install_test
   - deploy
 
 ###############################
@@ -115,6 +117,30 @@ stages:
     - conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
     - ctest --output-on-failure .
   artifacts:
+    when: always
+    expire_in: 1 week
+    paths:
+      - build
+
+
+# Will run some executables that have been deployed in tests,
+# in a image that does not have Qt installed
+.system_run_test_linux:
+  stage: system_test
+  # TODO: specify correct image
+  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-cpp-gui:latest
+  before_script:
+    #- !reference [.setup_conan, script]
+    - export DISPLAY=":99"
+    - /etc/init.d/xdummy-server start
+  script:
+    - cd build
+    #- conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
+    - ctest --output-on-failure . -R System_DeployUtils_Cli_Run_QtCoreApp
+    - ctest --output-on-failure . -R System_DeployUtils_Cli_Run_QtWidgetsApp
+    - ctest --output-on-failure . -R System_DeployUtils_CMake_Run_QtCoreApp
+    - ctest --output-on-failure . -R System_DeployUtils_CMake_Run_QtWidgetsApp
+  artifacts:
     when: on_failure
     expire_in: 1 week
     paths:
@@ -159,6 +185,15 @@ test_linux_gcc7_x86_64_release:
     - build_linux_gcc7_x86_64_release
   extends: .test_linux
   needs: ["build_linux_gcc7_x86_64_release"]
+
+system_run_test_linux_gcc7_x86_64_release:
+  extends: .system_run_test_linux
+  #variables:
+    #CONAN_PROFILE: linux_gcc7_x86_64
+    #BUILD_TYPE: Release
+  dependencies:
+    - test_linux_gcc7_x86_64_release
+  needs: ["test_linux_gcc7_x86_64_release"]
 
 
 build_linux_system_wide_install:
@@ -218,7 +253,7 @@ build_StandaloneInstallTest_Linux_x86_64:
       - build/opt
 
 StandaloneInstallTest_Linux_x86_64:
-  stage: test
+  stage: install_test
   image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-minimal:latest
   script:
     - cd build
@@ -474,7 +509,7 @@ build_StandaloneInstallTest_Windows_x86_64:
       - build/opt
 
 StandaloneInstallTest_Windows_x86_64:
-  stage: test
+  stage: install_test
   image: mcr.microsoft.com/windows/servercore:ltsc2019
   extends:
     - .windows_runner
