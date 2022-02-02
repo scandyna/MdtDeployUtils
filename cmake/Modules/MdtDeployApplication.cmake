@@ -26,6 +26,7 @@
 #     [INSTALL_IS_UNIX_SYSTEM_WIDE [TRUE|FALSE]]
 #     [RUNTIME_COMPONENT <component-name>]
 #     [DEVELOPMENT_COMPONENT <component-name>]
+#     [EXCLUDE_FROM_ALL]
 #   )
 #
 # Will install `target` using :command:`mdt_install_executable()`.
@@ -63,7 +64,7 @@ include(MdtSharedLibrariesDepencyHelpers)
 
 function(mdt_deploy_application)
 
-  set(options NO_PACKAGE_CONFIG_FILE)
+  set(options NO_PACKAGE_CONFIG_FILE EXCLUDE_FROM_ALL)
   set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION EXPORT_NAME EXPORT_NAMESPACE EXPORT_DIRECTORY INSTALL_IS_UNIX_SYSTEM_WIDE RUNTIME_COMPONENT DEVELOPMENT_COMPONENT)
   set(multiValueArgs)
   cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -119,6 +120,11 @@ function(mdt_deploy_application)
     set(developmentComponentArguments DEVELOPMENT_COMPONENT ${ARG_DEVELOPMENT_COMPONENT})
   endif()
 
+  set(excludeFromAllArgument)
+  if(ARG_EXCLUDE_FROM_ALL)
+    set(excludeFromAllArgument EXCLUDE_FROM_ALL)
+  endif()
+
   mdt_install_executable(
     TARGET ${ARG_TARGET}
     RUNTIME_DESTINATION ${ARG_RUNTIME_DESTINATION}
@@ -130,6 +136,7 @@ function(mdt_deploy_application)
     ${installIsUnixSystemWideArguments}
     ${runtimeComponentArguments}
     ${developmentComponentArguments}
+    ${excludeFromAllArgument}
   )
 
   set(componentArguments)
@@ -143,6 +150,7 @@ function(mdt_deploy_application)
     LIBRARY_DESTINATION ${ARG_LIBRARY_DESTINATION}
     INSTALL_IS_UNIX_SYSTEM_WIDE ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE}
     ${componentArguments}
+    ${excludeFromAllArgument}
   )
 
 endfunction()

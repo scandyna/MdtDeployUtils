@@ -88,6 +88,7 @@
 #     LIBRARY_DESTINATION <dir>
 #     [INSTALL_IS_UNIX_SYSTEM_WIDE [TRUE|FALSE]]
 #     [COMPONENT <component-name>]
+#     [EXCLUDE_FROM_ALL]
 #   )
 #
 #
@@ -260,7 +261,7 @@ function(mdt_install_shared_libraries_target_depends_on)
 
 # TODO provide MDT_DEPLOY_UTILS_EXECUTABLE etc.. + do checks - see mdt_deploy_application()
 
-  set(options)
+  set(options EXCLUDE_FROM_ALL)
   set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT)
   set(multiValueArgs)
   cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -284,6 +285,11 @@ function(mdt_install_shared_libraries_target_depends_on)
   set(componentArguments)
   if(ARG_COMPONENT)
     set(componentArguments COMPONENT ${ARG_COMPONENT})
+  endif()
+
+  set(excludeFromAllArgument)
+  if(ARG_EXCLUDE_FROM_ALL)
+    set(excludeFromAllArgument EXCLUDE_FROM_ALL)
   endif()
 
   set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_INSTALL_IS_UNIX_SYSTEM_WIDE ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE})
@@ -314,6 +320,6 @@ function(mdt_install_shared_libraries_target_depends_on)
     TARGET ${ARG_TARGET}
   )
 
-  install(SCRIPT "${installScript}" ${componentArguments})
+  install(SCRIPT "${installScript}" ${componentArguments} ${excludeFromAllArgument})
 
 endfunction()
