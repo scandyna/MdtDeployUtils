@@ -127,8 +127,7 @@ stages:
 # in a image that does not have Qt installed
 .system_run_test_linux:
   stage: system_test
-  # TODO: specify correct image
-  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-cpp-gui:latest
+  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-minimal-xserver:latest
   before_script:
     #- !reference [.setup_conan, script]
     - export DISPLAY=":99"
