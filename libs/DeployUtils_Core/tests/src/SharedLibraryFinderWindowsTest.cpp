@@ -153,6 +153,37 @@ TEST_CASE("isWindowsApiSet")
   }
 }
 
+TEST_CASE("isDxgiLibrary")
+{
+  SECTION("dxgi.dll")
+  {
+    REQUIRE( SharedLibraryFinderWindows::isDxgiLibrary( QLatin1String("dxgi.dll") ) );
+  }
+
+  SECTION("DXGI.dll")
+  {
+    REQUIRE( SharedLibraryFinderWindows::isDxgiLibrary( QLatin1String("DXGI.dll") ) );
+  }
+}
+
+TEST_CASE("isDirect3D_11_Library")
+{
+  SECTION("d3d11.dll")
+  {
+    REQUIRE( SharedLibraryFinderWindows::isDirect3D_11_Library( QLatin1String("d3d11.dll") ) );
+  }
+
+  SECTION("d3D11.dll")
+  {
+    REQUIRE( SharedLibraryFinderWindows::isDirect3D_11_Library( QLatin1String("d3D11.dll") ) );
+  }
+
+  SECTION("D3DSCache.dll")
+  {
+    REQUIRE( SharedLibraryFinderWindows::isDirect3D_11_Library( QLatin1String("D3DSCache.dll") ) );
+  }
+}
+
 TEST_CASE("libraryHasToBeExcluded")
 {
   TestIsExistingSharedLibrary isExistingShLibOp;
@@ -219,6 +250,16 @@ TEST_CASE("libraryHasToBeExcluded")
     {
       REQUIRE( !finder.libraryHasToBeExcluded( QLatin1String("api-ms-win-core-ums-l1-1-0") ) );
     }
+  }
+
+  SECTION("exclude Direct3D 11 libraries")
+  {
+    REQUIRE( finder.libraryHasToBeExcluded( QLatin1String("d3d11.dll") ) );
+  }
+
+  SECTION("DXGI libraries should be excluded")
+  {
+    REQUIRE( finder.libraryHasToBeExcluded( QLatin1String("dxgi.dll") ) );
   }
 }
 

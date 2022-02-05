@@ -114,6 +114,12 @@ bool SharedLibraryFinderWindows::libraryHasToBeExcluded(const QString & library)
   if( hasToExcludeWindowsApiSets() && isWindowsApiSet(library) ){
     return true;
   }
+  if( isDxgiLibrary(library) ){
+    return true;
+  }
+  if( isDirect3D_11_Library(library) ){
+    return true;
+  }
 
   return false;
 }
@@ -152,6 +158,29 @@ bool SharedLibraryFinderWindows::isWindowsApiSet(const QString & library) noexce
   }
 
   return false;
+}
+
+bool SharedLibraryFinderWindows::isDxgiLibrary(const QString & library) noexcept
+{
+  assert( !library.trimmed().isEmpty() );
+
+  static const QStringList dxgiLibraries{
+    QLatin1String("dxgi.dll")
+  };
+
+  return dxgiLibraries.contains(library, Qt::CaseInsensitive);
+}
+
+bool SharedLibraryFinderWindows::isDirect3D_11_Library(const QString & library) noexcept
+{
+  assert( !library.trimmed().isEmpty() );
+
+  static const QStringList direct3dLibraries{
+    QLatin1String("d3d11.dll"),
+    QLatin1String("D3DSCache.dll")
+  };
+
+  return direct3dLibraries.contains(library, Qt::CaseInsensitive);
 }
 
 BinaryDependenciesFileList SharedLibraryFinderWindows::doFindLibrariesAbsolutePath(BinaryDependenciesFile & file) const

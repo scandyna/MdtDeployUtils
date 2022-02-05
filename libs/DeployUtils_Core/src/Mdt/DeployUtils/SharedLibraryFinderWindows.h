@@ -231,6 +231,31 @@ namespace Mdt{ namespace DeployUtils{
     static
     bool isWindowsApiSet(const QString & library) noexcept;
 
+    /*! \brief Check if \a library is a DirectX Graphics Infrastructure (DXGI) library
+     *
+     * DXGI seems to be distributed with DirectX 11 .
+     *
+     * \pre \a library must not be empty
+     * \sa isDirect3D_11_Library()
+     * \sa https://docs.microsoft.com/en-us/windows/win32/direct3darticles/dxgi-best-practices
+     * \sa https://docs.microsoft.com/en-us/windows/win32/direct3darticles/direct3d11-deployment
+     */
+    static
+    bool isDxgiLibrary(const QString & library) noexcept;
+
+    /*! \brief Check if \a library is a Direct3D 11 library
+     *
+     * Direct3D 11 API libraries should be built in the OS
+     * starting from Windows 7 and Windows Server 2008 R2 .
+     *
+     * \pre \a library must not be empty
+     * \sa isDxgiLibrary()
+     * \sa see https://docs.microsoft.com/en-us/windows/win32/direct3darticles/direct3d11-deployment
+     * \sa https://gitlab.com/scandyna/mdtdeployutils/-/jobs/2044253463
+     */
+    static
+    bool isDirect3D_11_Library(const QString & library) noexcept;
+
    private:
 
     BinaryDependenciesFileList doFindLibrariesAbsolutePath(BinaryDependenciesFile & file) const override;
