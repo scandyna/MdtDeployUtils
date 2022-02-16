@@ -146,14 +146,6 @@ void DeployApplication::setRPathToInstalledExecutable(const QString & executable
   writer.close();
 }
 
-    OverwriteBehavior overwriteBehavior = OverwriteBehavior::Fail;
-    bool removeRpath = false;
-    QStringList searchPrefixPathList;
-    CompilerLocationType compilerLocationType = CompilerLocationType::Undefined;
-    QString compilerLocationValue;
-    QString targetFilePath;
-    QString destinationDirectoryPath;
-
 void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicationRequest & request)
 {
   assert( !mLibDirDestinationPath.isEmpty() );
