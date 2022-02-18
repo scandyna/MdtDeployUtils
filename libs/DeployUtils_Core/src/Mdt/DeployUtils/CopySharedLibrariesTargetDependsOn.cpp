@@ -40,6 +40,8 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   assert( !request.targetFilePath.trimmed().isEmpty() );
   assert( !request.destinationDirectoryPath.trimmed().isEmpty() );
 
+  mFoundDependencies.clear();
+
   ExecutableFileReader reader;
   reader.openFile(request.targetFilePath);
   const Platform platform = reader.getFilePlatform();
@@ -119,9 +121,9 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
 //     binaryDependencies.setCompilerFinder(compilerFinder);
 //   }
 
-  const QStringList dependencies = binaryDependencies.findDependencies( request.targetFilePath, PathList::fromStringList(request.searchPrefixPathList) );
+  mFoundDependencies = binaryDependencies.findDependencies( request.targetFilePath, PathList::fromStringList(request.searchPrefixPathList) );
 
-  emitFoundDependenciesMessage(dependencies);
+  emitFoundDependenciesMessage(mFoundDependencies);
 
   /** \todo Is the overwrite behaviour correct (as documented) ?
    *
@@ -134,7 +136,7 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   FileCopier fileCopier;
   fileCopier.setOverwriteBehavior(request.overwriteBehavior);
   connect(&fileCopier, &FileCopier::verboseMessage, this, &CopySharedLibrariesTargetDependsOn::verboseMessage);
-  fileCopier.copyFiles(dependencies, request.destinationDirectoryPath);
+  fileCopier.copyFiles(mFoundDependencies, request.destinationDirectoryPath);
 
   if( platform.supportsRPath() ){
     setRPathToCopiedDependencies(fileCopier.copiedFilesDestinationPathList(), request, platform);
