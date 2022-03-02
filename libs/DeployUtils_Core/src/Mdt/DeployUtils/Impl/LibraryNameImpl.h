@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -150,7 +150,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
       data.fullName = fullName;
       data.prefix = extractPrefix(fullName);
 
-      static const char *extensionRegEx = "(.so(\\.[0-9]{1,4}){0,3}|(\\.[0-9]{1,4}){0,3}\\.dylib$|.dll)";
+      static const char *extensionRegEx = "(\\.so(\\.[0-9]{1,4}){0,3}|(\\.[0-9]{1,4}){0,3}\\.dylib$|.dll)";
       QRegularExpression re;
       re.setPattern( QLatin1String(extensionRegEx) );
       re.setPatternOptions(QRegularExpression::CaseInsensitiveOption);

@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2021 Philippe Steinmann.
+ ** Copyright (C) 2015-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -434,6 +434,40 @@ TEST_CASE("FromString")
     REQUIRE( libraryName.fullName() == inputName );
     REQUIRE( libraryName.prefix() == QLatin1String("lib") );
     REQUIRE( libraryName.name() == QLatin1String("png12") );
+    REQUIRE( libraryName.extension().isSo() );
+    REQUIRE( libraryName.version().toString() == QLatin1String("0") );
+  }
+
+  /*
+   * Bug from 2022-03-01
+   * See origin: section "libMdt0ConsoleApplication.so.0"
+   */
+  SECTION("libso.so.0")
+  {
+    inputName = QLatin1String("libso.so.0");
+
+    LibraryName libraryName(inputName);
+    REQUIRE( !libraryName.isNull() );
+    REQUIRE( libraryName.fullName() == inputName );
+    REQUIRE( libraryName.prefix() == QLatin1String("lib") );
+    REQUIRE( libraryName.name() == QLatin1String("so") );
+    REQUIRE( libraryName.extension().isSo() );
+    REQUIRE( libraryName.version().toString() == QLatin1String("0") );
+  }
+
+  /*
+   * Bug from 2022-03-01
+   * LibraryNameImpl::extractSharedLibraryExtensionAndVersion(const QStringRef&): Assertion `fullExtension.startsWith( QChar::fromLatin1('.') )' failed
+   */
+  SECTION("libMdt0ConsoleApplication.so.0")
+  {
+    inputName = QLatin1String("libMdt0ConsoleApplication.so.0");
+
+    LibraryName libraryName(inputName);
+    REQUIRE( !libraryName.isNull() );
+    REQUIRE( libraryName.fullName() == inputName );
+    REQUIRE( libraryName.prefix() == QLatin1String("lib") );
+    REQUIRE( libraryName.name() == QLatin1String("Mdt0ConsoleApplication") );
     REQUIRE( libraryName.extension().isSo() );
     REQUIRE( libraryName.version().toString() == QLatin1String("0") );
   }
