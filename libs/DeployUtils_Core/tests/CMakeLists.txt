@@ -865,6 +865,79 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME QtSharedLibraryFileTest
+  TARGET qtSharedLibraryFileTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtSharedLibraryFileTest.cpp
+)
+
+mdt_add_test(
+  NAME QtSharedLibraryTest
+  TARGET qtSharedLibraryTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtSharedLibraryTest.cpp
+)
+
+mdt_add_test(
+  NAME QtModuleListTest
+  TARGET qtModuleListTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtModuleListTest.cpp
+)
+
+mdt_add_test(
+  NAME QtModuleTest
+  TARGET qtModuleTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtModuleTest.cpp
+)
+
+mdt_add_test(
+  NAME QtModuleErrorTest
+  TARGET qtModuleErrorTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtModuleErrorTest.cpp
+)
+
+mdt_add_test(
+  NAME QtPluginFileTest
+  TARGET qtPluginFileTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtPluginFileTest.cpp
+)
+
+mdt_add_test(
+  NAME QtPluginsTest
+  TARGET qtPluginsTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtPluginsTest.cpp
+)
+
+mdt_add_test(
+  NAME QtModulePluginsTest
+  TARGET qtModulePluginsTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtModulePluginsTest.cpp
+)
+target_compile_definitions(qtModulePluginsTest PRIVATE TEST_QT_GUI_FILE_PATH="$<TARGET_FILE:Qt5::Gui>")
+
+mdt_add_test(
+  NAME QtModulePluginsErrorTest
+  TARGET qtModulePluginsErrorTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtModulePluginsErrorTest.cpp
+)
+
+mdt_add_test(
   NAME DeployApplicationTest
   TARGET deployApplicationTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

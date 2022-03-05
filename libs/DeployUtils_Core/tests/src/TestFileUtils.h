@@ -22,6 +22,7 @@
 #define TEST_FILE_UTILS_H
 
 #include <QFile>
+#include <QFileInfo>
 #include <QString>
 #include <QStringList>
 #include <QTextStream>
@@ -45,6 +46,11 @@ bool createDirectoryFromPath(const QString & path)
   return dir.mkpath(path);
 }
 
+bool createDirectoryFromPath(const QTemporaryDir & dir, const char * const subPath)
+{
+  return createDirectoryFromPath( makePath(dir, subPath) );
+}
+
 bool isExistingDirectory(const QString & path)
 {
   assert( !path.trimmed().isEmpty() );
@@ -61,6 +67,7 @@ bool writeTextFileUtf8(QFile & file, const QString & content)
 {
   assert( file.isOpen() );
   assert( file.isWritable() );
+  assert( QFileInfo(file).isFile() );
 
   QTextStream out(&file);
   out.setCodec("UTF-8");

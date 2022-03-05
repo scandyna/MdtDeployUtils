@@ -25,6 +25,9 @@
 #include "ExecutableFileWriter.h"
 #include "CopySharedLibrariesTargetDependsOn.h"
 #include "CopySharedLibrariesTargetDependsOnRequest.h"
+#include "QtSharedLibrary.h"
+#include "QtSharedLibraryFile.h"
+#include "QtModulePlugins.h"
 #include <QLatin1String>
 #include <QLatin1Char>
 #include <QStringBuilder>
@@ -62,6 +65,7 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
   makeDirectoryStructure(request);
   installExecutable(request);
   copySharedLibrariesTargetDependsOn(request);
+  copyRequiredQtPlugins(request);
 }
 
 QString DeployApplication::sharedLibrariesDirectoryName(OperatingSystem os) noexcept
@@ -165,6 +169,24 @@ void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicati
   connect(&csltdo, &CopySharedLibrariesTargetDependsOn::debugMessage, this, &DeployApplication::debugMessage);
 
   csltdo.execute(csltdoRequest);
+
+  mSharedLibrariesTargetDependsOn = csltdo.foundDependencies();
+}
+
+void DeployApplication::copyRequiredQtPlugins(const DeployApplicationRequest & request)
+{
+  emit verboseMessage(
+    tr("get Qt libraries out from dependencies (will be used to know which Qt plugins are required)")
+  );
+
+  const QtSharedLibraryFileList qtSharedLibraries = QtSharedLibrary::getQtSharedLibraries(mSharedLibrariesTargetDependsOn);
+
+  QtModulePlugins qtModulePlugins;
+  connect(&qtModulePlugins, &QtModulePlugins::statusMessage, this, &DeployApplication::statusMessage);
+  connect(&qtModulePlugins, &QtModulePlugins::verboseMessage, this, &DeployApplication::verboseMessage);
+  connect(&qtModulePlugins, &QtModulePlugins::debugMessage, this, &DeployApplication::debugMessage);
+
+  qtModulePlugins.copyQtPluginsQtLibrariesDependsOn(qtSharedLibraries, request.destinationDirectoryPath);
 }
 
 QString DeployApplication::osName(OperatingSystem os) noexcept

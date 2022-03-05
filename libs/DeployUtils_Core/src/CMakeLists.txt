@@ -120,6 +120,16 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/LogLevel.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.cpp
+  Mdt/DeployUtils/QtSharedLibraryError.cpp
+  Mdt/DeployUtils/QtSharedLibraryFile.cpp
+  Mdt/DeployUtils/QtSharedLibrary.cpp
+  Mdt/DeployUtils/UnknownQtModuleError.cpp
+  Mdt/DeployUtils/QtModule.cpp
+  Mdt/DeployUtils/QtModuleList.cpp
+  Mdt/DeployUtils/FindQtPluginError.cpp
+  Mdt/DeployUtils/QtPluginFile.cpp
+  Mdt/DeployUtils/QtPlugins.cpp
+  Mdt/DeployUtils/QtModulePlugins.cpp
   Mdt/DeployUtils/DeployApplicationRequest.cpp
   Mdt/DeployUtils/DeployApplication.cpp
 )

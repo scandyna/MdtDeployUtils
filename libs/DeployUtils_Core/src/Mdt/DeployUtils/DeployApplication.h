@@ -27,6 +27,7 @@
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
+#include <QStringList>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -94,6 +95,7 @@ namespace Mdt{ namespace DeployUtils{
     void installExecutable(const DeployApplicationRequest & request);
     void setRPathToInstalledExecutable(const QString & executableFilePath, const DeployApplicationRequest & request);
     void copySharedLibrariesTargetDependsOn(const DeployApplicationRequest & request);
+    void copyRequiredQtPlugins(const DeployApplicationRequest & request);
 
     static
     QString osName(OperatingSystem os) noexcept;
@@ -101,6 +103,7 @@ namespace Mdt{ namespace DeployUtils{
     Platform mPlatform;
     QString mBinDirDestinationPath;
     QString mLibDirDestinationPath;
+    QStringList mSharedLibrariesTargetDependsOn;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
