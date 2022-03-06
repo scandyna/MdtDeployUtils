@@ -189,6 +189,8 @@ See https://scandyna.gitlab.io/mdtdeployutils/cpp-api/html/todo.html
 
 # CI
 
+## Create a snadbox branch that does not trigger the CI
+
 ## "Install test"
 
 - Build+test for UNIX system wide install (/usr)
