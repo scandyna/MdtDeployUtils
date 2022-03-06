@@ -18,31 +18,38 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "QtPlugins.h"
+#include "DestinationDirectory.h"
+#include <QStringBuilder>
+#include <QLatin1Char>
+#include <QDir>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
 
-void QtPlugins::deployQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination)
+QString DestinationDirectory::executablesDirectoryPath() const noexcept
 {
+  return QDir::cleanPath( mPath % QLatin1Char('/') % mStructure.executablesDirectory() );
 }
 
-bool QtPlugins::pathIsAbsoluteAndCouldBePluginsRoot(const QFileInfo & qtPluginsRoot) noexcept
+QString DestinationDirectory::sharedLibrariesDirectoryPath() const noexcept
 {
-  if( qtPluginsRoot.filePath().isEmpty() ){
-    return false;
-  }
-  if( !qtPluginsRoot.isAbsolute() ){
-    return false;
-  }
-  if( !qtPluginsRoot.isDir() ){
-    return false;
-  }
-  if( qtPluginsRoot.fileName() != QLatin1String("plugins") ){
-    return false;
-  }
+  return QDir::cleanPath( mPath % QLatin1Char('/') % mStructure.sharedLibrariesDirectory() );
+}
 
-  return true;
+DestinationDirectory DestinationDirectory::fromPathAndStructure(const QString & path, const DestinationDirectoryStructure & structure) noexcept
+{
+  assert( !path.trimmed().isEmpty() );
+  assert( !structure.isNull() );
+
+  return DestinationDirectory(path, structure);
+}
+
+DestinationDirectory DestinationDirectory::fromPathAndOs(const QString & path, OperatingSystem os) noexcept
+{
+  assert( !path.trimmed().isEmpty() );
+  assert(os != OperatingSystem::Unknown);
+
+  return fromPathAndStructure( path, DestinationDirectoryStructure::fromOperatingSystem(os) );
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

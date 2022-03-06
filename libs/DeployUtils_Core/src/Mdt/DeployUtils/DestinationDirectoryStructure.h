@@ -1,0 +1,130 @@
+/****************************************************************************
+ **
+ ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
+ **
+ ** Copyright (C) 2022-2022 Philippe Steinmann.
+ **
+ ** This program is free software: you can redistribute it and/or modify
+ ** it under the terms of the GNU Lesser General Public License as published by
+ ** the Free Software Foundation, either version 3 of the License, or
+ ** (at your option) any later version.
+ **
+ ** This program is distributed in the hope that it will be useful,
+ ** but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ ** GNU Lesser General Public License for more details.
+ **
+ ** You should have received a copy of the GNU Lesser General Public License
+ ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ **
+ ****************************************************************************/
+#ifndef MDT_DEPLOY_UTILS_DESTINATION_DIRECTORY_STRUCTURE_H
+#define MDT_DEPLOY_UTILS_DESTINATION_DIRECTORY_STRUCTURE_H
+
+#include "OperatingSystem.h"
+#include "mdt_deployutilscore_export.h"
+#include <QString>
+
+namespace Mdt{ namespace DeployUtils{
+
+  /*! \brief Represents a destination directory structure
+   */
+  class MDT_DEPLOYUTILSCORE_EXPORT DestinationDirectoryStructure
+  {
+   public:
+
+    /*! \brief Construct a null directory structure
+     *
+     * \sa isNull()
+     */
+    DestinationDirectoryStructure() noexcept = default;
+
+    /*! \brief Copy construct a directory structure from \a other
+     */
+    DestinationDirectoryStructure(const DestinationDirectoryStructure & other) = default;
+
+    /*! \brief Copy assign \a other to this directory structure
+     */
+    DestinationDirectoryStructure & operator=(const DestinationDirectoryStructure & other) = default;
+
+    /*! \brief Move construct a directory structure from \a other
+     */
+    DestinationDirectoryStructure(DestinationDirectoryStructure && other) noexcept = default;
+
+    /*! \brief Move assign \a other to this directory structure
+     */
+    DestinationDirectoryStructure & operator=(DestinationDirectoryStructure && other) noexcept = default;
+
+    /*! \brief Check if this directory structure is null
+     *
+     * This structure will be null as long as the directories
+     * to executables and shared libraries are not defined
+     */
+    bool isNull() const noexcept
+    {
+      if( mExecutablesDirectory.isEmpty() ){
+        return true;
+      }
+      if( mSharedLibrariesDirectory.isEmpty() ){
+        return true;
+      }
+
+      return false;
+    }
+
+    /*! \brief Set the directory for executables
+     *
+     * \pre \a directory must not be empty
+     */
+    void setExecutablesDirectory(const QString & directory) noexcept;
+
+    /*! \brief Get the directory for executables
+     */
+    const QString & executablesDirectory() const noexcept
+    {
+      return mExecutablesDirectory;
+    }
+
+    /*! \brief Set the directory for shared libraries
+     *
+     * \pre \a directory must not be empty
+     */
+    void setSharedLibrariesDirectory(const QString & directory) noexcept;
+
+    /*! \brief Get the directory for shared libraries
+     */
+    const QString & sharedLibrariesDirectory() const noexcept
+    {
+      return mSharedLibrariesDirectory;
+    }
+
+    /*! \brief Get the (default) directory for executables for given OS
+     *
+     * \pre \a os must be defined
+     */
+    static
+    QString executablesDirectoryFromOs(OperatingSystem os) noexcept;
+
+    /*! \brief Get the (default) directory for shared libraries for given OS
+     *
+     * \pre \a os must be defined
+     */
+    static
+    QString sharedLibrariesDirectoryFromOs(OperatingSystem os) noexcept;
+
+    /*! \brief Create a directory structure for given OS
+     *
+     * \pre \a os must be defined
+     */
+    static
+    DestinationDirectoryStructure fromOperatingSystem(OperatingSystem os) noexcept;
+
+   private:
+
+    QString mExecutablesDirectory;
+    QString mSharedLibrariesDirectory;
+  };
+
+}} // namespace Mdt{ namespace DeployUtils{
+
+#endif // #ifndef MDT_DEPLOY_UTILS_DESTINATION_DIRECTORY_STRUCTURE_H

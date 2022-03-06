@@ -35,10 +35,8 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-void QtModulePlugins::copyQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries, const QString & destinationDirectoryPath)
+void QtModulePlugins::deployQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries, const DestinationDirectory & destination)
 {
-  assert( !destinationDirectoryPath.trimmed().isEmpty() );
-
   if( qtLibraries.empty() ){
     return;
   }
@@ -59,11 +57,18 @@ void QtModulePlugins::copyQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFil
   
   const QtPluginFileList plugins = getPluginsForModules(qtModules, qtPluginsRoot);
   
-  const QStringList pluginsDirectories = getQtPluginsDirectoryNames(plugins);
+  QtPlugins qtPlugins;
+  connect(&qtPlugins, &QtPlugins::statusMessage, this, &QtModulePlugins::statusMessage);
+  connect(&qtPlugins, &QtPlugins::verboseMessage, this, &QtModulePlugins::verboseMessage);
+  connect(&qtPlugins, &QtPlugins::debugMessage, this, &QtModulePlugins::debugMessage);
+
+  qtPlugins.deployQtPlugins(plugins, destination);
+
+//   const QStringList pluginsDirectories = getQtPluginsDirectoryNames(plugins);
   
-  makeDestinationDirectoryStructure(pluginsDirectories, destinationDirectoryPath);
+//   makeDestinationDirectoryStructure(pluginsDirectories, destinationDirectoryPath);
   
-  copyPluginsToDestination(plugins, destinationDirectoryPath);
+//   copyPluginsToDestination(plugins, destinationDirectoryPath);
 
   /*
    * - get a list of modules for given Qt libraries

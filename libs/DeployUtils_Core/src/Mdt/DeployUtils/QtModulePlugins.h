@@ -26,6 +26,7 @@
 #include "QtSharedLibraryFile.h"
 #include "QtPluginFile.h"
 #include "FindQtPluginError.h"
+#include "DestinationDirectory.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -51,11 +52,9 @@ namespace Mdt{ namespace DeployUtils{
     {
     }
 
-    /*! \brief Copy Qt plugins required for given list of Qt libraries to given destination
-     *
-     * \pre \a destinationDirectoryPath must not be empty
+    /*! \brief Deploy Qt plugins required for given list of Qt libraries to given destination
      */
-    void copyQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries, const QString & destinationDirectoryPath);
+    void deployQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries, const DestinationDirectory & destination);
 
     /*! \brief Get a list of Qt plugins directories required for a given Qt module
      *
@@ -166,7 +165,10 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
+    [[deprecated]]
     void makeDestinationDirectoryStructure(const QStringList & qtPluginsDirectories, const QString & destinationDirectoryPath);
+
+    [[deprecated]]
     void copyPluginsToDestination(const QtPluginFileList & plugins, const QString & destinationDirectoryPath);
   };
 

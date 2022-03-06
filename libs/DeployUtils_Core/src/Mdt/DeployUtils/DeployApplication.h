@@ -24,6 +24,7 @@
 #include "DeployApplicationRequest.h"
 #include "OperatingSystem.h"
 #include "Platform.h"
+#include "DestinationDirectory.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -76,13 +77,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     void execute(const DeployApplicationRequest & request);
 
-    /*! \brief Get the name of the directory where to install shared libraries
-     *
-     * \pre \a os must be valid
-     */
-    static
-    QString sharedLibrariesDirectoryName(OperatingSystem os) noexcept;
-
    signals:
 
     void statusMessage(const QString & message) const;
@@ -91,11 +85,11 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
-    void makeDirectoryStructure(const DeployApplicationRequest & request);
+    void makeDirectoryStructure(const DestinationDirectory & destination);
     void installExecutable(const DeployApplicationRequest & request);
     void setRPathToInstalledExecutable(const QString & executableFilePath, const DeployApplicationRequest & request);
     void copySharedLibrariesTargetDependsOn(const DeployApplicationRequest & request);
-    void copyRequiredQtPlugins(const DeployApplicationRequest & request);
+    void copyRequiredQtPlugins(const DestinationDirectory & destination);
 
     static
     QString osName(OperatingSystem os) noexcept;

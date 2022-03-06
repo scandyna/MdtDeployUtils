@@ -19,6 +19,8 @@
  **
  ****************************************************************************/
 #include "DeployApplication.h"
+#include "DestinationDirectory.h"
+#include "OperatingSystem.h"
 #include "FileCopier.h"
 #include "RPath.h"
 #include "ExecutableFileReader.h"
@@ -47,44 +49,30 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
     .arg(request.targetFilePath)
   );
 
-  emit statusMessage(
-    tr("Destination directory is %1")
-    .arg(request.destinationDirectoryPath)
-  );
-
   ExecutableFileReader reader;
   reader.openFile(request.targetFilePath);
   mPlatform = reader.getFilePlatform();
   reader.close();
+
+  const auto destination = DestinationDirectory::fromPathAndOs( request.destinationDirectoryPath, mPlatform.operatingSystem() );
+
+  emit statusMessage(
+    tr("Destination directory is %1")
+    .arg( destination.path() )
+  );
 
   emit verboseMessage(
     tr("Executable targets %1")
     .arg( osName( mPlatform.operatingSystem() ) )
   );
 
-  makeDirectoryStructure(request);
+  makeDirectoryStructure(destination);
   installExecutable(request);
   copySharedLibrariesTargetDependsOn(request);
-  copyRequiredQtPlugins(request);
+  copyRequiredQtPlugins(destination);
 }
 
-QString DeployApplication::sharedLibrariesDirectoryName(OperatingSystem os) noexcept
-{
-  assert(os != OperatingSystem::Unknown);
-
-  switch(os){
-    case OperatingSystem::Linux:
-      return QLatin1String("lib");
-    case OperatingSystem::Windows:
-      return QLatin1String("bin");
-    case OperatingSystem::Unknown:
-      break;
-  }
-
-  return QString();
-}
-
-void DeployApplication::makeDirectoryStructure(const DeployApplicationRequest & request)
+void DeployApplication::makeDirectoryStructure(const DestinationDirectory & destination)
 {
   assert( !mPlatform.isNull() );
 
@@ -92,16 +80,14 @@ void DeployApplication::makeDirectoryStructure(const DeployApplicationRequest & 
     tr("Make directory structure")
   );
 
-  mBinDirDestinationPath = QDir::cleanPath( request.destinationDirectoryPath % QLatin1String("/bin") );
+  mBinDirDestinationPath = destination.executablesDirectoryPath();
   emit debugMessage(
     tr("Create directory %1")
     .arg(mBinDirDestinationPath)
   );
   FileCopier::createDirectory(mBinDirDestinationPath);
 
-  mLibDirDestinationPath = QDir::cleanPath(
-    request.destinationDirectoryPath % QLatin1Char('/') % sharedLibrariesDirectoryName( mPlatform.operatingSystem() )
-  );
+  mLibDirDestinationPath = destination.sharedLibrariesDirectoryPath();
   if(mLibDirDestinationPath != mBinDirDestinationPath){
     emit debugMessage(
       tr("Create directory %1")
@@ -173,7 +159,7 @@ void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicati
   mSharedLibrariesTargetDependsOn = csltdo.foundDependencies();
 }
 
-void DeployApplication::copyRequiredQtPlugins(const DeployApplicationRequest & request)
+void DeployApplication::copyRequiredQtPlugins(const DestinationDirectory & destination)
 {
   emit verboseMessage(
     tr("get Qt libraries out from dependencies (will be used to know which Qt plugins are required)")
@@ -186,7 +172,7 @@ void DeployApplication::copyRequiredQtPlugins(const DeployApplicationRequest & r
   connect(&qtModulePlugins, &QtModulePlugins::verboseMessage, this, &DeployApplication::verboseMessage);
   connect(&qtModulePlugins, &QtModulePlugins::debugMessage, this, &DeployApplication::debugMessage);
 
-  qtModulePlugins.copyQtPluginsQtLibrariesDependsOn(qtSharedLibraries, request.destinationDirectoryPath);
+  qtModulePlugins.deployQtPluginsQtLibrariesDependsOn(qtSharedLibraries, destination);
 }
 
 QString DeployApplication::osName(OperatingSystem os) noexcept

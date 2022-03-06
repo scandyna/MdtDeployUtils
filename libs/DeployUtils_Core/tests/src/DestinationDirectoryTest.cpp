@@ -20,7 +20,28 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
-#include "Mdt/DeployUtils/DeployApplication.h"
+#include "Mdt/DeployUtils/DestinationDirectory.h"
+#include "Mdt/DeployUtils/DestinationDirectoryStructure.h"
+#include "Mdt/DeployUtils/Platform.h"
 #include <QLatin1String>
 
 using namespace Mdt::DeployUtils;
+
+TEST_CASE("fromPathAndStructure")
+{
+  const auto structure = DestinationDirectoryStructure::fromOperatingSystem( Platform::nativeOperatingSystem() );
+  const auto destination = DestinationDirectory::fromPathAndStructure(QLatin1String("/tmp/app"), structure);
+
+  REQUIRE( destination.path() == QLatin1String("/tmp/app") );
+  REQUIRE( !destination.structure().isNull() );
+}
+
+TEST_CASE("fromPathAndOs")
+{
+  const auto destination = DestinationDirectory::fromPathAndOs( QLatin1String("/tmp/app"), OperatingSystem::Linux );
+
+  REQUIRE( destination.path() == QLatin1String("/tmp/app") );
+  REQUIRE( !destination.structure().isNull() );
+  REQUIRE( destination.executablesDirectoryPath() == QLatin1String("/tmp/app/bin") );
+  REQUIRE( destination.sharedLibrariesDirectoryPath() == QLatin1String("/tmp/app/lib") );
+}

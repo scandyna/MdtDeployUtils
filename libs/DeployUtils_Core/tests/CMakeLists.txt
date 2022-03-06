@@ -865,6 +865,22 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME DestinationDirectoryStructureTest
+  TARGET destinationDirectoryStructureTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/DestinationDirectoryStructureTest.cpp
+)
+
+mdt_add_test(
+  NAME DestinationDirectoryTest
+  TARGET destinationDirectoryTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/DestinationDirectoryTest.cpp
+)
+
+mdt_add_test(
   NAME QtSharedLibraryFileTest
   TARGET qtSharedLibraryFileTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

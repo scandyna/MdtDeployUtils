@@ -21,6 +21,8 @@
 #ifndef MDT_DEPLOY_UTILS_QT_PLUGINS_H
 #define MDT_DEPLOY_UTILS_QT_PLUGINS_H
 
+#include "QtPluginFile.h"
+#include "DestinationDirectory.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -84,10 +86,20 @@ namespace Mdt{ namespace DeployUtils{
     {
     }
 
+    /*! \brief Deploy given Qt plugins to given destination directory
+     */
+    void deployQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination);
+
     /*! \brief Check if \a qtPluginsRoot could be a Qt plugins root
      */
     static
     bool pathIsAbsoluteAndCouldBePluginsRoot(const QFileInfo & qtPluginsRoot) noexcept;
+
+   signals:
+
+    void statusMessage(const QString & message) const;
+    void verboseMessage(const QString & message) const;
+    void debugMessage(const QString & message) const;
 
   };
 
