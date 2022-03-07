@@ -38,6 +38,13 @@ void DestinationDirectoryStructure::setSharedLibrariesDirectory(const QString & 
   mSharedLibrariesDirectory = directory;
 }
 
+void DestinationDirectoryStructure::setQtPluginsRootDirectory(const QString & path) noexcept
+{
+  assert( !path.trimmed().isEmpty() );
+
+  mQtPluginsRootRelativePath = path;
+}
+
 QString DestinationDirectoryStructure::executablesDirectoryFromOs(OperatingSystem os) noexcept
 {
   assert(os != OperatingSystem::Unknown);
@@ -69,6 +76,22 @@ QString DestinationDirectoryStructure::sharedLibrariesDirectoryFromOs(OperatingS
   return QString();
 }
 
+QString DestinationDirectoryStructure::qtPluginsRootDirectoryFromOs(OperatingSystem os) noexcept
+{
+  assert(os != OperatingSystem::Unknown);
+
+  switch(os){
+    case OperatingSystem::Linux:
+      return QLatin1String("plugins");
+    case OperatingSystem::Windows:
+      return QLatin1String("bin");
+    case OperatingSystem::Unknown:
+      break;
+  }
+
+  return QString();
+}
+
 DestinationDirectoryStructure DestinationDirectoryStructure::fromOperatingSystem(OperatingSystem os) noexcept
 {
   assert(os != OperatingSystem::Unknown);
@@ -77,6 +100,7 @@ DestinationDirectoryStructure DestinationDirectoryStructure::fromOperatingSystem
 
   structure.setExecutablesDirectory( executablesDirectoryFromOs(os) );
   structure.setSharedLibrariesDirectory( sharedLibrariesDirectoryFromOs(os) );
+  structure.setQtPluginsRootDirectory( qtPluginsRootDirectoryFromOs(os) );
 
   return structure;
 }

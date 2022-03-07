@@ -98,6 +98,45 @@ namespace Mdt{ namespace DeployUtils{
       return mSharedLibrariesDirectory;
     }
 
+    /*! \brief Set the qt plugins root
+     *
+     * Qt plugins must be deployed in some specific directories,
+     * for example:
+     * \code
+     * destinationRoot
+     *     |-bin
+     *        |-app.exe
+     *        |-platforms
+     * \endcode
+     *
+     * This seems also to work on Linux:
+     * \code
+     * destinationRoot
+     *     |-bin
+     *        |-app
+     *     |-lib
+     *     |-plugins
+     *        |-platforms
+     * \endcode
+     *
+     * If using a qt.conf file, this can be set to a other directory,
+     * that must match the setting in the file.
+     *
+     * \pre \a path must be relative
+     * \sa https://doc.qt.io/qt-6/deployment-plugins.html
+     * \sa https://doc.qt.io/qt-6/qt-conf.html
+     */
+    void setQtPluginsRootDirectory(const QString & path) noexcept;
+
+    /*! \brief Get the qt plugins root
+     *
+     * \sa setQtPluginsRootRelativePath()
+     */
+    const QString & qtPluginsRootDirectory() const noexcept
+    {
+      return mQtPluginsRootRelativePath;
+    }
+
     /*! \brief Get the (default) directory for executables for given OS
      *
      * \pre \a os must be defined
@@ -112,6 +151,13 @@ namespace Mdt{ namespace DeployUtils{
     static
     QString sharedLibrariesDirectoryFromOs(OperatingSystem os) noexcept;
 
+    /*! \brief Get the (default) Qt plugins root for given OS
+     *
+     * \pre \a os must be defined
+     */
+    static
+    QString qtPluginsRootDirectoryFromOs(OperatingSystem os) noexcept;
+
     /*! \brief Create a directory structure for given OS
      *
      * \pre \a os must be defined
@@ -123,6 +169,7 @@ namespace Mdt{ namespace DeployUtils{
 
     QString mExecutablesDirectory;
     QString mSharedLibrariesDirectory;
+    QString mQtPluginsRootRelativePath;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

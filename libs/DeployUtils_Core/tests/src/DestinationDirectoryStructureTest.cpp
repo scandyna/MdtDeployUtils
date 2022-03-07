@@ -44,6 +44,15 @@ TEST_CASE("sharedLibrariesDirectory")
   REQUIRE( structure.sharedLibrariesDirectory() == QLatin1String("lib") );
 }
 
+TEST_CASE("qtPluginsRootRelativePath")
+{
+  DestinationDirectoryStructure structure;
+
+  structure.setQtPluginsRootDirectory( QLatin1String("plugins") );
+
+  REQUIRE( structure.qtPluginsRootDirectory() == QLatin1String("plugins") );
+}
+
 TEST_CASE("isNull")
 {
   DestinationDirectoryStructure structure;
@@ -84,6 +93,7 @@ TEST_CASE("forOperatingSystem")
 
     REQUIRE( structure.executablesDirectory() == QLatin1String("bin") );
     REQUIRE( structure.sharedLibrariesDirectory() == QLatin1String("lib") );
+    REQUIRE( structure.qtPluginsRootDirectory() == QLatin1String("plugins") );
     REQUIRE( !structure.isNull() );
   }
 
@@ -93,6 +103,7 @@ TEST_CASE("forOperatingSystem")
 
     REQUIRE( structure.executablesDirectory() == QLatin1String("bin") );
     REQUIRE( structure.sharedLibrariesDirectory() == QLatin1String("bin") );
+    REQUIRE( structure.qtPluginsRootDirectory() == QLatin1String("bin") );
     REQUIRE( !structure.isNull() );
   }
 }

@@ -44,4 +44,5 @@ TEST_CASE("fromPathAndOs")
   REQUIRE( !destination.structure().isNull() );
   REQUIRE( destination.executablesDirectoryPath() == QLatin1String("/tmp/app/bin") );
   REQUIRE( destination.sharedLibrariesDirectoryPath() == QLatin1String("/tmp/app/lib") );
+  REQUIRE( destination.qtPluginsRootDirectoryPath() == QLatin1String("/tmp/app/plugins") );
 }

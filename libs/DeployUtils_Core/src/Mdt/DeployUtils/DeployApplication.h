@@ -89,7 +89,7 @@ namespace Mdt{ namespace DeployUtils{
     void installExecutable(const DeployApplicationRequest & request);
     void setRPathToInstalledExecutable(const QString & executableFilePath, const DeployApplicationRequest & request);
     void copySharedLibrariesTargetDependsOn(const DeployApplicationRequest & request);
-    void copyRequiredQtPlugins(const DestinationDirectory & destination);
+    void deployRequiredQtPlugins(const DestinationDirectory & destination);
 
     static
     QString osName(OperatingSystem os) noexcept;

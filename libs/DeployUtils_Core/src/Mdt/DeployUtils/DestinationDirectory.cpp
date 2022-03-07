@@ -36,6 +36,11 @@ QString DestinationDirectory::sharedLibrariesDirectoryPath() const noexcept
   return QDir::cleanPath( mPath % QLatin1Char('/') % mStructure.sharedLibrariesDirectory() );
 }
 
+QString DestinationDirectory::qtPluginsRootDirectoryPath() const noexcept
+{
+  return QDir::cleanPath( mPath % QLatin1Char('/') % mStructure.qtPluginsRootDirectory() );
+}
+
 DestinationDirectory DestinationDirectory::fromPathAndStructure(const QString & path, const DestinationDirectoryStructure & structure) noexcept
 {
   assert( !path.trimmed().isEmpty() );

@@ -67,6 +67,10 @@ namespace Mdt{ namespace DeployUtils{
      */
     QString sharedLibrariesDirectoryPath() const noexcept;
 
+    /*! \brief Get the path to the Qt plugins root directory
+     */
+    QString qtPluginsRootDirectoryPath() const noexcept;
+
     /*! \brief Access the structure of this directory
      */
     const DestinationDirectoryStructure & structure() const noexcept

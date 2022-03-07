@@ -162,14 +162,6 @@ namespace Mdt{ namespace DeployUtils{
     void statusMessage(const QString & message) const;
     void verboseMessage(const QString & message) const;
     void debugMessage(const QString & message) const;
-
-   private:
-
-    [[deprecated]]
-    void makeDestinationDirectoryStructure(const QStringList & qtPluginsDirectories, const QString & destinationDirectoryPath);
-
-    [[deprecated]]
-    void copyPluginsToDestination(const QtPluginFileList & plugins, const QString & destinationDirectoryPath);
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

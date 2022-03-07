@@ -41,12 +41,10 @@ void QtModulePlugins::deployQtPluginsQtLibrariesDependsOn(const QtSharedLibraryF
     return;
   }
 
-  /// \todo emit some messages
-  
   emit statusMessage(
     tr("search required qt plugins")
   );
-  
+
   const auto qtModules = QtModuleList::fromQtSharedLibraries(qtLibraries);
 
   const QString qtPluginsRoot = findPluginsRootFromQtLibrary(qtLibraries[0]);
@@ -54,53 +52,15 @@ void QtModulePlugins::deployQtPluginsQtLibrariesDependsOn(const QtSharedLibraryF
     tr("will take qt plugins from %1")
     .arg(qtPluginsRoot)
   );
-  
+
   const QtPluginFileList plugins = getPluginsForModules(qtModules, qtPluginsRoot);
-  
+
   QtPlugins qtPlugins;
   connect(&qtPlugins, &QtPlugins::statusMessage, this, &QtModulePlugins::statusMessage);
   connect(&qtPlugins, &QtPlugins::verboseMessage, this, &QtModulePlugins::verboseMessage);
   connect(&qtPlugins, &QtPlugins::debugMessage, this, &QtModulePlugins::debugMessage);
 
   qtPlugins.deployQtPlugins(plugins, destination);
-
-//   const QStringList pluginsDirectories = getQtPluginsDirectoryNames(plugins);
-  
-//   makeDestinationDirectoryStructure(pluginsDirectories, destinationDirectoryPath);
-  
-//   copyPluginsToDestination(plugins, destinationDirectoryPath);
-
-  /*
-   * - get a list of modules for given Qt libraries
-   * - get a list of the plugins for the list of modules
-   * - deduce the source Qt install dir
-   */
-  
-  /*
-   * From the given list of full paths to shared libraries that are Qt libraries:
-   * - deduce the plugins root of the source Qt installation
-   * - get the Qt plugins that have to be deployed:
-   *   -> 
-   * - ((find the full path to those Qt plugins)) <-- allready known
-   *
-   * From the list of Qt plugins that have to be deployed:
-   * - create destination directories structure
-   * - copy each Qt plugin to the correct destination
-   * - NOTE: RPath ?
-   */
-  
-  /*
-   * get the Qt modules given target depends on
-   *
-   * NOTE: previous work should provide us
-   *  the shared libraries that are Qt libraries
-   *  we should also get the full path,
-   *  so we can deduce the source plugins root
-   */
-
-  /*
-   */
-
 }
 
 template<typename Predicate>
@@ -259,45 +219,6 @@ QString QtModulePlugins::findPluginsRootFromQtLibraryPath(const QFileInfo & qtLi
 QString QtModulePlugins::findPluginsRootFromQtLibrary(const QtSharedLibraryFile & qtLibrary)
 {
   return findPluginsRootFromQtLibraryPath( qtLibrary.fileInfo() );
-}
-
-void QtModulePlugins::makeDestinationDirectoryStructure(const QStringList & qtPluginsDirectories, const QString & destinationDirectoryPath)
-{
-  for(const QString & directory : qtPluginsDirectories){
-    /// \todo remove hardcoded dir !
-    const QString path = QDir::cleanPath(destinationDirectoryPath % QLatin1String("/plugins/") % directory);
-    emit verboseMessage(
-      tr("creating directory %1")
-      .arg(path)
-    );
-    FileCopier::createDirectory(path);
-  }
-}
-
-void QtModulePlugins::copyPluginsToDestination(const QtPluginFileList & plugins, const QString & destinationDirectoryPath)
-{
-  if( plugins.empty() ){
-    return;
-  }
-
-  emit verboseMessage(
-    tr("copy qt plugins")
-  );
-
-  FileCopier fileCopier;
-  connect(&fileCopier, &FileCopier::verboseMessage, this, &QtModulePlugins::verboseMessage);
-
-  /** \todo Should not hardcode bin in the path
-   * Also, once qt.conf is supported, plugins should be copied
-   * to something like \a destinationDirectoryPath /plugins/subDir
-   * AND also, this should be some sort of settings that could be passed here.
-   */
-  for(const auto & plugin : plugins){
-    const QString destination = destinationDirectoryPath % QLatin1String("/plugins/") % plugin.directoryName();
-    fileCopier.copyFile(plugin.absoluteFilePath(), destination);
-//     const QString destinationFilePath = QDir::cleanPath( plugin ) /// hmm.. no
-  }
-  
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

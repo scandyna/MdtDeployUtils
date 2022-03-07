@@ -19,12 +19,23 @@
  **
  ****************************************************************************/
 #include "QtPlugins.h"
+#include "FileCopier.h"
+#include <QStringBuilder>
+#include <QLatin1Char>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
 
 void QtPlugins::deployQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination)
 {
+  const QStringList pluginsDirectories = getQtPluginsDirectoryNames(plugins);
+
+  makeDestinationDirectoryStructure(pluginsDirectories, destination);
+  copyPluginsToDestination(plugins, destination);
+
+  /// \todo plugins dependencies
+
+  /// \todo RPath for plugins and dependencies
 }
 
 bool QtPlugins::pathIsAbsoluteAndCouldBePluginsRoot(const QFileInfo & qtPluginsRoot) noexcept
@@ -43,6 +54,37 @@ bool QtPlugins::pathIsAbsoluteAndCouldBePluginsRoot(const QFileInfo & qtPluginsR
   }
 
   return true;
+}
+
+void QtPlugins::makeDestinationDirectoryStructure(const QStringList & qtPluginsDirectories, const DestinationDirectory & destination)
+{
+  for(const QString & directory : qtPluginsDirectories){
+    const QString path = QDir::cleanPath(destination.qtPluginsRootDirectoryPath() % QLatin1Char('/') % directory);
+    emit verboseMessage(
+      tr("creating directory %1")
+      .arg(path)
+    );
+    FileCopier::createDirectory(path);
+  }
+}
+
+void QtPlugins::copyPluginsToDestination(const QtPluginFileList & plugins, const DestinationDirectory & destination)
+{
+  if( plugins.empty() ){
+    return;
+  }
+
+  emit verboseMessage(
+    tr("copy qt plugins")
+  );
+
+  FileCopier fileCopier;
+  connect(&fileCopier, &FileCopier::verboseMessage, this, &QtPlugins::verboseMessage);
+
+  for(const auto & plugin : plugins){
+    const QString destinationDirectoryPath = QDir::cleanPath( destination.qtPluginsRootDirectoryPath() % QLatin1Char('/') % plugin.directoryName() );
+    fileCopier.copyFile(plugin.absoluteFilePath(), destinationDirectoryPath);
+  }
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

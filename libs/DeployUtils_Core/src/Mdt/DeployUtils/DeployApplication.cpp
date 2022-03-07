@@ -69,7 +69,7 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
   makeDirectoryStructure(destination);
   installExecutable(request);
   copySharedLibrariesTargetDependsOn(request);
-  copyRequiredQtPlugins(destination);
+  deployRequiredQtPlugins(destination);
 }
 
 void DeployApplication::makeDirectoryStructure(const DestinationDirectory & destination)
@@ -159,7 +159,7 @@ void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicati
   mSharedLibrariesTargetDependsOn = csltdo.foundDependencies();
 }
 
-void DeployApplication::copyRequiredQtPlugins(const DestinationDirectory & destination)
+void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & destination)
 {
   emit verboseMessage(
     tr("get Qt libraries out from dependencies (will be used to know which Qt plugins are required)")

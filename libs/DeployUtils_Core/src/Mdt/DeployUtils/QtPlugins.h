@@ -26,6 +26,7 @@
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QFileInfo>
 
 namespace Mdt{ namespace DeployUtils{
@@ -45,47 +46,6 @@ namespace Mdt{ namespace DeployUtils{
     {
     }
 
-    /*! \brief Set the destination qt plugins root
-     *
-     * Qt plugins must be deployed in some specific directories,
-     * for example:
-     * \code
-     * destinationRoot
-     *     |-bin
-     *        |-app.exe
-     *        |-platforms
-     * \endcode
-     *
-     * This seems also to work on Linux:
-     * \code
-     * destinationRoot
-     *     |-bin
-     *        |-app
-     *     |-lib
-     *     |-plugins
-     *        |-platforms
-     * \endcode
-     *
-     * If using a qt.conf file, this can be set to a other directory,
-     * that must match the setting in this file.
-     *
-     * The given path must be a relative path,
-     * that will be added to the application destination directory path.
-     *
-     * \pre \a path must be relative
-     * \sa https://doc.qt.io/qt-6/deployment-plugins.html
-     * \sa https://doc.qt.io/qt-6/qt-conf.html
-     */
-    void setDestinationQtPluginsRootRelativePath(const QString & path) noexcept;
-
-    /*! \brief Get the destination qt plugins root
-     *
-     * \sa setDestinationQtPluginsRootRelativePath()
-     */
-    const QString & destinationQtPluginsRootRelativePath() const noexcept
-    {
-    }
-
     /*! \brief Deploy given Qt plugins to given destination directory
      */
     void deployQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination);
@@ -101,6 +61,10 @@ namespace Mdt{ namespace DeployUtils{
     void verboseMessage(const QString & message) const;
     void debugMessage(const QString & message) const;
 
+   private:
+
+    void makeDestinationDirectoryStructure(const QStringList & qtPluginsDirectories, const DestinationDirectory & destination);
+    void copyPluginsToDestination(const QtPluginFileList & plugins, const DestinationDirectory & destination);
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
