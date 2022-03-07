@@ -125,14 +125,6 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
 
   emitFoundDependenciesMessage(mFoundDependencies);
 
-  /** \todo Is the overwrite behaviour correct (as documented) ?
-   *
-   * Mainly, review the case of destination == source
-   *
-   * This for copy and RPath
-   * \note RPath only applies to copied libs, so should be ok
-   */
-
   FileCopier fileCopier;
   fileCopier.setOverwriteBehavior(request.overwriteBehavior);
   connect(&fileCopier, &FileCopier::verboseMessage, this, &CopySharedLibrariesTargetDependsOn::verboseMessage);
