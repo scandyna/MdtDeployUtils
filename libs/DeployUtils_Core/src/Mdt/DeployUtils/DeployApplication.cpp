@@ -69,7 +69,7 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
   makeDirectoryStructure(destination);
   installExecutable(request);
   copySharedLibrariesTargetDependsOn(request);
-  deployRequiredQtPlugins(destination);
+  deployRequiredQtPlugins(destination, request.shLibOverwriteBehavior);
 }
 
 void DeployApplication::makeDirectoryStructure(const DestinationDirectory & destination)
@@ -159,7 +159,7 @@ void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicati
   mSharedLibrariesTargetDependsOn = csltdo.foundDependencies();
 }
 
-void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & destination)
+void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
 {
   emit verboseMessage(
     tr("get Qt libraries out from dependencies (will be used to know which Qt plugins are required)")
@@ -172,7 +172,7 @@ void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & des
   connect(&qtModulePlugins, &QtModulePlugins::verboseMessage, this, &DeployApplication::verboseMessage);
   connect(&qtModulePlugins, &QtModulePlugins::debugMessage, this, &DeployApplication::debugMessage);
 
-  qtModulePlugins.deployQtPluginsQtLibrariesDependsOn(qtSharedLibraries, destination);
+  qtModulePlugins.deployQtPluginsQtLibrariesDependsOn(qtSharedLibraries, destination, overwriteBehavior);
 }
 
 QString DeployApplication::osName(OperatingSystem os) noexcept

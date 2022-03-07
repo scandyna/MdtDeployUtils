@@ -23,6 +23,7 @@
 
 #include "QtPluginFile.h"
 #include "DestinationDirectory.h"
+#include "OverwriteBehavior.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -47,8 +48,13 @@ namespace Mdt{ namespace DeployUtils{
     }
 
     /*! \brief Deploy given Qt plugins to given destination directory
+     *
+     * Each Qt plugins, as well as their dependencies,
+     * will be copied respecting \a overwriteBehavior .
+     *
+     * \sa FileCopier::copyFile()
      */
-    void deployQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination);
+    void deployQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
 
     /*! \brief Check if \a qtPluginsRoot could be a Qt plugins root
      */
@@ -64,7 +70,7 @@ namespace Mdt{ namespace DeployUtils{
    private:
 
     void makeDestinationDirectoryStructure(const QStringList & qtPluginsDirectories, const DestinationDirectory & destination);
-    void copyPluginsToDestination(const QtPluginFileList & plugins, const DestinationDirectory & destination);
+    void copyPluginsToDestination(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

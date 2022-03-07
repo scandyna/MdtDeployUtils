@@ -35,7 +35,9 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-void QtModulePlugins::deployQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries, const DestinationDirectory & destination)
+void QtModulePlugins::deployQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries,
+                                                          const DestinationDirectory & destination,
+                                                          OverwriteBehavior overwriteBehavior)
 {
   if( qtLibraries.empty() ){
     return;
@@ -60,7 +62,7 @@ void QtModulePlugins::deployQtPluginsQtLibrariesDependsOn(const QtSharedLibraryF
   connect(&qtPlugins, &QtPlugins::verboseMessage, this, &QtModulePlugins::verboseMessage);
   connect(&qtPlugins, &QtPlugins::debugMessage, this, &QtModulePlugins::debugMessage);
 
-  qtPlugins.deployQtPlugins(plugins, destination);
+  qtPlugins.deployQtPlugins(plugins, destination, overwriteBehavior);
 }
 
 template<typename Predicate>

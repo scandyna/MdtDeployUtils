@@ -26,12 +26,12 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-void QtPlugins::deployQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination)
+void QtPlugins::deployQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
 {
   const QStringList pluginsDirectories = getQtPluginsDirectoryNames(plugins);
 
   makeDestinationDirectoryStructure(pluginsDirectories, destination);
-  copyPluginsToDestination(plugins, destination);
+  copyPluginsToDestination(plugins, destination, overwriteBehavior);
 
   /// \todo plugins dependencies
 
@@ -68,7 +68,7 @@ void QtPlugins::makeDestinationDirectoryStructure(const QStringList & qtPluginsD
   }
 }
 
-void QtPlugins::copyPluginsToDestination(const QtPluginFileList & plugins, const DestinationDirectory & destination)
+void QtPlugins::copyPluginsToDestination(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
 {
   if( plugins.empty() ){
     return;
@@ -79,6 +79,7 @@ void QtPlugins::copyPluginsToDestination(const QtPluginFileList & plugins, const
   );
 
   FileCopier fileCopier;
+  fileCopier.setOverwriteBehavior(overwriteBehavior);
   connect(&fileCopier, &FileCopier::verboseMessage, this, &QtPlugins::verboseMessage);
 
   for(const auto & plugin : plugins){

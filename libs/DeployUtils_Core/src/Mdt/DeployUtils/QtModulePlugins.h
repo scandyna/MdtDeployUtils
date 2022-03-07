@@ -27,6 +27,7 @@
 #include "QtPluginFile.h"
 #include "FindQtPluginError.h"
 #include "DestinationDirectory.h"
+#include "OverwriteBehavior.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -53,8 +54,15 @@ namespace Mdt{ namespace DeployUtils{
     }
 
     /*! \brief Deploy Qt plugins required for given list of Qt libraries to given destination
+     *
+     * Each Qt plugins, as well as their dependencies,
+     * will be copied respecting \a overwriteBehavior .
+     *
+     * \sa FileCopier::copyFile()
      */
-    void deployQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries, const DestinationDirectory & destination);
+    void deployQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries,
+                                             const DestinationDirectory & destination,
+                                             OverwriteBehavior overwriteBehavior);
 
     /*! \brief Get a list of Qt plugins directories required for a given Qt module
      *

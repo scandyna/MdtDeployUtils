@@ -25,6 +25,7 @@
 #include "OperatingSystem.h"
 #include "Platform.h"
 #include "DestinationDirectory.h"
+#include "OverwriteBehavior.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -89,7 +90,7 @@ namespace Mdt{ namespace DeployUtils{
     void installExecutable(const DeployApplicationRequest & request);
     void setRPathToInstalledExecutable(const QString & executableFilePath, const DeployApplicationRequest & request);
     void copySharedLibrariesTargetDependsOn(const DeployApplicationRequest & request);
-    void deployRequiredQtPlugins(const DestinationDirectory & destination);
+    void deployRequiredQtPlugins(const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
 
     static
     QString osName(OperatingSystem os) noexcept;
