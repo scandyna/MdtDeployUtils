@@ -26,6 +26,14 @@
 
 namespace Mdt{ namespace DeployUtils{
 
+void QtPlugins::setAlreadyDeployedSharedLibraries(const QStringList & libraries) noexcept
+{
+}
+
+void QtPlugins::setSearchPrefixPathList(const PathList & pathList) noexcept
+{
+}
+
 void QtPlugins::deployQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
 {
   const QStringList pluginsDirectories = getQtPluginsDirectoryNames(plugins);

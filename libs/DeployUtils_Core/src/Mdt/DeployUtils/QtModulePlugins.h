@@ -53,16 +53,9 @@ namespace Mdt{ namespace DeployUtils{
     {
     }
 
-    /*! \brief Deploy Qt plugins required for given list of Qt libraries to given destination
-     *
-     * Each Qt plugins, as well as their dependencies,
-     * will be copied respecting \a overwriteBehavior .
-     *
-     * \sa FileCopier::copyFile()
+    /*! \brief Get Qt plugins required for given list of Qt libraries
      */
-    void deployQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries,
-                                             const DestinationDirectory & destination,
-                                             OverwriteBehavior overwriteBehavior);
+    QtPluginFileList getQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries) const noexcept;
 
     /*! \brief Get a list of Qt plugins directories required for a given Qt module
      *
@@ -123,7 +116,7 @@ namespace Mdt{ namespace DeployUtils{
      * \sa https://doc.qt.io/qt-6/qpa.html
      * \sa https://doc.qt.io/qt-6/windows-deployment.html
      */
-    QtPluginFileList getPluginsForModules(const QtModuleList & modules, const QFileInfo & qtPluginsRoot) noexcept;
+    QtPluginFileList getPluginsForModules(const QtModuleList & modules, const QFileInfo & qtPluginsRoot) const noexcept;
 
     /*! \brief Check if \a qtPluginsRoot could be a Qt plugins root
      *

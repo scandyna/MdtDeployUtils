@@ -22,6 +22,7 @@
 #include "DestinationDirectory.h"
 #include "OperatingSystem.h"
 #include "FileCopier.h"
+#include "PathList.h"
 #include "RPath.h"
 #include "ExecutableFileReader.h"
 #include "ExecutableFileWriter.h"
@@ -30,6 +31,7 @@
 #include "QtSharedLibrary.h"
 #include "QtSharedLibraryFile.h"
 #include "QtModulePlugins.h"
+#include "QtPlugins.h"
 #include <QLatin1String>
 #include <QLatin1Char>
 #include <QStringBuilder>
@@ -69,7 +71,7 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
   makeDirectoryStructure(destination);
   installExecutable(request);
   copySharedLibrariesTargetDependsOn(request);
-  deployRequiredQtPlugins(destination, request.shLibOverwriteBehavior);
+  deployRequiredQtPlugins(destination, request.shLibOverwriteBehavior, request.searchPrefixPathList);
 }
 
 void DeployApplication::makeDirectoryStructure(const DestinationDirectory & destination)
@@ -159,7 +161,7 @@ void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicati
   mSharedLibrariesTargetDependsOn = csltdo.foundDependencies();
 }
 
-void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
+void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior, const QStringList searchPrefixPathList)
 {
   emit verboseMessage(
     tr("get Qt libraries out from dependencies (will be used to know which Qt plugins are required)")
@@ -172,7 +174,16 @@ void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & des
   connect(&qtModulePlugins, &QtModulePlugins::verboseMessage, this, &DeployApplication::verboseMessage);
   connect(&qtModulePlugins, &QtModulePlugins::debugMessage, this, &DeployApplication::debugMessage);
 
-  qtModulePlugins.deployQtPluginsQtLibrariesDependsOn(qtSharedLibraries, destination, overwriteBehavior);
+  const QtPluginFileList plugins = qtModulePlugins.getQtPluginsQtLibrariesDependsOn(qtSharedLibraries);
+
+  QtPlugins qtPlugins;
+  connect(&qtPlugins, &QtPlugins::statusMessage, this, &DeployApplication::statusMessage);
+  connect(&qtPlugins, &QtPlugins::verboseMessage, this, &DeployApplication::verboseMessage);
+  connect(&qtPlugins, &QtPlugins::debugMessage, this, &DeployApplication::debugMessage);
+
+  qtPlugins.setAlreadyDeployedSharedLibraries(mSharedLibrariesTargetDependsOn);
+  qtPlugins.setSearchPrefixPathList( PathList::fromStringList(searchPrefixPathList) );
+  qtPlugins.deployQtPlugins(plugins, destination, overwriteBehavior);
 }
 
 QString DeployApplication::osName(OperatingSystem os) noexcept

@@ -35,12 +35,12 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-void QtModulePlugins::deployQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries,
-                                                          const DestinationDirectory & destination,
-                                                          OverwriteBehavior overwriteBehavior)
+QtPluginFileList QtModulePlugins::getQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries) const noexcept
 {
+  QtPluginFileList plugins;
+
   if( qtLibraries.empty() ){
-    return;
+    return plugins;
   }
 
   emit statusMessage(
@@ -55,14 +55,9 @@ void QtModulePlugins::deployQtPluginsQtLibrariesDependsOn(const QtSharedLibraryF
     .arg(qtPluginsRoot)
   );
 
-  const QtPluginFileList plugins = getPluginsForModules(qtModules, qtPluginsRoot);
+  plugins = getPluginsForModules(qtModules, qtPluginsRoot);
 
-  QtPlugins qtPlugins;
-  connect(&qtPlugins, &QtPlugins::statusMessage, this, &QtModulePlugins::statusMessage);
-  connect(&qtPlugins, &QtPlugins::verboseMessage, this, &QtModulePlugins::verboseMessage);
-  connect(&qtPlugins, &QtPlugins::debugMessage, this, &QtModulePlugins::debugMessage);
-
-  qtPlugins.deployQtPlugins(plugins, destination, overwriteBehavior);
+  return plugins;
 }
 
 template<typename Predicate>
@@ -165,7 +160,7 @@ QStringList QtModulePlugins::getExistingPluginsDirectoriesForModules(const QtMod
   return directories;
 }
 
-QtPluginFileList QtModulePlugins::getPluginsForModules(const QtModuleList & modules, const QFileInfo & qtPluginsRoot) noexcept
+QtPluginFileList QtModulePlugins::getPluginsForModules(const QtModuleList & modules, const QFileInfo & qtPluginsRoot) const noexcept
 {
   assert( pathIsAbsoluteAndCouldBePluginsRoot(qtPluginsRoot) );
 
