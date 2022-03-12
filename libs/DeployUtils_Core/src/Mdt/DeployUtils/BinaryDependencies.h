@@ -26,9 +26,11 @@
 #include "ProcessorISA.h"
 #include "CompilerFinder.h"
 #include "BuildType.h"
+#include "Platform.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QFileInfo>
+#include <QFileInfoList>
 #include <QString>
 #include <QStringList>
 #include <memory>
@@ -77,6 +79,15 @@ namespace Mdt{ namespace DeployUtils{
      * \sa SharedLibraryFinderWindows
      */
     QStringList findDependencies(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList);
+
+    /*! \brief Find dependencies for a list executables or a shared libraries
+     *
+     * \pre \a binaryFilePathList must not be empty
+     * \pre each element in \a binaryFilePathList must have its absolute path set
+     *
+     * \sa findDependencies(const QFileInfo &, const PathList &)
+     */
+    QStringList findDependencies(const QFileInfoList & binaryFilePathList, const PathList & searchFirstPathPrefixList);
 
    signals:
 

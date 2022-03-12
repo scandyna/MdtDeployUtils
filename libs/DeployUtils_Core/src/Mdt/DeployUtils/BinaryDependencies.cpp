@@ -52,18 +52,25 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
   assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
   assert( binaryFilePath.isAbsolute() );
 
+  return findDependencies(QFileInfoList{binaryFilePath}, searchFirstPathPrefixList);
+}
+
+QStringList BinaryDependencies::findDependencies(const QFileInfoList & binaryFilePathList, const PathList & searchFirstPathPrefixList)
+{
+  assert( !binaryFilePathList.isEmpty() );
+
   BinaryDependenciesFileList dependencies;
 
-  auto target = BinaryDependenciesFile::fromQFileInfo(binaryFilePath);
+  const QFileInfo & firstBinaryFilePath = binaryFilePathList.at(0);
 
   ExecutableFileReader reader;
-  reader.openFile(binaryFilePath);
+  reader.openFile(firstBinaryFilePath);
   const Platform platform = reader.getFilePlatform();
   reader.close();
 
   if( platform.operatingSystem() == OperatingSystem::Unknown ){
     const QString message = tr("'%1' targets a operating system that is not supported")
-                            .arg( binaryFilePath.fileName() );
+                            .arg( firstBinaryFilePath.fileName() );
     throw FindDependencyError(message);
   }
 
@@ -80,7 +87,7 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
 
     shLibFinder = std::make_unique<SharedLibraryFinderWindows>(isExistingShLibOp);
     SharedLibraryFinderWindows *shLibFinderWindows = static_cast<SharedLibraryFinderWindows*>( shLibFinder.get() );
-    shLibFinderWindows->buildSearchPathList(binaryFilePath, searchFirstPathPrefixList, platform.processorISA(), mCompilerFinder);
+    shLibFinderWindows->buildSearchPathList(firstBinaryFilePath, searchFirstPathPrefixList, platform.processorISA(), mCompilerFinder);
 
   }
 
@@ -88,7 +95,13 @@ QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePat
 
   Impl::FindDependenciesImpl impl(*shLibFinder);
   connect(&impl, &Impl::FindDependenciesImpl::verboseMessage, this, &BinaryDependencies::verboseMessage);
-  impl.findDependencies(target, dependencies, reader, platform);
+
+  for(const QFileInfo & binaryFilePath : binaryFilePathList){
+    assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
+    assert( binaryFilePath.isAbsolute() );
+    auto target = BinaryDependenciesFile::fromQFileInfo(binaryFilePath);
+    impl.findDependencies(target, dependencies, reader, platform);
+  }
 
   return Impl::qStringListFromBinaryDependenciesFileList(dependencies);
 }
