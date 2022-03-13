@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2020-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -21,6 +21,8 @@
 #ifndef MDT_DEPLOY_UTILS_ALGORITHM_H
 #define MDT_DEPLOY_UTILS_ALGORITHM_H
 
+#include <QString>
+#include <QChar>
 #include <string>
 #include <vector>
 #include <iterator>
@@ -47,7 +49,7 @@ namespace Mdt{ namespace DeployUtils{
     return std::equal( str.cbegin(), last, s.cbegin(), s.cend() );
   }
 
-  /*! \brief Joint each strings in \a list to a single string with each element seperated by given \a separator
+  /*! \brief Join each strings in \a list to a single string with each element seperated by given \a separator
    */
   inline
   std::string joinToStdString(const std::vector<std::string> & list, char separator)
@@ -66,6 +68,35 @@ namespace Mdt{ namespace DeployUtils{
       result += list[i] + separator;
     }
     result += list[lastElement];
+
+    return result;
+  }
+
+  /*! \brief Join each element in \a container to a single string with each element seperated by given \a separator
+   *
+   * \a toQString is a function object that will be called
+   * to get each element in \a container as a QString.
+   * It signature should be equivalent to:
+   * \code
+   * QString f(const Type & a);
+   * \endcode
+   */
+  template<typename Container, typename ToQString>
+  QString joinToQString(const Container & container, const ToQString & toQString, const QString & separator) noexcept
+  {
+    using sizeType = typename Container::size_type;
+
+    QString result;
+    const sizeType size = container.size();
+    if(size == 0){
+      return result;
+    }
+    assert(size >= 1);
+
+    result = toQString( container[0] );
+    for(sizeType i=1; i < size; ++i){
+      result += separator + toQString( container[i] );
+    }
 
     return result;
   }

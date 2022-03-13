@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiler binaries
  **
- ** Copyright (C) 2020-2020 Philippe Steinmann.
+ ** Copyright (C) 2020-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -19,8 +19,10 @@
  **
  ****************************************************************************/
 #include "catch2/catch.hpp"
+#include "Catch2QString.h"
 #include "Mdt/DeployUtils/Algorithm.h"
 #include <QLatin1String>
+#include <QLatin1Char>
 #include <QString>
 #include <QFileInfo>
 #include <vector>
@@ -124,6 +126,52 @@ TEST_CASE("joinToStdString")
   SECTION("A,B,C")
   {
     REQUIRE( joinToStdString({"A","B","C"},';') == "A;B;C" );
+  }
+}
+
+TEST_CASE("joinToQString")
+{
+  using Mdt::DeployUtils::joinToQString;
+
+  std::vector<std::string> container;
+  QString str;
+
+  const auto toQString = [](const std::string & s){
+    return QString::fromStdString(s);
+  };
+
+  SECTION("empty container")
+  {
+    str = joinToQString( container, toQString, QLatin1String(", ") );
+
+    REQUIRE( str.isEmpty() );
+  }
+
+  SECTION("A")
+  {
+    container = {"A"};
+
+    str = joinToQString( container, toQString, QLatin1String(", ") );
+
+    REQUIRE( str == QLatin1String("A") );
+  }
+
+  SECTION("A, B")
+  {
+    container = {"A","B"};
+
+    str = joinToQString( container, toQString, QLatin1String(", ") );
+
+    REQUIRE( str == QLatin1String("A, B") );
+  }
+
+  SECTION("A, B, C")
+  {
+    container = {"A","B","C"};
+
+    str = joinToQString( container, toQString, QLatin1String(", ") );
+
+    REQUIRE( str == QLatin1String("A, B, C") );
   }
 }
 

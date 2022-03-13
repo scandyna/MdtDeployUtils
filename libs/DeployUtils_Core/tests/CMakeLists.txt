@@ -15,7 +15,7 @@ string(REPLACE ";" "," TEST_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
 mdt_add_test(
   NAME AlgorithmTest
   TARGET algorithmTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/AlgorithmTest.cpp
 )

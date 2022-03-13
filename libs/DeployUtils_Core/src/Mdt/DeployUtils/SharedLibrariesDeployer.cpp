@@ -24,6 +24,7 @@
 #include "BinaryDependencies.h"
 #include "FileCopier.h"
 #include "RPath.h"
+#include "Algorithm.h"
 #include <QLatin1String>
 #include <QStringBuilder>
 #include <cassert>
@@ -122,6 +123,7 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFil
   BinaryDependencies binaryDependencies;
   connect(&binaryDependencies, &BinaryDependencies::message, this, &SharedLibrariesDeployer::statusMessage);
   connect(&binaryDependencies, &BinaryDependencies::verboseMessage, this, &SharedLibrariesDeployer::verboseMessage);
+  connect(&binaryDependencies, &BinaryDependencies::debugMessage, this, &SharedLibrariesDeployer::debugMessage);
 
   if(mCompilerFinder.get() != nullptr){
     binaryDependencies.setCompilerFinder(mCompilerFinder);
@@ -179,13 +181,11 @@ void SharedLibrariesDeployer::emitStartMessage(const QFileInfoList & targetFileP
     return;
   }
 
-  const int size = targetFilePathList.size();
-  assert(size >= 1);
+  const auto toQString = [](const QFileInfo & fi){
+    return fi.fileName();
+  };
 
-  QString targetFilePathListString = targetFilePathList.at(0).fileName();
-  for(int i=1; i < size; ++i){
-    targetFilePathListString += QLatin1String(", ") % targetFilePathList.at(i).fileName();
-  }
+  const QString targetFilePathListString = joinToQString( targetFilePathList, toQString, QLatin1String(", ") );
 
   emit statusMessage(
     tr("copy dependencies for %1")
