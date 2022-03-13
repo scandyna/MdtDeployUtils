@@ -26,6 +26,7 @@
 #include "Mdt/DeployUtils/ExecutableFileReader.h"
 #include "Mdt/DeployUtils/AbstractSharedLibraryFinder.h"
 #include "Mdt/DeployUtils/Platform.h"
+#include "Mdt/DeployUtils/Algorithm.h"
 #include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QLatin1String>
@@ -38,6 +39,7 @@
 #include <cassert>
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 // #include <QDebug>
 
@@ -91,14 +93,19 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
    public:
 
     /*! \brief Constructor
-     *
-     * \warning \a shLibFinder must be valid as long
-     *  as findDependencies() is called
      */
-    FindDependenciesImpl(const AbstractSharedLibraryFinder & shLibFinder, QObject *parent = nullptr)
-     : QObject(parent),
-       mShLibFinder(shLibFinder)
+    explicit FindDependenciesImpl(QObject *parent = nullptr)
+     : QObject(parent)
     {
+    }
+
+    /*! \internal
+     */
+    void setSharedLibrariesFinder(const std::shared_ptr<const AbstractSharedLibraryFinder> & shLibFinder) noexcept
+    {
+      assert( shLibFinder.get() != nullptr );
+
+      mShLibFinder = shLibFinder;
     }
 
     /*! \internal
@@ -110,10 +117,12 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
                           Reader & reader, const Platform & platform)
     {
       assert( !reader.isOpen() );
+      assert( mShLibFinder.get() != nullptr );
 
       if( directDependenciesAreSolved(currentFile) ){
         return;
       }
+      emitAlreadySolvedFilesMessage();
 
       emitProcessingCurrentFileMessage(currentFile);
 
@@ -132,7 +141,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
       reader.close();
 
-      BinaryDependenciesFileList dependencies = mShLibFinder.findLibrariesAbsolutePath(currentFile);
+      BinaryDependenciesFileList dependencies = mShLibFinder->findLibrariesAbsolutePath(currentFile);
 
       setDirectDependenciesSolved(currentFile);
       removeDuplicates(allDependencies);
@@ -148,6 +157,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
    signals:
 
     void verboseMessage(const QString & message) const;
+    void debugMessage(const QString & message) const;
 
    private:
 
@@ -171,6 +181,23 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
       emit verboseMessage(message);
     }
 
+    void emitAlreadySolvedFilesMessage()
+    {
+      if( mSolvedFiles.empty() ){
+        return;
+      }
+
+      const auto toQString = [](const QFileInfo & fi){
+        return fi.fileName();
+      };
+
+      const QString solvedFilesString = joinToQString( mSolvedFiles, toQString, QLatin1String(", ") );
+
+      emit debugMessage(
+        tr("already solved dependencies: %1").arg(solvedFilesString)
+      );
+    }
+
     void emitDirectDependenciesMessage(const BinaryDependenciesFile & currentFile) const noexcept
     {
       if( currentFile.dependenciesFileNames().isEmpty() ){
@@ -184,7 +211,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
       }
     }
 
-    const AbstractSharedLibraryFinder & mShLibFinder;
+    std::shared_ptr<const AbstractSharedLibraryFinder> mShLibFinder;
     std::vector<QFileInfo> mSolvedFiles;
   };
 

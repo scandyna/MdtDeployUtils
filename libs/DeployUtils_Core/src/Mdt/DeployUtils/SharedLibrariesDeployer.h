@@ -24,15 +24,14 @@
 #include "PathList.h"
 #include "CompilerLocationRequest.h"
 #include "OverwriteBehavior.h"
-#include "CompilerFinder.h"
 #include "Platform.h"
+#include "BinaryDependencies.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <QFileInfo>
 #include <QFileInfoList>
-#include <memory>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -59,10 +58,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Constructor
      */
-    explicit SharedLibrariesDeployer(QObject *parent = nullptr) noexcept
-     : QObject(parent)
-    {
-    }
+    explicit SharedLibrariesDeployer(QObject *parent = nullptr) noexcept;
 
     /*! \brief Set the list of paths prefixes where to locate teh shared libraries
      */
@@ -175,7 +171,6 @@ namespace Mdt{ namespace DeployUtils{
 
       for(const auto & target : targets){
         targetFilePathList.append( toQFileInfo(target) );
-//         copySharedLibrariesTargetDependsOnImpl(toQFileInfo(target), destinationDirectoryPath);
       }
 
       if( targetFilePathList.isEmpty() ){
@@ -204,9 +199,6 @@ namespace Mdt{ namespace DeployUtils{
 
     void copySharedLibrariesTargetsDependsOnImpl(const QFileInfoList & targetFilePathList, const QString & destinationDirectoryPath);
     void setRPathToCopiedDependencies(const QStringList & destinationFilePathList, const Platform & platform);
-    
-//     void addFoundDependencies(const QStringList & depenedncies) noexcept;
-    
     void emitStartMessage(const QFileInfoList & targetFilePathList) const;
     void emitSearchPrefixPathListMessage() const;
     void emitFoundDependenciesMessage() const;
@@ -218,7 +210,7 @@ namespace Mdt{ namespace DeployUtils{
     bool mRemoveRpath = false;
     QStringList mFoundDependencies;
     PathList mSearchPrefixPathList;
-    std::shared_ptr<CompilerFinder> mCompilerFinder;
+    BinaryDependencies mBinaryDependencies;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

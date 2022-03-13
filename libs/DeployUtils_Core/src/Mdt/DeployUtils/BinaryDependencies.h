@@ -37,6 +37,12 @@
 
 namespace Mdt{ namespace DeployUtils{
 
+  namespace Impl{
+
+    class FindDependenciesImpl;
+
+  } // namespace Impl{
+
   /*! \brief Find dependencies for a executable or a library
    */
   class MDT_DEPLOYUTILSCORE_EXPORT BinaryDependencies : public QObject
@@ -48,6 +54,10 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Constructor
      */
     BinaryDependencies(QObject* parent = nullptr);
+
+    /*! \brief Destructor
+     */
+    ~BinaryDependencies() noexcept;
 
     /*! \brief Set the compiler finder
      *
@@ -93,11 +103,13 @@ namespace Mdt{ namespace DeployUtils{
 
     void message(const QString & message) const;
     void verboseMessage(const QString & message) const;
+    void debugMessage(const QString & message) const;
 
    private:
 
     void emitSearchPathListMessage(const PathList & pathList) const;
 
+    std::unique_ptr<Impl::FindDependenciesImpl> mImpl;
     std::shared_ptr<CompilerFinder> mCompilerFinder;
   };
 

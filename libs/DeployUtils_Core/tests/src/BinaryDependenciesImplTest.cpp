@@ -479,8 +479,9 @@ TEST_CASE("binaryDependenciesFilesAreEqual")
 TEST_CASE("findDependencies")
 {
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  SharedLibraryFinderBDTest shLibFinder(isExistingSharedLibraryOp);
-  Impl::FindDependenciesImpl impl(shLibFinder);
+  auto shLibFinder = std::make_shared<SharedLibraryFinderBDTest>(isExistingSharedLibraryOp);
+  Impl::FindDependenciesImpl impl;
+  impl.setSharedLibrariesFinder(shLibFinder);
   TestExecutableFileReader reader;
   const auto platform = Platform::nativePlatform();
   BinaryDependenciesFileList dependencies;
@@ -502,7 +503,7 @@ TEST_CASE("findDependencies")
   SECTION("myapp depends on MyLibA")
   {
     BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/myapp");
-    shLibFinder.setSearchPathList({"/opt/MyLibs/"});
+    shLibFinder->setSearchPathList({"/opt/MyLibs/"});
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so"});
     reader.setDirectDependencies({"libMyLibA.so"});
 
@@ -522,7 +523,7 @@ TEST_CASE("findDependencies")
   SECTION("myapp depends on MyLibA which depends on Qt5Core")
   {
     BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/myapp");
-    shLibFinder.setSearchPathList({"/opt/MyLibs/","/opt/qt/"});
+    shLibFinder->setSearchPathList({"/opt/MyLibs/","/opt/qt/"});
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so","/opt/qt/libQt5Core.so"});
     reader.setDirectDependencies({"libMyLibA.so"});
     reader.addDependenciesToDirectDependency("libMyLibA.so",{"libQt5Core.so"});

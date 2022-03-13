@@ -21,15 +21,24 @@
 #include "SharedLibrariesDeployer.h"
 #include "ExecutableFileReader.h"
 #include "ExecutableFileWriter.h"
-#include "BinaryDependencies.h"
+#include "CompilerFinder.h"
 #include "FileCopier.h"
 #include "RPath.h"
 #include "Algorithm.h"
 #include <QLatin1String>
 #include <QStringBuilder>
+#include <memory>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
+
+SharedLibrariesDeployer::SharedLibrariesDeployer(QObject *parent) noexcept
+  : QObject(parent)
+{
+  connect(&mBinaryDependencies, &BinaryDependencies::message, this, &SharedLibrariesDeployer::statusMessage);
+  connect(&mBinaryDependencies, &BinaryDependencies::verboseMessage, this, &SharedLibrariesDeployer::verboseMessage);
+  connect(&mBinaryDependencies, &BinaryDependencies::debugMessage, this, &SharedLibrariesDeployer::debugMessage);
+}
 
 void SharedLibrariesDeployer::setSearchPrefixPathList(const PathList & pathList) noexcept
 {
@@ -40,28 +49,30 @@ void SharedLibrariesDeployer::setCompilerLocation(const CompilerLocationRequest 
 {
   assert( !location.isNull() );
 
-  mCompilerFinder = std::make_shared<CompilerFinder>();
+  auto compilerFinder = std::make_shared<CompilerFinder>();
   switch( location.type() ){
     case CompilerLocationType::FromEnv:
       /// \todo Implement
       break;
     case CompilerLocationType::VcInstallDir:
-      mCompilerFinder->setInstallDir(location.value(), Compiler::Msvc);
+      compilerFinder->setInstallDir(location.value(), Compiler::Msvc);
       break;
     case CompilerLocationType::CompilerPath:
-      mCompilerFinder->findFromCxxCompilerPath( location.value() );
+      compilerFinder->findFromCxxCompilerPath( location.value() );
       break;
     case CompilerLocationType::Undefined:
       // Just to avoid compiler warnings
       break;
   }
-  if( !mCompilerFinder->hasInstallDir() ){
+  if( !compilerFinder->hasInstallDir() ){
     const QString msg = tr(
       "it was requested to find the compiler redistribute directory, but this failed "
       "(maybe your compiler is currently not supported for this feature)"
     );
     throw FindCompilerError(msg);
   }
+
+  mBinaryDependencies.setCompilerFinder(compilerFinder);
 }
 
 void SharedLibrariesDeployer::setOverwriteBehavior(OverwriteBehavior overwriteBehavior) noexcept
@@ -80,8 +91,6 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetDependsOn(const QFileInfo
   assert( targetFilePath.isAbsolute() );
   assert( !destinationDirectoryPath.isEmpty() );
 
-//   mFoundDependencies.clear();
-
   copySharedLibrariesTargetsDependsOnImpl(QFileInfoList{targetFilePath}, destinationDirectoryPath);
 }
 
@@ -96,12 +105,6 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFil
   reader.openFile( targetFilePathList.at(0) );
   const Platform platform = reader.getFilePlatform();
   reader.close();
-
-//   if( platform.operatingSystem() == OperatingSystem::Unknown ){
-//     const QString message = tr("'%1' targets a operating system that is not supported")
-//                             .arg( targetFilePathList.at(0).fileName() );
-//     throw FindDependencyError(message);
-//   }
 
   emitStartMessage(targetFilePathList);
 
@@ -120,17 +123,7 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFil
     }
   }
 
-  BinaryDependencies binaryDependencies;
-  connect(&binaryDependencies, &BinaryDependencies::message, this, &SharedLibrariesDeployer::statusMessage);
-  connect(&binaryDependencies, &BinaryDependencies::verboseMessage, this, &SharedLibrariesDeployer::verboseMessage);
-  connect(&binaryDependencies, &BinaryDependencies::debugMessage, this, &SharedLibrariesDeployer::debugMessage);
-
-  if(mCompilerFinder.get() != nullptr){
-    binaryDependencies.setCompilerFinder(mCompilerFinder);
-  }
-
-  mFoundDependencies = binaryDependencies.findDependencies(targetFilePathList, mSearchPrefixPathList);
-//   addFoundDependencies(depenedncies);
+  mFoundDependencies = mBinaryDependencies.findDependencies(targetFilePathList, mSearchPrefixPathList);
 
   emitFoundDependenciesMessage();
 
@@ -168,12 +161,6 @@ void SharedLibrariesDeployer::setRPathToCopiedDependencies(const QStringList & d
   }
 
 }
-
-// void SharedLibrariesDeployer::addFoundDependencies(const QStringList & depenedncies) noexcept
-// {
-//   mFoundDependencies.append(depenedncies);
-//   mFoundDependencies.removeDuplicates();
-// }
 
 void SharedLibrariesDeployer::emitStartMessage(const QFileInfoList & targetFilePathList) const
 {

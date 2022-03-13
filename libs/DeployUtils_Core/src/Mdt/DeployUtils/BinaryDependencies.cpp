@@ -35,7 +35,14 @@
 namespace Mdt{ namespace DeployUtils{
 
 BinaryDependencies::BinaryDependencies(QObject* parent)
- : QObject(parent)
+ : QObject(parent),
+   mImpl( std::make_unique<Impl::FindDependenciesImpl>() )
+{
+  connect(mImpl.get(), &Impl::FindDependenciesImpl::verboseMessage, this, &BinaryDependencies::verboseMessage);
+  connect(mImpl.get(), &Impl::FindDependenciesImpl::debugMessage, this, &BinaryDependencies::debugMessage);
+}
+
+BinaryDependencies::~BinaryDependencies() noexcept
 {
 }
 
@@ -75,17 +82,17 @@ QStringList BinaryDependencies::findDependencies(const QFileInfoList & binaryFil
   }
 
   Impl::IsExistingSharedLibrary isExistingShLibOp(reader, platform);
-  std::unique_ptr<AbstractSharedLibraryFinder> shLibFinder;
+  std::shared_ptr<AbstractSharedLibraryFinder> shLibFinder;
 
   if( platform.operatingSystem() == OperatingSystem::Linux ){
 
-    shLibFinder = std::make_unique<SharedLibraryFinderLinux>(isExistingShLibOp);
+    shLibFinder = std::make_shared<SharedLibraryFinderLinux>(isExistingShLibOp);
     SharedLibraryFinderLinux *shLibFinderLinux = static_cast<SharedLibraryFinderLinux*>( shLibFinder.get() );
     shLibFinderLinux->buildSearchPathList( searchFirstPathPrefixList, platform.processorISA() );
 
   }else if( platform.operatingSystem() == OperatingSystem::Windows ){
 
-    shLibFinder = std::make_unique<SharedLibraryFinderWindows>(isExistingShLibOp);
+    shLibFinder = std::make_shared<SharedLibraryFinderWindows>(isExistingShLibOp);
     SharedLibraryFinderWindows *shLibFinderWindows = static_cast<SharedLibraryFinderWindows*>( shLibFinder.get() );
     shLibFinderWindows->buildSearchPathList(firstBinaryFilePath, searchFirstPathPrefixList, platform.processorISA(), mCompilerFinder);
 
@@ -93,14 +100,13 @@ QStringList BinaryDependencies::findDependencies(const QFileInfoList & binaryFil
 
   emitSearchPathListMessage( shLibFinder->searchPathList() );
 
-  Impl::FindDependenciesImpl impl(*shLibFinder);
-  connect(&impl, &Impl::FindDependenciesImpl::verboseMessage, this, &BinaryDependencies::verboseMessage);
+  mImpl->setSharedLibrariesFinder(shLibFinder);
 
   for(const QFileInfo & binaryFilePath : binaryFilePathList){
     assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
     assert( binaryFilePath.isAbsolute() );
     auto target = BinaryDependenciesFile::fromQFileInfo(binaryFilePath);
-    impl.findDependencies(target, dependencies, reader, platform);
+    mImpl->findDependencies(target, dependencies, reader, platform);
   }
 
   return Impl::qStringListFromBinaryDependenciesFileList(dependencies);
