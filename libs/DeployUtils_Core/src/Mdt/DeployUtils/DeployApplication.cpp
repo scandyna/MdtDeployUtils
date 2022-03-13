@@ -162,7 +162,7 @@ void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicati
   assert( mShLibDeployer.get() != nullptr );
 
   // Take the given target, it has the RPath informations
-  mShLibDeployer->copySharedLibrariesTargetDependsOn(request.targetFilePath, request.destinationDirectoryPath);
+  mShLibDeployer->copySharedLibrariesTargetDependsOn(request.targetFilePath, mLibDirDestinationPath);
 
   mSharedLibrariesTargetDependsOn = mShLibDeployer->foundDependencies();
 }
