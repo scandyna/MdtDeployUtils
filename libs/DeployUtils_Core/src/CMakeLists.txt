@@ -120,6 +120,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/LogLevel.cpp
   Mdt/DeployUtils/DestinationDirectoryStructure.cpp
   Mdt/DeployUtils/DestinationDirectory.cpp
+  Mdt/DeployUtils/SharedLibrariesDeployer.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.cpp
   Mdt/DeployUtils/QtSharedLibraryError.cpp

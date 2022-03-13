@@ -20,11 +20,20 @@
  ****************************************************************************/
 #include "QtPlugins.h"
 #include "FileCopier.h"
+#include "SharedLibrariesDeployer.h"
 #include <QStringBuilder>
 #include <QLatin1Char>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
+
+QtPlugins::QtPlugins(std::shared_ptr<SharedLibrariesDeployer> & shLibDeployer, QObject *parent) noexcept
+ : QObject(parent),
+   mShLibDeployer(shLibDeployer)
+{
+  assert( shLibDeployer.get() != nullptr );
+}
+
 
 void QtPlugins::setAlreadyDeployedSharedLibraries(const QStringList & libraries) noexcept
 {
@@ -40,8 +49,7 @@ void QtPlugins::deployQtPlugins(const QtPluginFileList & plugins, const Destinat
 
   makeDestinationDirectoryStructure(pluginsDirectories, destination);
   copyPluginsToDestination(plugins, destination, overwriteBehavior);
-
-  /// \todo plugins dependencies
+  copySharedLibrariesPluginsDependsOn(plugins, destination, overwriteBehavior);
 
   /// \todo RPath for plugins and dependencies
 }
@@ -94,6 +102,17 @@ void QtPlugins::copyPluginsToDestination(const QtPluginFileList & plugins, const
     const QString destinationDirectoryPath = QDir::cleanPath( destination.qtPluginsRootDirectoryPath() % QLatin1Char('/') % plugin.directoryName() );
     fileCopier.copyFile(plugin.absoluteFilePath(), destinationDirectoryPath);
   }
+}
+
+void QtPlugins::copySharedLibrariesPluginsDependsOn(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
+{
+  assert( mShLibDeployer.get() != nullptr );
+
+  const auto toFileInfo = [](const QtPluginFile & plugin){
+    return plugin.fileInfo();
+  };
+
+  mShLibDeployer->copySharedLibrariesTargetsDependsOn( plugins, toFileInfo, destination.sharedLibrariesDirectoryPath() );
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

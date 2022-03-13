@@ -22,8 +22,6 @@
 #define MDT_DEPLOY_UTILS_COPY_SHARED_LIBRARIES_TARGET_DEPENDS_ON_H
 
 #include "CopySharedLibrariesTargetDependsOnRequest.h"
-#include "OverwriteBehavior.h"
-#include "Platform.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -72,7 +70,7 @@ namespace Mdt{ namespace DeployUtils{
    * \note This is mostly required for MSVC
    * \sa CompilerFinder
    *
-   * \todo See various todo in CPP file
+   * \sa SharedLibrariesDeployer
    *
    * \todo Should also require full path to tools, like ldd, objdump, etc..
    * (we should not do magic search here, which can be wrong when a user specify its own version of a specific tool, or cross-compilation)
@@ -105,34 +103,11 @@ namespace Mdt{ namespace DeployUtils{
      */
     void execute(const CopySharedLibrariesTargetDependsOnRequest & request);
 
-    /*! \brief Get a list to the full path of found shared libraries dependning on the target
-     *
-     * The returned list has only sense once execute() succeeded.
-     */
-    const QStringList & foundDependencies() const noexcept
-    {
-      return mFoundDependencies;
-    }
-
    signals:
 
     void statusMessage(const QString & message) const;
     void verboseMessage(const QString & message) const;
     void debugMessage(const QString & message) const;
-
-   private:
-
-    void emitSearchPrefixPathListMessage(const QStringList & pathList) const noexcept;
-    void emitFoundDependenciesMessage(const QStringList & dependencies) const noexcept;
-
-    static
-    QString overwriteBehaviorToString(OverwriteBehavior overwriteBehavior) noexcept;
-
-    void setRPathToCopiedDependencies(const QStringList & destinationFilePathList,
-                                      const CopySharedLibrariesTargetDependsOnRequest & request,
-                                      const Platform & platform);
-
-    QStringList mFoundDependencies;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

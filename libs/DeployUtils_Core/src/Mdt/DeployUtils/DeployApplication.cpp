@@ -26,8 +26,6 @@
 #include "RPath.h"
 #include "ExecutableFileReader.h"
 #include "ExecutableFileWriter.h"
-#include "CopySharedLibrariesTargetDependsOn.h"
-#include "CopySharedLibrariesTargetDependsOnRequest.h"
 #include "QtSharedLibrary.h"
 #include "QtSharedLibraryFile.h"
 #include "QtModulePlugins.h"
@@ -68,10 +66,30 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
     .arg( osName( mPlatform.operatingSystem() ) )
   );
 
+  setupShLibDeployer(request);
   makeDirectoryStructure(destination);
   installExecutable(request);
   copySharedLibrariesTargetDependsOn(request);
   deployRequiredQtPlugins(destination, request.shLibOverwriteBehavior, request.searchPrefixPathList);
+}
+
+void DeployApplication::setupShLibDeployer(const DeployApplicationRequest & request)
+{
+  if(mShLibDeployer.get() == nullptr){
+    mShLibDeployer = std::make_shared<SharedLibrariesDeployer>();
+    connect(mShLibDeployer.get(), &SharedLibrariesDeployer::statusMessage, this, &DeployApplication::statusMessage);
+    connect(mShLibDeployer.get(), &SharedLibrariesDeployer::verboseMessage, this, &DeployApplication::verboseMessage);
+    connect(mShLibDeployer.get(), &SharedLibrariesDeployer::debugMessage, this, &DeployApplication::debugMessage);
+  }
+
+  mShLibDeployer->setSearchPrefixPathList( PathList::fromStringList(request.searchPrefixPathList) );
+  mShLibDeployer->setOverwriteBehavior(request.shLibOverwriteBehavior);
+  mShLibDeployer->setRemoveRpath(request.removeRpath);
+
+  /// \todo else: clear compiler finder !
+  if( !request.compilerLocation.isNull() ){
+    mShLibDeployer->setCompilerLocation(request.compilerLocation);
+  }
 }
 
 void DeployApplication::makeDirectoryStructure(const DestinationDirectory & destination)
@@ -141,28 +159,18 @@ void DeployApplication::setRPathToInstalledExecutable(const QString & executable
 void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicationRequest & request)
 {
   assert( !mLibDirDestinationPath.isEmpty() );
+  assert( mShLibDeployer.get() != nullptr );
 
-  CopySharedLibrariesTargetDependsOnRequest csltdoRequest;
-  csltdoRequest.overwriteBehavior = request.shLibOverwriteBehavior;
-  csltdoRequest.removeRpath = request.removeRpath;
-  csltdoRequest.searchPrefixPathList = request.searchPrefixPathList;
-  csltdoRequest.compilerLocation = request.compilerLocation;
   // Take the given target, it has the RPath informations
-  csltdoRequest.targetFilePath = request.targetFilePath;
-  csltdoRequest.destinationDirectoryPath = mLibDirDestinationPath;
+  mShLibDeployer->copySharedLibrariesTargetDependsOn(request.targetFilePath, request.destinationDirectoryPath);
 
-  CopySharedLibrariesTargetDependsOn csltdo;
-  connect(&csltdo, &CopySharedLibrariesTargetDependsOn::statusMessage, this, &DeployApplication::statusMessage);
-  connect(&csltdo, &CopySharedLibrariesTargetDependsOn::verboseMessage, this, &DeployApplication::verboseMessage);
-  connect(&csltdo, &CopySharedLibrariesTargetDependsOn::debugMessage, this, &DeployApplication::debugMessage);
-
-  csltdo.execute(csltdoRequest);
-
-  mSharedLibrariesTargetDependsOn = csltdo.foundDependencies();
+  mSharedLibrariesTargetDependsOn = mShLibDeployer->foundDependencies();
 }
 
 void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior, const QStringList searchPrefixPathList)
 {
+  assert( mShLibDeployer.get() != nullptr );
+
   emit verboseMessage(
     tr("get Qt libraries out from dependencies (will be used to know which Qt plugins are required)")
   );
@@ -176,13 +184,13 @@ void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & des
 
   const QtPluginFileList plugins = qtModulePlugins.getQtPluginsQtLibrariesDependsOn(qtSharedLibraries);
 
-  QtPlugins qtPlugins;
+  QtPlugins qtPlugins(mShLibDeployer);
   connect(&qtPlugins, &QtPlugins::statusMessage, this, &DeployApplication::statusMessage);
   connect(&qtPlugins, &QtPlugins::verboseMessage, this, &DeployApplication::verboseMessage);
   connect(&qtPlugins, &QtPlugins::debugMessage, this, &DeployApplication::debugMessage);
 
-  qtPlugins.setAlreadyDeployedSharedLibraries(mSharedLibrariesTargetDependsOn);
-  qtPlugins.setSearchPrefixPathList( PathList::fromStringList(searchPrefixPathList) );
+//   qtPlugins.setAlreadyDeployedSharedLibraries(mSharedLibrariesTargetDependsOn);
+//   qtPlugins.setSearchPrefixPathList( PathList::fromStringList(searchPrefixPathList) );
   qtPlugins.deployQtPlugins(plugins, destination, overwriteBehavior);
 }
 

@@ -23,13 +23,17 @@
 
 #include "QtPluginFile.h"
 #include "DestinationDirectory.h"
+#include "SharedLibrariesDeployer.h"
+
 #include "OverwriteBehavior.h"
 #include "PathList.h"
+
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <QFileInfo>
+#include <memory>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -42,11 +46,10 @@ namespace Mdt{ namespace DeployUtils{
    public:
 
     /*! \brief Constructor
+     *
+     * \pre \a shLibDeployer must be a valid pointer
      */
-    explicit QtPlugins(QObject *parent = nullptr) noexcept
-     : QObject(parent)
-    {
-    }
+    explicit QtPlugins(std::shared_ptr<SharedLibrariesDeployer> & shLibDeployer , QObject *parent = nullptr) noexcept;
 
     /*! \brief Set the list of shared libraries that have already been deployed
      *
@@ -59,6 +62,7 @@ namespace Mdt{ namespace DeployUtils{
      * The list can contain full paths to the shared libraries,
      * as returned by BinaryDependencies::findDependencies()
      */
+    [[deprecated]]
     void setAlreadyDeployedSharedLibraries(const QStringList & libraries) noexcept;
 
     /*! \brief Set the search prefix path list to find shared libraries
@@ -68,6 +72,7 @@ namespace Mdt{ namespace DeployUtils{
      *
      * Given path list will be used to find them
      */
+    [[deprecated]]
     void setSearchPrefixPathList(const PathList & pathList) noexcept;
 
     /*! \brief Add \a libraries to the list of already solved shared libraries
@@ -79,6 +84,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Get the list of shared libraries that have already been solved
      */
+    [[deprecated]]
     const QStringList & alreadySolvedSharedLibraries() const noexcept
     {
     }
@@ -109,6 +115,9 @@ namespace Mdt{ namespace DeployUtils{
 
     void makeDestinationDirectoryStructure(const QStringList & qtPluginsDirectories, const DestinationDirectory & destination);
     void copyPluginsToDestination(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
+    void copySharedLibrariesPluginsDependsOn(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
+
+    std::shared_ptr<SharedLibrariesDeployer> mShLibDeployer;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

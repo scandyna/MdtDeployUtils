@@ -26,10 +26,12 @@
 #include "Platform.h"
 #include "DestinationDirectory.h"
 #include "OverwriteBehavior.h"
+#include "SharedLibrariesDeployer.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
 #include <QStringList>
+#include <memory>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -86,6 +88,7 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
+    void setupShLibDeployer(const DeployApplicationRequest & request);
     void makeDirectoryStructure(const DestinationDirectory & destination);
     void installExecutable(const DeployApplicationRequest & request);
     void setRPathToInstalledExecutable(const QString & executableFilePath, const DeployApplicationRequest & request);
@@ -98,6 +101,7 @@ namespace Mdt{ namespace DeployUtils{
     Platform mPlatform;
     QString mBinDirDestinationPath;
     QString mLibDirDestinationPath;
+    std::shared_ptr<SharedLibrariesDeployer> mShLibDeployer;
     QStringList mSharedLibrariesTargetDependsOn;
   };
 

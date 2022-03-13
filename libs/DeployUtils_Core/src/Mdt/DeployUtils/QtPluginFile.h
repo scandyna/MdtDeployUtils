@@ -57,6 +57,13 @@ namespace Mdt{ namespace DeployUtils{
      */
     QtPluginFile & operator=(QtPluginFile && other) noexcept = default;
 
+    /*! \brief Get the file info of this file
+     */
+    const QFileInfo & fileInfo() const noexcept
+    {
+      return mFile;
+    }
+
     /*! \brief Return the Qt plugin directory name
      *
      * Qt directory name is the name of a subdirectory

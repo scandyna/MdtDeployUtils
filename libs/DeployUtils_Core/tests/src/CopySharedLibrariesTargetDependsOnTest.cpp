@@ -103,13 +103,6 @@ TEST_CASE("CopySharedLibrariesTargetDependsOn")
   const QString installedExecutable = makePath(destinationDir, "installedExecutable");
   REQUIRE( installExecutable(request.targetFilePath, installedExecutable) );
 
-  SECTION("check that some dependencies have been found")
-  {
-    useCase.execute(request);
-
-    REQUIRE( !useCase.foundDependencies().isEmpty() );
-  }
-
   SECTION("libraries have rpath set to the relative directory where installed - executable should run")
   {
     request.removeRpath = false;

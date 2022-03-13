@@ -830,6 +830,21 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME SharedLibrariesDeployerTest
+  TARGET sharedLibrariesDeployerTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/SharedLibrariesDeployerTest.cpp
+)
+target_compile_definitions(sharedLibrariesDeployerTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+target_compile_definitions(sharedLibrariesDeployerTest PRIVATE TEST_QT_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+target_compile_definitions(sharedLibrariesDeployerTest PRIVATE PREFIX_PATH="${TEST_PREFIX_PATH}")
+if(MSVC)
+  target_compile_definitions(sharedLibrariesDeployerTest PRIVATE COMPILER_IS_MSVC=1)
+  target_compile_definitions(sharedLibrariesDeployerTest PRIVATE CXX_COMPILER_PATH="${CMAKE_CXX_COMPILER}")
+endif()
+
+mdt_add_test(
   NAME CopySharedLibrariesTargetDependsOnTest
   TARGET copySharedLibrariesTargetDependsOnTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
