@@ -21,6 +21,7 @@
 #include "SharedLibraryFinderLinux.h"
 #include "SearchPathList.h"
 #include "Mdt/DeployUtils/Impl/LibraryExcludeListLinux.h"
+#include <QLatin1String>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -60,7 +61,7 @@ BinaryDependenciesFileList SharedLibraryFinderLinux::doFindLibrariesAbsolutePath
 {
   BinaryDependenciesFileList libraries;
 
-  removeLibrariesInExcludeList(file);
+  removeLibrariesToNotRedistribute(file);
 
   for( const QString & libraryName : file.dependenciesFileNames() ){
     libraries.push_back( findLibraryAbsolutePath(file, libraryName) );
@@ -69,7 +70,43 @@ BinaryDependenciesFileList SharedLibraryFinderLinux::doFindLibrariesAbsolutePath
   return libraries;
 }
 
-void SharedLibraryFinderLinux::removeLibrariesInExcludeList(BinaryDependenciesFile & file) noexcept
+void SharedLibraryFinderLinux::removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept
+{
+  removeLibrariesInGeneratedExcludeList(file);
+  removeLibrariesInLocalExcludeList(file);
+}
+
+void SharedLibraryFinderLinux::removeLibrariesInLocalExcludeList(BinaryDependenciesFile & file) noexcept
+{
+  static
+  const QStringList excludeList{
+    /*
+     * libdbus-1.so.3
+     *
+     * it is located in /lib/x86_64-linux-gnu (Ubuntu 18.04)
+     * that lets think that it is strongly dependent of the system
+     *
+     * See also https://github.com/AppImage/pkg2appimage/issues/450
+     */
+    QLatin1String("libdbus-1.so.3"),
+    /*
+     * next libraries are installed in
+     * /lib/x86_64-linux-gnu (Ubuntu 18.04)
+     *
+     * don't know if those must be redistributed or not,
+     * should test that in some way
+     */
+    QLatin1String("libkeyutils.so.1")
+  };
+
+  const auto pred = [](const QString & libraryName){
+    return excludeList.contains(libraryName);
+  };
+
+  file.removeDependenciesFileNames(pred);
+}
+
+void SharedLibraryFinderLinux::removeLibrariesInGeneratedExcludeList(BinaryDependenciesFile & file) noexcept
 {
   const auto pred = [](const QString & libraryName){
     return libraryExcludelistLinux.contains(libraryName);

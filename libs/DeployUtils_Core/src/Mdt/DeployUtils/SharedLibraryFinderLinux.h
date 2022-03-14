@@ -127,8 +127,15 @@ namespace Mdt{ namespace DeployUtils{
 
     BinaryDependenciesFileList doFindLibrariesAbsolutePath(BinaryDependenciesFile & file) const override;
 
+    /*! \brief Remove libraries that should not be distributed
+     */
+    void removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept;
+
     static
-    void removeLibrariesInExcludeList(BinaryDependenciesFile & file) noexcept;
+    void removeLibrariesInLocalExcludeList(BinaryDependenciesFile & file) noexcept;
+
+    static
+    void removeLibrariesInGeneratedExcludeList(BinaryDependenciesFile & file) noexcept;
   };
 
 
