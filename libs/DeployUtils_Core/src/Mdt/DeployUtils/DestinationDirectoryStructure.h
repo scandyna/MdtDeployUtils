@@ -75,6 +75,7 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Set the directory for executables
      *
      * \pre \a directory must not be empty
+     * \pre \a directory must not be a absolute path
      */
     void setExecutablesDirectory(const QString & directory) noexcept;
 
@@ -88,6 +89,7 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Set the directory for shared libraries
      *
      * \pre \a directory must not be empty
+     * \pre \a directory must not be a absolute path
      */
     void setSharedLibrariesDirectory(const QString & directory) noexcept;
 
@@ -136,6 +138,28 @@ namespace Mdt{ namespace DeployUtils{
     {
       return mQtPluginsRootRelativePath;
     }
+
+    /*! \brief Get the relative path from Qt plugins to the shared libraries directory
+     *
+     * This can be used to set the Rpath to Qt plugins.
+     *
+     * As example:
+     * \code
+     * destinationRoot
+     *     |-bin
+     *     |-lib
+     *     |-plugins
+     *        |-platforms
+     * \endcode
+     * for this structure,
+     * ../../lib will be returned
+     *
+     * \pre the shared libraries directory must be set
+     * \pre the Qt plugins root must be set
+     * \sa setSharedLibrariesDirectory()
+     * \sa setQtPluginsRootDirectory()
+     */
+    QString qtPluginsToSharedLibrariesRelativePath() const noexcept;
 
     /*! \brief Get the (default) directory for executables for given OS
      *

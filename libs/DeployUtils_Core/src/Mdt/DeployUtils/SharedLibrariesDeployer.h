@@ -180,6 +180,19 @@ namespace Mdt{ namespace DeployUtils{
       copySharedLibrariesTargetsDependsOnImpl(targetFilePathList, destinationDirectoryPath);
     }
 
+    /*! \brief Get the current platform
+     *
+     * The current platform is null until
+     * copySharedLibrariesTargetDependsOn()
+     * or
+     * copySharedLibrariesTargetsDependsOn()
+     * have been called.
+     */
+    const Platform & currentPlatform() const noexcept
+    {
+      return mPlatform;
+    }
+
     /*! \brief Get a list to the full path of found shared libraries dependning on the target
      *
      * The returned list has only sense once execute() succeeded.
@@ -198,7 +211,7 @@ namespace Mdt{ namespace DeployUtils{
    private:
 
     void copySharedLibrariesTargetsDependsOnImpl(const QFileInfoList & targetFilePathList, const QString & destinationDirectoryPath);
-    void setRPathToCopiedDependencies(const QStringList & destinationFilePathList, const Platform & platform);
+    void setRPathToCopiedDependencies(const QStringList & destinationFilePathList);
     void emitStartMessage(const QFileInfoList & targetFilePathList) const;
     void emitSearchPrefixPathListMessage() const;
     void emitFoundDependenciesMessage() const;
@@ -211,6 +224,7 @@ namespace Mdt{ namespace DeployUtils{
     QStringList mFoundDependencies;
     PathList mSearchPrefixPathList;
     BinaryDependencies mBinaryDependencies;
+    Platform mPlatform;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

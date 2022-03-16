@@ -20,6 +20,8 @@
  ****************************************************************************/
 #include "DestinationDirectoryStructure.h"
 #include <QLatin1String>
+#include <QLatin1Char>
+#include <QDir>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
@@ -27,22 +29,56 @@ namespace Mdt{ namespace DeployUtils{
 void DestinationDirectoryStructure::setExecutablesDirectory(const QString & directory) noexcept
 {
   assert( !directory.trimmed().isEmpty() );
+  assert( !QDir::isAbsolutePath(directory) );
 
-  mExecutablesDirectory = directory;
+  mExecutablesDirectory = QDir::cleanPath(directory);
 }
 
 void DestinationDirectoryStructure::setSharedLibrariesDirectory(const QString & directory) noexcept
 {
   assert( !directory.trimmed().isEmpty() );
+  assert( !QDir::isAbsolutePath(directory) );
 
-  mSharedLibrariesDirectory = directory;
+  mSharedLibrariesDirectory = QDir::cleanPath(directory);
 }
 
 void DestinationDirectoryStructure::setQtPluginsRootDirectory(const QString & path) noexcept
 {
   assert( !path.trimmed().isEmpty() );
+  assert( QDir::isRelativePath(path) );
 
-  mQtPluginsRootRelativePath = path;
+  mQtPluginsRootRelativePath = QDir::cleanPath(path);
+}
+
+QString DestinationDirectoryStructure::qtPluginsToSharedLibrariesRelativePath() const noexcept
+{
+  assert( !mSharedLibrariesDirectory.isEmpty() );
+  assert( !mQtPluginsRootRelativePath.isEmpty() );
+
+  assert( !mSharedLibrariesDirectory.startsWith( QLatin1Char('/') ) );
+  assert( !mQtPluginsRootRelativePath.startsWith( QLatin1Char('/') ) );
+  assert( !mSharedLibrariesDirectory.endsWith( QLatin1Char('/') ) );
+  assert( !mQtPluginsRootRelativePath.endsWith( QLatin1Char('/') ) );
+
+  QString relativePath;
+
+  /*
+   * plugins/platforms -> ../../
+   * lib -> lib
+   * -> ../../lib
+   *
+   * count of ../ to cd up from plugins:
+   * count of / + 1 + 1
+   * the last +1 is because of the non given sepcific Qt plugins directory
+   */
+  const int level = mQtPluginsRootRelativePath.count( QLatin1Char('/') ) + 2;
+  for(int i=0; i < level; ++i){
+    relativePath += QLatin1String("../");
+  }
+
+  relativePath += mSharedLibrariesDirectory;
+
+  return relativePath;
 }
 
 QString DestinationDirectoryStructure::executablesDirectoryFromOs(OperatingSystem os) noexcept

@@ -96,7 +96,10 @@ void SharedLibraryFinderLinux::removeLibrariesInLocalExcludeList(BinaryDependenc
      * don't know if those must be redistributed or not,
      * should test that in some way
      */
-    QLatin1String("libkeyutils.so.1")
+    QLatin1String("libkeyutils.so.1"),
+    QLatin1String("libbz2.so.1.0"),
+    QLatin1String("liblzma.so.5"),
+    QLatin1String("libudev.so.1")
   };
 
   const auto pred = [](const QString & libraryName){

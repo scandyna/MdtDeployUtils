@@ -26,7 +26,7 @@
 #include <QString>
 #include <QTemporaryDir>
 
-#include <QDebug>
+// #include <QDebug>
 
 using namespace Mdt::DeployUtils;
 
@@ -67,19 +67,6 @@ TEST_CASE("getPluginsDirectoriesForModules")
     REQUIRE( directories.count( QLatin1String("platforminputcontexts") ) == 1 );
     REQUIRE( directories.count( QLatin1String("virtualkeyboard") ) == 1 );
   }
-}
-
-TEST_CASE("sandbox")
-{
-  qDebug() << "Qt gui: " << qtGuiLibraryFilePath;
-  
-  const QString qtPluginsRoot = QtModulePlugins::findPluginsRootFromQtLibraryPath(qtGuiLibraryFilePath);
-  qDebug() << "plugins root: " << qtPluginsRoot;
-  
-  const QStringList dirs = QtModulePlugins::getExistingPluginsDirectoriesForModule(QtModule::Gui, qtPluginsRoot);
-  qDebug() << "dirs: " << dirs;
-  
-  REQUIRE(false);
 }
 
 TEST_CASE("getPluginsForModules")

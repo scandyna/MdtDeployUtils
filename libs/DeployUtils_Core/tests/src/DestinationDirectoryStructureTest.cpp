@@ -30,27 +30,86 @@ TEST_CASE("executablesDirectory")
 {
   DestinationDirectoryStructure structure;
 
-  structure.setExecutablesDirectory( QLatin1String("bin") );
+  SECTION("bin")
+  {
+    structure.setExecutablesDirectory( QLatin1String("bin") );
 
-  REQUIRE( structure.executablesDirectory() == QLatin1String("bin") );
+    REQUIRE( structure.executablesDirectory() == QLatin1String("bin") );
+  }
+
+  SECTION("bin/")
+  {
+    structure.setExecutablesDirectory( QLatin1String("bin/") );
+
+    REQUIRE( structure.executablesDirectory() == QLatin1String("bin") );
+  }
 }
 
 TEST_CASE("sharedLibrariesDirectory")
 {
   DestinationDirectoryStructure structure;
 
-  structure.setSharedLibrariesDirectory( QLatin1String("lib") );
+  SECTION("lib")
+  {
+    structure.setSharedLibrariesDirectory( QLatin1String("lib") );
 
-  REQUIRE( structure.sharedLibrariesDirectory() == QLatin1String("lib") );
+    REQUIRE( structure.sharedLibrariesDirectory() == QLatin1String("lib") );
+  }
+
+  SECTION("lib/")
+  {
+    structure.setSharedLibrariesDirectory( QLatin1String("lib/") );
+
+    REQUIRE( structure.sharedLibrariesDirectory() == QLatin1String("lib") );
+  }
 }
 
 TEST_CASE("qtPluginsRootRelativePath")
 {
   DestinationDirectoryStructure structure;
 
-  structure.setQtPluginsRootDirectory( QLatin1String("plugins") );
+  SECTION("plugins")
+  {
+    structure.setQtPluginsRootDirectory( QLatin1String("plugins") );
 
-  REQUIRE( structure.qtPluginsRootDirectory() == QLatin1String("plugins") );
+    REQUIRE( structure.qtPluginsRootDirectory() == QLatin1String("plugins") );
+  }
+
+  SECTION("plugins/")
+  {
+    structure.setQtPluginsRootDirectory( QLatin1String("plugins/") );
+
+    REQUIRE( structure.qtPluginsRootDirectory() == QLatin1String("plugins") );
+  }
+}
+
+TEST_CASE("qtPluginsToSharedLibrariesRelativePath")
+{
+  DestinationDirectoryStructure structure;
+
+  SECTION("lib , plugins")
+  {
+    structure.setSharedLibrariesDirectory( QLatin1String("lib") );
+    structure.setQtPluginsRootDirectory( QLatin1String("plugins") );
+
+    REQUIRE( structure.qtPluginsToSharedLibrariesRelativePath() == QLatin1String("../../lib") );
+  }
+
+  SECTION("lib/ , plugins")
+  {
+    structure.setSharedLibrariesDirectory( QLatin1String("lib/") );
+    structure.setQtPluginsRootDirectory( QLatin1String("plugins") );
+
+    REQUIRE( structure.qtPluginsToSharedLibrariesRelativePath() == QLatin1String("../../lib") );
+  }
+
+  SECTION("lib , fw/plugins")
+  {
+    structure.setSharedLibrariesDirectory( QLatin1String("lib") );
+    structure.setQtPluginsRootDirectory( QLatin1String("fw/plugins") );
+
+    REQUIRE( structure.qtPluginsToSharedLibrariesRelativePath() == QLatin1String("../../../lib") );
+  }
 }
 
 TEST_CASE("isNull")
@@ -85,7 +144,7 @@ TEST_CASE("isNull")
   }
 }
 
-TEST_CASE("forOperatingSystem")
+TEST_CASE("fromOperatingSystem")
 {
   SECTION("Linux")
   {

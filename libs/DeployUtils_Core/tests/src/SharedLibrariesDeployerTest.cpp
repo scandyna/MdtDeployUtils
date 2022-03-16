@@ -128,8 +128,11 @@ TEST_CASE("copySharedLibrariesTargetsDependsOn")
   deployer.setCompilerLocation(compilerLocation);
 #endif // #ifdef COMPILER_IS_MSVC
 
+  REQUIRE( deployer.currentPlatform().isNull() );
+
   deployer.copySharedLibrariesTargetsDependsOn( targets, toQFileInfo, destinationDir.path() );
 
+  REQUIRE( deployer.currentPlatform() == Platform::nativePlatform() );
   REQUIRE( !deployer.foundDependencies().isEmpty() );
   REQUIRE( containsTestSharedLibrary( deployer.foundDependencies() ) );
   REQUIRE( dirContainsTestSharedLibrary(destinationDir) );

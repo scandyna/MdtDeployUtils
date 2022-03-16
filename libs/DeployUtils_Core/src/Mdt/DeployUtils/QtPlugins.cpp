@@ -21,6 +21,8 @@
 #include "QtPlugins.h"
 #include "FileCopier.h"
 #include "SharedLibrariesDeployer.h"
+#include "RPath.h"
+#include "ExecutableFileWriter.h"
 #include <QStringBuilder>
 #include <QLatin1Char>
 #include <cassert>
@@ -34,24 +36,17 @@ QtPlugins::QtPlugins(std::shared_ptr<SharedLibrariesDeployer> & shLibDeployer, Q
   assert( shLibDeployer.get() != nullptr );
 }
 
-
-void QtPlugins::setAlreadyDeployedSharedLibraries(const QStringList & libraries) noexcept
-{
-}
-
-void QtPlugins::setSearchPrefixPathList(const PathList & pathList) noexcept
-{
-}
-
 void QtPlugins::deployQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
 {
   const QStringList pluginsDirectories = getQtPluginsDirectoryNames(plugins);
 
   makeDestinationDirectoryStructure(pluginsDirectories, destination);
-  copyPluginsToDestination(plugins, destination, overwriteBehavior);
-  copySharedLibrariesPluginsDependsOn(plugins, destination, overwriteBehavior);
+  const QStringList copiedPlugins = copyPluginsToDestination(plugins, destination, overwriteBehavior);
+  copySharedLibrariesPluginsDependsOn(plugins, destination);
 
-  /// \todo RPath for plugins and dependencies
+  if( mShLibDeployer->currentPlatform().supportsRPath() ){
+   setRPathToCopiedPlugins(copiedPlugins, mShLibDeployer->currentPlatform(), destination);
+  }
 }
 
 bool QtPlugins::pathIsAbsoluteAndCouldBePluginsRoot(const QFileInfo & qtPluginsRoot) noexcept
@@ -84,10 +79,10 @@ void QtPlugins::makeDestinationDirectoryStructure(const QStringList & qtPluginsD
   }
 }
 
-void QtPlugins::copyPluginsToDestination(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
+QStringList QtPlugins::copyPluginsToDestination(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
 {
   if( plugins.empty() ){
-    return;
+    return QStringList();
   }
 
   emit verboseMessage(
@@ -102,9 +97,11 @@ void QtPlugins::copyPluginsToDestination(const QtPluginFileList & plugins, const
     const QString destinationDirectoryPath = QDir::cleanPath( destination.qtPluginsRootDirectoryPath() % QLatin1Char('/') % plugin.directoryName() );
     fileCopier.copyFile(plugin.absoluteFilePath(), destinationDirectoryPath);
   }
+
+  return fileCopier.copiedFilesDestinationPathList();
 }
 
-void QtPlugins::copySharedLibrariesPluginsDependsOn(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
+void QtPlugins::copySharedLibrariesPluginsDependsOn(const QtPluginFileList & plugins, const DestinationDirectory & destination)
 {
   assert( mShLibDeployer.get() != nullptr );
 
@@ -113,6 +110,32 @@ void QtPlugins::copySharedLibrariesPluginsDependsOn(const QtPluginFileList & plu
   };
 
   mShLibDeployer->copySharedLibrariesTargetsDependsOn( plugins, toFileInfo, destination.sharedLibrariesDirectoryPath() );
+}
+
+void QtPlugins::setRPathToCopiedPlugins(const QStringList & destinationFilePathList, const Platform & platform, const DestinationDirectory & destination)
+{
+  assert( platform.supportsRPath() );
+
+  RPath rpath;
+  rpath.appendPath( destination.structure().qtPluginsToSharedLibrariesRelativePath() );
+
+  emit statusMessage(
+    tr("update Rpath for copied Qt plugins if required")
+  );
+
+  ExecutableFileWriter writer;
+  connect(&writer, &ExecutableFileWriter::message, this, &QtPlugins::verboseMessage);
+  connect(&writer, &ExecutableFileWriter::verboseMessage, this, &QtPlugins::verboseMessage);
+
+  for(const QString & filePath : destinationFilePathList){
+    writer.openFile(filePath, platform);
+    if(writer.getRunPath() != rpath){
+      const QString msg = tr("update rpath for %1").arg(filePath);
+      emit verboseMessage(msg);
+      writer.setRunPath(rpath);
+    }
+    writer.close();
+  }
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

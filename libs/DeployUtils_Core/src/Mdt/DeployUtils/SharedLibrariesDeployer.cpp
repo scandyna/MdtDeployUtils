@@ -103,7 +103,7 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFil
 
   ExecutableFileReader reader;
   reader.openFile( targetFilePathList.at(0) );
-  const Platform platform = reader.getFilePlatform();
+  mPlatform = reader.getFilePlatform();
   reader.close();
 
   emitStartMessage(targetFilePathList);
@@ -113,7 +113,7 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFil
   const QString overwriteBehaviorMessage = tr("overwrite behavior: %1").arg( overwriteBehaviorToString(mOverwriteBehavior) );
   emit verboseMessage(overwriteBehaviorMessage);
 
-  if( platform.supportsRPath() ){
+  if( mPlatform.supportsRPath() ){
     if(mRemoveRpath){
       const QString rpathMessage = tr("RPATH will be removed in copied libraries");
       emit verboseMessage(rpathMessage);
@@ -132,14 +132,14 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFil
   connect(&fileCopier, &FileCopier::verboseMessage, this, &SharedLibrariesDeployer::verboseMessage);
   fileCopier.copyFiles(mFoundDependencies, destinationDirectoryPath);
 
-  if( platform.supportsRPath() ){
-    setRPathToCopiedDependencies(fileCopier.copiedFilesDestinationPathList(), platform);
+  if( mPlatform.supportsRPath() ){
+    setRPathToCopiedDependencies( fileCopier.copiedFilesDestinationPathList() );
   }
 }
 
-void SharedLibrariesDeployer::setRPathToCopiedDependencies(const QStringList & destinationFilePathList, const Platform & platform)
+void SharedLibrariesDeployer::setRPathToCopiedDependencies(const QStringList & destinationFilePathList)
 {
-  assert( platform.supportsRPath() );
+  assert( mPlatform.supportsRPath() );
 
   RPath rpath;
   if(!mRemoveRpath){
@@ -151,7 +151,7 @@ void SharedLibrariesDeployer::setRPathToCopiedDependencies(const QStringList & d
   connect(&writer, &ExecutableFileWriter::verboseMessage, this, &SharedLibrariesDeployer::verboseMessage);
 
   for(const QString & filePath : destinationFilePathList){
-    writer.openFile(filePath, platform);
+    writer.openFile(filePath, mPlatform);
     if(writer.getRunPath() != rpath){
       const QString msg = tr("update rpath for %1").arg(filePath);
       emit verboseMessage(msg);
@@ -159,7 +159,6 @@ void SharedLibrariesDeployer::setRPathToCopiedDependencies(const QStringList & d
     }
     writer.close();
   }
-
 }
 
 void SharedLibrariesDeployer::emitStartMessage(const QFileInfoList & targetFilePathList) const

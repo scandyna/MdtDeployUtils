@@ -70,7 +70,7 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
   makeDirectoryStructure(destination);
   installExecutable(request);
   copySharedLibrariesTargetDependsOn(request);
-  deployRequiredQtPlugins(destination, request.shLibOverwriteBehavior, request.searchPrefixPathList);
+  deployRequiredQtPlugins(destination, request.shLibOverwriteBehavior);
 }
 
 void DeployApplication::setupShLibDeployer(const DeployApplicationRequest & request)
@@ -167,7 +167,7 @@ void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicati
   mSharedLibrariesTargetDependsOn = mShLibDeployer->foundDependencies();
 }
 
-void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior, const QStringList searchPrefixPathList)
+void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
 {
   assert( mShLibDeployer.get() != nullptr );
 
@@ -189,8 +189,6 @@ void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & des
   connect(&qtPlugins, &QtPlugins::verboseMessage, this, &DeployApplication::verboseMessage);
   connect(&qtPlugins, &QtPlugins::debugMessage, this, &DeployApplication::debugMessage);
 
-//   qtPlugins.setAlreadyDeployedSharedLibraries(mSharedLibrariesTargetDependsOn);
-//   qtPlugins.setSearchPrefixPathList( PathList::fromStringList(searchPrefixPathList) );
   qtPlugins.deployQtPlugins(plugins, destination, overwriteBehavior);
 }
 

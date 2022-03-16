@@ -61,7 +61,7 @@ QtPluginFileList QtModulePlugins::getQtPluginsQtLibrariesDependsOn(const QtShare
 }
 
 template<typename Predicate>
-QStringList qtModulePluginsGetPluginsDirectoriesForModuleImpl(QtModule module, const Predicate & p) noexcept
+QStringList qtModulePluginsGetPluginsDirectoriesForModuleImpl(const Predicate & p) noexcept
 {
   QStringList directories;
 
@@ -82,7 +82,7 @@ QStringList qtModulePluginsGetPluginsDirectoriesForModuleImpl(QtModule module, c
     {QtModule::VirtualKeyboard, "virtualkeyboard"}
   };
 
-  const auto addDirectoryIfMatches = [module, &directories, &p](const ModulePluginsDirectoryPair & pair){
+  const auto addDirectoryIfMatches = [&directories, &p](const ModulePluginsDirectoryPair & pair){
     if( p( pair.module, QLatin1String(pair.pluginsDirectory) ) ){
       directories.append( QLatin1String(pair.pluginsDirectory) );
     }
@@ -99,7 +99,7 @@ QStringList QtModulePlugins::getPluginsDirectoriesForModule(QtModule module) noe
     return candidateModule == module;
   };
 
-  return qtModulePluginsGetPluginsDirectoriesForModuleImpl(module, pred);
+  return qtModulePluginsGetPluginsDirectoriesForModuleImpl(pred);
 }
 
 QStringList QtModulePlugins::getExistingPluginsDirectoriesForModule(QtModule module, const QFileInfo & qtPluginsRoot) noexcept
@@ -123,7 +123,7 @@ QStringList QtModulePlugins::getExistingPluginsDirectoriesForModule(QtModule mod
     return true;
   };
 
-  return qtModulePluginsGetPluginsDirectoriesForModuleImpl(module, pred);
+  return qtModulePluginsGetPluginsDirectoriesForModuleImpl(pred);
 }
 
 
