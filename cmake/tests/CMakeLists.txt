@@ -221,7 +221,6 @@ if(BUILD_REAL_INSTALL_TESTS)
 
 endif()
 
-
 # add_test(NAME Install_CopySharedLibrariesTargetDendsOnTest
 #   COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_CURRENT_BINARY_DIR}/copySharedLibrariesTargetDendsOnTest" --target install --config $<CONFIG>
 # )
@@ -240,6 +239,145 @@ endif()
 #     DEPENDS Install_CopySharedLibrariesTargetDendsOnTest
 # )
 
-############################################
-# InstallSharedLibrariesTargetDendsOnTest test
-############################################
+##################################################
+# InstallSharedLibrariesTargetDependsOnTest test
+##################################################
+
+set(installSharedLibrariesTargetDependsOnTestInstallPrefix "${CMAKE_CURRENT_BINARY_DIR}/installSharedLibrariesTargetDependsOnTest/deployed")
+
+add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Configure
+  COMMAND "${CMAKE_COMMAND}"
+    -S "${CMAKE_CURRENT_SOURCE_DIR}/InstallSharedLibrariesTargetDependsOnTest"
+    -B "${CMAKE_CURRENT_BINARY_DIR}/installSharedLibrariesTargetDependsOnTest"
+    -G "${CMAKE_GENERATOR}"
+    -A "${CMAKE_GENERATOR_PLATFORM}"
+    -T "${CMAKE_GENERATOR_TOOLSET}"
+    -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG
+    "-DCMAKE_PREFIX_PATH=${CMAKE_CURRENT_BINARY_DIR}${testMdtDeployUtilsInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH}"
+    "-DCMAKE_INSTALL_PREFIX=${installSharedLibrariesTargetDependsOnTestInstallPrefix}"
+)
+
+set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Configure
+  PROPERTIES
+    DEPENDS "EndToEndTests_Install_ItemModel_lib_Destdir;EndToEndTests_Install_DeployUtils_Destdir"
+)
+
+add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Build
+  COMMAND "${CMAKE_COMMAND}"
+    --build "${CMAKE_CURRENT_BINARY_DIR}/installSharedLibrariesTargetDependsOnTest"
+    --config $<CONFIG>
+)
+
+set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Build
+  PROPERTIES
+    DEPENDS "CMake_InstallSharedLibrariesTargetDependsOnTest_Configure"
+)
+
+add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Install
+  COMMAND "${CMAKE_COMMAND}"
+    --install "${CMAKE_CURRENT_BINARY_DIR}/installSharedLibrariesTargetDependsOnTest"
+    --config $<CONFIG>
+    --verbose
+)
+
+set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Install
+  PROPERTIES
+    DEPENDS "CMake_InstallSharedLibrariesTargetDependsOnTest_Build"
+)
+
+add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Run
+  COMMAND "${CMAKE_CTEST_COMMAND}"
+    -V
+  WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/installSharedLibrariesTargetDependsOnTest"
+)
+
+set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Run
+  PROPERTIES
+    DEPENDS "CMake_InstallSharedLibrariesTargetDependsOnTest_Install"
+)
+
+# On UNIX system wide install the RPATH are removed.
+# In that case, running a executable will only work
+# on a real system wide installation
+if(MDT_INSTALL_IS_UNIX_SYSTEM_WIDE)
+  set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Run PROPERTIES DISABLED YES)
+endif()
+
+
+##################################################
+# DeployApplicationTest test
+##################################################
+
+set(deployApplicationTestInstallPrefix "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest/deployed")
+
+# add_test(NAME CMake_DeployApplicationTest_Build
+#   COMMAND "${CMAKE_CTEST_COMMAND}"
+#     --build-and-test "${CMAKE_CURRENT_SOURCE_DIR}/DeployApplicationTest" "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest"
+#     --build-generator "${CMAKE_GENERATOR}"
+#     --build-generator-platform "${CMAKE_GENERATOR_PLATFORM}"
+#     --build-generator-toolset "${CMAKE_GENERATOR_TOOLSET}"
+#     --build-config $<CONFIG>
+#     --build-options
+#       "-DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_PREFIX_PATH=${CMAKE_CURRENT_BINARY_DIR}${testMdtDeployUtilsInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH}"
+# #     --test-command "${CMAKE_CTEST_COMMAND}"
+# )
+
+add_test(NAME CMake_DeployApplicationTest_Configure
+  COMMAND "${CMAKE_COMMAND}"
+    -S "${CMAKE_CURRENT_SOURCE_DIR}/DeployApplicationTest"
+    -B "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest"
+    -G "${CMAKE_GENERATOR}"
+    -A "${CMAKE_GENERATOR_PLATFORM}"
+    -T "${CMAKE_GENERATOR_TOOLSET}"
+    -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG
+    "-DCMAKE_PREFIX_PATH=${CMAKE_CURRENT_BINARY_DIR}${testMdtDeployUtilsInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH}"
+    "-DCMAKE_INSTALL_PREFIX=${deployApplicationTestInstallPrefix}"
+)
+
+set_tests_properties(CMake_DeployApplicationTest_Configure
+  PROPERTIES
+    DEPENDS "EndToEndTests_Install_ItemModel_lib_Destdir;EndToEndTests_Install_DeployUtils_Destdir"
+)
+
+add_test(NAME CMake_DeployApplicationTest_Build
+  COMMAND "${CMAKE_COMMAND}"
+    --build "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest"
+    --config $<CONFIG>
+)
+
+set_tests_properties(CMake_DeployApplicationTest_Build
+  PROPERTIES
+    DEPENDS "CMake_DeployApplicationTest_Configure"
+)
+
+add_test(NAME CMake_DeployApplicationTest_Install
+  COMMAND "${CMAKE_COMMAND}"
+    --install "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest"
+    --config $<CONFIG>
+    --verbose
+)
+
+set_tests_properties(CMake_DeployApplicationTest_Install
+  PROPERTIES
+    DEPENDS "CMake_DeployApplicationTest_Build"
+#     ENVIRONMENT "DESTDIR=${CMAKE_CURRENT_BINARY_DIR}"
+)
+
+add_test(NAME CMake_DeployApplicationTest_Run
+  COMMAND "${CMAKE_CTEST_COMMAND}"
+    "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest"
+    -V
+  WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest"
+)
+
+set_tests_properties(CMake_DeployApplicationTest_Run
+  PROPERTIES
+    DEPENDS "CMake_DeployApplicationTest_Install"
+)
+
+# On UNIX system wide install the RPATH are removed.
+# In that case, running a executable will only work
+# on a real system wide installation
+if(MDT_INSTALL_IS_UNIX_SYSTEM_WIDE)
+  set_tests_properties(CMake_DeployApplicationTest_Run PROPERTIES DISABLED YES)
+endif()
