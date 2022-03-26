@@ -1,0 +1,39 @@
+# Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
+# file Copyright.txt or https://cmake.org/licensing for details.
+
+# TODO: normalize
+# set(CMAKE_MESSAGE_LOG_LEVEL @CMAKE_MESSAGE_LOG_LEVEL@)
+set(CMAKE_MESSAGE_LOG_LEVEL DEBUG)
+
+message(VERBOSE "Running mdt_deploy_application() script")
+
+message(VERBOSE "DESTDIR: $ENV{DESTDIR}")
+message(VERBOSE "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
+message(VERBOSE "CMAKE_PREFIX_PATH: @CMAKE_PREFIX_PATH@")
+message(DEBUG "CMAKE_CXX_COMPILER: @CMAKE_CXX_COMPILER@")
+
+set(IS_MSVC @MSVC@)
+message(DEBUG "Is MSVC: ${IS_MSVC}")
+
+# It should be possible to get mdtdeployutils executable from a generator expression
+# Have tried
+# if(TARGET genex for Mdt0::DeployUtilsExecutable)
+#   use the installed mdtdeployutils executable
+# else()
+#   use the MdtDeployUtils build tree mdtdeployutils executable
+# endif()
+# which throws a error
+# Also a complete genex with IF generator expression fails
+# Note: cannnot put the real generator expression here,
+# because file(GENERATE) will evaluate commented genex and fail (!)
+find_program(deployUtilsExecutable
+  NAMES mdtdeployutils
+  PATHS @CMAKE_PREFIX_PATH@ "@MdtDeployUtils_BINARY_DIR@/apps/DeployUtils_Cli/src"
+  PATH_SUFFIXES "bin"
+  NO_DEFAULT_PATH NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_SYSTEM_PATH
+)
+
+message(DEBUG "deployUtilsExecutable: ${deployUtilsExecutable}")
+
+set(targetFile "$<TARGET_FILE:@ARG_TARGET@>")
+message(DEBUG "targetFile: ${targetFile}")

@@ -28,6 +28,7 @@
 #     [EXPORT_DIRECTORY <dir>]
 #     [INSTALL_IS_UNIX_SYSTEM_WIDE [TRUE|FALSE]]
 #     [COMPONENT <component-name>]
+#     [MODULES_PATH_VARIABLE_NAME <variable-name>]
 #   )
 #
 # Install the CMake modules designated by ``files`` using :command:`install(FILES)`.
@@ -54,6 +55,52 @@
 # the ``EXPORT_DIRECTORY`` can be used.
 # In that case, the package config file will be installed to a subdirectory named ``${EXPORT_NAMESPACE}${EXPORT_DIRECTORY}``.
 #
+# If ``MODULES_PATH_VARIABLE_NAME`` is defined,
+# a variable named `<variable-name>` will be created in the generated CMake package file.
+# The value of this variable will contain the path to the installed CMake modules
+# in a relocatable way.
+#
+# Install modules that generate scripts from input scripts
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
+# For some cases, it is required to generate a script based on a input script.
+#
+# .. code-block:: cmake
+#
+#   set(inputScript ??)
+#   configure_file("${inputScript}" "${outputScript}" @ONLY)
+#
+# In above example, `inputScript` should refer to the input script,
+# for example `MyModuleScript.cmake.in`, once the module is installed.
+#
+# To locate it, a variable can be created, for example ``MY_INSTALLED_CMAKE_MODULES_PATH``.
+#
+# .. code-block:: cmake
+#
+#   set(inputScript "${MY_INSTALLED_CMAKE_MODULES_PATH}/MyModuleScript.cmake.in")
+#   configure_file("${inputScript}" "${outputScript}" @ONLY)
+#
+# If the package, including above module, has to be relocatable,
+# the variable ``MY_INSTALLED_CMAKE_MODULES_PATH`` should be created
+# in the package config file.
+#
+#
+# To create this ``MY_INSTALLED_CMAKE_MODULES_PATH`` variable,
+# pass its name to the ``MODULES_PATH_VARIABLE_NAME`` argument:
+#
+# .. code-block:: cmake
+#
+#   mdt_install_cmake_modules(
+#     FILES
+#       Modules/MyModule.cmake
+#       Modules/MyModuleScript.cmake.in
+#     EXPORT_NAME CMakeModules
+#     EXPORT_NAMESPACE MyLib
+#     MODULES_PATH_VARIABLE_NAME MY_INSTALLED_CMAKE_MODULES_PATH
+#   )
+#
+# See also
+# https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html#command:configure_package_config_file
 #
 # Install a standalone CMake modules project
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -361,6 +408,8 @@ function(mdt_install_cmake_modules)
   string(APPEND cmakePackageFileInContent "if(NOT \"\${MDT_CMAKE_MODULE_PATH}\" IN_LIST CMAKE_MODULE_PATH)\n")
   string(APPEND cmakePackageFileInContent "  list(APPEND CMAKE_MODULE_PATH \"\${MDT_CMAKE_MODULE_PATH}\")\n")
   string(APPEND cmakePackageFileInContent "endif()\n")
+  
+  string(APPEND cmakePackageFileInContent "set(MY_CMAKE_MODULES_PATH \"@PACKAGE_modulesInstallDir@\")\n\n")
 
   set(cmakePackageFileIn "${CMAKE_CURRENT_BINARY_DIR}/${packageName}.cmake.in")
   set(cmakePackageFile "${CMAKE_CURRENT_BINARY_DIR}/${packageName}.cmake")

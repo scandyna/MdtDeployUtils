@@ -54,7 +54,7 @@ add_test(NAME EndToEndTests_Install_DeployUtils_Destdir
   COMMAND "${CMAKE_COMMAND}"
     --install "${CMAKE_BINARY_DIR}"
     --config $<CONFIG>
-#     --component ${PROJECT_NAME}_Runtime
+    --component MdtDeployUtils_Runtime
 #     --component ${PROJECT_NAME}_Dev
 )
 

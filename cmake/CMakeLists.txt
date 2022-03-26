@@ -10,6 +10,8 @@ include(MdtInstallCMakeModules)
 mdt_install_cmake_modules(
   FILES
     Modules/MdtSharedLibrariesDepencyHelpers.cmake
+    Modules/MdtDeployApplication.cmake
+    Modules/MdtDeployApplicationInstallScript.cmake.in
   DESTINATION ${CMAKE_INSTALL_LIBDIR}
   EXPORT_NAME DeployUtilsCMakeModules
   EXPORT_NAMESPACE ${MDT_INSTALL_PACKAGE_NAME}
