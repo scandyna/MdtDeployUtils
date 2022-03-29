@@ -106,7 +106,7 @@ mdtdeployutils deploy-application "path/to/some/executable" "path/to/destination
 Setting a build environment is not allways required,
 in which case some more informations have to be passed:
 ```bash
-mdtdeployutils deploy-application --search-prefix-path-list "C:/Qt/5.14.2/msvc2017_64;C:/.conan/1234df/1" --compiler-location vc-install-dir="C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC" "path/to/some/executable" "path/to/destination/directory"
+mdtdeployutils deploy-application --search-prefix-path-list "C:/Qt/5.14.2/msvc2017_64,C:/.conan/1234df/1" --compiler-location vc-install-dir="C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC" "path/to/some/executable" "path/to/destination/directory"
 ```
 
 For more details:
