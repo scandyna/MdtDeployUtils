@@ -15,9 +15,9 @@ find_package(Mdt0DeployUtils REQUIRED NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_PACKAG
 find_package(Mdt0ItemModel REQUIRED NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_SYSTEM_PATH)
 
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>/bin")
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH $ORIGIN)
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>/bin")
+# set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+# set(CMAKE_INSTALL_RPATH $ORIGIN)
 
 add_executable(testApp1 src/TestApp1.cpp)
 target_link_libraries(testApp1 PRIVATE Mdt0::ItemModel)
@@ -30,16 +30,16 @@ include(MdtDeployApplication)
 
 mdt_deploy_application(
   TARGET testApp1
-  RUNTIME_DESTINATION "${CMAKE_BINARY_DIR}/$<CONFIG>/bin"
-  LIBRARY_DESTINATION "${CMAKE_BINARY_DIR}/$<CONFIG>/lib"
+  RUNTIME_DESTINATION "testApp1/bin"
+  LIBRARY_DESTINATION "testApp1/lib"
 )
 
 mdt_deploy_application(
   TARGET testApp2
-  RUNTIME_DESTINATION "${CMAKE_BINARY_DIR}/$<CONFIG>/bin"
-  LIBRARY_DESTINATION "${CMAKE_BINARY_DIR}/$<CONFIG>/lib"
+  RUNTIME_DESTINATION "testApp2/bin"
+  LIBRARY_DESTINATION "testApp2/lib"
 )
 
 enable_testing()
-add_test(NAME RunTestApp1 COMMAND testApp1)
-add_test(NAME RunTestApp2 COMMAND testApp2)
+add_test(NAME RunTestApp1 COMMAND "${CMAKE_INSTALL_PREFIX}/testApp1/bin/testApp1")
+add_test(NAME RunTestApp2 COMMAND "${CMAKE_INSTALL_PREFIX}/testApp2/bin/testApp2")

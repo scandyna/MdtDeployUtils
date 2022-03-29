@@ -345,7 +345,7 @@
 function(mdt_install_cmake_modules)
 
   set(options NO_PACKAGE_CONFIG_FILE)
-  set(oneValueArgs DESTINATION EXPORT_NAME EXPORT_NAMESPACE EXPORT_DIRECTORY INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT)
+  set(oneValueArgs DESTINATION EXPORT_NAME EXPORT_NAMESPACE EXPORT_DIRECTORY INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT MODULES_PATH_VARIABLE_NAME)
   set(multiValueArgs FILES)
   cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -408,8 +408,9 @@ function(mdt_install_cmake_modules)
   string(APPEND cmakePackageFileInContent "if(NOT \"\${MDT_CMAKE_MODULE_PATH}\" IN_LIST CMAKE_MODULE_PATH)\n")
   string(APPEND cmakePackageFileInContent "  list(APPEND CMAKE_MODULE_PATH \"\${MDT_CMAKE_MODULE_PATH}\")\n")
   string(APPEND cmakePackageFileInContent "endif()\n")
-  
-  string(APPEND cmakePackageFileInContent "set(MY_CMAKE_MODULES_PATH \"@PACKAGE_modulesInstallDir@\")\n\n")
+  if(ARG_MODULES_PATH_VARIABLE_NAME)
+    string(APPEND cmakePackageFileInContent "\nset(${ARG_MODULES_PATH_VARIABLE_NAME} \"@PACKAGE_modulesInstallDir@\")\n")
+  endif()
 
   set(cmakePackageFileIn "${CMAKE_CURRENT_BINARY_DIR}/${packageName}.cmake.in")
   set(cmakePackageFile "${CMAKE_CURRENT_BINARY_DIR}/${packageName}.cmake")

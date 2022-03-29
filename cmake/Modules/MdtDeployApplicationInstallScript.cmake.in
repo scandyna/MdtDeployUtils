@@ -1,11 +1,16 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
 
+include(@MDT_DEPLOY_UTILS_INSTALL_SCRIPT_HELPERS@)
+
 # TODO: normalize
 # set(CMAKE_MESSAGE_LOG_LEVEL @CMAKE_MESSAGE_LOG_LEVEL@)
 set(CMAKE_MESSAGE_LOG_LEVEL DEBUG)
 
 message(VERBOSE "Running mdt_deploy_application() script")
+
+set(targetFile "$<TARGET_FILE:@ARG_TARGET@>")
+message(DEBUG "targetFile: ${targetFile}")
 
 message(VERBOSE "DESTDIR: $ENV{DESTDIR}")
 message(VERBOSE "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
@@ -14,6 +19,54 @@ message(DEBUG "CMAKE_CXX_COMPILER: @CMAKE_CXX_COMPILER@")
 
 set(IS_MSVC @MSVC@)
 message(DEBUG "Is MSVC: ${IS_MSVC}")
+
+message(DEBUG "MDT_INSTALL_PREFIX_WITH_DESTDIR: ${MDT_INSTALL_PREFIX_WITH_DESTDIR}")
+
+set(INSTALL_IS_UNIX_SYSTEM_WIDE @MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_INSTALL_IS_UNIX_SYSTEM_WIDE@)
+if(INSTALL_IS_UNIX_SYSTEM_WIDE)
+  message(DEBUG "Install is Unix system wide")
+  set(overwriteBehavior keep)
+  set(removeRpathOptionArgument --remove-rpath)
+else()
+  message(DEBUG "Install is NOT Unix system wide")
+  set(overwriteBehavior overwrite)
+  set(removeRpathOptionArgument)
+endif()
+
+message(VERBOSE "overwriteBehavior: ${overwriteBehavior}")
+message(VERBOSE "removeRpathOptionArgument: ${removeRpathOptionArgument}")
+
+set(compilerLocationArguments)
+if(IS_MSVC)
+  message(DEBUG "Is MSVC, use compiler finder to locate redist dirs")
+  set(compilerLocationArguments --compiler-location "compiler-path=@CMAKE_CXX_COMPILER@")
+endif()
+
+set(logLevelArguments)
+if(CMAKE_MESSAGE_LOG_LEVEL)
+  set(logLevelArguments --log-level ${CMAKE_MESSAGE_LOG_LEVEL})
+endif()
+
+string(REPLACE ";" "," searchPrefixPathList "@CMAKE_PREFIX_PATH@")
+message(DEBUG "searchPrefixPathList: ${searchPrefixPathList}")
+
+message("RT dir: @MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_RUNTIME_DESTINATION@")
+message("lib dir: @MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_LIBRARY_DESTINATION@")
+
+execute_mdtdeployutils(
+  MDTDEPLOYUTILS_EXECUTABLE "@MDT_DEPLOY_UTILS_INSTALL_SCRIPT_MDTDEPLOYUTILS_EXECUTABLE@"
+  RUNTIME_ENV "@MDT_DEPLOY_UTILS_INSTALL_SCRIPT_MDTDEPLOYUTILS_RUNTIME_ENV@"
+  ARGUMENTS --logger-backend cmake ${logLevelArguments}
+            deploy-application
+            --shlib-overwrite-behavior ${overwriteBehavior}
+            ${removeRpathOptionArgument}
+            --search-prefix-path-list "${searchPrefixPathList}"
+            ${compilerLocationArguments}
+            --runtime-destination "@MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_RUNTIME_DESTINATION@"
+            --library-destination "@MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_LIBRARY_DESTINATION@"
+            "${targetFile}"
+            "${MDT_INSTALL_PREFIX_WITH_DESTDIR}"
+)
 
 # It should be possible to get mdtdeployutils executable from a generator expression
 # Have tried
@@ -26,14 +79,52 @@ message(DEBUG "Is MSVC: ${IS_MSVC}")
 # Also a complete genex with IF generator expression fails
 # Note: cannnot put the real generator expression here,
 # because file(GENERATE) will evaluate commented genex and fail (!)
-find_program(deployUtilsExecutable
-  NAMES mdtdeployutils
-  PATHS @CMAKE_PREFIX_PATH@ "@MdtDeployUtils_BINARY_DIR@/apps/DeployUtils_Cli/src"
-  PATH_SUFFIXES "bin"
-  NO_DEFAULT_PATH NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_SYSTEM_PATH
-)
+# find_program(deployUtilsExecutable
+#   NAMES mdtdeployutils
+#   PATHS @CMAKE_PREFIX_PATH@ "@MdtDeployUtils_BINARY_DIR@/apps/DeployUtils_Cli/src"
+#   PATH_SUFFIXES "bin"
+#   NO_DEFAULT_PATH NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_SYSTEM_PATH
+# )
 
-message(DEBUG "deployUtilsExecutable: ${deployUtilsExecutable}")
+# TODO create a common (in ?) script that provides the common boilerplate
 
-set(targetFile "$<TARGET_FILE:@ARG_TARGET@>")
-message(DEBUG "targetFile: ${targetFile}")
+# set(deployUtilsExecutable @MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_DEPLOY_UTILS_EXECUTABLE@)
+# message(DEBUG "deployUtilsExecutable: ${deployUtilsExecutable}")
+# 
+# set(deployUtilsRuntimeEnv @MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_DEPLOY_UTILS_RUN_ENV@)
+# message(DEBUG "deployUtilsRuntimeEnv: ${deployUtilsRuntimeEnv}")
+# 
+# set(hasDeployUtilsRuntimeEnv FALSE)
+# if( NOT ("${deployUtilsRuntimeEnv}" STREQUAL "") )
+#   set(hasDeployUtilsRuntimeEnv TRUE)
+# endif()
+# 
+# if(hasDeployUtilsRuntimeEnv)
+#   message("--> HAS deployUtilsRuntimeEnv")
+# else()
+#   message("--> has NOT deployUtilsRuntimeEnv")
+# endif()
+# 
+# set(targetFile "$<TARGET_FILE:@ARG_TARGET@>")
+# message(DEBUG "targetFile: ${targetFile}")
+# 
+# message(DEBUG "MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_DEPLOY_UTILS_ARGUMENTS: @MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_DEPLOY_UTILS_ARGUMENTS@")
+# 
+# if(hasDeployUtilsRuntimeEnv)
+#   execute_process(
+#     COMMAND "${CMAKE_COMMAND}" -E env "${deployUtilsRuntimeEnv}"
+#             "${deployUtilsExecutable}" @MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_DEPLOY_UTILS_ARGUMENTS@
+#     RESULTS_VARIABLE mdtDeployUtilsResult
+#     ERROR_VARIABLE mdtDeployUtilsError
+#   )
+# else()
+#   execute_process(
+#     COMMAND "${deployUtilsExecutable}" @MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_DEPLOY_UTILS_ARGUMENTS@
+#     RESULTS_VARIABLE mdtDeployUtilsResult
+#     ERROR_VARIABLE mdtDeployUtilsError
+#   )
+# endif()
+# 
+# if( NOT (${mdtDeployUtilsResult} EQUAL 0) )
+#   message(FATAL_ERROR "mdt_install_shared_XXXX_libraries_target_depends_on() failed: ${mdtDeployUtilsError}")
+# endif()
