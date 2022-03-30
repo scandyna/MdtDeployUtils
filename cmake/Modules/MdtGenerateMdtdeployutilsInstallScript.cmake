@@ -212,11 +212,13 @@ function(mdt_generate_mdtdeployutils_install_script)
 
   message("intermediateInstallScript: ${intermediateInstallScript}")
 
+  # TODO: should use project version like MdtDeployUtils_XX_VERS
   if(TARGET Mdt0::DeployUtilsExecutable)
     message(DEBUG "mdtdeployutils is installed")
     set(MDT_DEPLOY_UTILS_INSTALL_SCRIPT_MDTDEPLOYUTILS_EXECUTABLE "$<TARGET_FILE:Mdt0::DeployUtilsExecutable>")
   else()
     message(DEBUG "mdtdeployutils is in the MdtDeployUtils build tree")
+    include(MdtRuntimeEnvironment)
     set(MDT_DEPLOY_UTILS_INSTALL_SCRIPT_MDTDEPLOYUTILS_EXECUTABLE "$<TARGET_FILE:mdtdeployutils>")
     mdt_target_libraries_to_library_env_path(MDT_DEPLOY_UTILS_INSTALL_SCRIPT_MDTDEPLOYUTILS_RUNTIME_ENV TARGET mdtdeployutils ALWAYS_USE_SLASHES)
   endif()
