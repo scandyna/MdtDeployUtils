@@ -1,18 +1,11 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
 
+include(@MDT_DEPLOY_UTILS_INSTALL_SCRIPT_HELPERS@)
+
 set(CMAKE_MESSAGE_LOG_LEVEL @CMAKE_MESSAGE_LOG_LEVEL@)
 
 message(VERBOSE "Running mdt_install_shared_libraries_target_depends_on() script")
-
-# set(CMAKE_MODULE_PATH @CMAKE_MODULE_PATH@)
-# message("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
-
-# include(MdtRuntimeEnvironment)
-
-message(VERBOSE "DESTDIR: $ENV{DESTDIR}")
-
-message(VERBOSE "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 message(VERBOSE "CMAKE_PREFIX_PATH: @CMAKE_PREFIX_PATH@")
 message(DEBUG "CMAKE_CXX_COMPILER: @CMAKE_CXX_COMPILER@")
@@ -20,56 +13,20 @@ message(DEBUG "CMAKE_CXX_COMPILER: @CMAKE_CXX_COMPILER@")
 set(IS_MSVC @MSVC@)
 message(DEBUG "Is MSVC: ${IS_MSVC}")
 
-# TODO: update to take either deployUtilsExecutable
-set(mdtDeployUtilsCommand "$<TARGET_FILE:mdtdeployutils>")
-message(DEBUG "mdtDeployUtilsCommand: ${mdtDeployUtilsCommand}")
-
 set(targetFile "$<TARGET_FILE:@ARG_TARGET@>")
 message(DEBUG "targetFile: ${targetFile}")
-
-###########################################
-# PATH environment to run mdtdeployutils
-###########################################
-
-set(runPath "@MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH@")
-if(WIN32)
-  # ; have to be escaped, otherwise the environment will not be set properly
-  # See: https://cmake.org/pipermail/cmake/2009-May/029425.html
-  string(REPLACE ";" "\\;" runPath "${runPath}")
-endif()
-
-message(DEBUG "runPath: ${runPath}")
 
 ###########################################
 # Destination and install path
 ###########################################
 
+message(VERBOSE "DESTDIR: $ENV{DESTDIR}")
+message(VERBOSE "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
+
+message(DEBUG "MDT_INSTALL_PREFIX_WITH_DESTDIR: ${MDT_INSTALL_PREFIX_WITH_DESTDIR}")
+
 set(DESTINATION "@MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_DESTINATION@")
-
-message(DEBUG "DESTINATION: ${DESTINATION}")
-
-if(NOT DESTINATION)
-  message(FATAL_ERROR "MdtInstallSharedLibrariesScript: missing DESTINATION")
-endif()
-
-
-# Prevent having //path if DESTIR is not used
-set(destDir "$ENV{DESTDIR}")
-if(destDir)
-  if(WIN32)
-    # Remove C: from CMAKE_INSTALL_PREFIX
-    string(REGEX REPLACE "^[a-zA-Z]:" ""
-      installPrefix
-      "${CMAKE_INSTALL_PREFIX}"
-    )
-    get_filename_component(librariesDestination "$ENV{DESTDIR}/${installPrefix}/${DESTINATION}" ABSOLUTE)
-  else()
-    get_filename_component(librariesDestination "$ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}/${DESTINATION}" ABSOLUTE)
-  endif()
-else()
-  get_filename_component(librariesDestination "${CMAKE_INSTALL_PREFIX}/${DESTINATION}" ABSOLUTE)
-endif()
-
+set(librariesDestination "${MDT_INSTALL_PREFIX_WITH_DESTDIR}/${DESTINATION}")
 message(VERBOSE "librariesDestination: ${librariesDestination}")
 
 ###########################################
@@ -101,18 +58,18 @@ if(CMAKE_MESSAGE_LOG_LEVEL)
   set(logLevelArguments --log-level ${CMAKE_MESSAGE_LOG_LEVEL})
 endif()
 
-execute_process(
-  COMMAND "${CMAKE_COMMAND}" -E env "${runPath}"
-          "${mdtDeployUtilsCommand}" --logger-backend cmake ${logLevelArguments} copy-shared-libraries-target-depends-on
+string(REPLACE ";" "," searchPrefixPathList "@CMAKE_PREFIX_PATH@")
+message(DEBUG "searchPrefixPathList: ${searchPrefixPathList}")
+
+execute_mdtdeployutils(
+  MDTDEPLOYUTILS_EXECUTABLE "@MDT_DEPLOY_UTILS_INSTALL_SCRIPT_MDTDEPLOYUTILS_EXECUTABLE@"
+  RUNTIME_ENV "@MDT_DEPLOY_UTILS_INSTALL_SCRIPT_MDTDEPLOYUTILS_RUNTIME_ENV@"
+  ARGUMENTS --logger-backend cmake ${logLevelArguments}
+            copy-shared-libraries-target-depends-on
             --overwrite-behavior ${overwriteBehavior}
             ${removeRpathOptionArgument}
-            --search-prefix-path-list "@CMAKE_PREFIX_PATH@"
+            --search-prefix-path-list "${searchPrefixPathList}"
             ${compilerLocationArguments}
             "${targetFile}"
             "${librariesDestination}"
-  RESULTS_VARIABLE mdtDeployUtilsResult
-  ERROR_VARIABLE mdtDeployUtilsError
 )
-if( NOT (${mdtDeployUtilsResult} EQUAL 0) )
-  message(FATAL_ERROR "mdt_install_shared_libraries_target_depends_on() failed: ${mdtDeployUtilsError}")
-endif()

@@ -8,6 +8,8 @@
 # .. contents:: Summary
 #    :local:
 #
+# Generate a script that calls mdtdeployutils at install time
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # .. command:: mdt_generate_mdtdeployutils_install_script
 #

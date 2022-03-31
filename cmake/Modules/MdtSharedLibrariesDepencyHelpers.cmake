@@ -153,6 +153,8 @@
 # On Windows, the shared libraries the ``myApp`` executable depends on are installed to ``${CMAKE_INSTALL_PREFIX}/bin``.
 #
 
+include(MdtGenerateMdtdeployutilsInstallScript)
+
 function(mdt_copy_shared_libraries_target_depends_on)
 
   set(options)
@@ -300,26 +302,11 @@ function(mdt_install_shared_libraries_target_depends_on)
     set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_DESTINATION "${ARG_LIBRARY_DESTINATION}")
   endif()
 
-  # TODO: update and document: use either mdtdeployutils or Mdt0::DeployUtilsExecutable
-  set(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH)
-  mdt_target_libraries_to_library_env_path(MDT_INSTALL_SHARED_LIBRARIES_SCRIPT_ENV_PATH TARGET mdtdeployutils ALWAYS_USE_SLASHES)
-
-  # configure_file() does not support generator expression
-  # file(GENERATE) supports generator expression, but not @ expension
-  # Result: the expression $<TARGET_FILE:${ARG_TARGET}> cannot be used in the input script,
-  # we have to give a valid target.
-  # So, to have both worlds, we have to generate a intermediate script
-
-  set(intermediateInstallScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript.cmake.intermediate")
-  configure_file("${MdtDeployUtils_SOURCE_DIR}/cmake/Modules/MdtInstallSharedLibrariesScript.cmake.in" "${intermediateInstallScript}" @ONLY)
-
-  set(installScript "${CMAKE_CURRENT_BINARY_DIR}/MdtInstallSharedLibrariesScript-$<CONFIG>.cmake")
-  file(GENERATE
-    OUTPUT "${installScript}"
-    INPUT "${intermediateInstallScript}"
+  mdt_generate_mdtdeployutils_install_script(
     TARGET ${ARG_TARGET}
+    INPUT_SCRIPT_FILE MdtInstallSharedLibrariesScript.cmake.in
+    ${componentArguments}
+    ${excludeFromAllArgument}
   )
-
-  install(SCRIPT "${installScript}" ${componentArguments} ${excludeFromAllArgument})
 
 endfunction()

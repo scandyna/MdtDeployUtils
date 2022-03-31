@@ -10,6 +10,7 @@ include(MdtInstallCMakeModules)
 mdt_install_cmake_modules(
   FILES
     Modules/MdtSharedLibrariesDepencyHelpers.cmake
+    Modules/MdtInstallSharedLibrariesScript.cmake.in
     Modules/MdtDeployApplication.cmake
     Modules/MdtDeployApplicationInstallScript.cmake.in
     Modules/MdtDeployUtilsInstallScriptHelpers.cmake
