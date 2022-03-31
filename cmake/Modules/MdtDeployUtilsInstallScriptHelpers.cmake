@@ -31,9 +31,6 @@ function(execute_mdtdeployutils)
   if(NOT ARG_MDTDEPLOYUTILS_EXECUTABLE)
     message(FATAL_ERROR "execute_mdtdeployutils(): mandatory argument MDTDEPLOYUTILS_EXECUTABLE missing")
   endif()
-#   if(NOT ARG_RUNTIME_ENV)
-#     message(FATAL_ERROR "execute_mdtdeployutils(): mandatory argument RUNTIME_ENV missing")
-#   endif()
   if(NOT ARG_ARGUMENTS)
     message(FATAL_ERROR "execute_mdtdeployutils(): mandatory argument ARGUMENTS missing")
   endif()
@@ -66,7 +63,6 @@ function(execute_mdtdeployutils)
     message(DEBUG "mdtdeployutils will be called directly (no runtime env)")
   endif()
 
-#   message(DEBUG "MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_DEPLOY_UTILS_ARGUMENTS: @MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_DEPLOY_UTILS_ARGUMENTS@")
 
   if(hasDeployUtilsRuntimeEnv)
     execute_process(

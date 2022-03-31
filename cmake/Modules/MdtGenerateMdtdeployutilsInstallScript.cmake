@@ -21,8 +21,6 @@
 #
 #   mdt_generate_mdtdeployutils_install_script(
 #     TARGET <target>
-#     MDTDEPLOYUTILS_COMMAND <name> TODO: remove
-#     MDTDEPLOYUTILS_COMMAND_OPTIONS <options> TODO: remove
 #     INPUT_SCRIPT_FILE <file-name>
 #     [COMPONENT <name>]
 #     [EXCLUDE_FROM_ALL]
@@ -51,7 +49,7 @@
 # On Windows, drive letters are removed from ``CMAKE_INSTALL_PREFIX`` if present.
 #
 # ``@MDT_DEPLOY_UTILS_INSTALL_SCRIPT_MDTDEPLOYUTILS_EXECUTABLE@``
-#  gives the full path to the mdtdeployutils executable.
+# gives the full path to the mdtdeployutils executable.
 #
 # ``@MDT_DEPLOY_UTILS_INSTALL_SCRIPT_MDTDEPLOYUTILS_RUNTIME_ENV@``
 # gives the runtime environment.
@@ -67,25 +65,14 @@
 #   )
 #
 #
-# TODO: should make a special case to deploy mdtdeployutils
-#  this will solve above issue + ENV (which makes the user dependend on mdt-cmake-modules for just this case)
-#
-# TODO remove CALL_FROM_MDT_DEPLOY_UTILS_SOURCE_TREE
-# By default, it is assumed that this function
-# is called from the installed tree.
-# If this function is called from the MdtDeployUtils source tree,
-# pass the `CALL_FROM_MDT_DEPLOY_UTILS_SOURCE_TREE` option.
-# This changes the location of the input script
-# as well as the mdtdeployutils target that has to be called in the generated install script.
-#
 # Technical details
-# -----------------
+# ^^^^^^^^^^^^^^^^^
 #
 # Most of the time this function would be called from the install tree,
 # but sometimes from the MdtDeployUtils source tree.
 #
 # Input install script
-# ^^^^^^^^^^^^^^^^^^^^
+# ====================
 #
 # One problem is to find the input script.
 #
@@ -111,7 +98,7 @@
 # ``MDT_DEPLOY_UTILS_INSTALLED_CMAKE_MODULES_PATH``.
 #
 # mdtdeployutils target
-# ^^^^^^^^^^^^^^^^^^^^^
+# =====================
 #
 # A other problem is to use the correct mdtdeployutils target:
 # - Mdt0::DeployUtilsExecutable when called from a user
@@ -120,7 +107,7 @@
 # This can be done in a simple way here.
 #
 # A note about file(GENERATE)
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ===========================
 #
 # I thought that the mdtdeployutils target generator expression
 # would have to be evaluated in the generated script.
@@ -155,7 +142,6 @@
 #
 function(mdt_generate_mdtdeployutils_install_script)
 
-#   set(options CALL_FROM_MDT_DEPLOY_UTILS_SOURCE_TREE)
   set(options EXCLUDE_FROM_ALL)
   set(oneValueArgs TARGET INPUT_SCRIPT_FILE COMPONENT)
   set(multiValueArgs)
@@ -170,12 +156,6 @@ function(mdt_generate_mdtdeployutils_install_script)
   if(NOT ARG_INPUT_SCRIPT_FILE)
     message(FATAL_ERROR "mdt_generate_mdtdeployutils_install_script(): mandatory argument INPUT_SCRIPT_FILE missing")
   endif()
-#   if(NOT ARG_MDTDEPLOYUTILS_ARGUMENTS)
-#     message(FATAL_ERROR "mdt_generate_mdtdeployutils_install_script(): mandatory argument MDTDEPLOYUTILS_ARGUMENTS missing")
-#   endif()
-#   if(NOT ARG_COMPONENT)
-#     message(FATAL_ERROR "mdt_generate_mdtdeployutils_install_script(): mandatory argument COMPONENT missing")
-#   endif()
   if(ARG_UNPARSED_ARGUMENTS)
     message(FATAL_ERROR "mdt_generate_mdtdeployutils_install_script(): unknown arguments passed: ${ARG_UNPARSED_ARGUMENTS}")
   endif()
@@ -191,28 +171,23 @@ function(mdt_generate_mdtdeployutils_install_script)
   # we have to give a valid target.
   # So, to have both worlds, we have to generate a intermediate script
 
-  message("MdtDeployUtils_SOURCE_DIR: ${MdtDeployUtils_SOURCE_DIR}")
-  message("MDT_DEPLOY_UTILS_INSTALLED_CMAKE_MODULES_PATH: ${MDT_DEPLOY_UTILS_INSTALLED_CMAKE_MODULES_PATH}")
-  
+  message(DEBUG "MdtDeployUtils_SOURCE_DIR: ${MdtDeployUtils_SOURCE_DIR}")
+  message(DEBUG "MDT_DEPLOY_UTILS_INSTALLED_CMAKE_MODULES_PATH: ${MDT_DEPLOY_UTILS_INSTALLED_CMAKE_MODULES_PATH}")
+
   if(MDT_DEPLOY_UTILS_INSTALLED_CMAKE_MODULES_PATH)
     set(inInstallScript "${MDT_DEPLOY_UTILS_INSTALLED_CMAKE_MODULES_PATH}/${ARG_INPUT_SCRIPT_FILE}")
     set(MDT_DEPLOY_UTILS_INSTALL_SCRIPT_HELPERS "${MDT_DEPLOY_UTILS_INSTALLED_CMAKE_MODULES_PATH}/MdtDeployUtilsInstallScriptHelpers.cmake")
-#     set(inInstallHelpersScript "${MDT_DEPLOY_UTILS_INSTALLED_CMAKE_MODULES_PATH}/MdtDeployUtilsInstallScriptHelpers.cmake.in")
   else()
     set(inInstallScript "${MdtDeployUtils_SOURCE_DIR}/cmake/Modules/${ARG_INPUT_SCRIPT_FILE}")
     set(MDT_DEPLOY_UTILS_INSTALL_SCRIPT_HELPERS "${MdtDeployUtils_SOURCE_DIR}/cmake/Modules/MdtDeployUtilsInstallScriptHelpers.cmake")
-#     set(inInstallHelpersScript "${MdtDeployUtils_SOURCE_DIR}/cmake/Modules/MdtDeployUtilsInstallScriptHelpers.cmake.in")
   endif()
 
-  message("inInstallScript: ${inInstallScript}")
-  
+  message(DEBUG "inInstallScript: ${inInstallScript}")
+
   set(intermediateInstallScript "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployApplicationInstallScript-${ARG_TARGET}.cmake.intermediate")
-#   set(outInstallHelpersScript "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployUtilsInstallScriptHelpers-${ARG_TARGET}.cmake")
-#   set(MDT_DEPLOY_UTILS_INSTALL_SCRIPT_HELPERS "${outInstallHelpersScript}")
 
-  message("intermediateInstallScript: ${intermediateInstallScript}")
+  message(DEBUG "intermediateInstallScript: ${intermediateInstallScript}")
 
-  # TODO: should use project version like MdtDeployUtils_XX_VERS
   if(TARGET Mdt0::DeployUtilsExecutable)
     message(DEBUG "mdtdeployutils is installed")
     set(MDT_DEPLOY_UTILS_INSTALL_SCRIPT_MDTDEPLOYUTILS_EXECUTABLE "$<TARGET_FILE:Mdt0::DeployUtilsExecutable>")
@@ -223,10 +198,7 @@ function(mdt_generate_mdtdeployutils_install_script)
     mdt_target_libraries_to_library_env_path(MDT_DEPLOY_UTILS_INSTALL_SCRIPT_MDTDEPLOYUTILS_RUNTIME_ENV TARGET mdtdeployutils ALWAYS_USE_SLASHES)
   endif()
 
-#   set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_DEPLOY_UTILS_ARGUMENTS ${ARG_MDTDEPLOYUTILS_ARGUMENTS})
-
   configure_file("${inInstallScript}" "${intermediateInstallScript}" @ONLY)
-#   configure_file("${MdtDeployUtils_SOURCE_DIR}/cmake/Modules/MdtDeployApplicationInstallScript.cmake.in" "${intermediateInstallScript}" @ONLY)
 
   set(installScript "${CMAKE_CURRENT_BINARY_DIR}/MdtDeployApplicationInstallScript-$<TARGET_FILE_BASE_NAME:${ARG_TARGET}>-$<CONFIG>.cmake")
   file(GENERATE
