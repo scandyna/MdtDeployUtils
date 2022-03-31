@@ -195,15 +195,11 @@ function(mdt_copy_shared_libraries_target_depends_on)
     set(removeRpathOptionArgument)
   endif()
 
-  # TODO Should also build a runtime PATH if mdtdeployutils not installed ?
-  #   Note: why does the test run on Windows actually ?
-  if(TARGET mdtdeployutils)
-    set(deployUtilsExecutable mdtdeployutils)
-  else()
-    set(deployUtilsExecutable Mdt0::DeployUtilsExecutable)
-  endif()
+  # We not use this function in MdtDeployUtils itself,
+  # so we can safely use the installed mdtdeployutils target
+  set(deployUtilsExecutable Mdt0::DeployUtilsExecutable)
 
-  message("deployUtilsExecutable: ${deployUtilsExecutable}")
+  message(DEBUG "deployUtilsExecutable: ${deployUtilsExecutable}")
 
   set(compilerLocationArguments)
   if(MSVC)
@@ -219,6 +215,7 @@ function(mdt_copy_shared_libraries_target_depends_on)
               --overwrite-behavior ${overwriteBehaviorOption}
               ${removeRpathOptionArgument}
               --search-prefix-path-list "${CMAKE_PREFIX_PATH}"
+              --path-list-separator ";"
               ${compilerLocationArguments}
               $<TARGET_FILE:${ARG_TARGET}>
               "${ARG_DESTINATION}"
