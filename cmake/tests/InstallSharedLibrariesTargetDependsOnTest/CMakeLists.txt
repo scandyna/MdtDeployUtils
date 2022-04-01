@@ -56,6 +56,6 @@ mdt_install_shared_libraries_target_depends_on(
   LIBRARY_DESTINATION "testApp2/lib"
 )
 
-enable_testing()
-add_test(NAME RunTestApp1 COMMAND "${CMAKE_INSTALL_PREFIX}/testApp1/bin/testApp1")
-add_test(NAME RunTestApp2 COMMAND "${CMAKE_INSTALL_PREFIX}/testApp2/bin/testApp2")
+# enable_testing()
+# add_test(NAME RunTestApp1 COMMAND "${CMAKE_INSTALL_PREFIX}/testApp1/bin/testApp1")
+# add_test(NAME RunTestApp2 COMMAND "${CMAKE_INSTALL_PREFIX}/testApp2/bin/testApp2")

@@ -3,7 +3,7 @@
 
 # Here we build the libraries that will be used for some (end-to-end-) tests.
 #
-# We must be able to install them in way that is completly independent of the main project.
+# We must be able to install them in a way that is completly independent of the main project.
 # To do this, each library is its own project, for which cmake is called to build them.
 # This also avoid target name clashes,
 # and also avoids to wory about installing test libraries accidentally in the project release.
@@ -33,7 +33,7 @@
 # tests showed that install() can handle it anyway (also with MSVC VS generator),
 # at least for recent CMake, like 3.21.
 #
-# At this point, some scripts like MdtSharedLibrariesScripts.cmake.in
+# At this point, some scripts like MdtDeployUtilsInstallScriptHelpers.cmake
 # have also to handle that case.
 #
 # So, use the DESTDIR mechanism "blindly" for the below tests,
@@ -243,7 +243,12 @@ endif()
 # InstallSharedLibrariesTargetDependsOnTest test
 ##################################################
 
-set(installSharedLibrariesTargetDependsOnTestInstallPrefix "${CMAKE_CURRENT_BINARY_DIR}/installSharedLibrariesTargetDependsOnTest/deployed")
+if(MDT_INSTALL_IS_UNIX_SYSTEM_WIDE)
+  set(installSharedLibrariesTargetDependsOnTestInstallPrefix "${CMAKE_INSTALL_PREFIX}")
+else()
+  set(installSharedLibrariesTargetDependsOnTestInstallPrefix "/opt/installSharedLibrariesTargetDependsOnTest")
+endif()
+
 
 add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Configure
   COMMAND "${CMAKE_COMMAND}"
@@ -273,34 +278,90 @@ set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Build
     DEPENDS "CMake_InstallSharedLibrariesTargetDependsOnTest_Configure"
 )
 
-add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Install
+add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Install_Destdir
   COMMAND "${CMAKE_COMMAND}"
     --install "${CMAKE_CURRENT_BINARY_DIR}/installSharedLibrariesTargetDependsOnTest"
     --config $<CONFIG>
     --verbose
 )
 
-set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Install
+set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Install_Destdir
   PROPERTIES
     DEPENDS "CMake_InstallSharedLibrariesTargetDependsOnTest_Build"
+    ENVIRONMENT "DESTDIR=${CMAKE_CURRENT_BINARY_DIR}"
 )
 
-add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Run
-  COMMAND "${CMAKE_CTEST_COMMAND}"
-    -V
-  WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/installSharedLibrariesTargetDependsOnTest"
+add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Run_TestApp1_Destdir
+  COMMAND "${CMAKE_CURRENT_BINARY_DIR}${installSharedLibrariesTargetDependsOnTestInstallPrefix}/testApp1/bin/testApp1"
 )
 
-set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Run
+set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Run_TestApp1_Destdir
   PROPERTIES
-    DEPENDS "CMake_InstallSharedLibrariesTargetDependsOnTest_Install"
+    DEPENDS "CMake_InstallSharedLibrariesTargetDependsOnTest_Install_Destdir"
 )
+
+add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Run_TestApp2_Destdir
+  COMMAND "${CMAKE_CURRENT_BINARY_DIR}${installSharedLibrariesTargetDependsOnTestInstallPrefix}/testApp2/bin/testApp2"
+)
+
+set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Run_TestApp2_Destdir
+  PROPERTIES
+    DEPENDS "CMake_InstallSharedLibrariesTargetDependsOnTest_Install_Destdir"
+)
+
+if(BUILD_REAL_INSTALL_TESTS)
+
+  add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Install_Real
+    COMMAND "${CMAKE_COMMAND}"
+      --install "${CMAKE_CURRENT_BINARY_DIR}/installSharedLibrariesTargetDependsOnTest"
+      --config $<CONFIG>
+      --verbose
+  )
+
+  set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Install_Real
+    PROPERTIES
+      DEPENDS "CMake_InstallSharedLibrariesTargetDependsOnTest_Build"
+  )
+
+  add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Run_TestApp1_Real
+    COMMAND "${installSharedLibrariesTargetDependsOnTestInstallPrefix}/testApp1/bin/testApp1"
+  )
+
+  set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Run_TestApp1_Real
+    PROPERTIES
+      DEPENDS "CMake_InstallSharedLibrariesTargetDependsOnTest_Install_Real"
+  )
+
+  add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Run_TestApp2_Real
+    COMMAND "${installSharedLibrariesTargetDependsOnTestInstallPrefix}/testApp2/bin/testApp2"
+  )
+
+  set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Run_TestApp2_Real
+    PROPERTIES
+      DEPENDS "CMake_InstallSharedLibrariesTargetDependsOnTest_Install_Real"
+  )
+
+endif()
+
+# add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Run
+#   COMMAND "${CMAKE_CTEST_COMMAND}"
+#     -V
+#   WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/installSharedLibrariesTargetDependsOnTest"
+# )
+#
+# set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Run
+#   PROPERTIES
+#     DEPENDS "CMake_InstallSharedLibrariesTargetDependsOnTest_Install"
+# )
 
 # On UNIX system wide install the RPATH are removed.
 # In that case, running a executable will only work
 # on a real system wide installation
+# This also includes running mdtdeployutils once installed
 if(MDT_INSTALL_IS_UNIX_SYSTEM_WIDE)
-  set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Run PROPERTIES DISABLED YES)
+  set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Install_Destdir PROPERTIES DISABLED YES)
+  set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Run_TestApp1_Destdir PROPERTIES DISABLED YES)
+  set_tests_properties(CMake_InstallSharedLibrariesTargetDependsOnTest_Run_TestApp2_Destdir PROPERTIES DISABLED YES)
 endif()
 
 
@@ -308,7 +369,13 @@ endif()
 # DeployApplicationTest test
 ##################################################
 
-set(deployApplicationTestInstallPrefix "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest/deployed")
+if(MDT_INSTALL_IS_UNIX_SYSTEM_WIDE)
+  set(deployApplicationTestInstallPrefix "${CMAKE_INSTALL_PREFIX}")
+else()
+  set(deployApplicationTestInstallPrefix "/opt/deployApplicationTest")
+endif()
+
+# set(deployApplicationTestInstallPrefix "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest/deployed")
 
 # add_test(NAME CMake_DeployApplicationTest_Build
 #   COMMAND "${CMAKE_CTEST_COMMAND}"
@@ -350,34 +417,89 @@ set_tests_properties(CMake_DeployApplicationTest_Build
     DEPENDS "CMake_DeployApplicationTest_Configure"
 )
 
-add_test(NAME CMake_DeployApplicationTest_Install
+add_test(NAME CMake_DeployApplicationTest_Install_Destdir
   COMMAND "${CMAKE_COMMAND}"
     --install "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest"
     --config $<CONFIG>
     --verbose
 )
 
-set_tests_properties(CMake_DeployApplicationTest_Install
+set_tests_properties(CMake_DeployApplicationTest_Install_Destdir
   PROPERTIES
     DEPENDS "CMake_DeployApplicationTest_Build"
-#     ENVIRONMENT "DESTDIR=${CMAKE_CURRENT_BINARY_DIR}"
+    ENVIRONMENT "DESTDIR=${CMAKE_CURRENT_BINARY_DIR}"
 )
 
-add_test(NAME CMake_DeployApplicationTest_Run
-  COMMAND "${CMAKE_CTEST_COMMAND}"
-    "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest"
-    -V
-  WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest"
+add_test(NAME CMake_DeployApplicationTest_Run_TestApp1_Destdir
+  COMMAND "${CMAKE_CURRENT_BINARY_DIR}${deployApplicationTestInstallPrefix}/testApp1/bin/testApp1"
 )
 
-set_tests_properties(CMake_DeployApplicationTest_Run
+set_tests_properties(CMake_DeployApplicationTest_Run_TestApp1_Destdir
   PROPERTIES
-    DEPENDS "CMake_DeployApplicationTest_Install"
+    DEPENDS "CMake_DeployApplicationTest_Install_Destdir"
 )
+
+add_test(NAME CMake_DeployApplicationTest_Run_TestApp2_Destdir
+  COMMAND "${CMAKE_CURRENT_BINARY_DIR}${deployApplicationTestInstallPrefix}/testApp2/bin/testApp2"
+)
+
+set_tests_properties(CMake_DeployApplicationTest_Run_TestApp2_Destdir
+  PROPERTIES
+    DEPENDS "CMake_DeployApplicationTest_Install_Destdir"
+)
+
+if(BUILD_REAL_INSTALL_TESTS)
+
+  add_test(NAME CMake_DeployApplicationTest_Install_Real
+    COMMAND "${CMAKE_COMMAND}"
+      --install "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest"
+      --config $<CONFIG>
+      --verbose
+  )
+
+  set_tests_properties(CMake_DeployApplicationTest_Install_Real
+    PROPERTIES
+      DEPENDS "CMake_DeployApplicationTest_Build"
+  )
+
+  add_test(NAME CMake_DeployApplicationTest_Run_TestApp1_Real
+    COMMAND "${deployApplicationTestInstallPrefix}/testApp1/bin/testApp1"
+  )
+
+  set_tests_properties(CMake_DeployApplicationTest_Run_TestApp1_Real
+    PROPERTIES
+      DEPENDS "CMake_DeployApplicationTest_Install_Real"
+  )
+
+  add_test(NAME CMake_DeployApplicationTest_Run_TestApp2_Real
+    COMMAND "${deployApplicationTestInstallPrefix}/testApp2/bin/testApp2"
+  )
+
+  set_tests_properties(CMake_DeployApplicationTest_Run_TestApp2_Real
+    PROPERTIES
+      DEPENDS "CMake_DeployApplicationTest_Install_Real"
+  )
+
+endif()
+
+# add_test(NAME CMake_DeployApplicationTest_Run
+#   COMMAND "${CMAKE_CTEST_COMMAND}"
+#     "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest"
+#     -V
+#   WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/deployApplicationTest"
+# )
+#
+# set_tests_properties(CMake_DeployApplicationTest_Run
+#   PROPERTIES
+#     DEPENDS "CMake_DeployApplicationTest_Install"
+# )
 
 # On UNIX system wide install the RPATH are removed.
 # In that case, running a executable will only work
 # on a real system wide installation
+# This also includes running mdtdeployutils once installed
 if(MDT_INSTALL_IS_UNIX_SYSTEM_WIDE)
-  set_tests_properties(CMake_DeployApplicationTest_Run PROPERTIES DISABLED YES)
+  set_tests_properties(CMake_DeployApplicationTest_Install_Destdir PROPERTIES DISABLED YES)
+  set_tests_properties(CMake_DeployApplicationTest_Run_TestApp1_Destdir PROPERTIES DISABLED YES)
+  set_tests_properties(CMake_DeployApplicationTest_Run_TestApp2_Destdir PROPERTIES DISABLED YES)
 endif()

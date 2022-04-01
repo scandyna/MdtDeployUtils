@@ -205,9 +205,9 @@ function(mdt_deployutils_install_executable_package_config_files)
     set(excludeFromAllArgument EXCLUDE_FROM_ALL)
   endif()
 
-  message("install EXPORTS for ${ARG_TARGET}")
-  message("Runtime COMPONENT args: ${runtimeComponentArguments}")
-  message("Dev COMPONENT args: ${developmentComponentArguments}")
+  message(DEBUG "install EXPORTS for ${ARG_TARGET}")
+  message(DEBUG "Runtime COMPONENT args: ${runtimeComponentArguments}")
+  message(DEBUG "Dev COMPONENT args: ${developmentComponentArguments}")
 
   # TODO: see if it is possible to generate a correct export without really install the target
   #       here we install the target, then it will be overwritten by mdtdeployutils
