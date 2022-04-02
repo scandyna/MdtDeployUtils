@@ -77,7 +77,27 @@ void DeployApplicationCommandLineParserDefinition::setup() noexcept
 
   mCommand.addOption( CommonCommandLineParserDefinitionOptions::makeSearchPrefixPathListOption() );
 
+  mCommand.addOption( CommonCommandLineParserDefinitionOptions::makePathListSeparatorOption() );
+
   mCommand.addOption( CommonCommandLineParserDefinitionOptions::makeCompilerLocationOption() );
+
+  const QString runtimeDestinationOptionDescription = tr(
+    "Directory where to put runtime files "
+    "(executables on Linux, executables and dll's on Windows) "
+    "defaults to bin"
+  );
+  ParserDefinitionOption runtimeDestinationOption( QLatin1String("runtime-destination"), runtimeDestinationOptionDescription );
+  runtimeDestinationOption.setValueName( QLatin1String("dir") );
+  mCommand.addOption(runtimeDestinationOption);
+
+  const QString libraryDestinationOptionDescription = tr(
+    "Directory where to put library files "
+    "(shared libraries on Linux) "
+    "defaults to lib"
+  );
+  ParserDefinitionOption libraryDestinationOption( QLatin1String("library-destination"), libraryDestinationOptionDescription );
+  libraryDestinationOption.setValueName( QLatin1String("dir") );
+  mCommand.addOption(libraryDestinationOption);
 
   mCommand.addPositionalArgument( ValueType::File, QLatin1String("executable"), tr("Path to the application executable.") );
 

@@ -89,6 +89,18 @@ class DeployApplicationCommandLineParserDefinition : public QObject
     return mCommand.optionAt(3);
   }
 
+  /*! \brief Get the path list separator option
+   *
+   * \pre setup must have been done before
+   * \sa setup()
+   */
+  const Mdt::CommandLineParser::ParserDefinitionOption & pathListSeparatorOption() const noexcept
+  {
+    assert( mCommand.hasOptions() );
+
+    return mCommand.optionAt(4);
+  }
+
   /*! \brief Get the compiler location option
    *
    * \pre setup must have been done before
@@ -98,7 +110,31 @@ class DeployApplicationCommandLineParserDefinition : public QObject
   {
     assert( mCommand.hasOptions() );
 
-    return mCommand.optionAt(4);
+    return mCommand.optionAt(5);
+  }
+
+  /*! \brief Get the runtime destination option
+   *
+   * \pre setup must have been done before
+   * \sa setup()
+   */
+  const Mdt::CommandLineParser::ParserDefinitionOption & runtimeDestinationOption() const noexcept
+  {
+    assert( mCommand.hasOptions() );
+
+    return mCommand.optionAt(6);
+  }
+
+  /*! \brief Get the library destination option
+   *
+   * \pre setup must have been done before
+   * \sa setup()
+   */
+  const Mdt::CommandLineParser::ParserDefinitionOption & libraryDestinationOption() const noexcept
+  {
+    assert( mCommand.hasOptions() );
+
+    return mCommand.optionAt(7);
   }
 
   /*! \brief Get the internal parser definition command

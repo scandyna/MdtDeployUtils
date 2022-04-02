@@ -33,6 +33,7 @@ add_test(NAME Apps_DeployUtils_Cli_DeployApplication
   COMMAND mdtdeployutils --log-level DEBUG deploy-application
     --shlib-overwrite-behavior overwrite
     --search-prefix-path-list "${CMAKE_PREFIX_PATH}"
+    --path-list-separator ";"
     ${compilerLocationOptionArguments}
     "$<TARGET_FILE:mdtdeployutils>"
     "${deployedExecutableDirectory}"

@@ -69,5 +69,7 @@ void CopySharedLibrariesTargetDependsOnCommandLineParserDefinition::setup() noex
 
   mCommand.addOption( CommonCommandLineParserDefinitionOptions::makeSearchPrefixPathListOption() );
 
+  mCommand.addOption( CommonCommandLineParserDefinitionOptions::makePathListSeparatorOption() );
+
   mCommand.addOption( CommonCommandLineParserDefinitionOptions::makeCompilerLocationOption() );
 }

@@ -195,12 +195,25 @@ TEST_CASE("CopySharedLibrariesTargetDependsOn")
 
   SECTION("Specify search-prefix-path-list")
   {
-    arguments << qStringListFromUtf8Strings({"--search-prefix-path-list","/opt;/tmp","/tmp/lib.so","/tmp"});
-    parser.process(arguments);
+    SECTION("default separator ,")
+    {
+      arguments << qStringListFromUtf8Strings({"--search-prefix-path-list","/opt,/tmp","/tmp/lib.so","/tmp"});
+      parser.process(arguments);
 
-    request = parser.copySharedLibrariesTargetDependsOnRequest();
-    const QStringList expectedPaths = qStringListFromUtf8Strings({"/opt","/tmp"});
-    REQUIRE( request.searchPrefixPathList == expectedPaths );
+      request = parser.copySharedLibrariesTargetDependsOnRequest();
+      const QStringList expectedPaths = qStringListFromUtf8Strings({"/opt","/tmp"});
+      REQUIRE( request.searchPrefixPathList == expectedPaths );
+    }
+
+    SECTION("semicolon separator")
+    {
+      arguments << qStringListFromUtf8Strings({"--search-prefix-path-list","/opt;/tmp","--path-list-separator",";","/tmp/lib.so","/tmp"});
+      parser.process(arguments);
+
+      request = parser.copySharedLibrariesTargetDependsOnRequest();
+      const QStringList expectedPaths = qStringListFromUtf8Strings({"/opt","/tmp"});
+      REQUIRE( request.searchPrefixPathList == expectedPaths );
+    }
   }
 
   SECTION("Positional arguments")
@@ -237,6 +250,8 @@ TEST_CASE("DeployApplication")
     request = parser.deployApplicationRequest();
     REQUIRE( request.shLibOverwriteBehavior == OverwriteBehavior::Fail );
     REQUIRE( !request.removeRpath );
+    REQUIRE( request.runtimeDestination == QLatin1String("bin") );
+    REQUIRE( request.libraryDestination == QLatin1String("lib") );
   }
 
   SECTION("Specify shlib-overwrite-behavior")
@@ -261,12 +276,25 @@ TEST_CASE("DeployApplication")
 
   SECTION("Specify search-prefix-path-list")
   {
-    arguments << qStringListFromUtf8Strings({"--search-prefix-path-list","/opt;/tmp","/build/app","/tmp"});
-    parser.process(arguments);
+    SECTION("default separator ,")
+    {
+      arguments << qStringListFromUtf8Strings({"--search-prefix-path-list","/opt,/tmp","/build/app","/tmp"});
+      parser.process(arguments);
 
-    request = parser.deployApplicationRequest();
-    const QStringList expectedPaths = qStringListFromUtf8Strings({"/opt","/tmp"});
-    REQUIRE( request.searchPrefixPathList == expectedPaths );
+      request = parser.deployApplicationRequest();
+      const QStringList expectedPaths = qStringListFromUtf8Strings({"/opt","/tmp"});
+      REQUIRE( request.searchPrefixPathList == expectedPaths );
+    }
+
+    SECTION("semicolon separator")
+    {
+      arguments << qStringListFromUtf8Strings({"--search-prefix-path-list","/opt;/tmp","--path-list-separator",";","/build/app","/tmp"});
+      parser.process(arguments);
+
+      request = parser.deployApplicationRequest();
+      const QStringList expectedPaths = qStringListFromUtf8Strings({"/opt","/tmp"});
+      REQUIRE( request.searchPrefixPathList == expectedPaths );
+    }
   }
 
   SECTION("Specify compiler location")
@@ -282,6 +310,26 @@ TEST_CASE("DeployApplication")
       REQUIRE( request.compilerLocation.type() == CompilerLocationType::CompilerPath );
       REQUIRE( request.compilerLocation.value() == expectedCompilerPath );
     }
+  }
+
+  SECTION("Specify runtime-destination")
+  {
+    arguments << qStringListFromUtf8Strings({"--runtime-destination","mybin","/build/app","/tmp"});
+    parser.process(arguments);
+
+    request = parser.deployApplicationRequest();
+
+    REQUIRE( request.runtimeDestination == QLatin1String("mybin") );
+  }
+
+  SECTION("Specify library-destination")
+  {
+    arguments << qStringListFromUtf8Strings({"--library-destination","mylibs","/build/app","/tmp"});
+    parser.process(arguments);
+
+    request = parser.deployApplicationRequest();
+
+    REQUIRE( request.libraryDestination == QLatin1String("mylibs") );
   }
 
   SECTION("Positional arguments")

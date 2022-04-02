@@ -45,7 +45,7 @@ ParserDefinitionOption CommonCommandLineParserDefinitionOptions::makeSearchPrefi
 {
   /// \todo fix doc
   const QString description = tr(
-    "Semicolon separated list of path where to find the shared libraries.\n"
+    "<path-list-separator> separated list of path where to find the shared libraries.\n"
     "Each path represents the installation prefix of a library, for example: /opt/Qt5/5.14.2/gcc_64.\n"
     "This is mainly useful on platforms that don't have RPATH support, such as Windows.\n"
     "On platforms that supports RPATH, some shared libraries cannot be found on some cases, "
@@ -54,6 +54,18 @@ ParserDefinitionOption CommonCommandLineParserDefinitionOptions::makeSearchPrefi
   );
   ParserDefinitionOption option( QLatin1String("search-prefix-path-list"), description );
   option.setValueName( QLatin1String("path-list") );
+
+  return option;
+}
+
+Mdt::CommandLineParser::ParserDefinitionOption CommonCommandLineParserDefinitionOptions::makePathListSeparatorOption() noexcept
+{
+  const QString description = tr(
+    "Separator to use when parsing <path-list>\n"
+    "the default separator is the comma ','"
+  );
+  ParserDefinitionOption option( QLatin1String("path-list-separator"), description );
+  option.setValueName( QLatin1String("char") );
 
   return option;
 }

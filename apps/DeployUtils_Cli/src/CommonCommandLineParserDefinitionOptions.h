@@ -40,6 +40,8 @@ class CommonCommandLineParserDefinitionOptions : public QObject
   static
   Mdt::CommandLineParser::ParserDefinitionOption makeSearchPrefixPathListOption() noexcept;
 
+  static
+  Mdt::CommandLineParser::ParserDefinitionOption makePathListSeparatorOption() noexcept;
 };
 
 #endif // #ifndef COMMON_COMMAND_LINE_PARSER_DEFINITION_OPTIONS_H

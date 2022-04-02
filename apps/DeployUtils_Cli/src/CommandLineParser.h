@@ -35,6 +35,7 @@
 #include "Mdt/DeployUtils/DeployApplicationRequest.h"
 #include <QObject>
 #include <QStringList>
+#include <QChar>
 #include <cassert>
 
 /*! \brief Message logger backend
@@ -124,12 +125,30 @@ class CommandLineParser : public QObject
                                const Mdt::CommandLineParser::ParserDefinitionOption & option);
 
   static
+  QChar parsePathListSeparator(const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
+                               const Mdt::CommandLineParser::ParserDefinitionOption & option);
+
+  static
   QStringList parseSearchPrefixPathList(const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
-                                        const Mdt::CommandLineParser::ParserDefinitionOption & option);
+                                        const Mdt::CommandLineParser::ParserDefinitionOption & option, const QChar & separator);
 
   static
   Mdt::DeployUtils::CompilerLocationRequest parseCompilerLocation(const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
                                                                   const Mdt::CommandLineParser::ParserDefinitionOption & option);
+
+  static
+  QString parseSingleValueOption(const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
+                                 const Mdt::CommandLineParser::ParserDefinitionOption & option);
+
+  static
+  void parseRuntimeDestination(QString & destination,
+                               const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
+                               const Mdt::CommandLineParser::ParserDefinitionOption & option);
+
+  static
+  void parseLibraryDestination(QString & destination,
+                               const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
+                               const Mdt::CommandLineParser::ParserDefinitionOption & option);
 
   void processGetSharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
   void processCopySharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);

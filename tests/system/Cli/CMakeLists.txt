@@ -18,6 +18,7 @@ add_test(NAME System_DeployUtils_Cli_Deploy_QtCoreApp
   COMMAND mdtdeployutils --log-level DEBUG deploy-application
     --shlib-overwrite-behavior overwrite
     --search-prefix-path-list "${CMAKE_PREFIX_PATH}"
+    --path-list-separator ";"
     ${compilerLocationOptionArguments}
     "$<TARGET_FILE:qtcoreapp>"
     "${qtCoreAppDeployedExecutableDirectory}"
@@ -44,6 +45,7 @@ add_test(NAME System_DeployUtils_Cli_Deploy_QtWidgetsApp
   COMMAND mdtdeployutils --log-level DEBUG deploy-application
     --shlib-overwrite-behavior overwrite
     --search-prefix-path-list "${CMAKE_PREFIX_PATH}"
+    --path-list-separator ";"
     ${compilerLocationOptionArguments}
     "$<TARGET_FILE:qtwidgetsapp>"
     "${qtWidgetsAppDeployedExecutableDirectory}"

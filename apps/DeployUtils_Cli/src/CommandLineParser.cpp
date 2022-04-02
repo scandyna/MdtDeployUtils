@@ -166,8 +166,31 @@ void CommandLineParser::parseOverwriteBehaviour(OverwriteBehavior & overwriteBeh
   }
 }
 
+QChar CommandLineParser::parsePathListSeparator(const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
+                                                const Mdt::CommandLineParser::ParserDefinitionOption & option)
+{
+  const QStringList values = resultCommand.getValues(option);
+  if( values.isEmpty() ){
+    return QLatin1Char(',');
+  }
+  if( values.count() != 1 ){
+    const QString message = tr("%1 option given more than once")
+                            .arg( option.name() );
+    throw CommandLineParseError(message);
+  }
+
+  const QString separatorString = values.at(0);
+  if( separatorString.size() != 1 ){
+    const QString message = tr("%1 option expects a single char, given %2")
+                            .arg(option.name(), separatorString);
+    throw CommandLineParseError(message);
+  }
+
+  return separatorString.at(0);
+}
+
 QStringList CommandLineParser::parseSearchPrefixPathList(const ParserResultCommand & resultCommand,
-                                                         const ParserDefinitionOption & option)
+                                                         const ParserDefinitionOption & option, const QChar & separator)
 {
   const QStringList searchPrefixPathListValues = resultCommand.getValues(option);
   if( !searchPrefixPathListValues.isEmpty() ){
@@ -176,7 +199,7 @@ QStringList CommandLineParser::parseSearchPrefixPathList(const ParserResultComma
                               .arg( option.name() );
       throw CommandLineParseError(message);
     }
-    return searchPrefixPathListValues.at(0).split( QChar::fromLatin1(';'), QString::SkipEmptyParts );
+    return searchPrefixPathListValues.at(0).split( separator, QString::SkipEmptyParts );
   }
 
   return QStringList();
@@ -227,6 +250,45 @@ CompilerLocationRequest CommandLineParser::parseCompilerLocation(const ParserRes
   return location;
 }
 
+QString CommandLineParser::parseSingleValueOption(const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
+                                                  const Mdt::CommandLineParser::ParserDefinitionOption & option)
+{
+  const QStringList optionValues = resultCommand.getValues(option);
+
+  if( optionValues.isEmpty() ){
+    return QString();
+  }
+  assert( optionValues.count() >= 1 );
+
+  if( optionValues.count() > 1 ){
+    const QString message = tr("%1 option given more that once").arg( option.name() );
+    throw CommandLineParseError(message);
+  }
+  assert( optionValues.count() == 1 );
+
+  return optionValues.at(0);
+}
+
+void CommandLineParser::parseRuntimeDestination(QString & destination,
+                                                const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
+                                                const Mdt::CommandLineParser::ParserDefinitionOption & option)
+{
+  const QString value = parseSingleValueOption(resultCommand, option);
+  if( !value.isEmpty() ){
+    destination = value;
+  }
+}
+
+void CommandLineParser::parseLibraryDestination(QString & destination,
+                                                const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
+                                                const Mdt::CommandLineParser::ParserDefinitionOption & option)
+{
+  const QString value = parseSingleValueOption(resultCommand, option);
+  if( !value.isEmpty() ){
+    destination = value;
+  }
+}
+
 void CommandLineParser::processGetSharedLibrariesTargetDependsOn(const ParserResultCommand & resultCommand)
 {
   if( resultCommand.isHelpOptionSet() ){
@@ -256,8 +318,10 @@ void CommandLineParser::processCopySharedLibrariesTargetDependsOn(const ParserRe
     mCopySharedLibrariesTargetDependsOnRequest.removeRpath = true;
   }
 
+  const QChar pathListSeparator = parsePathListSeparator( resultCommand, definition.pathListSeparatorOption() );
+
   mCopySharedLibrariesTargetDependsOnRequest.searchPrefixPathList
-   = parseSearchPrefixPathList( resultCommand, definition.searchPrefixPathListOption() );
+   = parseSearchPrefixPathList( resultCommand, definition.searchPrefixPathListOption(), pathListSeparator );
 
   mCopySharedLibrariesTargetDependsOnRequest.compilerLocation
    = parseCompilerLocation( resultCommand, definition.compilerLocationOption() );
@@ -291,11 +355,17 @@ void CommandLineParser::processDeployApplicationCommand(const Mdt::CommandLinePa
     mDeployApplicationRequest.removeRpath = true;
   }
 
+  const QChar pathListSeparator = parsePathListSeparator( resultCommand, definition.pathListSeparatorOption() );
+
   mDeployApplicationRequest.searchPrefixPathList
-   = parseSearchPrefixPathList( resultCommand, definition.searchPrefixPathListOption() );
+   = parseSearchPrefixPathList( resultCommand, definition.searchPrefixPathListOption(), pathListSeparator );
 
   mDeployApplicationRequest.compilerLocation
    = parseCompilerLocation( resultCommand, definition.compilerLocationOption() );
+
+  parseRuntimeDestination( mDeployApplicationRequest.runtimeDestination, resultCommand, definition.runtimeDestinationOption() );
+
+  parseLibraryDestination( mDeployApplicationRequest.libraryDestination, resultCommand, definition.libraryDestinationOption() );
 
   if( resultCommand.positionalArgumentCount() != 2 ){
     const QString message = tr(
@@ -307,5 +377,4 @@ void CommandLineParser::processDeployApplicationCommand(const Mdt::CommandLinePa
 
   mDeployApplicationRequest.targetFilePath = resultCommand.positionalArgumentAt(0);
   mDeployApplicationRequest.destinationDirectoryPath = resultCommand.positionalArgumentAt(1);
-
 }
