@@ -18,32 +18,4 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_DEPLOY_APPLICATION_REQUEST_H
-#define MDT_DEPLOY_UTILS_DEPLOY_APPLICATION_REQUEST_H
-
-#include "OverwriteBehavior.h"
-#include "CompilerLocationRequest.h"
-#include "mdt_deployutilscore_export.h"
-#include <QString>
-#include <QLatin1String>
-#include <QStringList>
-
-namespace Mdt{ namespace DeployUtils{
-
-  /*! \brief DTO for DeployApplication
-   */
-  struct MDT_DEPLOYUTILSCORE_EXPORT DeployApplicationRequest
-  {
-    QString targetFilePath;
-    QString destinationDirectoryPath;
-    QStringList searchPrefixPathList;
-    CompilerLocationRequest compilerLocation;
-    OverwriteBehavior shLibOverwriteBehavior = OverwriteBehavior::Fail;
-    bool removeRpath = false;
-    QString runtimeDestination = QLatin1String("bin");
-    QString libraryDestination = QLatin1String("lib");
-  };
-
-}} // namespace Mdt{ namespace DeployUtils{
-
-#endif // #ifndef MDT_DEPLOY_UTILS_DEPLOY_APPLICATION_REQUEST_H
+#include "DeployApplicationError.h"

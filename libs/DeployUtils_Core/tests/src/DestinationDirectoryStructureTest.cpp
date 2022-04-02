@@ -112,6 +112,27 @@ TEST_CASE("qtPluginsToSharedLibrariesRelativePath")
   }
 }
 
+TEST_CASE("executablesToSharedLibrariesRelativePath")
+{
+  DestinationDirectoryStructure structure;
+
+  SECTION("lib , bin")
+  {
+    structure.setExecutablesDirectory( QLatin1String("bin") );
+    structure.setSharedLibrariesDirectory( QLatin1String("lib") );
+
+    REQUIRE( structure.executablesToSharedLibrariesRelativePath() == QLatin1String("../lib") );
+  }
+
+  SECTION("lib , tools/bin")
+  {
+    structure.setExecutablesDirectory( QLatin1String("tools/bin") );
+    structure.setSharedLibrariesDirectory( QLatin1String("lib") );
+
+    REQUIRE( structure.executablesToSharedLibrariesRelativePath() == QLatin1String("../../lib") );
+  }
+}
+
 TEST_CASE("isNull")
 {
   DestinationDirectoryStructure structure;

@@ -116,6 +116,10 @@ void QtPlugins::setRPathToCopiedPlugins(const QStringList & destinationFilePathL
 {
   assert( platform.supportsRPath() );
 
+  if( destinationFilePathList.isEmpty() ){
+    return;
+  }
+
   RPath rpath;
   rpath.appendPath( destination.structure().qtPluginsToSharedLibrariesRelativePath() );
 

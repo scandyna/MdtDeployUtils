@@ -22,11 +22,13 @@
 #define MDT_DEPLOY_UTILS_DEPLOY_APPLICATION_H
 
 #include "DeployApplicationRequest.h"
+#include "DeployApplicationError.h"
 #include "OperatingSystem.h"
 #include "Platform.h"
 #include "DestinationDirectory.h"
 #include "OverwriteBehavior.h"
 #include "SharedLibrariesDeployer.h"
+#include "DestinationDirectoryStructure.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -77,8 +79,21 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \pre request's \a targetFilePath must be specified
      * \pre request's \a destinationDirectoryPath must be specified
+     * \pre request's \a runtimeDestination must be specified
+     * \pre request's \a libraryDestination must be specified
+     * \exception DeployApplicationError
      */
     void execute(const DeployApplicationRequest & request);
+
+    /*! \internal Get the destination directory structure from given runtime and library destination
+     *
+     * \pre request's \a runtimeDestination must be specified
+     * \pre request's \a libraryDestination must be specified
+     * \pre \a os must be defined
+     */
+    static
+    DestinationDirectoryStructure
+    destinationDirectoryStructureFromRuntimeAndLibraryDestination(const DeployApplicationRequest & request, OperatingSystem os) noexcept;
 
    signals:
 
@@ -90,8 +105,9 @@ namespace Mdt{ namespace DeployUtils{
 
     void setupShLibDeployer(const DeployApplicationRequest & request);
     void makeDirectoryStructure(const DestinationDirectory & destination);
-    void installExecutable(const DeployApplicationRequest & request);
-    void setRPathToInstalledExecutable(const QString & executableFilePath, const DeployApplicationRequest & request);
+    void installExecutable(const DeployApplicationRequest & request, const DestinationDirectoryStructure & destinationStructure);
+    void setRPathToInstalledExecutable(const QString & executableFilePath, const DeployApplicationRequest & request,
+                                       const DestinationDirectoryStructure & destinationStructure);
     void copySharedLibrariesTargetDependsOn(const DeployApplicationRequest & request);
     void deployRequiredQtPlugins(const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
 

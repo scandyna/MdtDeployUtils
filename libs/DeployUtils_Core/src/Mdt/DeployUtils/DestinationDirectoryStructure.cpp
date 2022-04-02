@@ -63,20 +63,52 @@ QString DestinationDirectoryStructure::qtPluginsToSharedLibrariesRelativePath() 
   QString relativePath;
 
   /*
-   * plugins/platforms -> ../../
-   * lib -> lib
-   * -> ../../lib
-   *
-   * count of ../ to cd up from plugins:
-   * count of / + 1 + 1
-   * the last +1 is because of the non given sepcific Qt plugins directory
+   * Qt plugins root is given here.
+   * But, the relative path must be from the specific plugins sub-directory (plugins/platforms)
+   * So, add 1 level to the A directory
    */
-  const int level = mQtPluginsRootRelativePath.count( QLatin1Char('/') ) + 2;
+  return directoryAtoBrelativePath(mQtPluginsRootRelativePath, mSharedLibrariesDirectory, 1);
+}
+
+QString DestinationDirectoryStructure::executablesToSharedLibrariesRelativePath() const noexcept
+{
+  assert( !mSharedLibrariesDirectory.isEmpty() );
+  assert( !mExecutablesDirectory.isEmpty() );
+
+  assert( !mSharedLibrariesDirectory.startsWith( QLatin1Char('/') ) );
+  assert( !mExecutablesDirectory.startsWith( QLatin1Char('/') ) );
+  assert( !mSharedLibrariesDirectory.endsWith( QLatin1Char('/') ) );
+  assert( !mExecutablesDirectory.endsWith( QLatin1Char('/') ) );
+
+  return directoryAtoBrelativePath(mExecutablesDirectory, mSharedLibrariesDirectory);
+}
+
+QString DestinationDirectoryStructure::directoryAtoBrelativePath(const QString & a, const QString & b, int aAdditionalLevel) noexcept
+{
+  assert( !a.isEmpty() );
+  assert( !b.isEmpty() );
+  assert( aAdditionalLevel >= 0 );
+
+  assert( !a.startsWith( QLatin1Char('/') ) );
+  assert( !b.startsWith( QLatin1Char('/') ) );
+  assert( !a.endsWith( QLatin1Char('/') ) );
+  assert( !b.endsWith( QLatin1Char('/') ) );
+
+  QString relativePath;
+
+  /*
+   * a: bin -> b: lib == ../
+   * a: plugins/platforms -> b: lib == ../../lib
+   *
+   * count of ../ to cd up from a:
+   * count of / + 1 + aAdditionalLevel
+   */
+  const int level = a.count( QLatin1Char('/') ) + 1 + aAdditionalLevel;
   for(int i=0; i < level; ++i){
     relativePath += QLatin1String("../");
   }
 
-  relativePath += mSharedLibrariesDirectory;
+  relativePath += b;
 
   return relativePath;
 }

@@ -21,6 +21,39 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "Mdt/DeployUtils/DeployApplication.h"
+#include "Mdt/DeployUtils/OperatingSystem.h"
 #include <QLatin1String>
 
 using namespace Mdt::DeployUtils;
+
+TEST_CASE("destinationDirectoryStructureFromRuntimeAndLibraryDestination")
+{
+  DeployApplicationRequest request;
+  OperatingSystem os;
+  DestinationDirectoryStructure structure;
+
+  request.runtimeDestination = QLatin1String("mybin");
+  request.libraryDestination = QLatin1String("mylibs");
+
+  SECTION("Linux")
+  {
+    os = OperatingSystem::Linux;
+
+    structure = DeployApplication::destinationDirectoryStructureFromRuntimeAndLibraryDestination(request, os);
+
+    REQUIRE( structure.executablesDirectory() == QLatin1String("mybin") );
+    REQUIRE( structure.sharedLibrariesDirectory() == QLatin1String("mylibs") );
+    REQUIRE( !structure.qtPluginsRootDirectory().isEmpty() );
+  }
+
+  SECTION("Windows")
+  {
+    os = OperatingSystem::Windows;
+
+    structure = DeployApplication::destinationDirectoryStructureFromRuntimeAndLibraryDestination(request, os);
+
+    REQUIRE( structure.executablesDirectory() == QLatin1String("mybin") );
+    REQUIRE( structure.sharedLibrariesDirectory() == QLatin1String("mybin") );
+    REQUIRE( !structure.qtPluginsRootDirectory().isEmpty() );
+  }
+}

@@ -1,5 +1,5 @@
 ##############################################################
-#  Copyright Philippe Steinmann 2020 - 2020.
+#  Copyright Philippe Steinmann 2020 - 2022.
 #  Distributed under the Boost Software License, Version 1.0.
 #  (See accompanying file LICENSE.txt or copy at
 #  https://www.boost.org/LICENSE_1_0.txt)
@@ -134,6 +134,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/QtPlugins.cpp
   Mdt/DeployUtils/QtModulePlugins.cpp
   Mdt/DeployUtils/DeployApplicationRequest.cpp
+  Mdt/DeployUtils/DeployApplicationError.cpp
   Mdt/DeployUtils/DeployApplication.cpp
 )
 add_library(Mdt::DeployUtilsCore ALIAS Mdt_DeployUtilsCore)

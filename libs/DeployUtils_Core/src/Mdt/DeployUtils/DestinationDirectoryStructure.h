@@ -161,6 +161,26 @@ namespace Mdt{ namespace DeployUtils{
      */
     QString qtPluginsToSharedLibrariesRelativePath() const noexcept;
 
+    /*! \brief Get the relative path from executable directory to shared libraries directory
+     *
+     * This can be used to set Rpath to executables
+     *
+     * As example:
+     * \code
+     * destinationRoot
+     *     |-bin
+     *     |-lib
+     * \endcode
+     * for this structure,
+     * ../lib will be returned
+     *
+     * \pre the shared libraries directory must be set
+     * \pre the executables directory must be set
+     * \sa setSharedLibrariesDirectory()
+     * \sa setExecutablesDirectory()
+     */
+    QString executablesToSharedLibrariesRelativePath() const noexcept;
+
     /*! \brief Get the (default) directory for executables for given OS
      *
      * \pre \a os must be defined
@@ -190,6 +210,9 @@ namespace Mdt{ namespace DeployUtils{
     DestinationDirectoryStructure fromOperatingSystem(OperatingSystem os) noexcept;
 
    private:
+
+    static
+    QString directoryAtoBrelativePath(const QString & a, const QString & b, int aAdditionalLevel = 0) noexcept;
 
     QString mExecutablesDirectory;
     QString mSharedLibrariesDirectory;

@@ -43,6 +43,8 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
 {
   assert( !request.targetFilePath.trimmed().isEmpty() );
   assert( !request.destinationDirectoryPath.trimmed().isEmpty() );
+  assert( !request.runtimeDestination.trimmed().isEmpty() );
+  assert( !request.libraryDestination.trimmed().isEmpty() );
 
   emit statusMessage(
     tr("Deploy application for executable %1")
@@ -54,7 +56,28 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
   mPlatform = reader.getFilePlatform();
   reader.close();
 
-  const auto destination = DestinationDirectory::fromPathAndOs( request.destinationDirectoryPath, mPlatform.operatingSystem() );
+  if( mPlatform.operatingSystem() == OperatingSystem::Unknown ){
+    const QString message = tr("'%1' targets a operating system that is not supported")
+                            .arg(request.targetFilePath);
+    throw FindDependencyError(message);
+  }
+
+  if( QDir::isAbsolutePath(request.runtimeDestination) ){
+    const QString message = tr("runtime destination must not be a absolute path, given: ")
+                            .arg(request.runtimeDestination);
+    throw DeployApplicationError(message);
+  }
+
+  if( QDir::isAbsolutePath(request.libraryDestination) ){
+    const QString message = tr("library destination must not be a absolute path, given: ")
+                            .arg(request.libraryDestination);
+    throw DeployApplicationError(message);
+  }
+
+  const auto destination = DestinationDirectory::fromPathAndStructure(
+    request.destinationDirectoryPath,
+    destinationDirectoryStructureFromRuntimeAndLibraryDestination( request, mPlatform.operatingSystem() )
+  );
 
   emit statusMessage(
     tr("Destination directory is %1")
@@ -68,9 +91,36 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
 
   setupShLibDeployer(request);
   makeDirectoryStructure(destination);
-  installExecutable(request);
+  installExecutable( request, destination.structure() );
   copySharedLibrariesTargetDependsOn(request);
   deployRequiredQtPlugins(destination, request.shLibOverwriteBehavior);
+}
+
+DestinationDirectoryStructure
+DeployApplication::destinationDirectoryStructureFromRuntimeAndLibraryDestination(const DeployApplicationRequest & request, OperatingSystem os) noexcept
+{
+  assert( !request.runtimeDestination.trimmed().isEmpty() );
+  assert( !request.libraryDestination.trimmed().isEmpty() );
+  assert( os != OperatingSystem::Unknown );
+
+  DestinationDirectoryStructure structure;
+
+  structure.setExecutablesDirectory(request.runtimeDestination);
+
+  switch(os){
+    case OperatingSystem::Linux:
+      structure.setSharedLibrariesDirectory(request.libraryDestination);
+      break;
+    case OperatingSystem::Windows:
+      structure.setSharedLibrariesDirectory(request.runtimeDestination);
+      break;
+    case OperatingSystem::Unknown:
+      break;
+  }
+
+  structure.setQtPluginsRootDirectory( DestinationDirectoryStructure::qtPluginsRootDirectoryFromOs(os) );
+
+  return structure;
 }
 
 void DeployApplication::setupShLibDeployer(const DeployApplicationRequest & request)
@@ -117,10 +167,11 @@ void DeployApplication::makeDirectoryStructure(const DestinationDirectory & dest
   }
 }
 
-void DeployApplication::installExecutable(const DeployApplicationRequest & request)
+void DeployApplication::installExecutable(const DeployApplicationRequest & request, const DestinationDirectoryStructure & destinationStructure)
 {
   assert( !mBinDirDestinationPath.isEmpty() );
   assert( !request.targetFilePath.isEmpty() );
+  assert( !destinationStructure.isNull() );
 
   FileCopier fileCopier;
   fileCopier.setOverwriteBehavior(OverwriteBehavior::Overwrite);
@@ -130,17 +181,19 @@ void DeployApplication::installExecutable(const DeployApplicationRequest & reque
   assert( fileCopier.copiedFilesDestinationPathList().size() == 1 );
 
   if( mPlatform.supportsRPath() ){
-    setRPathToInstalledExecutable(fileCopier.copiedFilesDestinationPathList().at(0), request);
+    setRPathToInstalledExecutable(fileCopier.copiedFilesDestinationPathList().at(0), request, destinationStructure);
   }
 }
 
-void DeployApplication::setRPathToInstalledExecutable(const QString & executableFilePath, const DeployApplicationRequest & request)
+void DeployApplication::setRPathToInstalledExecutable(const QString & executableFilePath, const DeployApplicationRequest & request,
+                                                      const DestinationDirectoryStructure & destinationStructure)
 {
   assert( mPlatform.supportsRPath() );
+  assert( !destinationStructure.isNull() );
 
   RPath rpath;
   if(!request.removeRpath){
-    rpath.appendPath( QLatin1String("../lib") );
+    rpath.appendPath( destinationStructure.executablesToSharedLibrariesRelativePath() );
   }
 
   ExecutableFileWriter writer;
