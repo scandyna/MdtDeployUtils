@@ -19,6 +19,7 @@
  **
  ****************************************************************************/
 #include "Mdt/DeployUtils/SharedLibraryFinderLinux.h"
+#include "TestFileUtils.h"
 #include "BinaryDependenciesTestCommon.h"
 #include "TestIsExistingSharedLibrary.h"
 #include <vector>

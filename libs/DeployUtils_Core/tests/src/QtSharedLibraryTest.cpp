@@ -28,6 +28,7 @@
 #include <QString>
 #include <QStringList>
 #include <QTemporaryDir>
+#include <QtGlobal>
 #include <QDir>
 
 using namespace Mdt::DeployUtils;
@@ -59,7 +60,7 @@ TEST_CASE("getQtSharedLibraries_OnlyReturnsQtLibraries")
     qtLibraries = QtSharedLibrary::getQtSharedLibraries(allLibraries);
 
     REQUIRE( qtLibraries.size() == 1 );
-    REQUIRE( qtLibraries[0].absoluteFilePath() == QLatin1String("/opt/libQt5Core.so") );
+    REQUIRE( qtLibraries[0].absoluteFilePath() == makeAbsolutePath("/opt/libQt5Core.so") );
   }
 
   SECTION("/opt/libm.so,/opt/libQt5Core.so")
@@ -69,7 +70,7 @@ TEST_CASE("getQtSharedLibraries_OnlyReturnsQtLibraries")
     qtLibraries = QtSharedLibrary::getQtSharedLibraries(allLibraries);
 
     REQUIRE( qtLibraries.size() == 1 );
-    REQUIRE( qtLibraries[0].absoluteFilePath() == QLatin1String("/opt/libQt5Core.so") );
+    REQUIRE( qtLibraries[0].absoluteFilePath() == makeAbsolutePath("/opt/libQt5Core.so") );
   }
 }
 
@@ -78,12 +79,14 @@ TEST_CASE("sharedLibraryIsInQtDistribution")
   QTemporaryDir dir;
   QFileInfo library;
 
+#ifndef Q_OS_WIN
   SECTION("somewher in /usr/lib")
   {
     library.setFile( QLatin1String("/usr/lib/x86_64-linux-gnu") );
 
     REQUIRE( QtSharedLibrary::sharedLibraryIsInQtDistribution(library) );
   }
+#endif // #ifndef Q_OS_WIN
 
   SECTION("Qt distribution shlib in lib")
   {

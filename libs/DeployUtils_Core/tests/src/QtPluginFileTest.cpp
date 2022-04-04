@@ -184,8 +184,8 @@ TEST_CASE("getQtPluginsFilePathList")
     filePathList = getQtPluginsFilePathList(qtPlugins);
 
     REQUIRE( filePathList.size() == 3 );
-    REQUIRE( filePathList.contains( QLatin1String("/tmp/plugins/imageformats/libqjpeg.so") ) );
-    REQUIRE( filePathList.contains( QLatin1String("/tmp/plugins/imageformats/libqsvg.so") ) );
-    REQUIRE( filePathList.contains( QLatin1String("/tmp/plugins/platforms/libqxcb.so") ) );
+    REQUIRE( filePathList.contains( makeAbsolutePath("/tmp/plugins/imageformats/libqjpeg.so") ) );
+    REQUIRE( filePathList.contains( makeAbsolutePath("/tmp/plugins/imageformats/libqsvg.so") ) );
+    REQUIRE( filePathList.contains( makeAbsolutePath("/tmp/plugins/platforms/libqxcb.so") ) );
   }
 }

@@ -19,6 +19,7 @@
  **
  ****************************************************************************/
 #include "Mdt/DeployUtils/SharedLibraryFinderWindows.h"
+#include "TestFileUtils.h"
 #include "TestIsExistingSharedLibrary.h"
 #include "BinaryDependenciesTestCommon.h"
 

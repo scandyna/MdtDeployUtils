@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "TestFileUtils.h"
 #include "Mdt/DeployUtils/QtSharedLibraryFile.h"
 #include <QLatin1String>
 #include <QString>
@@ -82,7 +83,7 @@ TEST_CASE("fromQFileInfo")
 
     qtLibrary = QtSharedLibraryFile::fromQFileInfo(library);
 
-    REQUIRE( qtLibrary.absoluteFilePath() == QLatin1String("/opt/libQt5Core.so") );
+    REQUIRE( qtLibrary.absoluteFilePath() == makeAbsolutePath("/opt/libQt5Core.so") );
     REQUIRE( qtLibrary.fileName() == QLatin1String("libQt5Core.so") );
   }
 }
