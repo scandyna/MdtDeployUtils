@@ -18,43 +18,43 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_IMPL_ABSTRACT_IS_EXISTING_SHARED_LIBRARY_H
-#define MDT_DEPLOY_UTILS_IMPL_ABSTRACT_IS_EXISTING_SHARED_LIBRARY_H
+#ifndef MDT_DEPLOY_UTILS_ABSTRACT_IS_EXISTING_VALID_SHARED_LIBRARY_H
+#define MDT_DEPLOY_UTILS_ABSTRACT_IS_EXISTING_VALID_SHARED_LIBRARY_H
 
 #include "mdt_deployutilscore_export.h"
 #include <QFileInfo>
 #include <cassert>
 
-namespace Mdt{ namespace DeployUtils{ namespace Impl{
+namespace Mdt{ namespace DeployUtils{
 
   /*! \internal
    *
    * We have to export symbols here, despite it is header only.
    * See https://stackoverflow.com/questions/57294792/c-ubsan-produces-false-positives-with-derived-objects
    */
-  class MDT_DEPLOYUTILSCORE_EXPORT AbstractIsExistingSharedLibrary
+  class MDT_DEPLOYUTILSCORE_EXPORT AbstractIsExistingValidSharedLibrary
   {
    public:
 
-    virtual ~AbstractIsExistingSharedLibrary() noexcept = default;
+    virtual ~AbstractIsExistingValidSharedLibrary() noexcept = default;
 
-    /*! \brief Check if \a libraryFile is a existing shared library
+    /*! \brief Check if \a libraryFile is a existing and valid shared library
      *
      * \pre \a libraryFile must be a absolute file path
      */
-    bool isExistingSharedLibrary(const QFileInfo & libraryFile) const
+    bool isExistingValidSharedLibrary(const QFileInfo & libraryFile) const
     {
       assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
       assert( libraryFile.isAbsolute() );
 
-      return doIsExistingSharedLibrary(libraryFile);
+      return doIsExistingValidSharedLibrary(libraryFile);
     }
 
    private:
 
-    virtual bool doIsExistingSharedLibrary(const QFileInfo & libraryFile) const = 0;
+    virtual bool doIsExistingValidSharedLibrary(const QFileInfo & libraryFile) const = 0;
   };
 
-}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{
+}} // namespace Mdt{ namespace DeployUtils{
 
-#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_ABSTRACT_IS_EXISTING_SHARED_LIBRARY_H
+#endif // #ifndef MDT_DEPLOY_UTILS_ABSTRACT_IS_EXISTING_VALID_SHARED_LIBRARY_H

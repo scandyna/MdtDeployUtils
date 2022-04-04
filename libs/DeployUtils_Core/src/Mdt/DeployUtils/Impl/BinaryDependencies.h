@@ -111,6 +111,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     /*! \internal
      *
      * \todo remove IsExistingSharedLibraryOp once possible
+     * is this todo still actual ??
      */
     template<typename Reader>
     void findDependencies(BinaryDependenciesFile & currentFile, BinaryDependenciesFileList & allDependencies,

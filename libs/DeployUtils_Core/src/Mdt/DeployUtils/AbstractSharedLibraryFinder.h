@@ -34,6 +34,8 @@ namespace Mdt{ namespace DeployUtils{
     class AbstractIsExistingSharedLibrary;
   } // namespace Impl{
 
+  class AbstractIsExistingValidSharedLibrary;
+
   /*! \brief Interface to implement a shared library finder
    *
    * A concrete implementation should implement the required methods.
@@ -48,9 +50,9 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Constructor
      */
-    explicit AbstractSharedLibraryFinder(const Impl::AbstractIsExistingSharedLibrary & isExistingShLibOp, QObject *parent = nullptr)
+    explicit AbstractSharedLibraryFinder(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp, QObject *parent = nullptr)
      : QObject(parent),
-       mIsExistingShLibOp(isExistingShLibOp)
+       mIsExistingValidShLibOp(isExistingValidShLibOp)
     {
     }
 
@@ -79,13 +81,13 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \pre \a libraryFile must be a absolute file path
      */
-    bool isExistingSharedLibrary(const QFileInfo & libraryFile) const;
+    bool isExistingValidSharedLibrary(const QFileInfo & libraryFile) const;
 
    private:
 
     virtual BinaryDependenciesFileList doFindLibrariesAbsolutePath(BinaryDependenciesFile & file) const = 0;
 
-    const Impl::AbstractIsExistingSharedLibrary & mIsExistingShLibOp;
+    const AbstractIsExistingValidSharedLibrary & mIsExistingValidShLibOp;
     PathList mSearchPathList;
   };
 

@@ -50,7 +50,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Constructor
      */
-    explicit SharedLibraryFinderWindows(const Impl::AbstractIsExistingSharedLibrary & isExistingShLibOp, QObject *parent = nullptr);
+    explicit SharedLibraryFinderWindows(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp, QObject *parent = nullptr);
 
     /*! \brief Build a list of path to directories where to find shared libraries
      *
@@ -113,7 +113,7 @@ namespace Mdt{ namespace DeployUtils{
       assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
       assert( libraryFile.isAbsolute() );
 
-      if( isExistingSharedLibrary(libraryFile) ){
+      if( isExistingValidSharedLibrary(libraryFile) ){
         return BinaryDependenciesFile::fromQFileInfo(libraryFile);
       }
 
@@ -121,12 +121,12 @@ namespace Mdt{ namespace DeployUtils{
       const QDir directory = libraryFile.absoluteDir();
 
       alternativeFile.setFile( directory, libraryFile.fileName().toLower() );
-      if( isExistingSharedLibrary(alternativeFile) ){
+      if( isExistingValidSharedLibrary(alternativeFile) ){
         return BinaryDependenciesFile::fromQFileInfo(alternativeFile);
       }
 
       alternativeFile.setFile( directory, libraryFile.fileName().toUpper() );
-      if( isExistingSharedLibrary(alternativeFile) ){
+      if( isExistingValidSharedLibrary(alternativeFile) ){
         return BinaryDependenciesFile::fromQFileInfo(alternativeFile);
       }
 

@@ -18,4 +18,7 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "IsExistingSharedLibrary.h"
+#include "AbstractIsExistingValidSharedLibrary.h"
+
+namespace Mdt{ namespace DeployUtils{
+}} // namespace Mdt{ namespace DeployUtils{

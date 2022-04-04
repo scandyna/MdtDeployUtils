@@ -18,17 +18,40 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include "AbstractSharedLibraryFinder.h"
+#ifndef MDT_DEPLOY_UTILS_IS_EXISTING_VALID_SHARED_LIBRARY_H
+#define MDT_DEPLOY_UTILS_IS_EXISTING_VALID_SHARED_LIBRARY_H
+
 #include "AbstractIsExistingValidSharedLibrary.h"
+#include "ExecutableFileReader.h"
+#include "Platform.h"
+#include "mdt_deployutilscore_export.h"
 
 namespace Mdt{ namespace DeployUtils{
 
-bool AbstractSharedLibraryFinder::isExistingValidSharedLibrary(const QFileInfo & libraryFile) const
-{
-  assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
-  assert( libraryFile.isAbsolute() );
+  /*! \internal
+   */
+  class MDT_DEPLOYUTILSCORE_EXPORT IsExistingValidSharedLibrary : public AbstractIsExistingValidSharedLibrary
+  {
+   public:
 
-  return mIsExistingValidShLibOp.isExistingValidSharedLibrary(libraryFile);
-}
+    /*! \brief Constructor
+     */
+    explicit IsExistingValidSharedLibrary(ExecutableFileReader & reader, const Platform & platform) noexcept
+     : mReader(reader),
+       mPlatform(platform)
+    {
+      assert( !mReader.isOpen() );
+    }
+
+   private:
+
+    bool doIsExistingValidSharedLibrary(const QFileInfo & libraryFile) const override;
+    bool isSharedLibraryForExpectedPlatform(const QFileInfo & libraryFile) const;
+
+    ExecutableFileReader & mReader;
+    const Platform mPlatform;
+  };
 
 }} // namespace Mdt{ namespace DeployUtils{
+
+#endif // #ifndef MDT_DEPLOY_UTILS_IS_EXISTING_VALID_SHARED_LIBRARY_H

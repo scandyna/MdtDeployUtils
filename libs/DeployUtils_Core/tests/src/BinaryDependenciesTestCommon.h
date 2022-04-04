@@ -68,8 +68,8 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
 {
  public:
 
-  explicit SharedLibraryFinderBDTest(const Impl::AbstractIsExistingSharedLibrary & isExistingShLibOp, QObject *parent = nullptr)
-   : AbstractSharedLibraryFinder(isExistingShLibOp, parent)
+  explicit SharedLibraryFinderBDTest(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp, QObject *parent = nullptr)
+   : AbstractSharedLibraryFinder(isExistingValidShLibOp, parent)
   {
   }
 
@@ -88,7 +88,7 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
 
     for(const QString & directory : mSearchPathList){
       QFileInfo libraryFile(directory, libraryName);
-      if( isExistingSharedLibrary(libraryFile) ){
+      if( isExistingValidSharedLibrary(libraryFile) ){
         return BinaryDependenciesFile::fromQFileInfo(libraryFile);
       }
     }

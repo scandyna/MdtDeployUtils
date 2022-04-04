@@ -106,9 +106,8 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/MsvcVersion.cpp
   Mdt/DeployUtils/MsvcFinder.cpp
   Mdt/DeployUtils/CompilerFinder.cpp
-#   Mdt/DeployUtils/BinaryDependenciesImplementationInterface.cpp
-  Mdt/DeployUtils/Impl/AbstractIsExistingSharedLibrary.cpp
-  Mdt/DeployUtils/Impl/IsExistingSharedLibrary.cpp
+  Mdt/DeployUtils/AbstractIsExistingValidSharedLibrary.cpp
+  Mdt/DeployUtils/IsExistingValidSharedLibrary.cpp
   Mdt/DeployUtils/AbstractSharedLibraryFinder.cpp
   Mdt/DeployUtils/SharedLibraryFinderLinux.cpp
   Mdt/DeployUtils/SharedLibraryFinderWindows.cpp

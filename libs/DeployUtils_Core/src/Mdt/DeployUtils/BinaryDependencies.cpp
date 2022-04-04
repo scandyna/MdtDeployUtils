@@ -25,7 +25,7 @@
 #include "SharedLibraryFinderWindows.h"
 #include "LibraryName.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
-#include "Mdt/DeployUtils/Impl/IsExistingSharedLibrary.h"
+#include "IsExistingValidSharedLibrary.h"
 #include "Mdt/DeployUtils/Platform.h"
 #include "ExecutableFileReader.h"
 #include <QDir>
@@ -81,18 +81,18 @@ QStringList BinaryDependencies::findDependencies(const QFileInfoList & binaryFil
     throw FindDependencyError(message);
   }
 
-  Impl::IsExistingSharedLibrary isExistingShLibOp(reader, platform);
+  IsExistingValidSharedLibrary isExistingValidShLibOp(reader, platform);
   std::shared_ptr<AbstractSharedLibraryFinder> shLibFinder;
 
   if( platform.operatingSystem() == OperatingSystem::Linux ){
 
-    shLibFinder = std::make_shared<SharedLibraryFinderLinux>(isExistingShLibOp);
+    shLibFinder = std::make_shared<SharedLibraryFinderLinux>(isExistingValidShLibOp);
     SharedLibraryFinderLinux *shLibFinderLinux = static_cast<SharedLibraryFinderLinux*>( shLibFinder.get() );
     shLibFinderLinux->buildSearchPathList( searchFirstPathPrefixList, platform.processorISA() );
 
   }else if( platform.operatingSystem() == OperatingSystem::Windows ){
 
-    shLibFinder = std::make_shared<SharedLibraryFinderWindows>(isExistingShLibOp);
+    shLibFinder = std::make_shared<SharedLibraryFinderWindows>(isExistingValidShLibOp);
     SharedLibraryFinderWindows *shLibFinderWindows = static_cast<SharedLibraryFinderWindows*>( shLibFinder.get() );
     shLibFinderWindows->buildSearchPathList(firstBinaryFilePath, searchFirstPathPrefixList, platform.processorISA(), mCompilerFinder);
 

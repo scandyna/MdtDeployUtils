@@ -47,7 +47,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Constructor
      */
-    explicit SharedLibraryFinderLinux(const Impl::AbstractIsExistingSharedLibrary & isExistingShLibOp, QObject *parent = nullptr) noexcept;
+    explicit SharedLibraryFinderLinux(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp, QObject *parent = nullptr) noexcept;
 
     /*! \brief Build a list of path to directories where to find shared libraries
      *
@@ -66,7 +66,7 @@ namespace Mdt{ namespace DeployUtils{
       for( const auto & rpathEntry : originFile.rPath() ){
         const QString directory = makeDirectoryFromRpathEntry(originFile, rpathEntry);
         const QFileInfo libraryFile(directory, libraryName);
-        if( isExistingSharedLibrary(libraryFile) ){
+        if( isExistingValidSharedLibrary(libraryFile) ){
           return BinaryDependenciesFile::fromQFileInfo(libraryFile);
         }
       }
@@ -117,7 +117,7 @@ namespace Mdt{ namespace DeployUtils{
 
       for( const QString & directory : searchPathList() ){
         QFileInfo libraryFile(directory, libraryName);
-        if( isExistingSharedLibrary(libraryFile) ){
+        if( isExistingValidSharedLibrary(libraryFile) ){
           return BinaryDependenciesFile::fromQFileInfo(libraryFile);
         }
       }

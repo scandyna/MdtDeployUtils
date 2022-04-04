@@ -21,7 +21,7 @@
 #ifndef TEST_IS_EXISTING_SHARED_LIBRARY_H
 #define TEST_IS_EXISTING_SHARED_LIBRARY_H
 
-#include "Mdt/DeployUtils/Impl/AbstractIsExistingSharedLibrary.h"
+#include "Mdt/DeployUtils/AbstractIsExistingValidSharedLibrary.h"
 #include <QString>
 #include <QStringList>
 #include <QFileInfo>
@@ -29,7 +29,7 @@
 #include <string>
 #include <cassert>
 
-class TestIsExistingSharedLibrary : public Mdt::DeployUtils::Impl::AbstractIsExistingSharedLibrary
+class TestIsExistingSharedLibrary : public Mdt::DeployUtils::AbstractIsExistingValidSharedLibrary
 {
  public:
 
@@ -44,7 +44,7 @@ class TestIsExistingSharedLibrary : public Mdt::DeployUtils::Impl::AbstractIsExi
 
  private:
 
-  bool doIsExistingSharedLibrary(const QFileInfo & libraryFile) const override
+  bool doIsExistingValidSharedLibrary(const QFileInfo & libraryFile) const override
   {
     return mExistingSharedLibraries.contains( libraryFile.absoluteFilePath() );
   }

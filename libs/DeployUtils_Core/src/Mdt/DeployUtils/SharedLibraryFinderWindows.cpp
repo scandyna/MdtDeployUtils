@@ -28,8 +28,8 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-SharedLibraryFinderWindows::SharedLibraryFinderWindows(const Impl::AbstractIsExistingSharedLibrary & isExistingShLibOp, QObject *parent)
- : AbstractSharedLibraryFinder(isExistingShLibOp, parent)
+SharedLibraryFinderWindows::SharedLibraryFinderWindows(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp, QObject *parent)
+ : AbstractSharedLibraryFinder(isExistingValidShLibOp, parent)
 {
 }
 
