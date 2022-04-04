@@ -67,6 +67,7 @@ class MdtDeployUtilsConan(ConanFile):
     cmake = CMake(self)
     cmake.definitions["FROM_CONAN_PROJECT_VERSION"] = self.version
     cmake.definitions["WARNING_AS_ERROR"] = "ON"
+    cmake.definitions["CMAKE_MESSAGE_LOG_LEVEL"] = "DEBUG"
     # TODO: should be conditional (not for Debug build). What about multi-config ?
     cmake.definitions["BUILD_USE_IPO_LTO_IF_AVAILABLE"] = "ON"
 
