@@ -9,7 +9,7 @@ class MdtDeployUtilsTest(ConanFile):
   def configure_cmake(self):
     cmake = CMake(self)
 
-    #cmake.definitions["SOME_DEF"] = "SOME_VALUE"
+    cmake.definitions["CMAKE_MESSAGE_LOG_LEVEL"] = "DEBUG"
 
     return cmake
 
@@ -17,6 +17,7 @@ class MdtDeployUtilsTest(ConanFile):
       cmake = self.configure_cmake()
       cmake.configure()
       cmake.build()
+      cmake.install()
 
   def test(self):
       cmake = self.configure_cmake()
