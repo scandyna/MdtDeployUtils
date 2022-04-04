@@ -137,7 +137,7 @@ stages:
     #- conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
     - export QT_DEBUG_PLUGINS=1
     - ctest --output-on-failure . -R System_DeployUtils_Cli_Run_QtCoreApp
-    - ctest --output-on-failure . -R System_DeployUtils_Cli_Run_QtWidgetsApp
+    - ctest --output-on-failure . -R System_DeployUtils_Cli_Run_QtWidgetsApp -V
     - ctest --output-on-failure . -R System_DeployUtils_CMake_Run_QtCoreApp
     - ctest --output-on-failure . -R System_DeployUtils_CMake_Run_QtWidgetsApp
   artifacts:
