@@ -19,6 +19,10 @@
  **
  ****************************************************************************/
 #include "QtSharedLibrary.h"
+#include <QLatin1String>
+#include <QString>
+#include <QDir>
+#include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -34,6 +38,33 @@ QtSharedLibraryFileList QtSharedLibrary::getQtSharedLibraries(const QStringList 
   }
 
   return qtLibraries;
+}
+
+bool QtSharedLibrary::sharedLibraryIsInQtDistribution(const QFileInfo & sharedLibrary) noexcept
+{
+  assert( !sharedLibrary.filePath().isEmpty() );
+  assert( sharedLibrary.isAbsolute() );
+
+  if( sharedLibrary.absoluteFilePath().startsWith( QLatin1String("/usr/lib") ) ){
+    return true;
+  }
+
+  QDir directory = sharedLibrary.dir();
+  const QString directoryName = directory.dirName();
+
+  if( ( directoryName != QLatin1String("lib") ) && ( directoryName != QLatin1String("bin") ) ){
+    return false;
+  }
+
+  if( !directory.cdUp() ){
+    return false;
+  }
+
+  if( !directory.exists( QLatin1String("plugins") ) ){
+    return false;
+  }
+
+  return true;
 }
 
 }} // namespace Mdt{ namespace DeployUtils{
