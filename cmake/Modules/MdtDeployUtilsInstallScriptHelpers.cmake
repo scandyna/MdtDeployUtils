@@ -24,8 +24,8 @@ unset(destDir)
 function(execute_mdtdeployutils)
 
   set(options)
-  set(oneValueArgs MDTDEPLOYUTILS_EXECUTABLE RUNTIME_ENV)
-  set(multiValueArgs ARGUMENTS)
+  set(oneValueArgs MDTDEPLOYUTILS_EXECUTABLE)
+  set(multiValueArgs RUNTIME_ENV ARGUMENTS)
   cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   if(NOT ARG_MDTDEPLOYUTILS_EXECUTABLE)
@@ -43,11 +43,12 @@ function(execute_mdtdeployutils)
   message(DEBUG "deployUtilsExecutable: ${deployUtilsExecutable}")
 
   if(ARG_RUNTIME_ENV)
-    set(deployUtilsRuntimeEnv "${ARG_RUNTIME_ENV}")
     if(WIN32)
       # ; have to be escaped, otherwise the environment will not be set properly
       # See: https://cmake.org/pipermail/cmake/2009-May/029425.html
-      string(REPLACE ";" "\\;" deployUtilsRuntimeEnv "${deployUtilsRuntimeEnv}")
+      list(JOIN ARG_RUNTIME_ENV "\\;" deployUtilsRuntimeEnv)
+    else()
+      list(JOIN ARG_RUNTIME_ENV ":" deployUtilsRuntimeEnv)
     endif()
     message(DEBUG "deployUtilsRuntimeEnv: ${deployUtilsRuntimeEnv}")
   endif()
