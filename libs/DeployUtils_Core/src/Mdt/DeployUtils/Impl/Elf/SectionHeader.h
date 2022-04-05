@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -82,7 +82,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace Elf{
     std::string name;
     uint32_t nameIndex;
     uint32_t type = 0;
-    uint64_t flags;
+    uint64_t flags = 0;
     uint64_t addr;
     uint64_t offset;
     uint64_t size;
