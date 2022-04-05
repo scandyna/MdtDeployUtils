@@ -1,7 +1,7 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
 
-include(@MDT_DEPLOY_UTILS_INSTALL_SCRIPT_HELPERS@)
+include("@MDT_DEPLOY_UTILS_INSTALL_SCRIPT_HELPERS@")
 
 set(CMAKE_MESSAGE_LOG_LEVEL @CMAKE_MESSAGE_LOG_LEVEL@)
 # set(CMAKE_MESSAGE_LOG_LEVEL VERBOSE)
