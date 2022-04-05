@@ -60,4 +60,5 @@ add_test(NAME System_DeployUtils_Cli_Run_QtWidgetsApp
 set_tests_properties(System_DeployUtils_Cli_Run_QtWidgetsApp
   PROPERTIES
     DEPENDS "System_DeployUtils_Cli_Deploy_QtWidgetsApp"
+    ENVIRONMENT QT_DEBUG_PLUGINS=1
 )
