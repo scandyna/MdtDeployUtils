@@ -60,7 +60,7 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Get a list of Qt plugins directories required for a given Qt module
      *
      * \note this function returns a list defined in a map,
-     * and can also returns directories that are not present.
+     * and can also return directories that are not present.
      *
      * \sa getExistingPluginsDirectoriesForModule()
      * \sa https://doc.qt.io/qt-6/plugins-howto.html
