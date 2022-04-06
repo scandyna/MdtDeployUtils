@@ -320,8 +320,6 @@ deploy_linux_libs_gcc7_x86_64_relwithdebinfo:
 # Windows
 ###############################
 
-# TODO: update windows images, take from docker-images-windows
-
 .build_windows:
   stage: build
   extends:
@@ -395,7 +393,7 @@ deploy_linux_libs_gcc7_x86_64_relwithdebinfo:
 
 
 build_windows_gcc7_x86_64_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_mingw73:latest
   variables:
     CONAN_PROFILE: windows_gcc7_x86_64
     BUILD_TYPE: Debug
@@ -405,7 +403,7 @@ build_windows_gcc7_x86_64_debug:
   extends: .build_windows
 
 test_windows_gcc7_x86_64_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_mingw73:latest
   variables:
     CONAN_PROFILE: windows_gcc7_x86_64
     BUILD_TYPE: Debug
@@ -416,7 +414,7 @@ test_windows_gcc7_x86_64_debug:
 
 
 #build_windows_gcc7_x86_32_debug:
-  #image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
+  #image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win32_mingw73:latest
   #variables:
     #CONAN_PROFILE: windows_gcc7_x86
     #BUILD_TYPE: Debug
@@ -426,7 +424,7 @@ test_windows_gcc7_x86_64_debug:
   #extends: .build_windows
 
 #test_windows_gcc7_x86_32_debug:
-  #image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
+  #image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win32_mingw73:latest
   #variables:
     #CONAN_PROFILE: windows_gcc7_x86
     #BUILD_TYPE: Debug
@@ -436,7 +434,7 @@ test_windows_gcc7_x86_64_debug:
 
 
 build_windows_msvc16_x86_64_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
   variables:
     CONAN_PROFILE: windows_msvc16_x86_64
     BUILD_TYPE: Debug
@@ -447,7 +445,7 @@ build_windows_msvc16_x86_64_debug:
   extends: .build_windows
 
 test_windows_msvc16_x86_64_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
   variables:
     CONAN_PROFILE: windows_msvc16_x86_64
     BUILD_TYPE: Debug
@@ -461,7 +459,7 @@ test_windows_msvc16_x86_64_debug:
 # See: https://gitlab.com/scandyna/mdtdeployutils/-/pipelines/436234061
 
 build_windows_msvc16_x86_64_release:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
   variables:
     CONAN_PROFILE: windows_msvc16_x86_64
     BUILD_TYPE: Release
@@ -472,7 +470,7 @@ build_windows_msvc16_x86_64_release:
   extends: .build_windows
 
 test_windows_msvc16_x86_64_release:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
   variables:
     CONAN_PROFILE: windows_msvc16_x86_64
     BUILD_TYPE: Release
@@ -484,7 +482,7 @@ test_windows_msvc16_x86_64_release:
 
 build_StandaloneInstallTest_Windows_x86_64:
   stage: build
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_mingw73:latest
   extends:
     - .windows_runner
   before_script:
@@ -525,7 +523,7 @@ StandaloneInstallTest_Windows_x86_64:
 
 
 conan_deployutils_windows_gcc7_x86_64_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_mingw73:latest
   variables:
     CONAN_PROFILE: windows_gcc7_x86_64
     BUILD_TYPE: Debug
@@ -535,7 +533,7 @@ conan_deployutils_windows_gcc7_x86_64_debug:
   extends: .conan_create_deployutils_windows
 
 conan_deployutils_windows_msvc16_x86_64_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
   variables:
     CONAN_PROFILE: windows_msvc16_x86_64
     BUILD_TYPE: Debug
@@ -545,7 +543,7 @@ conan_deployutils_windows_msvc16_x86_64_debug:
 
 
 conan_deployutils_core_windows_gcc7_x86_64_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_mingw73:latest
   variables:
     CONAN_PROFILE: windows_gcc7_x86_64
     BUILD_TYPE: Debug
@@ -555,7 +553,7 @@ conan_deployutils_core_windows_gcc7_x86_64_debug:
   extends: .conan_create_deployutils_core_windows
 
 conan_deployutils_core_windows_msvc16_x86_64_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
   variables:
     CONAN_PROFILE: windows_msvc16_x86_64
     BUILD_TYPE: Debug
@@ -566,7 +564,7 @@ conan_deployutils_core_windows_msvc16_x86_64_debug:
 
 # TODO: remove once MdtCommandLineParser is standelone
 conan_CommandLineParser_windows_gcc7_x86_64_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_mingw73:latest
   variables:
     CONAN_PROFILE: windows_gcc7_x86_64
     BUILD_TYPE: Debug
@@ -577,7 +575,7 @@ conan_CommandLineParser_windows_gcc7_x86_64_debug:
 
 # TODO: remove once MdtCommandLineParser is standelone
 conan_CommandLineParser_windows_msvc16_x86_64_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
   variables:
     CONAN_PROFILE: windows_msvc16_x86_64
     BUILD_TYPE: Debug
@@ -587,7 +585,7 @@ conan_CommandLineParser_windows_msvc16_x86_64_debug:
 
 
 deploy_windows_apps:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_mingw73:latest
   extends:
     - .deploy_apps
     - .windows_runner
@@ -599,7 +597,7 @@ deploy_windows_apps:
     - $env:PATH += ";$QT_PREFIX_PATH;$BOOST_PREFIX_PATH"
 
 deploy_windows_libs_gcc7_x86_64_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_mingw73:latest
   variables:
     CONAN_PROFILE: windows_gcc7_x86_64
     BUILD_TYPE: Debug
@@ -608,7 +606,7 @@ deploy_windows_libs_gcc7_x86_64_debug:
   extends: .deploy_windows_libs
 
 deploy_windows_libs_gcc7_x86_64_release:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_mingw73:latest
   variables:
     CONAN_PROFILE: windows_gcc7_x86_64
     BUILD_TYPE: Release
@@ -617,7 +615,7 @@ deploy_windows_libs_gcc7_x86_64_release:
   extends: .deploy_windows_libs
 
 deploy_windows_libs_gcc7_x86_64_relwithdebinfo:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_mingw73:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_mingw73:latest
   variables:
     CONAN_PROFILE: windows_gcc7_x86_64
     BUILD_TYPE: RelWithDebInfo
@@ -627,7 +625,7 @@ deploy_windows_libs_gcc7_x86_64_relwithdebinfo:
 
 
 #deploy_windows_gcc7_x86_32_debug:
-  #image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
+  #image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win32_mingw73:latest
   #variables:
     #CONAN_PROFILE: windows_gcc7_x86
     #BUILD_TYPE: Debug
@@ -636,7 +634,7 @@ deploy_windows_libs_gcc7_x86_64_relwithdebinfo:
   #extends: .deploy_windows_conan
 
 #deploy_windows_gcc7_x86_32_release:
-  #image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
+  #image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win32_mingw73:latest
   #variables:
     #CONAN_PROFILE: windows_gcc7_x86
     #BUILD_TYPE: Release
@@ -645,7 +643,7 @@ deploy_windows_libs_gcc7_x86_64_relwithdebinfo:
   #extends: .deploy_windows_conan
 
 #deploy_windows_gcc7_x86_32_relwithdebinfo:
-  #image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win32_mingw73:latest
+  #image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win32_mingw73:latest
   #variables:
     #CONAN_PROFILE: windows_gcc7_x86
     #BUILD_TYPE: RelWithDebInfo
@@ -655,7 +653,7 @@ deploy_windows_libs_gcc7_x86_64_relwithdebinfo:
 
 
 deploy_windows_libs_msvc_x86_64_debug:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
   variables:
     CONAN_PROFILE: windows_msvc16_x86_64
     BUILD_TYPE: Debug
@@ -664,7 +662,7 @@ deploy_windows_libs_msvc_x86_64_debug:
   extends: .deploy_windows_libs
 
 deploy_windows_libs_msvc_x86_64_release:
-  image: registry.gitlab.com/scandyna/docker-images/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-qt-5.14.2-win64_msvc2017_64:latest
   variables:
     CONAN_PROFILE: windows_msvc16_x86_64
     BUILD_TYPE: Release
