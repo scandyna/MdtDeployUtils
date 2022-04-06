@@ -64,8 +64,14 @@ const QStringList libraryExcludelistWindows = {
   QLatin1String("wsock32.DLL"),
   QLatin1String("ucrtbase.dll"),
   QLatin1String("ucrtbased.dll"),
-  // Some dll's I don't find very interesting informations
+  /*
+   * Some dll's I don't find very interesting informations
+   * telling if it is to redistribute or not
+   */
   QLatin1String("policymanager.dll"),
+  QLatin1String("WININET.dll"),
+  QLatin1String("bcp47mrm.dll"),
+  QLatin1String("KERNELBASE.dll"),
   /*
    * Known dll's from a Windows 10 x86-64 machine
    * From registry HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\KnownDLLs
