@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2021 Philippe Steinmann.
+ ** Copyright (C) 2015-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -29,7 +29,6 @@
  * A good starting point can be found on Wikipedia:
  * https://en.wikipedia.org/wiki/Microsoft_Windows_library_files
  *
- * \todo see reg query "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\KnownDLLs"
  * \todo Debug variants ?
  */
 static
@@ -64,7 +63,36 @@ const QStringList libraryExcludelistWindows = {
   QLatin1String("shfolder.DLL"),
   QLatin1String("wsock32.DLL"),
   QLatin1String("ucrtbase.dll"),
-  QLatin1String("ucrtbased.dll")
+  QLatin1String("ucrtbased.dll"),
+  // Some dll's I don't find very interesting informations
+  QLatin1String("policymanager.dll"),
+  /*
+   * Known dll's from a Windows 10 x86-64 machine
+   * From registry HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\KnownDLLs
+   */
+  QLatin1String("wow64cpu.dll"),
+  QLatin1String("wowarmhw.dll"),
+  QLatin1String("xtajit.dll"),
+  QLatin1String("clbcatq.dll"),
+  QLatin1String("combase.dll"),
+  QLatin1String("COMDLG32.dll"),
+  QLatin1String("coml2.dll"),
+  QLatin1String("difxapi.dll"),
+  QLatin1String("gdiplus.dll"),
+  QLatin1String("IMAGEHLP.dll"),
+  QLatin1String("IMM32.dll"),
+  QLatin1String("MSCTF.dll"),
+  QLatin1String("NORMALIZ.dll"),
+  QLatin1String("NSI.dll"),
+  QLatin1String("PSAPI.dll"),
+  QLatin1String("rpcrt4.dll"),
+  QLatin1String("sechost.dll"),
+  QLatin1String("Setupapi.dll"),
+  QLatin1String("SHCORE.dll"),
+  QLatin1String("SHLWAPI.dll"),
+  QLatin1String("WLDAP32.dll"),
+  QLatin1String("wow64.dll"),
+  QLatin1String("wow64win.dll")
 };
 
 #endif // #ifndef MDT_DEPLOY_UTILS_IMPL_LIBRARY_EXCLUDE_LIST_WINDOWS_H
