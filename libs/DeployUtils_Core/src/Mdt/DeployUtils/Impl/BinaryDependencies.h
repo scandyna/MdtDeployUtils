@@ -109,9 +109,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     }
 
     /*! \internal
-     *
-     * \todo remove IsExistingSharedLibraryOp once possible
-     * is this todo still actual ??
      */
     template<typename Reader>
     void findDependencies(BinaryDependenciesFile & currentFile, BinaryDependenciesFileList & allDependencies,
@@ -143,6 +140,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
       reader.close();
 
       BinaryDependenciesFileList dependencies = mShLibFinder->findLibrariesAbsolutePath(currentFile);
+
+      emitSolvedDirectDependenciesMessage(currentFile, dependencies);
 
       setDirectDependenciesSolved(currentFile);
       removeDuplicates(allDependencies);
@@ -209,6 +208,23 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
       for( const QString & dependency : currentFile.dependenciesFileNames() ){
         const QString msg = tr(" %1").arg(dependency);
         emit verboseMessage(msg);
+      }
+    }
+
+    void emitSolvedDirectDependenciesMessage(const BinaryDependenciesFile & currentFile, const BinaryDependenciesFileList & dependencies) const noexcept
+    {
+      if( dependencies.empty() ){
+        return;
+      }
+      emit debugMessage(
+        tr("solved direct dependencies for %1:")
+        .arg( currentFile.fileName() )
+      );
+      for(const auto & dependency : dependencies){
+        emit debugMessage(
+          tr(" %1")
+          .arg( dependency.absoluteFilePath() )
+        );
       }
     }
 
