@@ -127,6 +127,7 @@ namespace Mdt{ namespace DeployUtils{
      * \pre \a path must be relative
      * \sa https://doc.qt.io/qt-6/deployment-plugins.html
      * \sa https://doc.qt.io/qt-6/qt-conf.html
+     * \sa setQtConfPathEntries()
      */
     void setQtPluginsRootDirectory(const QString & path) noexcept;
 
@@ -180,6 +181,21 @@ namespace Mdt{ namespace DeployUtils{
      * \sa setExecutablesDirectory()
      */
     QString executablesToSharedLibrariesRelativePath() const noexcept;
+
+    /*! \brief Get the relative path from executable directory to the root of this structure
+     *
+     * Example:
+     * \code
+     * destinationRoot
+     *     |-bin
+     * \endcode
+     * for this structure,
+     * .. will be returned
+     *
+     * \pre the executables directory must be set
+     * \sa setExecutablesDirectory()
+     */
+    QString executablesToRootRelativePath() const noexcept;
 
     /*! \brief Get the (default) directory for executables for given OS
      *

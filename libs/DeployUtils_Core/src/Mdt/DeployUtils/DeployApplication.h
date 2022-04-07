@@ -110,6 +110,7 @@ namespace Mdt{ namespace DeployUtils{
                                        const DestinationDirectoryStructure & destinationStructure);
     void copySharedLibrariesTargetDependsOn(const DeployApplicationRequest & request);
     void deployRequiredQtPlugins(const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
+    void writeQtConfFile(const DestinationDirectory & destination);
 
     static
     QString osName(OperatingSystem os) noexcept;

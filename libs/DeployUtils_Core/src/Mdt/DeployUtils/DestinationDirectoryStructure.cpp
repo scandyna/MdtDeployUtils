@@ -83,18 +83,22 @@ QString DestinationDirectoryStructure::executablesToSharedLibrariesRelativePath(
   return directoryAtoBrelativePath(mExecutablesDirectory, mSharedLibrariesDirectory);
 }
 
+QString DestinationDirectoryStructure::executablesToRootRelativePath() const noexcept
+{
+  assert( !mExecutablesDirectory.isEmpty() );
+
+  return directoryAtoBrelativePath( mExecutablesDirectory, QString() );
+}
+
 QString DestinationDirectoryStructure::directoryAtoBrelativePath(const QString & a, const QString & b, int aAdditionalLevel) noexcept
 {
   assert( !a.isEmpty() );
-  assert( !b.isEmpty() );
   assert( aAdditionalLevel >= 0 );
 
   assert( !a.startsWith( QLatin1Char('/') ) );
   assert( !b.startsWith( QLatin1Char('/') ) );
   assert( !a.endsWith( QLatin1Char('/') ) );
   assert( !b.endsWith( QLatin1Char('/') ) );
-
-  QString relativePath;
 
   /*
    * a: bin -> b: lib == ../
@@ -104,11 +108,14 @@ QString DestinationDirectoryStructure::directoryAtoBrelativePath(const QString &
    * count of / + 1 + aAdditionalLevel
    */
   const int level = a.count( QLatin1Char('/') ) + 1 + aAdditionalLevel;
-  for(int i=0; i < level; ++i){
-    relativePath += QLatin1String("../");
+  QString relativePath = QLatin1String("..");
+  for(int i=1; i < level; ++i){
+    relativePath += QLatin1String("/..");
   }
 
-  relativePath += b;
+  if( !b.isEmpty() ){
+    relativePath += QLatin1Char('/') + b;
+  }
 
   return relativePath;
 }

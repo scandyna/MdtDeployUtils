@@ -133,6 +133,25 @@ TEST_CASE("executablesToSharedLibrariesRelativePath")
   }
 }
 
+TEST_CASE("executablesToRootRelativePath")
+{
+  DestinationDirectoryStructure structure;
+
+  SECTION("bin")
+  {
+    structure.setExecutablesDirectory( QLatin1String("bin") );
+
+    REQUIRE( structure.executablesToRootRelativePath() == QLatin1String("..") );
+  }
+
+  SECTION("tools/bin")
+  {
+    structure.setExecutablesDirectory( QLatin1String("tools/bin") );
+
+    REQUIRE( structure.executablesToRootRelativePath() == QLatin1String("../..") );
+  }
+}
+
 TEST_CASE("isNull")
 {
   DestinationDirectoryStructure structure;

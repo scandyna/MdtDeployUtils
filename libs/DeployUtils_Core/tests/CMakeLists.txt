@@ -969,6 +969,22 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME QtConfTest
+  TARGET qtConfTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtConfTest.cpp
+)
+
+mdt_add_test(
+  NAME DestinationDirectoryQtConfTest
+  TARGET destinationDirectoryQtConfTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/DestinationDirectoryQtConfTest.cpp
+)
+
+mdt_add_test(
   NAME DeployApplicationTest
   TARGET deployApplicationTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

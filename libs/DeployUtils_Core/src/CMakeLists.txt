@@ -132,6 +132,10 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/QtPluginFile.cpp
   Mdt/DeployUtils/QtPlugins.cpp
   Mdt/DeployUtils/QtModulePlugins.cpp
+  Mdt/DeployUtils/QtConf.cpp
+  Mdt/DeployUtils/WriteQtConfError.cpp
+  Mdt/DeployUtils/QtConfWriter.cpp
+  Mdt/DeployUtils/DestinationDirectoryQtConf.cpp
   Mdt/DeployUtils/DeployApplicationRequest.cpp
   Mdt/DeployUtils/DeployApplicationError.cpp
   Mdt/DeployUtils/DeployApplication.cpp

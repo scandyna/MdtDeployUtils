@@ -30,6 +30,9 @@
 #include "QtSharedLibraryFile.h"
 #include "QtModulePlugins.h"
 #include "QtPlugins.h"
+#include "QtConf.h"
+#include "QtConfWriter.h"
+#include "DestinationDirectoryQtConf.h"
 #include <QLatin1String>
 #include <QLatin1Char>
 #include <QStringBuilder>
@@ -94,6 +97,7 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
   installExecutable( request, destination.structure() );
   copySharedLibrariesTargetDependsOn(request);
   deployRequiredQtPlugins(destination, request.shLibOverwriteBehavior);
+  writeQtConfFile(destination);
 }
 
 DestinationDirectoryStructure
@@ -243,6 +247,23 @@ void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & des
   connect(&qtPlugins, &QtPlugins::debugMessage, this, &DeployApplication::debugMessage);
 
   qtPlugins.deployQtPlugins(plugins, destination, overwriteBehavior);
+}
+
+void DeployApplication::writeQtConfFile(const DestinationDirectory & destination)
+{
+  assert( !destination.structure().isNull() );
+
+  emit statusMessage(
+    tr("writing qt.conf")
+  );
+
+  QtConf conf;
+  setQtConfPathEntries( conf, destination.structure() );
+
+  QtConfWriter writer;
+  connect(&writer, &QtConfWriter::verboseMessage, this, &DeployApplication::verboseMessage);
+
+  writer.writeConfToDirectory( conf, destination.executablesDirectoryPath() );
 }
 
 QString DeployApplication::osName(OperatingSystem os) noexcept
