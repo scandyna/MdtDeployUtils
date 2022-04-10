@@ -332,6 +332,24 @@ TEST_CASE("DeployApplication")
     REQUIRE( request.libraryDestination == QLatin1String("mylibs") );
   }
 
+  SECTION("Specify qt-plugins-set")
+  {
+    arguments << qStringListFromUtf8Strings({"--qt-plugins-set","imageformats:jpeg,svg|platforms:xcb,vnc,eglfs,windows,direct2d","/build/app","/tmp"});
+    parser.process(arguments);
+
+    request = parser.deployApplicationRequest();
+
+    REQUIRE( request.qtPluginsSet.contains( QLatin1String("imageformats"), QLatin1String("jpeg") ) );
+    REQUIRE( request.qtPluginsSet.contains( QLatin1String("imageformats"), QLatin1String("svg") ) );
+    REQUIRE( !request.qtPluginsSet.contains( QLatin1String("imageformats"), QLatin1String("xcb") ) );
+    REQUIRE( request.qtPluginsSet.contains( QLatin1String("platforms"), QLatin1String("xcb") ) );
+    REQUIRE( request.qtPluginsSet.contains( QLatin1String("platforms"), QLatin1String("vnc") ) );
+    REQUIRE( request.qtPluginsSet.contains( QLatin1String("platforms"), QLatin1String("eglfs") ) );
+    REQUIRE( request.qtPluginsSet.contains( QLatin1String("platforms"), QLatin1String("windows") ) );
+    REQUIRE( request.qtPluginsSet.contains( QLatin1String("platforms"), QLatin1String("direct2d") ) );
+    REQUIRE( !request.qtPluginsSet.contains( QLatin1String("platforms"), QLatin1String("minimal") ) );
+  }
+
   SECTION("Positional arguments")
   {
     arguments << qStringListFromUtf8Strings({"/build/app","/tmp"});
@@ -342,5 +360,4 @@ TEST_CASE("DeployApplication")
     REQUIRE( request.targetFilePath == QLatin1String("/build/app") );
     REQUIRE( request.destinationDirectoryPath == QLatin1String("/tmp") );
   }
-
 }

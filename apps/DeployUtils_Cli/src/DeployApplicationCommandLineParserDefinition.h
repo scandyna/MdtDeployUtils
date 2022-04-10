@@ -137,6 +137,18 @@ class DeployApplicationCommandLineParserDefinition : public QObject
     return mCommand.optionAt(7);
   }
 
+  /*! \brief Get the Qt plugins set option
+   *
+   * \pre setup must have been done before
+   * \sa setup()
+   */
+  const Mdt::CommandLineParser::ParserDefinitionOption & qtPluginsSetOption() const noexcept
+  {
+    assert( mCommand.hasOptions() );
+
+    return mCommand.optionAt(8);
+  }
+
   /*! \brief Get the internal parser definition command
    */
   const Mdt::CommandLineParser::ParserDefinitionCommand & command() const noexcept

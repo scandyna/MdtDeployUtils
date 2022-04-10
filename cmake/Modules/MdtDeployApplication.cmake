@@ -19,6 +19,7 @@
 #     TARGET <target>
 #     RUNTIME_DESTINATION <dir>
 #     LIBRARY_DESTINATION <dir>
+#     [QT_PLUGINS_SET <set>]
 #     [EXPORT_NAME <export-name>]
 #     [EXPORT_NAMESPACE <export-namespace>]
 #     [NO_PACKAGE_CONFIG_FILE]
@@ -48,6 +49,19 @@
 # the required Qt plugins will also be installed in a appropriate subdirectory.
 # The additional shared libraries those Qt plugins depends on
 # will also be installed as described above.
+#
+# The required Qt plugins is choosen depending on Qt shared libraries present in the dependencies.
+# For example, if the shared library for the Qt GUI module is present (for example libQt5Gui.so),
+# all plugins from imageformats, platforms, etc will be deployed.
+# To limit the plugins to deploy, it is possible to define a set:
+#
+# .. code-block:: cmake
+#
+#   QT_PLUGINS_SET "imageformats:jpeg,svg|platforms:xcb,vnc,eglfs,windows,direct2d"
+#
+# In above example, only jpeg and svg imageformats plugins will be deployed.
+# For platform plugins, we expressed plugins for Linux and Windows.
+# On Linux, only xcb, vnc and eglfs will be deployed. On Windows, only windows and direct2d plugins will be deployed.
 #
 # To generate CMake exports, use ``EXPORT_NAME`` and ``EXPORT_NAMESPACE``.
 # If specified, a file, named ``${EXPORT_NAMESPACE}${EXPORT_NAME}.cmake``, will be generated.
@@ -119,7 +133,7 @@ include(MdtGenerateMdtdeployutilsInstallScript)
 function(mdt_deploy_application)
 
   set(options NO_PACKAGE_CONFIG_FILE EXCLUDE_FROM_ALL)
-  set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION EXPORT_NAME EXPORT_NAMESPACE EXPORT_DIRECTORY INSTALL_IS_UNIX_SYSTEM_WIDE RUNTIME_COMPONENT DEVELOPMENT_COMPONENT)
+  set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION QT_PLUGINS_SET EXPORT_NAME EXPORT_NAMESPACE EXPORT_DIRECTORY INSTALL_IS_UNIX_SYSTEM_WIDE RUNTIME_COMPONENT DEVELOPMENT_COMPONENT)
   set(multiValueArgs)
   cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -191,6 +205,7 @@ function(mdt_deploy_application)
   set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_INSTALL_IS_UNIX_SYSTEM_WIDE ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE})
   set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_RUNTIME_DESTINATION ${ARG_RUNTIME_DESTINATION})
   set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_LIBRARY_DESTINATION ${ARG_LIBRARY_DESTINATION})
+  set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_QT_PLUGINS_SET ${ARG_QT_PLUGINS_SET})
 
   mdt_generate_mdtdeployutils_install_script(
     TARGET ${ARG_TARGET}

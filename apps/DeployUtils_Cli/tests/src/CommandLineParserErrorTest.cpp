@@ -115,6 +115,27 @@ TEST_CASE("DeployApplication")
   QStringList arguments = qStringListFromUtf8Strings({"mdtdeployutils","deploy-application"});
   const QStringList positionalArguments = qStringListFromUtf8Strings({"/build/app","/tmp"});
 
+  SECTION("qt-plugins-set - imageformats:jpeg:svg")
+  {
+    arguments << qStringListFromUtf8Strings({"--qt-plugins-set","imageformats:jpeg:svg","/build/app","/tmp"});
+
+    REQUIRE_THROWS_AS( parser.process(arguments), CommandLineParseError );
+  }
+
+  SECTION("qt-plugins-set - imageformats: (no plugin name given)")
+  {
+    arguments << qStringListFromUtf8Strings({"--qt-plugins-set","imageformats:","/build/app","/tmp"});
+
+    REQUIRE_THROWS_AS( parser.process(arguments), CommandLineParseError );
+  }
+
+  SECTION("qt-plugins-set - :svg (no directory name given)")
+  {
+    arguments << qStringListFromUtf8Strings({"--qt-plugins-set",":svg","/build/app","/tmp"});
+
+    REQUIRE_THROWS_AS( parser.process(arguments), CommandLineParseError );
+  }
+
   SECTION("1 positional argument missing")
   {
     arguments << QLatin1String("/build/app");

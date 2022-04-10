@@ -35,7 +35,8 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-QtPluginFileList QtModulePlugins::getQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries) const noexcept
+QtPluginFileList QtModulePlugins::getQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries,
+                                                                   const QtPluginsSet & pluginsSet) const noexcept
 {
   QtPluginFileList plugins;
 
@@ -55,7 +56,7 @@ QtPluginFileList QtModulePlugins::getQtPluginsQtLibrariesDependsOn(const QtShare
     .arg(qtPluginsRoot)
   );
 
-  plugins = getPluginsForModules(qtModules, qtPluginsRoot);
+  plugins = getPluginsForModules(qtModules, qtPluginsRoot, pluginsSet);
 
   return plugins;
 }
@@ -160,11 +161,17 @@ QStringList QtModulePlugins::getExistingPluginsDirectoriesForModules(const QtMod
   return directories;
 }
 
-QtPluginFileList QtModulePlugins::getPluginsForModules(const QtModuleList & modules, const QFileInfo & qtPluginsRoot) const noexcept
+QtPluginFileList QtModulePlugins::getPluginsForModules(const QtModuleList & modules, const QFileInfo & qtPluginsRoot,
+                                                       const QtPluginsSet & pluginsSet) const noexcept
 {
   assert( pathIsAbsoluteAndCouldBePluginsRoot(qtPluginsRoot) );
 
   QtPluginFileList plugins;
+
+//   emit debugMessage(
+//     tr("Qt plugins set: %1")
+//     .arg( pluginsSet.toDebugString() )
+//   );
 
   const QStringList pluginsDirectories = getExistingPluginsDirectoriesForModules(modules, qtPluginsRoot);
   for(const QString & pluginsDirectory : pluginsDirectories){
@@ -176,7 +183,15 @@ QtPluginFileList QtModulePlugins::getPluginsForModules(const QtModuleList & modu
     const auto files = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
     for(const auto & file : files){
       if( QtPluginFile::fileCouldBePlugin(file) ){
-        plugins.emplace_back( QtPluginFile::fromQFileInfo(file) );
+        const auto qtPluginFile = QtPluginFile::fromQFileInfo(file);
+        if( pluginsSet.shouldDeployPlugin(qtPluginFile) ){
+          plugins.emplace_back(qtPluginFile);
+        }else{
+          emit debugMessage(
+            tr("%1 will not be deployed (a Qt plugins set have been provided)")
+            .arg( qtPluginFile.fileInfo().fileName() )
+          );
+        }
       }
     }
   }

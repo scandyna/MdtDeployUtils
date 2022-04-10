@@ -19,12 +19,17 @@
  **
  ****************************************************************************/
 #include <Mdt/ItemModel.h>
+#include <QApplication>
+#include <QTimer>
 
 using namespace Mdt;
 
-int main()
+int main(int argc, char **argv)
 {
+  QApplication app(argc, argv);
+  QTimer::singleShot(500, &app, &QApplication::quit);
+
   cal_MdtItemModel();
 
-  return 0;
+  return app.exec();
 }

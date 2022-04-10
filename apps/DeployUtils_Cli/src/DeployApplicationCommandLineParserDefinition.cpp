@@ -99,6 +99,27 @@ void DeployApplicationCommandLineParserDefinition::setup() noexcept
   libraryDestinationOption.setValueName( QLatin1String("dir") );
   mCommand.addOption(libraryDestinationOption);
 
+  /*
+   * Format of set:
+   * Here the pipe | separator was choosen,
+   * because ; causes problems in CMake
+   * when passing arguments to functions
+   */
+  const QString qtPluginsSetOptionSecription = tr(
+    "Limit the set of Qt plugins to deploy "
+    "the format is:\n"
+    "directoryName1:name1,name2,nameN|directoryNameN:name1,name2,nameN\n"
+    "example:\n"
+    "imageformats:jpeg,svg|platforms:xcb,vnc,eglfs,windows,direct2d\n"
+    "In above example, only jpeg and svg imageformats plugins will be deployed.\n"
+    "For platform plugins, we expressed plugins for Linux and Windows. "
+    "On Linux, only xcb, vnc and eglfs will be deployed. "
+    "On Windows, only windows and direct2d plugins will be deployed."
+  );
+  ParserDefinitionOption qtPluginsSetOption(QLatin1String("qt-plugins-set"), qtPluginsSetOptionSecription);
+  qtPluginsSetOption.setValueName( QLatin1String("set") );
+  mCommand.addOption(qtPluginsSetOption);
+
   mCommand.addPositionalArgument( ValueType::File, QLatin1String("executable"), tr("Path to the application executable.") );
 
   const QString destinationDirectoryDescription = tr(

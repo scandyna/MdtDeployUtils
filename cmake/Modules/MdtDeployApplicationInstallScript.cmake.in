@@ -50,6 +50,16 @@ endif()
 string(REPLACE ";" "," searchPrefixPathList "@CMAKE_PREFIX_PATH@")
 message(DEBUG "searchPrefixPathList: ${searchPrefixPathList}")
 
+
+
+set(qtPluginsSet @MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_QT_PLUGINS_SET@)
+
+set(qtPluginsSetArgument)
+if(qtPluginsSet)
+  set(qtPluginsSetArgument --qt-plugins-set "@MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_QT_PLUGINS_SET@")
+endif()
+message(DEBUG "qtPluginsSetArgument: ${qtPluginsSetArgument}")
+
 execute_mdtdeployutils(
   MDTDEPLOYUTILS_EXECUTABLE "@MDT_DEPLOY_UTILS_INSTALL_SCRIPT_MDTDEPLOYUTILS_EXECUTABLE@"
   RUNTIME_ENV "@MDT_DEPLOY_UTILS_INSTALL_SCRIPT_MDTDEPLOYUTILS_RUNTIME_ENV@"
@@ -61,6 +71,7 @@ execute_mdtdeployutils(
             ${compilerLocationArguments}
             --runtime-destination "@MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_RUNTIME_DESTINATION@"
             --library-destination "@MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_LIBRARY_DESTINATION@"
+            ${qtPluginsSetArgument}
             "${targetFile}"
             "${MDT_INSTALL_PREFIX_WITH_DESTDIR}"
 )

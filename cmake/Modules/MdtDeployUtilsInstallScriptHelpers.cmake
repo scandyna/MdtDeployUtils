@@ -64,6 +64,7 @@ function(execute_mdtdeployutils)
     message(DEBUG "mdtdeployutils will be called directly (no runtime env)")
   endif()
 
+  message(DEBUG "mdtdeployutils arguments: ${ARG_ARGUMENTS}")
 
   if(hasDeployUtilsRuntimeEnv)
     execute_process(

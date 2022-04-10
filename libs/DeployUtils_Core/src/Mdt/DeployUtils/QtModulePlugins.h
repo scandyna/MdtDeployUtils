@@ -25,6 +25,7 @@
 #include "QtModuleList.h"
 #include "QtSharedLibraryFile.h"
 #include "QtPluginFile.h"
+#include "QtPluginsSet.h"
 #include "FindQtPluginError.h"
 #include "DestinationDirectory.h"
 #include "OverwriteBehavior.h"
@@ -55,7 +56,8 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Get Qt plugins required for given list of Qt libraries
      */
-    QtPluginFileList getQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries) const noexcept;
+    QtPluginFileList getQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries,
+                                                      const QtPluginsSet & pluginsSet) const noexcept;
 
     /*! \brief Get a list of Qt plugins directories required for a given Qt module
      *
@@ -99,14 +101,6 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Get a list of Qt plugins required for given Qt modules
      *
-     * \note current implementation simply returns all the plugins
-     *  available in the required sub-directories
-     *  (like platforms, printsupport, ...)
-     *  for given modules.
-     * In future implementation,
-     * the set of plugins to include should be
-     * defined by some set.
-     *
      * \pre \a qtPluginsRoot must be a absolute path to a existing Qt plugins directory
      * \sa pathIsAbsoluteAndCouldBePluginsRoot()
      *
@@ -116,7 +110,8 @@ namespace Mdt{ namespace DeployUtils{
      * \sa https://doc.qt.io/qt-6/qpa.html
      * \sa https://doc.qt.io/qt-6/windows-deployment.html
      */
-    QtPluginFileList getPluginsForModules(const QtModuleList & modules, const QFileInfo & qtPluginsRoot) const noexcept;
+    QtPluginFileList getPluginsForModules(const QtModuleList & modules, const QFileInfo & qtPluginsRoot,
+                                          const QtPluginsSet & pluginsSet) const noexcept;
 
     /*! \brief Check if \a qtPluginsRoot could be a Qt plugins root
      *

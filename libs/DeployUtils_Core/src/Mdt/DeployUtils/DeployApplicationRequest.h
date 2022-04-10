@@ -23,6 +23,7 @@
 
 #include "OverwriteBehavior.h"
 #include "CompilerLocationRequest.h"
+#include "QtPluginsSet.h"
 #include "mdt_deployutilscore_export.h"
 #include <QString>
 #include <QLatin1String>
@@ -40,6 +41,7 @@ namespace Mdt{ namespace DeployUtils{
     CompilerLocationRequest compilerLocation;
     OverwriteBehavior shLibOverwriteBehavior = OverwriteBehavior::Fail;
     bool removeRpath = false;
+    QtPluginsSet qtPluginsSet;
     QString runtimeDestination = QLatin1String("bin");
     QString libraryDestination = QLatin1String("lib");
   };

@@ -142,7 +142,7 @@ namespace Mdt{ namespace DeployUtils{
     /*! \internal Construct a file from \a fileInfo
      *
      * This is the same as fromQFileInfo() ,
-     * but does not require the \a fileInfo exists on the file system.
+     * but does not require that \a fileInfo exists on the file system.
      *
      * \pre \a fileInfo must have its absolute file path set
      * \sa doc of QFileInfo::absoluteFilePath()

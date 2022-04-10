@@ -109,7 +109,7 @@ namespace Mdt{ namespace DeployUtils{
     void setRPathToInstalledExecutable(const QString & executableFilePath, const DeployApplicationRequest & request,
                                        const DestinationDirectoryStructure & destinationStructure);
     void copySharedLibrariesTargetDependsOn(const DeployApplicationRequest & request);
-    void deployRequiredQtPlugins(const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
+    void deployRequiredQtPlugins(const DestinationDirectory & destination, const DeployApplicationRequest & request);
     void writeQtConfFile(const DestinationDirectory & destination);
 
     static

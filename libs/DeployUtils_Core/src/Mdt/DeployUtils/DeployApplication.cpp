@@ -96,7 +96,7 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
   makeDirectoryStructure(destination);
   installExecutable( request, destination.structure() );
   copySharedLibrariesTargetDependsOn(request);
-  deployRequiredQtPlugins(destination, request.shLibOverwriteBehavior);
+  deployRequiredQtPlugins(destination, request);
   writeQtConfFile(destination);
 }
 
@@ -224,7 +224,7 @@ void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicati
   mSharedLibrariesTargetDependsOn = mShLibDeployer->foundDependencies();
 }
 
-void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
+void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & destination, const DeployApplicationRequest & request)
 {
   assert( mShLibDeployer.get() != nullptr );
 
@@ -239,14 +239,14 @@ void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & des
   connect(&qtModulePlugins, &QtModulePlugins::verboseMessage, this, &DeployApplication::verboseMessage);
   connect(&qtModulePlugins, &QtModulePlugins::debugMessage, this, &DeployApplication::debugMessage);
 
-  const QtPluginFileList plugins = qtModulePlugins.getQtPluginsQtLibrariesDependsOn(qtSharedLibraries);
+  const QtPluginFileList plugins = qtModulePlugins.getQtPluginsQtLibrariesDependsOn(qtSharedLibraries, request.qtPluginsSet);
 
   QtPlugins qtPlugins(mShLibDeployer);
   connect(&qtPlugins, &QtPlugins::statusMessage, this, &DeployApplication::statusMessage);
   connect(&qtPlugins, &QtPlugins::verboseMessage, this, &DeployApplication::verboseMessage);
   connect(&qtPlugins, &QtPlugins::debugMessage, this, &DeployApplication::debugMessage);
 
-  qtPlugins.deployQtPlugins(plugins, destination, overwriteBehavior);
+  qtPlugins.deployQtPlugins(plugins, destination, request.shLibOverwriteBehavior);
 }
 
 void DeployApplication::writeQtConfFile(const DestinationDirectory & destination)

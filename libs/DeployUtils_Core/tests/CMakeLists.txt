@@ -952,6 +952,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME QtPluginsSetTest
+  TARGET qtPluginsSetTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtPluginsSetTest.cpp
+)
+
+mdt_add_test(
   NAME QtModulePluginsTest
   TARGET qtModulePluginsTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

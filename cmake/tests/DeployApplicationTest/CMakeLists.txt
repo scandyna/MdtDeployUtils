@@ -3,15 +3,13 @@
 cmake_minimum_required(VERSION 3.14)
 project(TestApp)
 
-# TODO: add a dependency to Qt
-
 message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 message("CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 find_package(MdtCMakeModules REQUIRED)
 find_package(Mdt0DeployUtils REQUIRED NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_PACKAGE_REGISTRY)
 # find_package(Threads REQUIRED)
-# find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Mdt0ItemModel REQUIRED NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_SYSTEM_PATH)
 
 
@@ -23,7 +21,7 @@ add_executable(testApp1 src/TestApp1.cpp)
 target_link_libraries(testApp1 PRIVATE Mdt0::ItemModel)
 
 add_executable(testApp2 src/TestApp2.cpp)
-target_link_libraries(testApp2 PRIVATE Mdt0::ItemModel)
+target_link_libraries(testApp2 PRIVATE Mdt0::ItemModel Qt5::Widgets)
 
 include(GNUInstallDirs)
 include(MdtDeployApplication)
@@ -38,6 +36,7 @@ mdt_deploy_application(
   TARGET testApp2
   RUNTIME_DESTINATION "testApp2/bin"
   LIBRARY_DESTINATION "testApp2/lib"
+  QT_PLUGINS_SET "imageformats:jpeg,svg|platforms:xcb,vnc,eglfs,windows,direct2d"
 )
 
 # enable_testing()

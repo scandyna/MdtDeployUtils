@@ -446,6 +446,7 @@ add_test(NAME CMake_DeployApplicationTest_Run_TestApp2_Destdir
 set_tests_properties(CMake_DeployApplicationTest_Run_TestApp2_Destdir
   PROPERTIES
     DEPENDS "CMake_DeployApplicationTest_Install_Destdir"
+    ENVIRONMENT "QT_DEBUG_PLUGINS=1"
 )
 
 if(BUILD_REAL_INSTALL_TESTS)

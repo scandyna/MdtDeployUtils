@@ -74,13 +74,14 @@ TEST_CASE("getPluginsForModules")
   const QString qtPluginsRoot = QtModulePlugins::findPluginsRootFromQtLibraryPath(qtGuiLibraryFilePath);
 
   QtPluginFileList plugins;
+  QtPluginsSet pluginsSet;
   QtModulePlugins modulePlugins;
   QStringList pluginsDirectories;
 
   QtModuleList modules;
   modules.addModule(QtModule::Gui);
 
-  plugins = modulePlugins.getPluginsForModules(modules, qtPluginsRoot);
+  plugins = modulePlugins.getPluginsForModules(modules, qtPluginsRoot, pluginsSet);
 
   REQUIRE( !plugins.empty() );
 
@@ -89,7 +90,13 @@ TEST_CASE("getPluginsForModules")
   REQUIRE( pluginsDirectories.count( QLatin1String("iconengines") ) == 1 );
   REQUIRE( pluginsDirectories.count( QLatin1String("imageformats") ) == 1 );
   REQUIRE( pluginsDirectories.count( QLatin1String("platforms") ) == 1 );
-  REQUIRE( pluginsDirectories.count( QLatin1String("platforminputcontexts") ) == 1 );
+  /*
+   * On some platforms (f.ex. some Windows Qt distributions),
+   * platforminputcontexts is only present if some optional Qt Modules are installed,
+   * like Qt Virtual Keyboard.
+   * see also: https://gitlab.com/scandyna/mdtdeployutils/-/pipelines/511260803
+   */
+//   REQUIRE( pluginsDirectories.count( QLatin1String("platforminputcontexts") ) == 1 );
 }
 
 TEST_CASE("findPluginsRootFromQtLibraryPath_commonQtDistribution")

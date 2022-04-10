@@ -150,6 +150,11 @@ class CommandLineParser : public QObject
                                const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
                                const Mdt::CommandLineParser::ParserDefinitionOption & option);
 
+  static
+  void parseQtPluginsSet(Mdt::DeployUtils::QtPluginsSet & set,
+                         const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
+                         const Mdt::CommandLineParser::ParserDefinitionOption & option);
+
   void processGetSharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
   void processCopySharedLibrariesTargetDependsOn(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);
   void processDeployApplicationCommand(const Mdt::CommandLineParser::ParserResultCommand & resultCommand);

@@ -289,6 +289,32 @@ void CommandLineParser::parseLibraryDestination(QString & destination,
   }
 }
 
+void CommandLineParser::parseQtPluginsSet(Mdt::DeployUtils::QtPluginsSet & set,
+                                          const Mdt::CommandLineParser::ParserResultCommand & resultCommand,
+                                          const Mdt::CommandLineParser::ParserDefinitionOption & option)
+{
+  const QString setString = parseSingleValueOption(resultCommand, option);
+  if( setString.isEmpty() ){
+    return;
+  }
+
+  const QStringList setItems = setString.split(QLatin1Char('|'), QString::SkipEmptyParts);
+  for(const QString & setItem : setItems){
+    const QStringList directoryPlugins = setItem.split(QLatin1Char(':'), QString::SkipEmptyParts);
+    if( directoryPlugins.size() != 2 ){
+      const QString msg = tr(
+        "syntax error in --qt-plugins-set option. "
+        "each item in the set must be of the form directoryName:name1,nameN. "
+        "given: %1"
+      ).arg(setItem);
+      throw CommandLineParseError(msg);
+    }
+    const QString directoryName = directoryPlugins.at(0);
+    const QStringList pluginsBaseNames = directoryPlugins.at(1).split(QLatin1Char(','), QString::SkipEmptyParts);
+    set.set(directoryName, pluginsBaseNames);
+  }
+}
+
 void CommandLineParser::processGetSharedLibrariesTargetDependsOn(const ParserResultCommand & resultCommand)
 {
   if( resultCommand.isHelpOptionSet() ){
@@ -366,6 +392,8 @@ void CommandLineParser::processDeployApplicationCommand(const Mdt::CommandLinePa
   parseRuntimeDestination( mDeployApplicationRequest.runtimeDestination, resultCommand, definition.runtimeDestinationOption() );
 
   parseLibraryDestination( mDeployApplicationRequest.libraryDestination, resultCommand, definition.libraryDestinationOption() );
+
+  parseQtPluginsSet( mDeployApplicationRequest.qtPluginsSet, resultCommand, definition.qtPluginsSetOption() );
 
   if( resultCommand.positionalArgumentCount() != 2 ){
     const QString message = tr(
