@@ -258,8 +258,6 @@ endfunction()
 #
 function(mdt_install_shared_libraries_target_depends_on)
 
-# TODO provide MDT_DEPLOY_UTILS_EXECUTABLE etc.. + do checks - see mdt_deploy_application()
-
   set(options EXCLUDE_FROM_ALL)
   set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION INSTALL_IS_UNIX_SYSTEM_WIDE COMPONENT)
   set(multiValueArgs)
