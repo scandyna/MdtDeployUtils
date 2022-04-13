@@ -61,13 +61,38 @@ QtModule qtModuleFromLibraryName(const LibraryName & libraryName)
     QtModule module;
   };
 
+  /*
+   * Table that maps a Qt library name to a Qt Module
+   *
+   * Some modules, like Qt Multimedia, ships several shared libraries
+   * (f.ex. libQt5Multimedia.so, libQt5MultimediaWidgets.so, libQt5MultimediaQuick.so, ...).
+   * MultimediaWidgets, MultimediaQuick, etc.. all depends on Multimedia (checked with ldd),
+   * so only Multimedia has to be present in this table.
+   * (f.ex. if MultimediaWidgets is used in a app, Multimedia will be present in the dependencies list)
+   */
   static
   const BaseNameModulePair baseNameModuleMap[] = {
+    // Qt Essentials
     {"Core",QtModule::Core},
     {"Gui",QtModule::Gui},
     {"Widgets",QtModule::Widgets},
     {"DBus",QtModule::DBus},
-    {"Network",QtModule::Network}
+    {"Network",QtModule::Network},
+    {"Test",QtModule::Test},
+    {"Qml",QtModule::Qml},
+    {"Quick",QtModule::Quick},
+    {"QuickControls2",QtModule::QuickControls},
+    {"QuickControls2Impl",QtModule::QuickControls},
+    {"QuickDialogs2",QtModule::QuickDialogs},
+//     {"QuickDialogs2QuickImpl",QtModule::QuickDialogs},
+    {"QuickDialogs2Utils",QtModule::QuickDialogs},
+    {"QuickLayouts",QtModule::QuickLayouts},
+    {"QuickTest",QtModule::QuickTest},
+    // Qt Addons
+    {"Sql",QtModule::Sql},
+    {"PrintSupport",QtModule::PrintSupport},
+    {"Multimedia",QtModule::Multimedia}
+    // Additional Qt libraries
   };
 
   const auto pred = [&qtLibraryBaseName](const BaseNameModulePair & mln){

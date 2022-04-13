@@ -72,6 +72,11 @@ QStringList qtModulePluginsGetPluginsDirectoriesForModuleImpl(const Predicate & 
     const char *pluginsDirectory;
   };
 
+  /*
+   * This table is based on windeployqt
+   * (pluginModuleMappings in main.cpp)
+   * and also https://doc.qt.io/qt-6/plugins-howto.html
+   */
   static
   const ModulePluginsDirectoryPair modulePluginsDirectoryMap[] = {
     {QtModule::Gui, "accessible"}, // Qt4
@@ -79,6 +84,18 @@ QStringList qtModulePluginsGetPluginsDirectoriesForModuleImpl(const Predicate & 
     {QtModule::Gui, "imageformats"},
     {QtModule::Gui, "platforms"},
     {QtModule::Gui, "platforminputcontexts"},
+    {QtModule::Network, "bearer"},
+    {QtModule::Network, "networkaccess"},
+    {QtModule::Network, "networkinformation"},
+    {QtModule::Network, "tls"},
+    {QtModule::Widgets, "styles"},
+    {QtModule::Sql, "sqldrivers"},
+    {QtModule::PrintSupport, "printsupport"},
+    {QtModule::Multimedia, "audio"},
+    {QtModule::Multimedia, "mediaservice"},
+    {QtModule::Multimedia, "playlistformats"},
+    {QtModule::Quick, "scenegraph"},
+    {QtModule::Quick, "qmltooling"},
     {QtModule::VirtualKeyboard, "platforminputcontexts"},
     {QtModule::VirtualKeyboard, "virtualkeyboard"}
   };

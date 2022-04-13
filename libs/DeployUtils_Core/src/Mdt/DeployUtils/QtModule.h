@@ -37,12 +37,18 @@ namespace Mdt{ namespace DeployUtils{
    * and libQt5Core.so is a Qt shared library.
    *
    * \sa https://doc.qt.io/qt.html
+   *
+   * \todo Should not add all existing Qt modules !!
+   * See QtModulePlugins first to see what has sense
+   * and also maybe translations ?!
    */
   enum class QtModule
   {
+    // Qt Essentials
     Core,     /*!< Qt Core */
     Gui,      /*!< Qt GUI */
     Widgets,  /*!< Qt Widgets */
+    Test,     /*!< Qt Test */
     DBus,     /*!< Qt D-Bus */
     Network,  /*!< Qt Network */
     Qml,      /*!< Qt QML */
@@ -51,7 +57,12 @@ namespace Mdt{ namespace DeployUtils{
     QuickDialogs,   /*!< Qt Quick Dialogs */
     QuickLayouts,   /*!< Qt Quick Layouts */
     QuickTest,      /*!< Qt Quick Test */
+    // Qt Addons
+    Sql,            /*!< Qt QSL */
+    PrintSupport,   /*!< Qt Print Support */
+    Multimedia,     /*!< Qt Multimedia */
     VirtualKeyboard /*!< Qt Virtual Keyboard */
+    // Additional Qt libraries
   };
 
   /*! \brief Get the Qt module in which the Qt library is part of
