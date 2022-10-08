@@ -33,13 +33,8 @@ to install a application and its dependencies.
 
 Example `CMakeLists.txt`:
 ```cmake
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(MyApp)
-
-if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-  include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-  conan_basic_setup(NO_OUTPUT_DIRS)
-endif()
 
 find_package(MdtCMakeModules REQUIRED)
 find_package(Threads REQUIRED)
@@ -65,12 +60,13 @@ mdt_deploy_application(
 If Conan is used, the `conanfile.txt` could look like:
 ```txt
 [build_requires]
-MdtCMakeModules/[>=x.y.z]@scandyna/testing
-MdtDeployUtils/[>=x.y.z]@scandyna/testing
+MdtCMakeModules/x.y.z@scandyna/testing
+MdtDeployUtils/x.y.z@scandyna/testing
 
 [generators]
-cmake
-virtualenv
+CMakeDeps
+CMakeToolchain
+VirtualBuildEnv
 ```
 
 Also add scandyna remote:
@@ -166,6 +162,7 @@ Some tools and libraries are required to use the MdtDeployUtils C++ API:
 
 For a overview how to install them, see https://gitlab.com/scandyna/build-and-install-cpp
 
+# TODO: remove use_conan_qt and use_conan_boost
 Qt5 could be managed by Conan using [conan-qt](https://github.com/bincrafters/conan-qt),
 but this does not allways work,
 and building Qt if the required binaries are not available can be long.
@@ -173,6 +170,7 @@ This is why a option to use a non Conan managed Qt is provided.
 
 Required tools and libraries that can be managed by Conan:
  - [mdt-cmake-modules](https://gitlab.com/scandyna/mdt-cmake-modules)
+ - Qt
 
 
 If you use Conan, MdtDeployUtils and its dependencies that are managed by Conan
@@ -184,27 +182,23 @@ Otherwise see [INSTALL](INSTALL.md).
 Create (or update) `conanfile.txt`:
 ```txt
 [requires]
-MdtDeployUtils/[>=x.y.z]@scandyna/testing
+MdtDeployUtils/x.y.z@scandyna/testing
 
 [build_requires]
-MdtCMakeModules/[>=x.y.z]@scandyna/testing
+MdtCMakeModules/x.y.z@scandyna/testing
 
 [generators]
-cmake
-virtualenv
+CMakeDeps
+CMakeToolchain
+VirtualBuildEnv
 ```
 
 ### CMake project description
 
 Update your CMakeLists.txt to use the required libraries:
 ```cmake
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(MyApp)
-
-if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-  include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-  conan_basic_setup(NO_OUTPUT_DIRS)
-endif()
 
 find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS Gui REQUIRED)
@@ -214,7 +208,7 @@ add_executable(myTool myTool.cpp)
 target_link_libraries(myTool PRIVATE Mdt0::DeployUtilsCore Qt5::Gui)
 ```
 
-### Build your project using MdtDeployUtils on Linux with the native compiler
+### Build your project using MdtDeployUtils
 
 Create a build directory and cd to it:
 ```bash
@@ -224,18 +218,32 @@ cd build
 
 Install the dependencies:
 ```bash
-conan install -s build_type=Release --build=missing ..
+conan install --profile:build $CONAN_PROFILE_BUILD --profile:host $CONAN_PROFILE_HOST --settings:build build_type=Release --settings:host build_type=Debug --build=missing ..
+```
+For more informations about conan profiles, see [BUILD](BUILD.md).
+
+If you don't use the native compiler,
+and your Conan profile defines one
+(or it defines some other environments),
+bring the required environment to the current shell:
+```bash
+source conanbuild.sh
+```
+On Windows:
+```bash
+.\conanbuild.bat
 ```
 
 Configure your project:
 ```bash
 cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Debug ..
 cmake-gui .
 ```
 
 Build your project:
 ```bash
-make -j4
+cmake --build . --config Debug
 ```
 
 # Notes about RPath
