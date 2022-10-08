@@ -11,19 +11,15 @@ class MdtDeployUtilsConan(ConanFile):
   description = "Tools to help deploy C/C++ application binaries and their dependencies."
   # TODO: see TODO.md
   settings = "os", "compiler", "build_type", "arch"
-  options = {"shared": [True, False],
-             "use_conan_boost": [True, False],
-             "use_conan_qt": [True, False]}
-  default_options = {"shared": True,
-                     "use_conan_boost": False,
-                     "use_conan_qt": False}
+  options = {"shared": [True, False]}
+  default_options = {"shared": True}
   # TODO fix once issue solved
   # Due to a issue using GitLab Conan repository,
   # version ranges are not possible.
   # See https://gitlab.com/gitlab-org/gitlab/-/issues/333638
   requires = "MdtApplication/0.3.5@scandyna/testing"
   build_requires = "MdtCMakeModules/0.17.0@scandyna/testing", "Catch2/v2.13.7x@scandyna/testing"
-  generators = "cmake", "cmake_paths", "virtualenv"
+  generators = "cmake", "cmake_paths", "virtualenv", "CMakeDeps", "CMakeToolchain"
   exports_sources = "apps/*", "libs/*", "cmake/*", "MdtDeployUtilsConfig.cmake.in", "CMakeLists.txt", "conanfile.py", "LICENSE.txt", "COPYING", "COPYING.LESSER"
   # If no_copy_source is False, conan copies sources to build directory and does in-source build,
   # resulting having build files installed in the package
@@ -35,13 +31,5 @@ class MdtDeployUtilsConan(ConanFile):
   short_paths = False
 
   def requirements(self):
-
-    if self.options.use_conan_boost:
-      self.requires("boost/[>=1.65.1]@conan/stable")
-
-    # Building 5.14.x causes currently problems (8.04.2020)
-    # As workaround, try fix a known version that we can build
-    if self.options.use_conan_qt:
-      self.requires("qt/5.14.2@bincrafters/stable")
-      self.options["MdtApplication"].use_conan_qt = True
-
+    self.requires("qt/5.15.6")
+    self.requires("boost/1.72.0")

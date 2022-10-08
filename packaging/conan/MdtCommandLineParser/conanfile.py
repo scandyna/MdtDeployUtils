@@ -9,12 +9,8 @@ class MdtCommandLineParserConan(ConanFile):
   url = "https://gitlab.com/scandyna/mdtcommandlineparser"
   description = "Library to help to create a command-line parser in a C++ application."
   settings = "os", "compiler", "build_type", "arch"
-  options = {"shared": [True, False],
-             "use_conan_boost": [True, False],
-             "use_conan_qt": [True, False]}
-  default_options = {"shared": True,
-                     "use_conan_boost": False,
-                     "use_conan_qt": False}
+  options = {"shared": [True, False]}
+  default_options = {"shared": True}
   # TODO fix once issue solved
   # Due to a issue using GitLab Conan repository,
   # version ranges are not possible.

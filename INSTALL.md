@@ -107,13 +107,3 @@ To create a package without having a git tag:
 ```bash
 conan create packaging/conan/MdtDeployUtils x.y.z@scandyna/testing --profile:build $CONAN_PROFILE_BUILD --profile:host $CONAN_PROFILE_HOST --settings:build build_type=Release --settings:host build_type=$BUILD_TYPE
 ```
-
-# TODO: remove use_conan_qt and use_conan_boost
-
-Above examples will generate a package that uses the Qt version that is installed on the system,
-or passed to the `CMAKE_PREFIX_PATH` of your build.
-
-To create packages that depend on Conan Qt:
-```bash
-conan create . scandyna/testing -o MdtDeployUtils:use_conan_qt=True
-```

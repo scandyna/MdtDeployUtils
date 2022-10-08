@@ -10,12 +10,8 @@ class MdtDeployUtilsCoreConan(ConanFile):
   description = "Library to create tools to help deploy C/C++ application binaries and their dependencies."
   # TODO: see TODO.md
   settings = "os", "compiler", "build_type", "arch"
-  options = {"shared": [True, False],
-             "use_conan_boost": [True, False],
-             "use_conan_qt": [True, False]}
-  default_options = {"shared": True,
-                     "use_conan_boost": False,
-                     "use_conan_qt": False}
+  options = {"shared": [True, False]}
+  default_options = {"shared": True}
   # TODO fix once issue solved
   # Due to a issue using GitLab Conan repository,
   # version ranges are not possible.

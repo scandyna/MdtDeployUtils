@@ -10,12 +10,8 @@ class MdtDeployUtilsConan(ConanFile):
   description = "Tools to help deploy C/C++ application binaries and their dependencies."
   # TODO: see TODO.md
   settings = "os", "compiler", "build_type", "arch"
-  options = {"shared": [True, False],
-             "use_conan_boost": [True, False],
-             "use_conan_qt": [True, False]}
-  default_options = {"shared": True,
-                     "use_conan_boost": False,
-                     "use_conan_qt": False}
+  options = {"shared": [True, False]}
+  default_options = {"shared": True}
   # TODO fix once issue solved
   # Due to a issue using GitLab Conan repository,
   # version ranges are not possible.
@@ -52,16 +48,10 @@ class MdtDeployUtilsConan(ConanFile):
     self.copy("LICENSE*", src="../../../", dst=".")
 
   def requirements(self):
-
-    if self.options.use_conan_boost:
-      self.requires("boost/[>=1.65.1]@conan/stable")
-
-    # Building 5.14.x causes currently problems (8.04.2020)
-    # As workaround, try fix a known version that we can build
-    if self.options.use_conan_qt:
-      self.requires("qt/5.14.2@bincrafters/stable")
-      self.options["MdtApplication"].use_conan_qt = True
-
+    # TODO: should (only) depend on MdtDeployUtilsCore and MdtCommandLineParser
+    # TODO: see if boost is required
+    self.requires("qt/5.15.6")
+    self.requires("boost/1.72.0")
 
   def configure_cmake(self):
     cmake = CMake(self)
@@ -89,8 +79,6 @@ class MdtDeployUtilsConan(ConanFile):
     del self.info.settings.compiler
     del self.info.settings.build_type
     del self.info.options.shared
-    del self.info.options.use_conan_boost
-    del self.info.options.use_conan_qt
 
   def package_info(self):
     self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))

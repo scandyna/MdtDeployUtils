@@ -162,12 +162,6 @@ Some tools and libraries are required to use the MdtDeployUtils C++ API:
 
 For a overview how to install them, see https://gitlab.com/scandyna/build-and-install-cpp
 
-# TODO: remove use_conan_qt and use_conan_boost
-Qt5 could be managed by Conan using [conan-qt](https://github.com/bincrafters/conan-qt),
-but this does not allways work,
-and building Qt if the required binaries are not available can be long.
-This is why a option to use a non Conan managed Qt is provided.
-
 Required tools and libraries that can be managed by Conan:
  - [mdt-cmake-modules](https://gitlab.com/scandyna/mdt-cmake-modules)
  - Qt
