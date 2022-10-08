@@ -54,7 +54,7 @@ option(BUILD_TESTS "Build the tests" OFF)
 option(BUILD_BENCHMARKS "Build the benchmarks" OFF)
 option(BUILD_DOCS "Build the documentations" OFF)
 mdt_set_available_build_types(Release Debug RelWithDebInfo MinSizeRel Instrumented)
-option(WARNING_AS_ERROR "Threat warnings as errors" OFF)
+option(WARNING_AS_ERROR "Treat warnings as errors" OFF)
 
 if(BUILD_TESTS)
   option(
