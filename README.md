@@ -182,7 +182,7 @@ Otherwise see [INSTALL](INSTALL.md).
 Create (or update) `conanfile.txt`:
 ```txt
 [requires]
-MdtDeployUtils/x.y.z@scandyna/testing
+MdtDeployUtilsCore/x.y.z@scandyna/testing
 
 [build_requires]
 MdtCMakeModules/x.y.z@scandyna/testing
