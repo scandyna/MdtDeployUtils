@@ -46,7 +46,7 @@ Depends on:
 MdtCommandLineParser, MdtConsoleApplication, Qt5Core
 
 
-# Debian packages
+# Debian packages (not implemented yet)
 
 ## mdtdeployutils-standalone (tools)
 
@@ -100,13 +100,15 @@ The package version is picked up from git tag.
 If working on MdtDeployUtils, go to the root of the source tree:
 ```bash
 git tag x.y.z
-conan create packaging/conan/MdtDeployUtils scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
+conan create packaging/conan/MdtDeployUtils scandyna/testing --profile:build $CONAN_PROFILE_BUILD --profile:host $CONAN_PROFILE_HOST --settings:build build_type=Release --settings:host build_type=$BUILD_TYPE
 ```
 
 To create a package without having a git tag:
 ```bash
-conan create packaging/conan/MdtDeployUtils x.y.z@scandyna/testing --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE
+conan create packaging/conan/MdtDeployUtils x.y.z@scandyna/testing --profile:build $CONAN_PROFILE_BUILD --profile:host $CONAN_PROFILE_HOST --settings:build build_type=Release --settings:host build_type=$BUILD_TYPE
 ```
+
+# TODO: remove use_conan_qt and use_conan_boost
 
 Above examples will generate a package that uses the Qt version that is installed on the system,
 or passed to the `CMAKE_PREFIX_PATH` of your build.
