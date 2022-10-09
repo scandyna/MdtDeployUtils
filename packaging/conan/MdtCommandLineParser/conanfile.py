@@ -17,7 +17,7 @@ class MdtCommandLineParserConan(ConanFile):
   # See https://gitlab.com/gitlab-org/gitlab/-/issues/333638
   # TODO: Catch and MdtApplication should only be required for tests, so not in this package
   #requires = "MdtApplication/0.3.5@scandyna/testing"
-  build_requires = "MdtCMakeModules/0.17.0@scandyna/testing","Catch2/v2.13.7x@scandyna/testing","MdtApplication/0.3.5@scandyna/testing"
+  build_requires = "MdtCMakeModules/0.19.1@scandyna/testing","Catch2/v2.13.7x@scandyna/testing","MdtApplication/0.3.5@scandyna/testing"
   generators = "cmake", "cmake_paths", "virtualenv"
 
   # If no_copy_source is False, conan copies sources to build directory and does in-source build,
