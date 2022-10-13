@@ -8,6 +8,14 @@ include(MdtAddTest)
 include(MdtRuntimeEnvironment)
 include(GenerateExportHeader)
 
+# Using Conan with CMakeDeps breaks using $<TARGET_FILE:tgt>
+# See https://gitlab.com/scandyna/mdt-cmake-modules/-/issues/12
+find_library(Qt5_CORE_SHARED_LIB_PATH libQt5Core.so Qt5Core.dll REQUIRED)
+find_library(Qt5_GUI_SHARED_LIB_PATH libQt5Gui.so Qt5Gui.dll REQUIRED)
+
+message(DEBUG "Qt5_CORE_SHARED_LIB_PATH: ${Qt5_CORE_SHARED_LIB_PATH}")
+message(DEBUG "Qt5_GUI_SHARED_LIB_PATH: ${Qt5_GUI_SHARED_LIB_PATH}")
+
 # MOC (or CMake?) does not support having ;
 string(REPLACE ";" "," TEST_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
 
@@ -161,7 +169,7 @@ target_link_libraries(testExecutableDynamic
 # On MSVC, also check that delay load libraries works
 if(MSVC)
   target_link_options(testExecutableDynamic
-    PRIVATE "/DELAYLOAD:$<TARGET_FILE_NAME:Qt5::Core>"
+    PRIVATE "/DELAYLOAD:${Qt5_CORE_SHARED_LIB_PATH}"
   )
 endif()
 
@@ -572,7 +580,7 @@ if( UNIX AND (NOT APPLE) )
   )
 
   target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-  target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+  target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
   target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
   target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
@@ -622,7 +630,7 @@ if(WIN32)
   )
 
   target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-  target_compile_definitions(peFileIoEngineTest_Windows PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+  target_compile_definitions(peFileIoEngineTest_Windows PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
   target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
   target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
@@ -664,7 +672,7 @@ mdt_add_test(
     src/ExecutableFileReaderTest.cpp
 )
 target_compile_definitions(executableFileReaderTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-target_compile_definitions(executableFileReaderTest PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+target_compile_definitions(executableFileReaderTest PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
 target_compile_definitions(executableFileReaderTest PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
 target_compile_definitions(executableFileReaderTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 if(MSVC)
@@ -679,7 +687,7 @@ mdt_add_test(
     src/ExecutableFileReaderErrorTest.cpp
 )
 target_compile_definitions(executableFileReaderErrorTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-target_compile_definitions(executableFileReaderErrorTest PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+target_compile_definitions(executableFileReaderErrorTest PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
 target_compile_definitions(executableFileReaderErrorTest PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
 target_compile_definitions(executableFileReaderErrorTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
@@ -692,7 +700,7 @@ if(UNIX)
       src/ExecutableFileReaderTest_Unix.cpp
   )
   target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-  target_compile_definitions(executableFileReaderTest_Unix PRIVATE QT5_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+  target_compile_definitions(executableFileReaderTest_Unix PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
   target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
   target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 endif()
@@ -837,7 +845,7 @@ mdt_add_test(
     src/SharedLibrariesDeployerTest.cpp
 )
 target_compile_definitions(sharedLibrariesDeployerTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
-target_compile_definitions(sharedLibrariesDeployerTest PRIVATE TEST_QT_CORE_FILE_PATH="$<TARGET_FILE:Qt5::Core>")
+target_compile_definitions(sharedLibrariesDeployerTest PRIVATE TEST_QT_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
 target_compile_definitions(sharedLibrariesDeployerTest PRIVATE PREFIX_PATH="${TEST_PREFIX_PATH}")
 if(MSVC)
   target_compile_definitions(sharedLibrariesDeployerTest PRIVATE COMPILER_IS_MSVC=1)
@@ -966,7 +974,7 @@ mdt_add_test(
   SOURCE_FILES
     src/QtModulePluginsTest.cpp
 )
-target_compile_definitions(qtModulePluginsTest PRIVATE TEST_QT_GUI_FILE_PATH="$<TARGET_FILE:Qt5::Gui>")
+target_compile_definitions(qtModulePluginsTest PRIVATE TEST_QT_GUI_FILE_PATH="${Qt5_GUI_SHARED_LIB_PATH}")
 
 mdt_add_test(
   NAME QtModulePluginsErrorTest
