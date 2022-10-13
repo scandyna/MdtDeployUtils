@@ -258,6 +258,7 @@ add_test(NAME CMake_InstallSharedLibrariesTargetDependsOnTest_Configure
     -A "${CMAKE_GENERATOR_PLATFORM}"
     -T "${CMAKE_GENERATOR_TOOLSET}"
     -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     "-DCMAKE_PREFIX_PATH=${CMAKE_CURRENT_BINARY_DIR}${testMdtDeployUtilsInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH}"
     "-DCMAKE_INSTALL_PREFIX=${installSharedLibrariesTargetDependsOnTestInstallPrefix}"
 )
@@ -397,6 +398,7 @@ add_test(NAME CMake_DeployApplicationTest_Configure
     -A "${CMAKE_GENERATOR_PLATFORM}"
     -T "${CMAKE_GENERATOR_TOOLSET}"
     -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     "-DCMAKE_PREFIX_PATH=${CMAKE_CURRENT_BINARY_DIR}${testMdtDeployUtilsInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH}"
     "-DCMAKE_INSTALL_PREFIX=${deployApplicationTestInstallPrefix}"
 )
