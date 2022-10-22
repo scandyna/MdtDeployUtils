@@ -28,6 +28,7 @@
 #include "DestinationDirectory.h"
 #include "OverwriteBehavior.h"
 #include "SharedLibrariesDeployer.h"
+#include "QtDistributionDirectory.h"
 #include "DestinationDirectoryStructure.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
@@ -70,10 +71,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Constructor
      */
-    explicit DeployApplication(QObject *parent = nullptr)
-     : QObject(parent)
-    {
-    }
+    explicit DeployApplication(QObject *parent = nullptr);
 
     /*! \brief Deploy a application to a destination directory
      *
@@ -118,6 +116,7 @@ namespace Mdt{ namespace DeployUtils{
     Platform mPlatform;
     QString mBinDirDestinationPath;
     QString mLibDirDestinationPath;
+    std::shared_ptr<QtDistributionDirectory> mQtDistributionDirectory;
     std::shared_ptr<SharedLibrariesDeployer> mShLibDeployer;
     QStringList mSharedLibrariesTargetDependsOn;
   };

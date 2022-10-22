@@ -21,7 +21,9 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "SharedLibraryFinderWindowsTestCommon.h"
+#include "Mdt/DeployUtils/QtDistributionDirectory.h"
 #include "Mdt/DeployUtils/SharedLibraryFinderWindows.h"
+#include <memory>
 
 using namespace Mdt::DeployUtils;
 
@@ -29,7 +31,8 @@ TEST_CASE("findLibraryAbsolutePath")
 {
   QString libraryName;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp);
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
   SECTION("A.dll - pathList:/tmp - not exists in given pathList")
   {

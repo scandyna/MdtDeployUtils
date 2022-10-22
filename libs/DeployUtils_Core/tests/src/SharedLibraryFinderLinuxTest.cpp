@@ -22,11 +22,13 @@
 #include "Catch2QString.h"
 #include "TestIsExistingSharedLibrary.h"
 #include "SharedLibraryFinderLinuxTestCommon.h"
+#include "Mdt/DeployUtils/QtDistributionDirectory.h"
 #include "Mdt/DeployUtils/SharedLibraryFinderLinux.h"
 #include "Mdt/DeployUtils/RPath.h"
 #include <QLatin1String>
 #include <QString>
 #include <QtGlobal>
+#include <memory>
 
 using namespace Mdt::DeployUtils;
 
@@ -43,8 +45,9 @@ TEST_CASE("buildSearchPathList")
   constexpr bool checkResult = false;
 #endif // #ifdef Q_OS_UNIX
 
-  TestIsExistingSharedLibrary isExistingShLibOp;
-  SharedLibraryFinderLinux finder(isExistingShLibOp);
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderLinux finder(isExistingSharedLibraryOp, qtDistributionDirectory);
   PathList searchFirstPathPrefixList;
 
   SECTION("x86")
@@ -87,7 +90,8 @@ TEST_CASE("makeDirectoryFromRpathEntry")
 TEST_CASE("findLibraryAbsolutePathByRPath")
 {
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  SharedLibraryFinderLinux finder(isExistingSharedLibraryOp);
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderLinux finder(isExistingSharedLibraryOp, qtDistributionDirectory);
   BinaryDependenciesFile library;
 
   auto originExecutable = makeBinaryDependenciesFileFromUtf8Path("/opt/myapp");
@@ -127,7 +131,8 @@ TEST_CASE("findLibraryAbsolutePath")
 {
   QString libraryName;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  SharedLibraryFinderLinux finder(isExistingSharedLibraryOp);
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderLinux finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
   SECTION("libA.so - pathList:/tmp - exists")
   {
@@ -169,7 +174,8 @@ TEST_CASE("findLibraryAbsolutePath")
 TEST_CASE("findLibrariesAbsolutePath")
 {
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  SharedLibraryFinderLinux finder(isExistingSharedLibraryOp);
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderLinux finder(isExistingSharedLibraryOp, qtDistributionDirectory);
   BinaryDependenciesFileList libraries;
 
   SECTION("libA.so,libm.so.6 - pathList:/tmp - exists - libm.so.6 must be excluded")

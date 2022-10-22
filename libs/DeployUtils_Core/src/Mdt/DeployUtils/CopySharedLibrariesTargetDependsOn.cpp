@@ -20,7 +20,9 @@
  ****************************************************************************/
 #include "CopySharedLibrariesTargetDependsOn.h"
 #include "SharedLibrariesDeployer.h"
+#include "QtDistributionDirectory.h"
 #include "PathList.h"
+#include <memory>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
@@ -30,7 +32,9 @@ void CopySharedLibrariesTargetDependsOn::execute(const CopySharedLibrariesTarget
   assert( !request.targetFilePath.trimmed().isEmpty() );
   assert( !request.destinationDirectoryPath.trimmed().isEmpty() );
 
-  SharedLibrariesDeployer shLibDeployer;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+
+  SharedLibrariesDeployer shLibDeployer(qtDistributionDirectory);
   connect(&shLibDeployer, &SharedLibrariesDeployer::statusMessage, this, &CopySharedLibrariesTargetDependsOn::statusMessage);
   connect(&shLibDeployer, &SharedLibrariesDeployer::verboseMessage, this, &CopySharedLibrariesTargetDependsOn::verboseMessage);
   connect(&shLibDeployer, &SharedLibrariesDeployer::debugMessage, this, &CopySharedLibrariesTargetDependsOn::debugMessage);

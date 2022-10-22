@@ -28,15 +28,17 @@
 #include <QObject>
 #include <QString>
 #include <QFileInfo>
+#include <memory>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
 
-  namespace Impl{
-    class AbstractIsExistingSharedLibrary;
-  } // namespace Impl{
+//   namespace Impl{
+//     class AbstractIsExistingSharedLibrary;
+//   } // namespace Impl{
 
   class AbstractIsExistingValidSharedLibrary;
+  class QtDistributionDirectory;
 
   /*! \brief Interface to implement a shared library finder
    *
@@ -51,11 +53,19 @@ namespace Mdt{ namespace DeployUtils{
    public:
 
     /*! \brief Constructor
+     *
+     * If given \a qtDistributionDirectory is not already initialzed,
+     * it will be the first time a Qt library have been found.
+     *
+     * \pre \a qtDistributionDirectory must be a valid pointer
      */
-    explicit AbstractSharedLibraryFinder(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp, QObject *parent = nullptr)
+    explicit AbstractSharedLibraryFinder(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp,
+                                         std::shared_ptr<QtDistributionDirectory> qtDistributionDirectory,
+                                         QObject *parent = nullptr)
      : QObject(parent),
        mIsExistingValidShLibOp(isExistingValidShLibOp)
     {
+      assert(qtDistributionDirectory.get() != nullptr);
     }
 
     /*! \brief Set a custom list of paths where this finders locates shared libraries

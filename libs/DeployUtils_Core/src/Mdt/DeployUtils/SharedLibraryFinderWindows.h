@@ -50,7 +50,9 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Constructor
      */
-    explicit SharedLibraryFinderWindows(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp, QObject *parent = nullptr);
+    explicit SharedLibraryFinderWindows(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp,
+                                        std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory,
+                                        QObject *parent = nullptr);
 
     /*! \brief Build a list of path to directories where to find shared libraries
      *

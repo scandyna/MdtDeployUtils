@@ -26,12 +26,14 @@
 #include "OverwriteBehavior.h"
 #include "Platform.h"
 #include "BinaryDependencies.h"
+#include "QtDistributionDirectory.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <QFileInfo>
 #include <QFileInfoList>
+#include <memory>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -57,8 +59,11 @@ namespace Mdt{ namespace DeployUtils{
    public:
 
     /*! \brief Constructor
+     *
+     * \pre \a qtDistributionDirectory must be a valid pointer
      */
-    explicit SharedLibrariesDeployer(QObject *parent = nullptr) noexcept;
+    explicit SharedLibrariesDeployer(std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory,
+                                     QObject *parent = nullptr) noexcept;
 
     /*! \brief Set the list of paths prefixes where to locate teh shared libraries
      */
@@ -225,6 +230,7 @@ namespace Mdt{ namespace DeployUtils{
     PathList mSearchPrefixPathList;
     BinaryDependencies mBinaryDependencies;
     Platform mPlatform;
+    std::shared_ptr<QtDistributionDirectory> mQtDistributionDirectory;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

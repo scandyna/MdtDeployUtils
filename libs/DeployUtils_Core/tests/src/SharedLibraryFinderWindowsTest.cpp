@@ -21,16 +21,19 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "SharedLibraryFinderWindowsTestCommon.h"
+#include "Mdt/DeployUtils/QtDistributionDirectory.h"
 #include "Mdt/DeployUtils/SharedLibraryFinderWindows.h"
 #include <QLatin1String>
 #include <QtGlobal>
+#include <memory>
 
 using namespace Mdt::DeployUtils;
 
 TEST_CASE("ExcludeMsvcLibraries")
 {
-  TestIsExistingSharedLibrary isExistingShLibOp;
-  SharedLibraryFinderWindows finder(isExistingShLibOp);
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
   SECTION("by default MSVC libraries are included but Windows API sets not")
   {
@@ -186,8 +189,9 @@ TEST_CASE("isDirect3D_11_Library")
 
 TEST_CASE("libraryHasToBeExcluded")
 {
-  TestIsExistingSharedLibrary isExistingShLibOp;
-  SharedLibraryFinderWindows finder(isExistingShLibOp);
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
   SECTION("exclude MSVC (and also Windows API sets)")
   {
@@ -277,7 +281,8 @@ TEST_CASE("buildSearchPathList")
 #endif // #ifdef Q_OS_WIN
 
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp);
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
   PathList searchFirstPathPrefixList;
   std::shared_ptr<CompilerFinder> compilerFinder;
 
@@ -305,7 +310,8 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
   BinaryDependenciesFile library;
   QFileInfo libraryFile;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp);
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
   SECTION("A.dll exists as /tmp/A.dll")
   {
@@ -352,7 +358,8 @@ TEST_CASE("findLibraryAbsolutePath")
 {
   QString libraryName;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp);
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
   SECTION("A.dll - pathList:/tmp - exists")
   {
@@ -395,7 +402,8 @@ TEST_CASE("findLibraryAbsolutePath")
 TEST_CASE("findLibrariesAbsolutePath")
 {
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp);
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
   BinaryDependenciesFileList libraries;
 
   SECTION("A.dll,KERNEL32.DLL - pathList:/tmp - exists - KERNEL32.DLL must be excluded")

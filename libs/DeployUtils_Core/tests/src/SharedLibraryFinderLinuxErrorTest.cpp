@@ -21,10 +21,12 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "SharedLibraryFinderLinuxTestCommon.h"
+#include "Mdt/DeployUtils/QtDistributionDirectory.h"
 #include "Mdt/DeployUtils/SharedLibraryFinderLinux.h"
 #include "Mdt/DeployUtils/RPath.h"
 #include <QLatin1String>
 #include <QString>
+#include <memory>
 
 using namespace Mdt::DeployUtils;
 
@@ -32,7 +34,8 @@ TEST_CASE("findLibraryAbsolutePath")
 {
   QString libraryName;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
-  SharedLibraryFinderLinux finder(isExistingSharedLibraryOp);
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderLinux finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
   SECTION("libA.so - pathList:/tmp - not exists in given pathList")
   {

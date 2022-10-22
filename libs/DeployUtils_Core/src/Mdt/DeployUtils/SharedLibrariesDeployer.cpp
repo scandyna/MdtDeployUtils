@@ -32,9 +32,13 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-SharedLibrariesDeployer::SharedLibrariesDeployer(QObject *parent) noexcept
-  : QObject(parent)
+SharedLibrariesDeployer::SharedLibrariesDeployer(std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory,
+                                                 QObject *parent) noexcept
+  : QObject(parent),
+    mQtDistributionDirectory(qtDistributionDirectory)
 {
+  assert(qtDistributionDirectory.get() != nullptr);
+
   connect(&mBinaryDependencies, &BinaryDependencies::message, this, &SharedLibrariesDeployer::statusMessage);
   connect(&mBinaryDependencies, &BinaryDependencies::verboseMessage, this, &SharedLibrariesDeployer::verboseMessage);
   connect(&mBinaryDependencies, &BinaryDependencies::debugMessage, this, &SharedLibrariesDeployer::debugMessage);
@@ -123,7 +127,7 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFil
     }
   }
 
-  mFoundDependencies = mBinaryDependencies.findDependencies(targetFilePathList, mSearchPrefixPathList);
+  mFoundDependencies = mBinaryDependencies.findDependencies(targetFilePathList, mSearchPrefixPathList, mQtDistributionDirectory);
 
   emitFoundDependenciesMessage();
 

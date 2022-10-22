@@ -22,6 +22,7 @@
 #include "Catch2QString.h"
 #include "TestUtils.h"
 #include "Mdt/DeployUtils/BinaryDependencies.h"
+#include "Mdt/DeployUtils/QtDistributionDirectory.h"
 #include "Mdt/DeployUtils/PathList.h"
 #include "Mdt/DeployUtils/MessageLogger.h"
 #include "Mdt/DeployUtils/CompilerFinder.h"
@@ -54,13 +55,14 @@ TEST_CASE("findDependencies")
   solver.setCompilerFinder(compilerFinder);
 #endif // #ifdef COMPILER_IS_MSVC
 
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
   PathList searchFirstPathPrefixList = PathList::fromStringList( getTestPrefixPath(PREFIX_PATH) );
   QStringList dependencies;
 
   SECTION("Executable")
   {
     const QFileInfo target( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
-    dependencies = solver.findDependencies(target, searchFirstPathPrefixList);
+    dependencies = solver.findDependencies(target, searchFirstPathPrefixList, qtDistributionDirectory);
 
     std::cout << "deps:\n" << dependencies.join( QLatin1Char('\n') ).toStdString() << std::endl;
 

@@ -22,6 +22,7 @@
 #include "Catch2QString.h"
 #include "TestUtils.h"
 #include "TestFileUtils.h"
+#include "Mdt/DeployUtils/QtDistributionDirectory.h"
 #include "Mdt/DeployUtils/SharedLibrariesDeployer.h"
 #include "Mdt/DeployUtils/PathList.h"
 #include "Mdt/DeployUtils/MessageLogger.h"
@@ -32,6 +33,7 @@
 #include <QString>
 #include <QStringList>
 #include <QTemporaryDir>
+#include <memory>
 
 using namespace Mdt::DeployUtils;
 
@@ -56,7 +58,8 @@ RPath getTestSharedLibraryRunPath(const QTemporaryDir & dir)
 
 TEST_CASE("searchPrefixPathList")
 {
-  SharedLibrariesDeployer deployer;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibrariesDeployer deployer(qtDistributionDirectory);
 
   const QStringList pathList = qStringListFromUtf8Strings({"/tmp/qt"});
   deployer.setSearchPrefixPathList( PathList::fromStringList(pathList) );
@@ -66,7 +69,8 @@ TEST_CASE("searchPrefixPathList")
 
 TEST_CASE("overwriteBehavior")
 {
-  SharedLibrariesDeployer deployer;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibrariesDeployer deployer(qtDistributionDirectory);
 
   SECTION("by default overwrite behavior is Fail")
   {
@@ -83,7 +87,8 @@ TEST_CASE("overwriteBehavior")
 
 TEST_CASE("removeRpath")
 {
-  SharedLibrariesDeployer deployer;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibrariesDeployer deployer(qtDistributionDirectory);
 
   SECTION("by default RPath is not removed")
   {
@@ -107,7 +112,8 @@ TEST_CASE("copySharedLibrariesTargetsDependsOn")
   MessageLogger messageLogger;
   MessageLogger::setBackend<ConsoleMessageLogger>();
 
-  SharedLibrariesDeployer deployer;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibrariesDeployer deployer(qtDistributionDirectory);
   QObject::connect(&deployer, &SharedLibrariesDeployer::statusMessage, MessageLogger::info);
   QObject::connect(&deployer, &SharedLibrariesDeployer::verboseMessage, MessageLogger::info);
   QObject::connect(&deployer, &SharedLibrariesDeployer::debugMessage, MessageLogger::info);

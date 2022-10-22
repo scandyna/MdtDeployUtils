@@ -45,7 +45,12 @@ bool AbstractSharedLibraryFinder::isExistingValidSharedLibrary(const QFileInfo &
   assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
   assert( libraryFile.isAbsolute() );
 
-  return mIsExistingValidShLibOp.isExistingValidSharedLibrary(libraryFile);
+  if( !mIsExistingValidShLibOp.isExistingValidSharedLibrary(libraryFile) ){
+    return false;
+  }
+  /// \todo Qt distribution
+
+  return true;
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

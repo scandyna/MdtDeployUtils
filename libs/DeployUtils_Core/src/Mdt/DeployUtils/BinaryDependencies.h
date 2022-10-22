@@ -43,6 +43,8 @@ namespace Mdt{ namespace DeployUtils{
 
   } // namespace Impl{
 
+  class QtDistributionDirectory;
+
   /*! \brief Find dependencies for a executable or a library
    */
   class MDT_DEPLOYUTILSCORE_EXPORT BinaryDependencies : public QObject
@@ -88,7 +90,9 @@ namespace Mdt{ namespace DeployUtils{
      * \sa SharedLibraryFinderLinux
      * \sa SharedLibraryFinderWindows
      */
-    QStringList findDependencies(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList);
+    QStringList findDependencies(const QFileInfo & binaryFilePath,
+                                 const PathList & searchFirstPathPrefixList,
+                                 std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory);
 
     /*! \brief Find dependencies for a list executables or a shared libraries
      *
@@ -97,7 +101,9 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \sa findDependencies(const QFileInfo &, const PathList &)
      */
-    QStringList findDependencies(const QFileInfoList & binaryFilePathList, const PathList & searchFirstPathPrefixList);
+    QStringList findDependencies(const QFileInfoList & binaryFilePathList,
+                                 const PathList & searchFirstPathPrefixList,
+                                 std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory);
 
    signals:
 

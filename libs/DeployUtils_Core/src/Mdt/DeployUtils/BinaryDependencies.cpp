@@ -21,6 +21,7 @@
 #include "BinaryDependencies.h"
 #include "BinaryDependenciesFile.h"
 #include "SearchPathList.h"
+#include "QtDistributionDirectory.h"
 #include "SharedLibraryFinderLinux.h"
 #include "SharedLibraryFinderWindows.h"
 #include "LibraryName.h"
@@ -54,17 +55,23 @@ void BinaryDependencies::setCompilerFinder(const std::shared_ptr<CompilerFinder>
   mCompilerFinder = compilerFinder;
 }
 
-QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePath, const PathList & searchFirstPathPrefixList)
+QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePath,
+                                                 const PathList & searchFirstPathPrefixList,
+                                                 std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory)
 {
   assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
   assert( binaryFilePath.isAbsolute() );
+  assert(qtDistributionDirectory.get() != nullptr);
 
-  return findDependencies(QFileInfoList{binaryFilePath}, searchFirstPathPrefixList);
+  return findDependencies(QFileInfoList{binaryFilePath}, searchFirstPathPrefixList, qtDistributionDirectory);
 }
 
-QStringList BinaryDependencies::findDependencies(const QFileInfoList & binaryFilePathList, const PathList & searchFirstPathPrefixList)
+QStringList BinaryDependencies::findDependencies(const QFileInfoList & binaryFilePathList,
+                                                 const PathList & searchFirstPathPrefixList,
+                                                 std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory)
 {
   assert( !binaryFilePathList.isEmpty() );
+  assert(qtDistributionDirectory.get() != nullptr);
 
   BinaryDependenciesFileList dependencies;
 
@@ -86,17 +93,22 @@ QStringList BinaryDependencies::findDependencies(const QFileInfoList & binaryFil
 
   if( platform.operatingSystem() == OperatingSystem::Linux ){
 
-    shLibFinder = std::make_shared<SharedLibraryFinderLinux>(isExistingValidShLibOp);
+    shLibFinder = std::make_shared<SharedLibraryFinderLinux>(isExistingValidShLibOp, qtDistributionDirectory);
     SharedLibraryFinderLinux *shLibFinderLinux = static_cast<SharedLibraryFinderLinux*>( shLibFinder.get() );
     shLibFinderLinux->buildSearchPathList( searchFirstPathPrefixList, platform.processorISA() );
 
   }else if( platform.operatingSystem() == OperatingSystem::Windows ){
 
-    shLibFinder = std::make_shared<SharedLibraryFinderWindows>(isExistingValidShLibOp);
+    shLibFinder = std::make_shared<SharedLibraryFinderWindows>(isExistingValidShLibOp, qtDistributionDirectory);
     SharedLibraryFinderWindows *shLibFinderWindows = static_cast<SharedLibraryFinderWindows*>( shLibFinder.get() );
     shLibFinderWindows->buildSearchPathList(firstBinaryFilePath, searchFirstPathPrefixList, platform.processorISA(), mCompilerFinder);
 
   }
+  assert( shLibFinder.get() != nullptr );
+
+  connect(shLibFinder.get(), &AbstractSharedLibraryFinder::statusMessage, this, &BinaryDependencies::message);
+  connect(shLibFinder.get(), &AbstractSharedLibraryFinder::verboseMessage, this, &BinaryDependencies::verboseMessage);
+  connect(shLibFinder.get(), &AbstractSharedLibraryFinder::debugMessage, this, &BinaryDependencies::debugMessage);
 
   emitSearchPathListMessage( shLibFinder->searchPathList() );
 

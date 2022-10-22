@@ -22,6 +22,7 @@
 #include "TestFileUtils.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
 #include "Mdt/DeployUtils/BinaryDependenciesFile.h"
+#include "Mdt/DeployUtils/QtDistributionDirectory.h"
 #include "Mdt/DeployUtils/AbstractSharedLibraryFinder.h"
 #include "Mdt/DeployUtils/PathList.h"
 #include <QString>
@@ -30,6 +31,7 @@
 #include <QMap>
 #include <vector>
 #include <string>
+#include <memory>
 
 using namespace Mdt::DeployUtils;
 
@@ -58,7 +60,7 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
  public:
 
   explicit SharedLibraryFinderBDTest(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp, QObject *parent = nullptr)
-   : AbstractSharedLibraryFinder(isExistingValidShLibOp, parent)
+   : AbstractSharedLibraryFinder(isExistingValidShLibOp, std::make_shared<QtDistributionDirectory>(), parent)
   {
   }
 

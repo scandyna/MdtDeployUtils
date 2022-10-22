@@ -42,6 +42,12 @@
 
 namespace Mdt{ namespace DeployUtils{
 
+DeployApplication::DeployApplication(QObject *parent)
+  : QObject(parent),
+    mQtDistributionDirectory( std::make_shared<QtDistributionDirectory>() )
+{
+}
+
 void DeployApplication::execute(const DeployApplicationRequest & request)
 {
   assert( !request.targetFilePath.trimmed().isEmpty() );
@@ -130,7 +136,7 @@ DeployApplication::destinationDirectoryStructureFromRuntimeAndLibraryDestination
 void DeployApplication::setupShLibDeployer(const DeployApplicationRequest & request)
 {
   if(mShLibDeployer.get() == nullptr){
-    mShLibDeployer = std::make_shared<SharedLibrariesDeployer>();
+    mShLibDeployer = std::make_shared<SharedLibrariesDeployer>(mQtDistributionDirectory);
     connect(mShLibDeployer.get(), &SharedLibrariesDeployer::statusMessage, this, &DeployApplication::statusMessage);
     connect(mShLibDeployer.get(), &SharedLibrariesDeployer::verboseMessage, this, &DeployApplication::verboseMessage);
     connect(mShLibDeployer.get(), &SharedLibrariesDeployer::debugMessage, this, &DeployApplication::debugMessage);
