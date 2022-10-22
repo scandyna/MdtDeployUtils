@@ -75,9 +75,6 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Find the absolute path for each direct dependency of \a file
      */
     BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & file); /*const*/
-//     {
-//       return doFindLibrariesAbsolutePath(file);
-//     }
 
     /*! \brief Check if \a libraryFile is a existing shared library
      *
@@ -90,18 +87,6 @@ namespace Mdt{ namespace DeployUtils{
     void statusMessage(const QString & message) const;
     void verboseMessage(const QString & message) const;
     void debugMessage(const QString & message) const;
-
-   protected:
-
-     /*! \todo
-      * This should initialize QtDistributionDirectory the first time a Qt library is found.
-      *
-      * isExistingValidSharedLibrary() should check about valid Qt library if applicable,
-      * not mIsExistingValidShLibOp anymore.
-      */
-//      void addFoundLibrary(const BinaryDependenciesFile & library) noexcept
-//      {
-//      }
 
    private:
 
