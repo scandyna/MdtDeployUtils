@@ -106,6 +106,49 @@ void SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binaryFil
   setSearchPathList(searchPathList);
 }
 
+BinaryDependenciesFile SharedLibraryFinderWindows::findLibraryAbsolutePathByAlternateNames(const QFileInfo & libraryFile) const
+{
+  assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
+  assert( libraryFile.isAbsolute() );
+
+  if( isExistingValidSharedLibrary(libraryFile) ){
+    return BinaryDependenciesFile::fromQFileInfo(libraryFile);
+  }
+
+  QFileInfo alternativeFile = libraryFile;
+  const QDir directory = libraryFile.absoluteDir();
+
+  alternativeFile.setFile( directory, libraryFile.fileName().toLower() );
+  if( isExistingValidSharedLibrary(alternativeFile) ){
+    return BinaryDependenciesFile::fromQFileInfo(alternativeFile);
+  }
+
+  alternativeFile.setFile( directory, libraryFile.fileName().toUpper() );
+  if( isExistingValidSharedLibrary(alternativeFile) ){
+    return BinaryDependenciesFile::fromQFileInfo(alternativeFile);
+  }
+
+  return BinaryDependenciesFile();
+}
+
+BinaryDependenciesFile SharedLibraryFinderWindows::findLibraryAbsolutePath(const QString & libraryName,
+                                                                           const BinaryDependenciesFile & /*dependentFile*/) const
+{
+  assert( !libraryName.trimmed().isEmpty() );
+
+  for( const QString & directory : searchPathList() ){
+    QFileInfo libraryFile(directory, libraryName);
+    const BinaryDependenciesFile library = findLibraryAbsolutePathByAlternateNames(libraryFile);
+    if( !library.isNull() ){
+      return library;
+    }
+  }
+
+  const QString message = tr("could not find the absolute path for %1")
+                          .arg(libraryName);
+  throw FindDependencyError(message);
+}
+
 bool SharedLibraryFinderWindows::libraryHasToBeExcluded(const QString & library) const noexcept
 {
   if( hasToExcludeMsvcLibraries() && isMsvcLibrary(library) ){
@@ -181,19 +224,6 @@ bool SharedLibraryFinderWindows::isDirect3D_11_Library(const QString & library) 
   };
 
   return direct3dLibraries.contains(library, Qt::CaseInsensitive);
-}
-
-BinaryDependenciesFileList SharedLibraryFinderWindows::doFindLibrariesAbsolutePath(BinaryDependenciesFile & file) const
-{
-  BinaryDependenciesFileList libraries;
-
-  removeLibrariesToNotRedistribute(file);
-
-  for( const QString & libraryName : file.dependenciesFileNames() ){
-    libraries.push_back( findLibraryAbsolutePath(libraryName) );
-  }
-
-  return libraries;
 }
 
 void SharedLibraryFinderWindows::removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept

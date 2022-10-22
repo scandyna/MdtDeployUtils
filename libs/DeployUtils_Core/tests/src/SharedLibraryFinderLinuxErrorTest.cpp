@@ -41,6 +41,6 @@ TEST_CASE("findLibraryAbsolutePath")
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libB.so","/opt/libA.so"});
 
-    REQUIRE_THROWS_AS( finder.findLibraryAbsolutePath(executable, libraryName), FindDependencyError );
+    REQUIRE_THROWS_AS( finder.findLibraryAbsolutePath(libraryName, executable), FindDependencyError );
   }
 }

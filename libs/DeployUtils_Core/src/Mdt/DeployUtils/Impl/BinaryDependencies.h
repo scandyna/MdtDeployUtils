@@ -101,7 +101,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
     /*! \internal
      */
-    void setSharedLibrariesFinder(const std::shared_ptr<const AbstractSharedLibraryFinder> & shLibFinder) noexcept
+    void setSharedLibrariesFinder(const std::shared_ptr<AbstractSharedLibraryFinder> & shLibFinder) noexcept
     {
       assert( shLibFinder.get() != nullptr );
 
@@ -228,7 +228,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
       }
     }
 
-    std::shared_ptr<const AbstractSharedLibraryFinder> mShLibFinder;
+    std::shared_ptr<AbstractSharedLibraryFinder> mShLibFinder;
     std::vector<QFileInfo> mSolvedFiles;
   };
 

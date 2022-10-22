@@ -58,21 +58,13 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \internal
      */
-    BinaryDependenciesFile findLibraryAbsolutePathByRPath(const BinaryDependenciesFile & originFile,
-                                                          const QString & libraryName) const
-    {
-      assert( !libraryName.trimmed().isEmpty() );
+    static
+    QString makeDirectoryFromRpathEntry(const BinaryDependenciesFile & originFile, const RPathEntry & rpathEntry) noexcept;
 
-      for( const auto & rpathEntry : originFile.rPath() ){
-        const QString directory = makeDirectoryFromRpathEntry(originFile, rpathEntry);
-        const QFileInfo libraryFile(directory, libraryName);
-        if( isExistingValidSharedLibrary(libraryFile) ){
-          return BinaryDependenciesFile::fromQFileInfo(libraryFile);
-        }
-      }
-
-      return BinaryDependenciesFile();
-    }
+    /*! \internal
+     */
+    BinaryDependenciesFile findLibraryAbsolutePathByRPath(const QString & libraryName,
+                                                          const BinaryDependenciesFile & dependentFile) const;
 
     /*! \brief Find the absolute path for given \a libraryName
      *
@@ -83,53 +75,16 @@ namespace Mdt{ namespace DeployUtils{
      * \todo case of \a libraryName containing slashes is not implemented
      * \todo LD_LIBRARY_PATH is not implemented
      */
-    BinaryDependenciesFile findLibraryAbsolutePath(const BinaryDependenciesFile & originFile,
-                                                   const QString & libraryName) const
-    {
-      assert( !originFile.isNull() );
-      assert( !libraryName.trimmed().isEmpty() );
-
-      BinaryDependenciesFile library = findLibraryAbsolutePathByRPath(originFile, libraryName);
-
-      if( library.isNull() ){
-        library = findLibraryAbsolutePathBySearchPath(libraryName);
-      }
-
-      if( library.isNull() ){
-        const QString message = tr("could not find the absolute path for %1")
-                                .arg(libraryName);
-        throw FindDependencyError(message);
-      }
-
-      return library;
-    }
-
-    /*! \internal
-     */
-    static
-    QString makeDirectoryFromRpathEntry(const BinaryDependenciesFile & originFile, const RPathEntry & rpathEntry) noexcept;
+    BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName,
+                                                   const BinaryDependenciesFile & dependentFile) const override;
 
    private:
 
-    BinaryDependenciesFile findLibraryAbsolutePathBySearchPath(const QString & libraryName) const
-    {
-      assert( !libraryName.trimmed().isEmpty() );
-
-      for( const QString & directory : searchPathList() ){
-        QFileInfo libraryFile(directory, libraryName);
-        if( isExistingValidSharedLibrary(libraryFile) ){
-          return BinaryDependenciesFile::fromQFileInfo(libraryFile);
-        }
-      }
-
-      return BinaryDependenciesFile();
-    }
-
-    BinaryDependenciesFileList doFindLibrariesAbsolutePath(BinaryDependenciesFile & file) const override;
+    BinaryDependenciesFile findLibraryAbsolutePathBySearchPath(const QString & libraryName) const;
 
     /*! \brief Remove libraries that should not be distributed
      */
-    void removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept;
+    void removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept override;
 
     static
     void removeLibrariesInLocalExcludeList(BinaryDependenciesFile & file) noexcept;

@@ -71,7 +71,12 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
 
  private:
 
-  BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName) const
+  void removeLibrariesToNotRedistribute(BinaryDependenciesFile & /*file*/) const noexcept override
+  {
+  }
+
+  BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName,
+                                                  const BinaryDependenciesFile & /*dependentFile*/) const override
   {
     assert( !libraryName.trimmed().isEmpty() );
 
@@ -83,17 +88,6 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
     }
 
     return BinaryDependenciesFile();
-  }
-
-  BinaryDependenciesFileList doFindLibrariesAbsolutePath(BinaryDependenciesFile & file) const override
-  {
-    BinaryDependenciesFileList libraries;
-
-    for( const QString & libraryName : file.dependenciesFileNames() ){
-      libraries.push_back( findLibraryAbsolutePath(libraryName) );
-    }
-
-    return libraries;
   }
 
   PathList mSearchPathList;

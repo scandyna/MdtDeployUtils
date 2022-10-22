@@ -97,7 +97,7 @@ TEST_CASE("findLibraryAbsolutePathByRPath")
     originExecutable.setRPath( makeRPathFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so"});
 
-    library = finder.findLibraryAbsolutePathByRPath( originExecutable, QLatin1String("libA.so") );
+    library = finder.findLibraryAbsolutePathByRPath( QLatin1String("libA.so"), originExecutable );
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
   }
@@ -107,7 +107,7 @@ TEST_CASE("findLibraryAbsolutePathByRPath")
     originExecutable.setRPath( makeRPathFromUtf8Paths({"."}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/libA.so"});
 
-    library = finder.findLibraryAbsolutePathByRPath( originExecutable, QLatin1String("libA.so") );
+    library = finder.findLibraryAbsolutePathByRPath( QLatin1String("libA.so"), originExecutable );
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/opt/libA.so") );
   }
@@ -117,7 +117,7 @@ TEST_CASE("findLibraryAbsolutePathByRPath")
     originExecutable.setRPath( makeRPathFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/lib/libA.so"});
 
-    library = finder.findLibraryAbsolutePathByRPath( originExecutable, QLatin1String("libA.so") );
+    library = finder.findLibraryAbsolutePathByRPath( QLatin1String("libA.so"), originExecutable );
 
     REQUIRE( library.isNull() );
   }
@@ -136,7 +136,7 @@ TEST_CASE("findLibraryAbsolutePath")
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so"});
 
-    auto library = finder.findLibraryAbsolutePath(executable, libraryName);
+    auto library = finder.findLibraryAbsolutePath(libraryName, executable);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
   }
@@ -148,7 +148,7 @@ TEST_CASE("findLibraryAbsolutePath")
     libraryName = QLatin1String("libA.so");
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so"});
 
-    auto library = finder.findLibraryAbsolutePath(executable, libraryName);
+    auto library = finder.findLibraryAbsolutePath(libraryName, executable);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
   }
@@ -160,7 +160,7 @@ TEST_CASE("findLibraryAbsolutePath")
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp","/opt"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so","/opt/libA.so"});
 
-    auto library = finder.findLibraryAbsolutePath(executable, libraryName);
+    auto library = finder.findLibraryAbsolutePath(libraryName, executable);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
   }

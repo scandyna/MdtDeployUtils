@@ -57,17 +57,68 @@ QString SharedLibraryFinderLinux::makeDirectoryFromRpathEntry(const BinaryDepend
   return rpathEntry.path();
 }
 
-BinaryDependenciesFileList SharedLibraryFinderLinux::doFindLibrariesAbsolutePath(BinaryDependenciesFile & file) const
+BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePathByRPath(const QString & libraryName,
+                                                                                const BinaryDependenciesFile & dependentFile) const
 {
-  BinaryDependenciesFileList libraries;
+  assert( !libraryName.trimmed().isEmpty() );
 
-  removeLibrariesToNotRedistribute(file);
+  emit verboseMessage(
+    tr(" searching %1 by RPath given in %2").arg( libraryName, dependentFile.fileName() )
+  );
 
-  for( const QString & libraryName : file.dependenciesFileNames() ){
-    libraries.push_back( findLibraryAbsolutePath(file, libraryName) );
+  for( const auto & rpathEntry : dependentFile.rPath() ){
+    const QString directory = makeDirectoryFromRpathEntry(dependentFile, rpathEntry);
+    const QFileInfo libraryFile(directory, libraryName);
+    emit debugMessage(
+      tr("  try %1").arg( libraryFile.absoluteFilePath() )
+    );
+    if( isExistingValidSharedLibrary(libraryFile) ){
+      return BinaryDependenciesFile::fromQFileInfo(libraryFile);
+    }
   }
 
-  return libraries;
+  return BinaryDependenciesFile();
+}
+
+BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePath(const QString & libraryName,
+                                                                         const BinaryDependenciesFile & dependentFile) const
+{
+  assert( !libraryName.trimmed().isEmpty() );
+
+  BinaryDependenciesFile library = findLibraryAbsolutePathByRPath(libraryName, dependentFile);
+
+  if( library.isNull() ){
+    library = findLibraryAbsolutePathBySearchPath(libraryName);
+  }
+
+  if( library.isNull() ){
+    const QString message = tr("could not find the absolute path for %1")
+                            .arg(libraryName);
+    throw FindDependencyError(message);
+  }
+
+  return library;
+}
+
+BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePathBySearchPath(const QString & libraryName) const
+{
+  assert( !libraryName.trimmed().isEmpty() );
+
+  emit verboseMessage(
+    tr(" searching %1 in search path list").arg(libraryName)
+  );
+
+  for( const QString & directory : searchPathList() ){
+    QFileInfo libraryFile(directory, libraryName);
+    emit debugMessage(
+      tr("  try %1").arg( libraryFile.absoluteFilePath() )
+    );
+    if( isExistingValidSharedLibrary(libraryFile) ){
+      return BinaryDependenciesFile::fromQFileInfo(libraryFile);
+    }
+  }
+
+  return BinaryDependenciesFile();
 }
 
 void SharedLibraryFinderLinux::removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept

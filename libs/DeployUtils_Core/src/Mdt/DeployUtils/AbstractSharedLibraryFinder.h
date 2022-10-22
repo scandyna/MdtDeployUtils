@@ -23,8 +23,10 @@
 
 #include "BinaryDependenciesFile.h"
 #include "PathList.h"
+#include "RPath.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
+#include <QString>
 #include <QFileInfo>
 #include <cassert>
 
@@ -72,10 +74,10 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Find the absolute path for each direct dependency of \a file
      */
-    BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & file) const
-    {
-      return doFindLibrariesAbsolutePath(file);
-    }
+    BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & file); /*const*/
+//     {
+//       return doFindLibrariesAbsolutePath(file);
+//     }
 
     /*! \brief Check if \a libraryFile is a existing shared library
      *
@@ -83,9 +85,45 @@ namespace Mdt{ namespace DeployUtils{
      */
     bool isExistingValidSharedLibrary(const QFileInfo & libraryFile) const;
 
+   signals:
+
+    void statusMessage(const QString & message) const;
+    void verboseMessage(const QString & message) const;
+    void debugMessage(const QString & message) const;
+
+   protected:
+
+     /*! \todo
+      * This should initialize QtDistributionDirectory the first time a Qt library is found.
+      *
+      * isExistingValidSharedLibrary() should check about valid Qt library if applicable,
+      * not mIsExistingValidShLibOp anymore.
+      */
+//      void addFoundLibrary(const BinaryDependenciesFile & library) noexcept
+//      {
+//      }
+
    private:
 
-    virtual BinaryDependenciesFileList doFindLibrariesAbsolutePath(BinaryDependenciesFile & file) const = 0;
+    /*! \brief Remove libraries that should not be distributed
+     *
+     * This method has to be implemented by the concrete class.
+     */
+    virtual void removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept = 0;
+
+    /*! \brief Find the absolute path for given \a libraryName
+     *
+     * This method has to be implemented by the concrete class.
+     *
+     * \a dependentFile if the file that has \a libraryName as direct dependency.
+     * This can typically be used to get rpath informations (for platforms that support it).
+     *
+     * \pre \a libraryName must not be empty
+     * \exception FindDependencyError
+     */
+    virtual
+    BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName,
+                                                   const BinaryDependenciesFile & dependentFile) const = 0;
 
     const AbstractIsExistingValidSharedLibrary & mIsExistingValidShLibOp;
     PathList mSearchPathList;

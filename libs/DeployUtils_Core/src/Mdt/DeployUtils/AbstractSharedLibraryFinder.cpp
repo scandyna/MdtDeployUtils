@@ -23,6 +23,23 @@
 
 namespace Mdt{ namespace DeployUtils{
 
+BinaryDependenciesFileList AbstractSharedLibraryFinder::findLibrariesAbsolutePath(BinaryDependenciesFile & file)
+{
+  BinaryDependenciesFileList libraries;
+
+  removeLibrariesToNotRedistribute(file);
+
+  for( const QString & libraryName : file.dependenciesFileNames() ){
+    const BinaryDependenciesFile library = findLibraryAbsolutePath(libraryName, file);
+
+    /// \todo Qt distribution
+
+    libraries.push_back(library);
+  }
+
+  return libraries;
+}
+
 bool AbstractSharedLibraryFinder::isExistingValidSharedLibrary(const QFileInfo & libraryFile) const
 {
   assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
