@@ -36,6 +36,13 @@ bool QtConf::prefixPathIsAbsolute() const noexcept
   return QDir::isAbsolutePath(mPrefixPath);
 }
 
+void QtConf::setLibrariesPath(const QString & path) noexcept
+{
+  assert( !path.trimmed().isEmpty() );
+
+  mLibrariesPath = path;
+}
+
 void QtConf::setPluginsPath(const QString & path) noexcept
 {
   assert( !path.trimmed().isEmpty() );

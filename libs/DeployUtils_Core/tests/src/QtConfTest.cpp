@@ -67,6 +67,24 @@ TEST_CASE("prefixPathIsAbsolute")
   }
 }
 
+TEST_CASE("Libraries path")
+{
+  QtConf conf;
+
+  SECTION("default")
+  {
+    REQUIRE( !conf.containsLibrariesPath() );
+  }
+
+  SECTION("lib")
+  {
+    conf.setLibrariesPath( QLatin1String("lib") );
+
+    REQUIRE( conf.containsLibrariesPath() );
+    REQUIRE( conf.librariesPath() == QLatin1String("lib") );
+  }
+}
+
 TEST_CASE("PluginsPath")
 {
   QtConf conf;

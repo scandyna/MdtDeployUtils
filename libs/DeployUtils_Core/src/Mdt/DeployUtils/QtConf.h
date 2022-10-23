@@ -60,6 +60,32 @@ namespace Mdt{ namespace DeployUtils{
       return mPrefixPath;
     }
 
+    /*! \brief Set the path to the libraries
+     *
+     * \sa librariesPath()
+     * \pre \a path must not be empty
+     */
+    void setLibrariesPath(const QString & path) noexcept;
+
+    /*! \brief Check if this config has a Libraries path
+     *
+     * \sa librariesPath()
+     */
+    bool containsLibrariesPath() const noexcept
+    {
+      return !mLibrariesPath.isEmpty();
+    }
+
+    /*! \brief Get the Libraries path
+     *
+     * \note This is not always the shared libraries path
+     *  (on Windows, shared libraries are probably installed to the Binaries path)
+     */
+    const QString & librariesPath() const noexcept
+    {
+      return mLibrariesPath;
+    }
+
     /*! \brief Set the Plugins path
      *
      * \pre \a path must not be empty
@@ -83,6 +109,7 @@ namespace Mdt{ namespace DeployUtils{
    private:
 
     QString mPrefixPath;
+    QString mLibrariesPath;
     QString mPluginsPath;
   };
 
