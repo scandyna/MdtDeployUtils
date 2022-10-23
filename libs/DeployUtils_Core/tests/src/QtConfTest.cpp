@@ -43,6 +43,30 @@ TEST_CASE("PrefixPath")
   }
 }
 
+TEST_CASE("prefixPathIsAbsolute")
+{
+  QtConf conf;
+
+  SECTION("default")
+  {
+    REQUIRE( !conf.prefixPathIsAbsolute() );
+  }
+
+  SECTION("..")
+  {
+    conf.setPrefixPath( QLatin1String("..") );
+
+    REQUIRE( !conf.prefixPathIsAbsolute() );
+  }
+
+  SECTION("/usr")
+  {
+    conf.setPrefixPath( QLatin1String("/usr") );
+
+    REQUIRE( conf.prefixPathIsAbsolute() );
+  }
+}
+
 TEST_CASE("PluginsPath")
 {
   QtConf conf;

@@ -49,6 +49,10 @@ namespace Mdt{ namespace DeployUtils{
       return !mPrefixPath.isEmpty();
     }
 
+    /*! \brief Check if the prefix path of this config is absolute
+     */
+    bool prefixPathIsAbsolute() const noexcept;
+
     /*! \brief Get the Prefix path
      */
     const QString & prefixPath() const noexcept

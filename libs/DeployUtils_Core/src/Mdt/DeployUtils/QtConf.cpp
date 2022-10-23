@@ -19,6 +19,7 @@
  **
  ****************************************************************************/
 #include "QtConf.h"
+#include <QDir>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
@@ -28,6 +29,11 @@ void QtConf::setPrefixPath(const QString & path) noexcept
   assert( !path.trimmed().isEmpty() );
 
   mPrefixPath = path;
+}
+
+bool QtConf::prefixPathIsAbsolute() const noexcept
+{
+  return QDir::isAbsolutePath(mPrefixPath);
 }
 
 void QtConf::setPluginsPath(const QString & path) noexcept
