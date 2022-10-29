@@ -212,3 +212,46 @@ TEST_CASE("appendToStdVector")
     REQUIRE( destination == reference );
   }
 }
+
+TEST_CASE("relativePathToBase")
+{
+  using Mdt::DeployUtils::relativePathToBase;
+
+  QString path;
+  QString base;
+
+  SECTION("/usr/lib , /usr -> lib")
+  {
+    path = QLatin1String("/usr/lib");
+    base = QLatin1String("/usr");
+    REQUIRE( relativePathToBase(path, base) == QLatin1String("lib") );
+  }
+
+  SECTION("/usr/lib , /usr/ -> lib")
+  {
+    path = QLatin1String("/usr/lib");
+    base = QLatin1String("/usr/");
+    REQUIRE( relativePathToBase(path, base) == QLatin1String("lib") );
+  }
+
+  SECTION("/usr/lib/ , /usr -> lib/")
+  {
+    path = QLatin1String("/usr/lib/");
+    base = QLatin1String("/usr");
+    REQUIRE( relativePathToBase(path, base) == QLatin1String("lib/") );
+  }
+
+  SECTION("/usr/lib/ , /usr/ -> lib/")
+  {
+    path = QLatin1String("/usr/lib/");
+    base = QLatin1String("/usr/");
+    REQUIRE( relativePathToBase(path, base) == QLatin1String("lib/") );
+  }
+
+  SECTION("/usr/lib/x86_64-linux-gnu , /usr -> lib")
+  {
+    path = QLatin1String("/usr/lib/x86_64-linux-gnu");
+    base = QLatin1String("/usr");
+    REQUIRE( relativePathToBase(path, base) == QLatin1String("lib/x86_64-linux-gnu") );
+  }
+}
