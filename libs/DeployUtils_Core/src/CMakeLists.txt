@@ -126,6 +126,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/QtSharedLibraryFile.cpp
   Mdt/DeployUtils/QtSharedLibrary.cpp
   Mdt/DeployUtils/UnknownQtModuleError.cpp
+  Mdt/DeployUtils/QtDistributionDirectory.cpp
   Mdt/DeployUtils/QtModule.cpp
   Mdt/DeployUtils/QtModuleList.cpp
   Mdt/DeployUtils/FindQtPluginError.cpp

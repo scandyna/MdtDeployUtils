@@ -743,6 +743,22 @@ if(MSVC)
 endif()
 
 mdt_add_test(
+  NAME QtDistributionDirectoryTest
+  TARGET qtDistributionDirectoryTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtDistributionDirectoryTest.cpp
+)
+
+mdt_add_test(
+  NAME QtDistributionDirectoryErrorTest
+  TARGET qtDistributionDirectoryErrorTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtDistributionDirectoryErrorTest.cpp
+)
+
+mdt_add_test(
   NAME SharedLibraryFinderLinuxTest
   TARGET sharedLibraryFinderLinuxTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

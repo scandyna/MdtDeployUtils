@@ -21,8 +21,11 @@
 #ifndef MDT_DEPLOY_UTILS_QT_DISTRIBUTION_DIRECTORY_H
 #define MDT_DEPLOY_UTILS_QT_DISTRIBUTION_DIRECTORY_H
 
+#include "QtConf.h"
+#include "OperatingSystem.h"
 #include "mdt_deployutilscore_export.h"
 #include <QString>
+#include <QLatin1String>
 #include <QFileInfo>
 
 namespace Mdt{ namespace DeployUtils{
@@ -45,11 +48,11 @@ namespace Mdt{ namespace DeployUtils{
    * /usr/lib/x86_64-linux-gnu
    *                  |-libQt5Core.so
    *                  |-qt5
-   *                  |  |-plugins
-   *                  |-qt.conf
+   *                     |-plugins
+   *                     |-qt.conf
    * \endcode
    *
-   * Example of a Qt Conan package provided by Conan-center:
+   * Example of a Qt Conan package (Linux) provided by Conan-center:
    * \code
    * QTDIR
    *   |-bin
@@ -80,21 +83,226 @@ namespace Mdt{ namespace DeployUtils{
   {
    public:
 
-    
+    /*! \brief Check if this directory is null
+     *
+     * This directory will be null as long as:
+     * - the path is not set
+     *   \sa rootAbsolutePath()
+     * - the shared libraries directory is not set
+     *   \sa sharedLibrariesDirectoryAbsolutePath()
+     *
+     */
+    bool isNull() const noexcept
+    {
+      if( !hasRootPath() ){
+        return true;
+      }
+      if( !hasSharedLibrariesDirectory() ){
+        return true;
+      }
+
+      return false;
+    }
+
+    /*! \brief Check if this directory represents a valid existing Qt distribution
+     *
+     * If a mandatory element is missing,
+     * false is returned.
+     * \sa isNull()
+     *
+     * If each directory that has been set exists on the file system,
+     * and they are directories,
+     * true is returned, otherwise false.
+     */
+    bool isValidExisting() const noexcept;
+
+    /*! \brief Clear this directory
+     */
+    void clear() noexcept;
+
+    /*! \brief Setup this directory from given path to a Qt shared library
+     *
+     * \pre This directory must be null before calling this method.
+     * The caller must explicitly call clear() before if a new setup must be done.
+     * This prevents accidental repeated setup.
+     * \pre \a qtLibraryPath must have its absolute file path set
+     * \sa doc of QFileInfo::absoluteFilePath()
+     * \pre \a qtLibraryPath must be a Qt shared library
+     * \sa QtSharedLibraryFile::isQtSharedLibrary()
+     * \pre \a os must be valid
+     */
+    void setupFromQtSharedLibrary(const QFileInfo & qtLibraryPath, OperatingSystem os);
+
+    /*! \brief Set the entries present in given Qt config to this directory
+     *
+     * Will set directories present in \a qtConf.
+     *
+     * On Unix, if \a qtConf has the Libraries entry,
+     * it will be used to set the shared libraries directory path.
+     *
+     * A qt.conf file can have a relative Prefix entry.
+     * The Qt documentation is not so clear on how to interpret a relative Prefix for a Qt installation itself.
+     * Looking at some installed Qt distributions,
+     * it seems that the Prefix is relative to the location of the qt.conf file
+     * (or it is absolute, for example on a Linux system-wide installation).
+     *
+     * \note This method will not check if the directories exists on the file system
+     * \sa isValidExisting()
+     * \pre \a os must be valid
+     * \pre \a qtConfFilePath must be a absolute path
+     */
+    void setEntriesFromQtConf(const QtConf & qtConf, OperatingSystem os, const QFileInfo & qtConfFilePath) noexcept;
+
+    /*! \brief Setup this directory from given Qt configuration
+     *
+     * Will set directories present in \a qtConf.
+     *
+     * Because the shared libraries is not defined in \a qtConf ,
+     * a valid target OS must be provided to define the shared libraries directory.
+     *
+     * \note This method will not check if the directories exists on the file system
+     * \sa isValidExisting()
+     * \pre This directory must be null before calling this method.
+     * The caller must explicitly call clear() before if a new setup must be done.
+     * This prevents accidental repeated setup.
+     * \pre \a os must be valid
+     * \pre If \a qtConf has a absolute prefix,
+     * \a rootAbsolutePath must be empty,
+     * otherwise it must be set to a absolute path
+     */
+//     [[deprecated]]
+//     void setupFromQtConf( const QtConf & qtConf, OperatingSystem os, const QString & rootAbsolutePath = QString() );
+
+    /*! \brief Set the absolute path to the root of this directory
+     *
+     * \note This method will not check if \a path is a existing directory on the file system
+     * \sa isValidExisting()
+     * \pre \a path must be a absolute path
+     */
+    void setRootAbsolutePath(const QString & path) noexcept;
+
+    /*! \brief Guess the absolute path to the root of a Qt distribution from given Qt shared library
+     *
+     * \pre \a qtLibraryPath must have its absolute file path set
+     * \sa doc of QFileInfo::absoluteFilePath()
+     * \pre \a qtLibraryPath must be a Qt shared library
+     * \sa QtSharedLibraryFile::isQtSharedLibrary()
+     */
+    static
+    QString guessRootAbsolutePathFromQtSharedLibrary(const QFileInfo & qtLibraryPath) noexcept;
+
+    /*! \brief Check if this directory has its root path set
+     */
+    bool hasRootPath() const noexcept
+    {
+      return !mRootAbsolutePath.isEmpty();
+    }
+
+    /*! \brief Get the absolute path to the root of this directory
+     */
+    const QString & rootAbsolutePath() const noexcept
+    {
+      return mRootAbsolutePath;
+    }
+
+    /*! \brief Set the relative path to the directory for shared libraries
+     *
+     * \sa sharedLibrariesDirectoryAbsolutePath()
+     * \note This method will not check if \a path is a existing directory on the file system
+     * \sa isValidExisting()
+     * \pre \a path must be a relative path
+     */
+    void setSharedLibrariesDirectoryRelativePath(const QString & path) noexcept;
+
+    /*! \brief Guess the relative path to the shared libraries directory from given Qt shared library and os
+     *
+     * \pre \a qtLibraryPath must have its absolute file path set
+     * \sa doc of QFileInfo::absoluteFilePath()
+     * \pre \a qtLibraryPath must be a Qt shared library
+     * \sa QtSharedLibraryFile::isQtSharedLibrary()
+     */
+    static
+    QString guessSharedLibrariesDirectoryRelativePathFromQtSharedLibrary(const QFileInfo & qtLibraryPath) noexcept;
+
+    /*! \brief Check if this directory has its shared libraries directory set
+     */
+    bool hasSharedLibrariesDirectory() const noexcept
+    {
+      return !mSharedLibrariesDirectoryRelativePath.isEmpty();
+    }
+
+    /*! \brief Get the absolute path to the directory for shared libraries
+     *
+     * This is a sub-directory of \a rootAbsolutePath() , that depends on the targeted platform
+     * (commonly bin on Windows and something like lib on other OS).
+     *
+     * \pre this directory must have is root path set
+     * \sa hasRootPath()
+     */
+    QString sharedLibrariesDirectoryAbsolutePath() const noexcept;
+
     /*! \brief Check if this distribution contains given shared library
      *
      * \pre \a sharedLibrary must have its absolute file path set
      * \sa doc of QFileInfo::absoluteFilePath()
+     * \pre This directory must not be null
+     * \sa isNull()
      */
     bool containsSharedLibrary(const QFileInfo & sharedLibraryPath) const noexcept;
 
-    /*! \brief Get the (absolute) path to the plugins root
+    /*! \brief Set the relative path to the plugins root
+     *
+     * The default relative path is the plugins directory.
+     *
+     * \sa pluginsRootAbsolutePath()
+     * \note This method will not check if \a path is a existing directory on the file system
+     * \sa isValidExisting()
+     * \pre \a path must be a relative path
      */
-    QString pluginsRootPath() const noexcept;
+    void setPluginsRootRelativePath(const QString & path) noexcept;
+
+    /*! \brief Get the absolute path to the plugins root
+     *
+     * \note Will always return a path to some sub-directory relative to rootAbsolutePath(),
+     *  but it could not exist on the file system
+     * \sa setPluginsRootRelativePath()
+     * \sa isValidExisting()
+     * \pre this directory must have is root path set
+     * \sa hasRootPath()
+     */
+    QString pluginsRootAbsolutePath() const noexcept;
+
+    /*! \brief Find the Qt conf file from given Qt shared library
+     *
+     * Will search in known directories starting from the one
+     * given Qt shared library lives.
+     *
+     * Returns the absolute path to the qt.conf file if found,
+     * otherwise a empty string.
+     *
+     * \pre \a qtLibraryPath must have its absolute file path set
+     * \sa doc of QFileInfo::absoluteFilePath()
+     * \pre \a qtLibraryPath must be a Qt shared library
+     * \sa QtSharedLibraryFile::isQtSharedLibrary()
+     */
+    static
+    QString findQtConfFileFromQtSharedLibrary(const QFileInfo & qtLibraryPath) noexcept;
+
+    /*! \brief Find the Qt conf file from the shared libraries directory
+     *
+     * Returns the absolute path to the qt.conf file if found,
+     * otherwise a empty string.
+     *
+     * \pre \a directoryPath must be a absolute path to a directory
+     */
+//     static
+//     QString findQtConfFileFromSharedLibrariesDirectory(const QString & directoryPath);
 
    private:
 
-    
+    QString mRootAbsolutePath;
+    QString mSharedLibrariesDirectoryRelativePath;
+    QString mPluginsRootRelativePath = QLatin1String("plugins");
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
