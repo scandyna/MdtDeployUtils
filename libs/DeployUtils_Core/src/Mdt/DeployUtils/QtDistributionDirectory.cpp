@@ -148,6 +148,11 @@ bool QtDistributionDirectory::containsSharedLibrary(const QFileInfo & sharedLibr
   assert( !sharedLibraryPath.filePath().isEmpty() );
   assert( sharedLibraryPath.isAbsolute() );
 
+  if( QDir::cleanPath( sharedLibraryPath.absoluteDir().path() ) != sharedLibrariesDirectoryAbsolutePath() ){
+    return false;
+  }
+
+  return sharedLibraryPath.exists();
 }
 
 void QtDistributionDirectory::setPluginsRootRelativePath(const QString & path) noexcept

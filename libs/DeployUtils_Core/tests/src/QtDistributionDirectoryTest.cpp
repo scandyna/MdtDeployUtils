@@ -182,6 +182,11 @@ TEST_CASE("isNull")
   }
 }
 
+TEST_CASE("isValidExisting")
+{
+  REQUIRE(false);
+}
+
 TEST_CASE("clear")
 {
   QtDistributionDirectory directory;
@@ -387,6 +392,96 @@ TEST_CASE("findQtConfFileFromQtSharedLibrary")
       const QFileInfo qtLibrary(qtLibraryPath);
 
       REQUIRE( QtDistributionDirectory::findQtConfFileFromQtSharedLibrary(qtLibrary) == qtConfFilePath );
+    }
+  }
+}
+
+TEST_CASE("containsSharedLibrary")
+{
+  QtDistributionDirectory directory;
+
+  QTemporaryDir qtRoot;
+  REQUIRE( qtRoot.isValid() );
+  qtRoot.setAutoRemove(true);
+
+  /*
+   * QTDIR
+   *   |-bin
+   *   |  |-Qt5Core.dll
+   *   |-lib
+   *   |  |-libQt5Core.so
+   *   |-wrong
+   *      |-Qt5Core.dll
+   *      |-libQt5Core.so
+   */
+  const QString qtBinDir = makePath(qtRoot, "bin");
+  const QString qtLibDir = makePath(qtRoot, "lib");
+  const QString wrongQtDir = makePath(qtRoot, "wrong");
+
+  REQUIRE( createDirectoryFromPath(qtBinDir) );
+  REQUIRE( createDirectoryFromPath(qtLibDir) );
+  REQUIRE( createDirectoryFromPath(wrongQtDir) );
+
+  const QString qt5CoreContents;
+
+  const QString wrongQt5CoreSoFilePath = makePath(qtRoot, "wrong/libQt5Core.so");
+  const QString wrongQt5CoreDllFilePath = makePath(qtRoot, "wrong/Qt5Core.dll");
+
+  REQUIRE( createTextFileUtf8(wrongQt5CoreSoFilePath, qt5CoreContents) );
+  REQUIRE( createTextFileUtf8(wrongQt5CoreDllFilePath, qt5CoreContents) );
+
+  directory.setRootAbsolutePath( qtRoot.path() );
+
+  QFileInfo library;
+
+  SECTION("Linux")
+  {
+    const QString qt5CoreSoFilePath = makePath(qtRoot, "lib/libQt5Core.so");
+    REQUIRE( createTextFileUtf8(qt5CoreSoFilePath, qt5CoreContents) );
+
+    directory.setSharedLibrariesDirectoryRelativePath( QLatin1String("lib") );
+
+    SECTION("libQt5Core.so is in Qt distribution")
+    {
+      library.setFile(qt5CoreSoFilePath);
+
+      REQUIRE( directory.containsSharedLibrary(library) );
+    }
+
+    SECTION("libQt5Core.so is NOT in Qt distribution")
+    {
+      library.setFile(wrongQt5CoreSoFilePath);
+
+      REQUIRE( !directory.containsSharedLibrary(library) );
+    }
+
+    SECTION("/usr/lib/libQt5Core.so is not in Qt distribution")
+    {
+      library.setFile( QLatin1String("/usr/lib/libQt5Core.so") );
+
+      REQUIRE( !directory.containsSharedLibrary(library) );
+    }
+  }
+
+  SECTION("Windows")
+  {
+    const QString qt5CoreDllFilePath = makePath(qtRoot, "bin/Qt5Core.dll");
+    REQUIRE( createTextFileUtf8(qt5CoreDllFilePath, qt5CoreContents) );
+
+    directory.setSharedLibrariesDirectoryRelativePath( QLatin1String("bin") );
+
+    SECTION("Qt5Core.dll is in Qt distribution")
+    {
+      library.setFile(qt5CoreDllFilePath);
+
+      REQUIRE( directory.containsSharedLibrary(library) );
+    }
+
+    SECTION("Qt5Core.dll is NOT in Qt distribution")
+    {
+      library.setFile(wrongQt5CoreDllFilePath);
+
+      REQUIRE( !directory.containsSharedLibrary(library) );
     }
   }
 }
