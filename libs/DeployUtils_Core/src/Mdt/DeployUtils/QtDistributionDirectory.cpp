@@ -30,6 +30,25 @@
 
 namespace Mdt{ namespace DeployUtils{
 
+bool QtDistributionDirectory::isValidExisting() const noexcept
+{
+  if( isNull() ){
+    return false;
+  }
+
+  if( !QDir( rootAbsolutePath() ).exists() ){
+    return false;
+  }
+  if( !QDir( sharedLibrariesDirectoryAbsolutePath() ).exists() ){
+    return false;
+  }
+  if( !QDir( pluginsRootAbsolutePath() ).exists() ){
+    return false;
+  }
+
+  return true;
+}
+
 void QtDistributionDirectory::clear() noexcept
 {
   mRootAbsolutePath.clear();

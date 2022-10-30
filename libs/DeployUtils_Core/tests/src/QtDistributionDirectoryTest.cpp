@@ -184,7 +184,43 @@ TEST_CASE("isNull")
 
 TEST_CASE("isValidExisting")
 {
-  REQUIRE(false);
+  QtDistributionDirectory directory;
+
+  QTemporaryDir qtRoot;
+  REQUIRE( qtRoot.isValid() );
+  qtRoot.setAutoRemove(true);
+
+  /*
+   * QTDIR
+   *   |-bin
+   *   |-lib
+   *   |-plugins
+   */
+  const QString qtBinDir = makePath(qtRoot, "bin");
+  const QString qtLibDir = makePath(qtRoot, "lib");
+  const QString qtPluginsDir = makePath(qtRoot, "plugins");
+
+  REQUIRE( createDirectoryFromPath(qtBinDir) );
+  REQUIRE( createDirectoryFromPath(qtLibDir) );
+  REQUIRE( createDirectoryFromPath(qtPluginsDir) );
+
+  SECTION("valid Qt distribution")
+  {
+    directory.setRootAbsolutePath( qtRoot.path() );
+    directory.setSharedLibrariesDirectoryRelativePath( QLatin1String("lib") );
+    directory.setPluginsRootRelativePath( QLatin1String("plugins") );
+
+    REQUIRE( directory.isValidExisting() );
+  }
+
+  SECTION("not valid: plugins dir not exists")
+  {
+    directory.setRootAbsolutePath( qtRoot.path() );
+    directory.setSharedLibrariesDirectoryRelativePath( QLatin1String("lib") );
+    directory.setPluginsRootRelativePath( QLatin1String("bin/plugins") );
+
+    REQUIRE( !directory.isValidExisting() );
+  }
 }
 
 TEST_CASE("clear")
