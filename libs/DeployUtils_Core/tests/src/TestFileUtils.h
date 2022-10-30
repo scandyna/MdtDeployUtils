@@ -92,6 +92,7 @@ bool createTextFileUtf8(const QString & filePath , const QString & content)
 {
   QFile file(filePath);
   if( !file.open(QIODevice::WriteOnly | QIODevice::Text) ){
+    qDebug() << "createTextFileUtf8() failed to create '" << filePath << "': " << file.errorString();
     return false;
   }
   if( !writeTextFileUtf8(file, content) ){
