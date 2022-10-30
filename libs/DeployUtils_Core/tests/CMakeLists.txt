@@ -1017,6 +1017,22 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME QtConfReaderTest
+  TARGET qtConfReaderTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtConfReaderTest.cpp
+)
+
+mdt_add_test(
+  NAME QtConfReaderErrorTest
+  TARGET qtConfReaderErrorTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/QtConfReaderErrorTest.cpp
+)
+
+mdt_add_test(
   NAME DeployApplicationTest
   TARGET deployApplicationTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
