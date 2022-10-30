@@ -148,16 +148,6 @@ TEST_CASE("plugins root")
 
     REQUIRE( directory.pluginsRootAbsolutePath() == QLatin1String("/opt/qt5/bin/archdatadir/plugins") );
   }
-
-//   SECTION("set and clear")
-//   {
-//     directory.setPluginsRootRelativePath( QLatin1String("lib/plugins") );
-//     REQUIRE( directory.pluginsRootAbsolutePath() == QLatin1String("/opt/qt5/lib/plugins") );
-// 
-//     directory.clear();
-// 
-//     REQUIRE( directory.pluginsRootAbsolutePath() == QLatin1String("/opt/qt5/plugins") );
-//   }
 }
 
 TEST_CASE("isNull")
@@ -222,58 +212,6 @@ TEST_CASE("Change root path")
 
   REQUIRE( directory.sharedLibrariesDirectoryAbsolutePath() == QLatin1String("/opt/qt5/lib") );
 }
-
-// TEST_CASE("setupFromQtConf")
-// {
-//   QtDistributionDirectory directory;
-//   QtConf qtConf;
-// 
-//   SECTION("relative prefix, root /opt")
-//   {
-//     qtConf.setPrefixPath( QLatin1String("..") );
-// 
-//     directory.setupFromQtConf( qtConf, OperatingSystem::Linux, QLatin1String("/opt/qt5") );
-// 
-//     REQUIRE( directory.rootAbsolutePath() == QLatin1String("/opt/qt5") );
-//     REQUIRE( directory.sharedLibrariesDirectoryAbsolutePath() == QLatin1String("/opt/qt5/lib") );
-//     REQUIRE( !directory.isNull() );
-//   }
-// 
-//   SECTION("relative prefix, root /qt/qt5/mingw, Libraries=lib, Windows")
-//   {
-//     qtConf.setPrefixPath( QLatin1String("..") );
-//     qtConf.setLibrariesPath( QLatin1String("lib") );
-// 
-//     directory.setupFromQtConf( qtConf, OperatingSystem::Windows, QLatin1String("/qt/qt5/mingw") );
-// 
-//     REQUIRE( directory.rootAbsolutePath() == QLatin1String("/qt/qt5/mingw") );
-//     REQUIRE( directory.sharedLibrariesDirectoryAbsolutePath() == QLatin1String("/qt/qt5/mingw/bin") );
-//     REQUIRE( !directory.isNull() );
-//   }
-// 
-//   SECTION("/usr prefix")
-//   {
-//     qtConf.setPrefixPath( QLatin1String("/usr") );
-// 
-//     directory.setupFromQtConf( qtConf, OperatingSystem::Linux );
-// 
-//     REQUIRE( directory.rootAbsolutePath() == QLatin1String("/usr") );
-//     REQUIRE( directory.sharedLibrariesDirectoryAbsolutePath() == QLatin1String("/usr/lib") );
-//     REQUIRE( !directory.isNull() );
-//   }
-// 
-//   SECTION("/usr prefix, Libraries=lib/x86_64-linux-gnu")
-//   {
-//     qtConf.setPrefixPath( QLatin1String("/usr") );
-//     qtConf.setLibrariesPath( QLatin1String("lib/x86_64-linux-gnu") );
-// 
-//     directory.setupFromQtConf( qtConf, OperatingSystem::Linux );
-// 
-//     REQUIRE( directory.rootAbsolutePath() == QLatin1String("/usr") );
-//     REQUIRE( directory.sharedLibrariesDirectoryAbsolutePath() == QLatin1String("/usr/lib/x86_64-linux-gnu") );
-//     REQUIRE( !directory.isNull() );
-//   }
-// }
 
 TEST_CASE("setEntriesFromQtConf")
 {
@@ -452,31 +390,3 @@ TEST_CASE("findQtConfFileFromQtSharedLibrary")
     }
   }
 }
-
-
-// TEST_CASE("findQtConfFileFromSharedLibrariesDirectory")
-// {
-//   QtDistributionDirectory directory;
-// 
-//   QTemporaryDir qtRoot;
-//   REQUIRE( qtRoot.isValid() );
-// 
-//   const QString qtLibDir = makePath(qtRoot, "lib");
-//   const QString qtBinDir = makePath(qtRoot, "bin");
-// 
-//   REQUIRE( createDirectoryFromPath(qtLibDir) );
-//   REQUIRE( createDirectoryFromPath(qtBinDir) );
-// 
-//   SECTION("shared libraries and qt.conf are in bin")
-//   {
-//     const QString qtConfFilePath = makePath(qtRoot, "bin/qt.conf");
-//     REQUIRE( createTextFileUtf8( qtConfFilePath, QLatin1String("[Paths]") ) );
-// 
-//     REQUIRE( QtDistributionDirectory::findQtConfFileFromSharedLibrariesDirectory(qtBinDir) == qtConfFilePath );
-//   }
-// 
-//   SECTION("Other cases")
-//   {
-//     REQUIRE(false);
-//   }
-// }

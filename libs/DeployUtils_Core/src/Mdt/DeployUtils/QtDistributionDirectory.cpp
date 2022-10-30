@@ -58,8 +58,6 @@ void QtDistributionDirectory::setupFromQtSharedLibrary(const QFileInfo & qtLibra
   }
 }
 
-/// \todo clarify what is done when !!
-
 void QtDistributionDirectory::setEntriesFromQtConf(const QtConf & qtConf, OperatingSystem os, const QFileInfo & qtConfFilePath) noexcept
 {
   assert(os != OperatingSystem::Unknown);
@@ -84,32 +82,6 @@ void QtDistributionDirectory::setEntriesFromQtConf(const QtConf & qtConf, Operat
     setPluginsRootRelativePath( qtConf.pluginsPath() );
   }
 }
-
-// void QtDistributionDirectory::setupFromQtConf(const QtConf & qtConf, OperatingSystem os, const QString & rootAbsolutePath)
-// {
-//   assert( isNull() );
-//   assert(os != OperatingSystem::Unknown);
-// 
-//   if( qtConf.prefixPathIsAbsolute() ){
-//     assert( rootAbsolutePath.trimmed().isEmpty() );
-//     mRootAbsolutePath = qtConf.prefixPath();
-//   }else{
-//     assert( QDir::isAbsolutePath(rootAbsolutePath) );
-//     mRootAbsolutePath = rootAbsolutePath;
-//   }
-// 
-//   /// \todo if not defined in qt.conf, use guessSharedLibrariesDirectoryRelativePathFromQtSharedLibrary()
-//   if(os == OperatingSystem::Windows){
-//     /// \todo qtConf could contain Binaries path
-//     setSharedLibrariesDirectoryRelativePath( QLatin1String("bin") );
-//   }else{
-//     if( qtConf.containsLibrariesPath() ){
-//       setSharedLibrariesDirectoryRelativePath( qtConf.librariesPath() );
-//     }else{
-//       setSharedLibrariesDirectoryRelativePath( QLatin1String("lib") );
-//     }
-//   }
-// }
 
 void QtDistributionDirectory::setRootAbsolutePath(const QString & path) noexcept
 {
@@ -220,17 +192,5 @@ QString QtDistributionDirectory::findQtConfFileFromQtSharedLibrary(const QFileIn
 
   return QString();
 }
-
-// QString QtDistributionDirectory::findQtConfFileFromSharedLibrariesDirectory(const QString & directoryPath)
-// {
-//   assert( !directoryPath.trimmed().isEmpty() );
-// 
-//   /// \todo check its a directory
-//   
-//   /*
-//    * Start searching here
-//    * (the target could be Windows)
-//    */
-// }
 
 }} // namespace Mdt{ namespace DeployUtils{

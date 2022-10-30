@@ -153,26 +153,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     void setEntriesFromQtConf(const QtConf & qtConf, OperatingSystem os, const QFileInfo & qtConfFilePath) noexcept;
 
-    /*! \brief Setup this directory from given Qt configuration
-     *
-     * Will set directories present in \a qtConf.
-     *
-     * Because the shared libraries is not defined in \a qtConf ,
-     * a valid target OS must be provided to define the shared libraries directory.
-     *
-     * \note This method will not check if the directories exists on the file system
-     * \sa isValidExisting()
-     * \pre This directory must be null before calling this method.
-     * The caller must explicitly call clear() before if a new setup must be done.
-     * This prevents accidental repeated setup.
-     * \pre \a os must be valid
-     * \pre If \a qtConf has a absolute prefix,
-     * \a rootAbsolutePath must be empty,
-     * otherwise it must be set to a absolute path
-     */
-//     [[deprecated]]
-//     void setupFromQtConf( const QtConf & qtConf, OperatingSystem os, const QString & rootAbsolutePath = QString() );
-
     /*! \brief Set the absolute path to the root of this directory
      *
      * \note This method will not check if \a path is a existing directory on the file system
@@ -287,16 +267,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     static
     QString findQtConfFileFromQtSharedLibrary(const QFileInfo & qtLibraryPath) noexcept;
-
-    /*! \brief Find the Qt conf file from the shared libraries directory
-     *
-     * Returns the absolute path to the qt.conf file if found,
-     * otherwise a empty string.
-     *
-     * \pre \a directoryPath must be a absolute path to a directory
-     */
-//     static
-//     QString findQtConfFileFromSharedLibrariesDirectory(const QString & directoryPath);
 
    private:
 
