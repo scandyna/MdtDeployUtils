@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "QtDistributionDirectory.h"
 #include "QtSharedLibraryFile.h"
+#include "QtConfReader.h"
 #include "Algorithm.h"
 #include <QStringBuilder>
 #include <QLatin1Char>
@@ -46,7 +47,9 @@ void QtDistributionDirectory::setupFromQtSharedLibrary(const QFileInfo & qtLibra
 
   const QString qtConfFilePath = findQtConfFileFromQtSharedLibrary(qtLibraryPath);
   if( !qtConfFilePath.isEmpty() ){
-    /// \todo read qt.conf and setup
+    QtConfReader reader;
+    const QtConf qtConf = reader.readFile(qtConfFilePath);
+    setEntriesFromQtConf(qtConf, os, qtConfFilePath);
   }
 
   // Setup what is not in qt.conf by guessing

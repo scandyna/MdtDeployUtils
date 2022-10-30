@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_QT_DISTRIBUTION_DIRECTORY_H
 
 #include "QtConf.h"
+#include "ReadQtConfError.h"
 #include "OperatingSystem.h"
 #include "mdt_deployutilscore_export.h"
 #include <QString>
@@ -122,6 +123,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Setup this directory from given path to a Qt shared library
      *
+     * \exception ReadQtConfError
      * \pre This directory must be null before calling this method.
      * The caller must explicitly call clear() before if a new setup must be done.
      * This prevents accidental repeated setup.
