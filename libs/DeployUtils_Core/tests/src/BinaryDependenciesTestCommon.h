@@ -22,7 +22,9 @@
 #include "TestFileUtils.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
 #include "Mdt/DeployUtils/BinaryDependenciesFile.h"
-#include "Mdt/DeployUtils/QtDistributionDirectory.h"
+
+// #include "Mdt/DeployUtils/QtDistributionDirectory.h"
+
 #include "Mdt/DeployUtils/AbstractSharedLibraryFinder.h"
 #include "Mdt/DeployUtils/PathList.h"
 #include <QString>
@@ -60,7 +62,7 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
  public:
 
   explicit SharedLibraryFinderBDTest(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp, QObject *parent = nullptr)
-   : AbstractSharedLibraryFinder(isExistingValidShLibOp, std::make_shared<QtDistributionDirectory>(), parent)
+   : AbstractSharedLibraryFinder(isExistingValidShLibOp, parent)
   {
   }
 
@@ -90,6 +92,11 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
     }
 
     return BinaryDependenciesFile();
+  }
+
+  bool doIsExistingValidSharedLibrary(const QFileInfo & libraryFile) const override
+  {
+    return mIsExistingValidShLibOp.isExistingValidSharedLibrary(libraryFile);
   }
 
   PathList mSearchPathList;
