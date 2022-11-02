@@ -139,7 +139,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
       reader.close();
 
-      BinaryDependenciesFileList dependencies = mShLibFinder->findLibrariesAbsolutePath(currentFile);
+      BinaryDependenciesFileList dependencies = mShLibFinder->findLibrariesAbsolutePath( currentFile, platform.operatingSystem() );
 
       emitSolvedDirectDependenciesMessage(currentFile, dependencies);
 
