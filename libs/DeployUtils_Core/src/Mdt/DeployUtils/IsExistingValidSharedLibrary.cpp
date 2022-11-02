@@ -19,8 +19,6 @@
  **
  ****************************************************************************/
 #include "IsExistingValidSharedLibrary.h"
-#include "QtSharedLibraryFile.h"
-#include "QtSharedLibrary.h"
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
@@ -32,12 +30,6 @@ bool IsExistingValidSharedLibrary::doIsExistingValidSharedLibrary(const QFileInf
   }
   if( !isSharedLibraryForExpectedPlatform(libraryFile) ){
     return false;
-  }
-
-  if( QtSharedLibraryFile::isQtSharedLibrary(libraryFile) ){
-    if( !QtSharedLibrary::sharedLibraryIsInQtDistribution(libraryFile) ){
-      return false;
-    }
   }
 
   return true;
