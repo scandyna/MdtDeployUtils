@@ -51,14 +51,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     static
     QtSharedLibraryFileList getQtSharedLibraries(const QStringList & sharedLibraries) noexcept;
-
-    /*! \brief Check if given shared library is located in a Qt distribution
-     *
-     * \pre \a sharedLibrary must have its absolute file path set
-     * \sa doc of QFileInfo::absoluteFilePath()
-     */
-    static
-    bool sharedLibraryIsInQtDistribution(const QFileInfo & sharedLibrary) noexcept;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
