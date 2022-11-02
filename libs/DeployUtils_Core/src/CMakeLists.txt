@@ -109,6 +109,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/AbstractIsExistingValidSharedLibrary.cpp
   Mdt/DeployUtils/IsExistingValidSharedLibrary.cpp
   Mdt/DeployUtils/AbstractSharedLibraryFinder.cpp
+  Mdt/DeployUtils/SharedLibraryFinderCommon.cpp
   Mdt/DeployUtils/SharedLibraryFinderLinux.cpp
   Mdt/DeployUtils/SharedLibraryFinderWindows.cpp
   Mdt/DeployUtils/BinaryDependenciesFile.cpp
