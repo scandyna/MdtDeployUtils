@@ -21,10 +21,14 @@
 #include "AbstractSharedLibraryFinder.h"
 #include "AbstractIsExistingValidSharedLibrary.h"
 
+#include "QtSharedLibraryFile.h"
+
 namespace Mdt{ namespace DeployUtils{
 
-BinaryDependenciesFileList AbstractSharedLibraryFinder::findLibrariesAbsolutePath(BinaryDependenciesFile & file)
+BinaryDependenciesFileList AbstractSharedLibraryFinder::findLibrariesAbsolutePath(BinaryDependenciesFile & file, OperatingSystem os)
 {
+  assert(os != OperatingSystem::Unknown);
+
   BinaryDependenciesFileList libraries;
 
   removeLibrariesToNotRedistribute(file);
@@ -32,7 +36,7 @@ BinaryDependenciesFileList AbstractSharedLibraryFinder::findLibrariesAbsolutePat
   for( const QString & libraryName : file.dependenciesFileNames() ){
     const BinaryDependenciesFile library = findLibraryAbsolutePath(libraryName, file);
 
-    /// \todo Qt distribution
+    performLibrarySpecificAction(library, os);
 
     libraries.push_back(library);
   }
@@ -45,12 +49,11 @@ bool AbstractSharedLibraryFinder::isExistingValidSharedLibrary(const QFileInfo &
   assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
   assert( libraryFile.isAbsolute() );
 
-  if( !mIsExistingValidShLibOp.isExistingValidSharedLibrary(libraryFile) ){
-    return false;
-  }
-  /// \todo Qt distribution
+  return doIsExistingValidSharedLibrary(libraryFile);
+}
 
-  return true;
+void AbstractSharedLibraryFinder::performLibrarySpecificAction(const BinaryDependenciesFile &, OperatingSystem)
+{
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

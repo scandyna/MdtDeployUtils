@@ -21,7 +21,7 @@
 #ifndef MDT_DEPLOY_UTILS_SHARED_LIBRARY_FINDER_LINUX_H
 #define MDT_DEPLOY_UTILS_SHARED_LIBRARY_FINDER_LINUX_H
 
-#include "AbstractSharedLibraryFinder.h"
+#include "SharedLibraryFinderCommon.h"
 #include "BinaryDependenciesFile.h"
 #include "FindDependencyError.h"
 #include "PathList.h"
@@ -39,7 +39,7 @@ namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Helper to find a shared library on Linux
    */
-  class MDT_DEPLOYUTILSCORE_EXPORT SharedLibraryFinderLinux : public AbstractSharedLibraryFinder
+  class MDT_DEPLOYUTILSCORE_EXPORT SharedLibraryFinderLinux : public SharedLibraryFinderCommon
   {
     Q_OBJECT
 

@@ -185,7 +185,7 @@ TEST_CASE("findLibrariesAbsolutePath")
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so","/tmp/libm.so.6"});
 
-    libraries = finder.findLibrariesAbsolutePath(executable);
+    libraries = finder.findLibrariesAbsolutePath(executable, OperatingSystem::Linux);
 
     REQUIRE( libraries.size() == 1 );
     REQUIRE( libraries[0].absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );

@@ -24,21 +24,16 @@
 #include "BinaryDependenciesFile.h"
 #include "PathList.h"
 #include "RPath.h"
+#include "OperatingSystem.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
 #include <QFileInfo>
-#include <memory>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
 
-//   namespace Impl{
-//     class AbstractIsExistingSharedLibrary;
-//   } // namespace Impl{
-
   class AbstractIsExistingValidSharedLibrary;
-  class QtDistributionDirectory;
 
   /*! \brief Interface to implement a shared library finder
    *
@@ -54,18 +49,12 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Constructor
      *
-     * If given \a qtDistributionDirectory is not already initialzed,
-     * it will be the first time a Qt library have been found.
-     *
-     * \pre \a qtDistributionDirectory must be a valid pointer
      */
     explicit AbstractSharedLibraryFinder(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp,
-                                         std::shared_ptr<QtDistributionDirectory> qtDistributionDirectory,
                                          QObject *parent = nullptr)
      : QObject(parent),
        mIsExistingValidShLibOp(isExistingValidShLibOp)
     {
-      assert(qtDistributionDirectory.get() != nullptr);
     }
 
     /*! \brief Set a custom list of paths where this finders locates shared libraries
@@ -83,8 +72,10 @@ namespace Mdt{ namespace DeployUtils{
     }
 
     /*! \brief Find the absolute path for each direct dependency of \a file
+     *
+     * \pre \a os must be valid
      */
-    BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & file); /*const*/
+    BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & file, OperatingSystem os); /*const*/
 
     /*! \brief Check if \a libraryFile is a existing shared library
      *
@@ -97,6 +88,11 @@ namespace Mdt{ namespace DeployUtils{
     void statusMessage(const QString & message) const;
     void verboseMessage(const QString & message) const;
     void debugMessage(const QString & message) const;
+
+   protected:
+
+    /// \todo remove once possible, or make access method
+    const AbstractIsExistingValidSharedLibrary & mIsExistingValidShLibOp;
 
    private:
 
@@ -120,7 +116,22 @@ namespace Mdt{ namespace DeployUtils{
     BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName,
                                                    const BinaryDependenciesFile & dependentFile) const = 0;
 
-    const AbstractIsExistingValidSharedLibrary & mIsExistingValidShLibOp;
+    /*! \brief Check if \a libraryFile is a existing shared library
+     *
+     * This method has to be implemented by the concrete class.
+     *
+     * \pre \a libraryFile must be a absolute file path
+     */
+    virtual
+    bool doIsExistingValidSharedLibrary(const QFileInfo & libraryFile) const = 0;
+
+    /*! \brief Perform a action specific to some library
+     *
+     * This method can be implemented if required
+     */
+    virtual
+    void performLibrarySpecificAction(const BinaryDependenciesFile & library, OperatingSystem os);
+
     PathList mSearchPathList;
   };
 

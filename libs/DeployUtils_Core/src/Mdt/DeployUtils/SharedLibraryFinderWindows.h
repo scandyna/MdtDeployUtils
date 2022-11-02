@@ -21,7 +21,7 @@
 #ifndef MDT_DEPLOY_UTILS_SHARED_LIBRARY_FINDER_WINDOWS_H
 #define MDT_DEPLOY_UTILS_SHARED_LIBRARY_FINDER_WINDOWS_H
 
-#include "AbstractSharedLibraryFinder.h"
+#include "SharedLibraryFinderCommon.h"
 #include "BinaryDependenciesFile.h"
 #include "FindDependencyError.h"
 #include "PathList.h"
@@ -42,7 +42,7 @@ namespace Mdt{ namespace DeployUtils{
    * \todo see https://bugreports.qt.io/browse/QTBUG-56566?jql=project%20%3D%20QTBUG%20AND%20text%20~%20%22windeployqt%22
    * \todo see https://bugreports.qt.io/browse/QTBUG-87677?jql=project%20%3D%20QTBUG%20AND%20text%20~%20%22windeployqt%22
    */
-  class MDT_DEPLOYUTILSCORE_EXPORT SharedLibraryFinderWindows : public AbstractSharedLibraryFinder
+  class MDT_DEPLOYUTILSCORE_EXPORT SharedLibraryFinderWindows : public SharedLibraryFinderCommon
   {
     Q_OBJECT
 
