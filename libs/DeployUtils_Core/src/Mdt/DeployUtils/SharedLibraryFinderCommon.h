@@ -43,6 +43,7 @@ namespace Mdt{ namespace DeployUtils{
      * If given \a qtDistributionDirectory is not already initialzed,
      * it will be the first time a Qt library have been found.
      *
+     * \pre \a reader must be a valid pointer
      * \pre \a qtDistributionDirectory must be a valid pointer
      */
     explicit SharedLibraryFinderCommon(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp,
@@ -51,11 +52,11 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
-    /*! \brief Check if \a libraryFile is a existing shared library
+    /*! \brief Check if given library is valid reagarding library specific criteria
      *
      * \pre \a libraryFile must be a absolute file path
      */
-    bool doIsExistingValidSharedLibrary(const QFileInfo & libraryFile) const override;
+    bool isValidSpecificSharedLibrary(const QFileInfo & libraryFile) const override;
 
     /*! \brief Perform a action specific to some library
      */

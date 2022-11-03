@@ -49,7 +49,19 @@ bool AbstractSharedLibraryFinder::isExistingValidSharedLibrary(const QFileInfo &
   assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
   assert( libraryFile.isAbsolute() );
 
-  return doIsExistingValidSharedLibrary(libraryFile);
+  if( !mIsExistingValidShLibOp.isExistingValidSharedLibrary(libraryFile) ){
+    return false;
+  }
+  if( !isValidSpecificSharedLibrary(libraryFile) ){
+    return false;
+  }
+
+  return true;
+}
+
+bool AbstractSharedLibraryFinder::isValidSpecificSharedLibrary(const QFileInfo &) const
+{
+  return true;
 }
 
 void AbstractSharedLibraryFinder::performLibrarySpecificAction(const BinaryDependenciesFile &, OperatingSystem)

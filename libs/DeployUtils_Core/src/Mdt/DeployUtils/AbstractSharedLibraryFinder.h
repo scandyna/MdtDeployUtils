@@ -89,11 +89,6 @@ namespace Mdt{ namespace DeployUtils{
     void verboseMessage(const QString & message) const;
     void debugMessage(const QString & message) const;
 
-   protected:
-
-    /// \todo remove once possible, or make access method
-    const AbstractIsExistingValidSharedLibrary & mIsExistingValidShLibOp;
-
    private:
 
     /*! \brief Remove libraries that should not be distributed
@@ -116,14 +111,14 @@ namespace Mdt{ namespace DeployUtils{
     BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName,
                                                    const BinaryDependenciesFile & dependentFile) const = 0;
 
-    /*! \brief Check if \a libraryFile is a existing shared library
+    /*! \brief Check if given library is valid reagarding library specific criteria
      *
-     * This method has to be implemented by the concrete class.
+     * Can be implemented if more checks have to be done to validate a specifc library
      *
      * \pre \a libraryFile must be a absolute file path
      */
     virtual
-    bool doIsExistingValidSharedLibrary(const QFileInfo & libraryFile) const = 0;
+    bool isValidSpecificSharedLibrary(const QFileInfo & libraryFile) const;
 
     /*! \brief Perform a action specific to some library
      *
@@ -132,6 +127,7 @@ namespace Mdt{ namespace DeployUtils{
     virtual
     void performLibrarySpecificAction(const BinaryDependenciesFile & library, OperatingSystem os);
 
+    const AbstractIsExistingValidSharedLibrary & mIsExistingValidShLibOp;
     PathList mSearchPathList;
   };
 

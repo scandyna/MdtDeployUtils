@@ -94,10 +94,5 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
     return BinaryDependenciesFile();
   }
 
-  bool doIsExistingValidSharedLibrary(const QFileInfo & libraryFile) const override
-  {
-    return mIsExistingValidShLibOp.isExistingValidSharedLibrary(libraryFile);
-  }
-
   PathList mSearchPathList;
 };

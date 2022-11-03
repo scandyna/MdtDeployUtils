@@ -22,9 +22,7 @@
 #include "QtDistributionDirectory.h"
 #include "QtSharedLibraryFile.h"
 #include "FindDependencyError.h"
-
 #include "AbstractIsExistingValidSharedLibrary.h"
-
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
@@ -35,18 +33,15 @@ SharedLibraryFinderCommon::SharedLibraryFinderCommon(const AbstractIsExistingVal
  : AbstractSharedLibraryFinder(isExistingValidShLibOp, parent),
    mQtDistributionDirectory(qtDistributionDirectory)
 {
-  assert(qtDistributionDirectory.get() != nullptr);
+  assert(mQtDistributionDirectory.get() != nullptr);
 }
 
-bool SharedLibraryFinderCommon::doIsExistingValidSharedLibrary(const QFileInfo & libraryFile) const
+bool SharedLibraryFinderCommon::isValidSpecificSharedLibrary(const QFileInfo & libraryFile) const
 {
   assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
   assert( libraryFile.isAbsolute() );
   assert(mQtDistributionDirectory.get() != nullptr);
 
-  if( !mIsExistingValidShLibOp.isExistingValidSharedLibrary(libraryFile) ){
-    return false;
-  }
   if( ( !mQtDistributionDirectory->isNull() ) &&  QtSharedLibraryFile::isQtSharedLibrary(libraryFile) ){
     assert( mQtDistributionDirectory->isValidExisting() );
     if( !mQtDistributionDirectory->containsSharedLibrary(libraryFile) ){
