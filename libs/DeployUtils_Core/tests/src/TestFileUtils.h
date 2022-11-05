@@ -46,9 +46,14 @@ QString makeAbsolutePath(const std::string & path)
   return QFileInfo( QString::fromStdString(path) ).absoluteFilePath();
 }
 
+QString makePath(const QString & rootPath, const char * const subPath)
+{
+  return QDir::cleanPath( rootPath + QLatin1Char('/') + QLatin1String(subPath) );
+}
+
 QString makePath(const QTemporaryDir & dir, const char * const subPath)
 {
-  return QDir::cleanPath( dir.path() + QLatin1Char('/') + QLatin1String(subPath) );
+  return makePath(dir.path(), subPath);
 }
 
 bool createDirectoryFromPath(const QString & path)
