@@ -145,6 +145,20 @@ namespace Mdt{ namespace DeployUtils{
   MDT_DEPLOYUTILSCORE_EXPORT
   QString relativePathToBase(const QString & path, const QString & base) noexcept;
 
+  /*! \brief Check if given path is in given base
+   *
+   * Examples:
+   * \code
+   * b = pathIsInBase("/usr/lib", "/usr");
+   * // b is true
+   *
+   * b = pathIsInBase("/usr/lib", "/lib");
+   * // b is false
+   * \endcode
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  bool pathIsInBase(const QString & path, const QString & base) noexcept;
+
 }} // namespace Mdt{ namespace DeployUtils{
 
 #endif // #ifndef MDT_DEPLOY_UTILS_ALGORITHM_H

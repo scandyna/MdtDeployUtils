@@ -255,3 +255,27 @@ TEST_CASE("relativePathToBase")
     REQUIRE( relativePathToBase(path, base) == QLatin1String("lib/x86_64-linux-gnu") );
   }
 }
+
+TEST_CASE("pathIsInBase")
+{
+  using Mdt::DeployUtils::pathIsInBase;
+
+  QString path;
+  QString base;
+
+  SECTION("/usr/lib is in /usr")
+  {
+    path = QLatin1String("/usr/lib");
+    base = QLatin1String("/usr");
+
+    REQUIRE( pathIsInBase(path, base) );
+  }
+
+  SECTION("/usr/lib is NOT in /lib")
+  {
+    path = QLatin1String("/usr/lib");
+    base = QLatin1String("/lib");
+
+    REQUIRE( !pathIsInBase(path, base) );
+  }
+}

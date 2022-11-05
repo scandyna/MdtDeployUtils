@@ -60,4 +60,9 @@ QString relativePathToBase(const QString & path, const QString & base) noexcept
   return path.right(toRemove);
 }
 
+bool pathIsInBase(const QString & path, const QString & base) noexcept
+{
+  return path.startsWith(base);
+}
+
 }} // namespace Mdt{ namespace DeployUtils{
