@@ -21,6 +21,7 @@
 #include "QtDistributionDirectory.h"
 #include "QtSharedLibraryFile.h"
 #include "QtConfReader.h"
+#include "ExecutableFileReader.h"
 #include "Algorithm.h"
 #include <QStringBuilder>
 #include <QLatin1Char>
@@ -187,6 +188,29 @@ QString QtDistributionDirectory::pluginsRootAbsolutePath() const noexcept
   assert( hasRootPath() );
 
   return QDir::cleanPath(mRootAbsolutePath % QLatin1Char('/') % mPluginsRootRelativePath);
+}
+
+bool QtDistributionDirectory::fileIsPlugin(const QFileInfo & fileInfo) const noexcept
+{
+  assert( !fileInfo.filePath().isEmpty() );
+  assert( fileInfo.isAbsolute() );
+  assert( hasRootPath() );
+
+  const QString filePath = fileInfo.absoluteFilePath();
+
+  if( !pathIsInBase( filePath, pluginsRootAbsolutePath() ) ){
+    return false;
+  }
+
+  ExecutableFileReader reader;
+  try{
+    reader.openFile(fileInfo);
+  }catch(...){
+    return false;
+  }
+
+  /// \todo once implemented, should use isSharedLibrary()
+  return reader.isExecutableOrSharedLibrary();
 }
 
 QString QtDistributionDirectory::findQtConfFileFromQtSharedLibrary(const QFileInfo & qtLibraryPath) noexcept

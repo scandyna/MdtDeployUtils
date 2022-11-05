@@ -233,6 +233,7 @@ void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicati
 void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & destination, const DeployApplicationRequest & request)
 {
   assert( mShLibDeployer.get() != nullptr );
+  assert( mQtDistributionDirectory.get() != nullptr );
 
   emit verboseMessage(
     tr("get Qt libraries out from dependencies (will be used to know which Qt plugins are required)")
@@ -245,7 +246,7 @@ void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & des
   connect(&qtModulePlugins, &QtModulePlugins::verboseMessage, this, &DeployApplication::verboseMessage);
   connect(&qtModulePlugins, &QtModulePlugins::debugMessage, this, &DeployApplication::debugMessage);
 
-  const QtPluginFileList plugins = qtModulePlugins.getQtPluginsQtLibrariesDependsOn(qtSharedLibraries, request.qtPluginsSet);
+  const QtPluginFileList plugins = qtModulePlugins.getQtPluginsQtLibrariesDependsOn(qtSharedLibraries, request.qtPluginsSet, *mQtDistributionDirectory);
 
   QtPlugins qtPlugins(mShLibDeployer);
   connect(&qtPlugins, &QtPlugins::statusMessage, this, &DeployApplication::statusMessage);

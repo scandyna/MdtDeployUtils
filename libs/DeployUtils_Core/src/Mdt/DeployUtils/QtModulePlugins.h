@@ -27,8 +27,7 @@
 #include "QtPluginFile.h"
 #include "QtPluginsSet.h"
 #include "FindQtPluginError.h"
-#include "DestinationDirectory.h"
-#include "OverwriteBehavior.h"
+#include "QtDistributionDirectory.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -55,9 +54,17 @@ namespace Mdt{ namespace DeployUtils{
     }
 
     /*! \brief Get Qt plugins required for given list of Qt libraries
+     *
+     * If \a qtLibraries is empty,
+     * a empty plugins list is returned.
+     *
+     * \pre If \a qtLibraries is not empty,
+     * \a qtDistributionDirectory must be valid and existing
+     * \sa QtDistributionDirectory::isValidExisting()
      */
     QtPluginFileList getQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries,
-                                                      const QtPluginsSet & pluginsSet) const noexcept;
+                                                      const QtPluginsSet & pluginsSet,
+                                                      const QtDistributionDirectory & qtDistributionDirectory) const noexcept;
 
     /*! \brief Get a list of Qt plugins directories required for a given Qt module
      *
@@ -76,11 +83,11 @@ namespace Mdt{ namespace DeployUtils{
      * This is like getPluginsDirectoriesForModule(),
      * but it will only include directories that exists in \a qtPluginsRoot
      *
-     * \pre \a qtPluginsRoot must be a absolute path to a existing Qt plugins directory
-     * \sa pathIsAbsoluteAndCouldBePluginsRoot()
+     * \pre \a qtDistributionDirectory must be valid and existing
+     * \sa QtDistributionDirectory::isValidExisting()
      */
     static
-    QStringList getExistingPluginsDirectoriesForModule(QtModule module, const QFileInfo & qtPluginsRoot) noexcept;
+    QStringList getExistingPluginsDirectoriesForModule(QtModule module, const QtDistributionDirectory & qtDistributionDirectory) noexcept;
 
     /*! \brief Get a list of Qt plugins directories required for given Qt modules
      *
@@ -91,18 +98,18 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Get a list of Qt plugins directories required for given Qt modules
      *
-     * \pre \a qtPluginsRoot must be a absolute path to a existing Qt plugins directory
-     * \sa pathIsAbsoluteAndCouldBePluginsRoot()
+     * \pre \a qtDistributionDirectory must be valid and existing
+     * \sa QtDistributionDirectory::isValidExisting()
      *
      * \sa getExistingPluginsDirectoriesForModule()
      */
     static
-    QStringList getExistingPluginsDirectoriesForModules(const QtModuleList & modules, const QFileInfo & qtPluginsRoot) noexcept;
+    QStringList getExistingPluginsDirectoriesForModules(const QtModuleList & modules, const QtDistributionDirectory & qtDistributionDirectory) noexcept;
 
     /*! \brief Get a list of Qt plugins required for given Qt modules
      *
-     * \pre \a qtPluginsRoot must be a absolute path to a existing Qt plugins directory
-     * \sa pathIsAbsoluteAndCouldBePluginsRoot()
+     * \pre \a qtDistributionDirectory must be valid and existing
+     * \sa QtDistributionDirectory::isValidExisting()
      *
      * \sa https://doc.qt.io/qt-6/plugins-howto.html
      * \sa https://doc.qt.io/qt-6/deployment-plugins.html
@@ -110,48 +117,8 @@ namespace Mdt{ namespace DeployUtils{
      * \sa https://doc.qt.io/qt-6/qpa.html
      * \sa https://doc.qt.io/qt-6/windows-deployment.html
      */
-    QtPluginFileList getPluginsForModules(const QtModuleList & modules, const QFileInfo & qtPluginsRoot,
+    QtPluginFileList getPluginsForModules(const QtModuleList & modules, const QtDistributionDirectory & qtDistributionDirectory,
                                           const QtPluginsSet & pluginsSet) const noexcept;
-
-    /*! \brief Check if \a qtPluginsRoot could be a Qt plugins root
-     *
-     * \sa QtPlugins::pathIsAbsoluteAndCouldBePluginsRoot()
-     */
-    static
-    bool pathIsAbsoluteAndCouldBePluginsRoot(const QFileInfo & qtPluginsRoot) noexcept;
-
-    /*! \brief Find the path to the plugins root of a Qt installation given \a qtLibraryPath
-     *
-     * The common layout of a Qt installation is:
-     * \code
-     * QTDIR
-     *   |-bin
-     *   |-lib
-     *   |-plugins
-     * \endcode
-     *
-     * On a Debian multi-arch system wide installation, it could be:
-     * \code
-     * /usr/lib/x86_64-linux-gnu
-     *                  |-qt5
-     *                     |-plugins
-     * \endcode
-     *
-     * \pre \a qtLibraryPath must have its absolute file path set
-     * \sa doc of QFileInfo::absoluteFilePath()
-     * \exception FindQtPluginError
-     * \sa findPluginsRootFromQtLibrary()
-     */
-    static
-    QString findPluginsRootFromQtLibraryPath(const QFileInfo & qtLibraryPath);
-
-    /*! \brief Get the path to the plugins root of a Qt installation given \a qtLibrary
-     *
-     * \exception FindQtPluginError
-     * \sa findPluginsRootFromQtLibraryPath()
-     */
-    static
-    QString findPluginsRootFromQtLibrary(const QtSharedLibraryFile & qtLibrary);
 
    signals:
 

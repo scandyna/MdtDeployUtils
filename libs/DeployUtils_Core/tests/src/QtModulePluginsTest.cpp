@@ -22,6 +22,7 @@
 #include "Catch2QString.h"
 #include "TestFileUtils.h"
 #include "Mdt/DeployUtils/QtModulePlugins.h"
+#include "Mdt/DeployUtils/Platform.h"
 #include <QLatin1String>
 #include <QString>
 #include <QTemporaryDir>
@@ -71,7 +72,8 @@ TEST_CASE("getPluginsDirectoriesForModules")
 
 TEST_CASE("getPluginsForModules")
 {
-  const QString qtPluginsRoot = QtModulePlugins::findPluginsRootFromQtLibraryPath(qtGuiLibraryFilePath);
+  QtDistributionDirectory qtDistributionDirectory;
+  qtDistributionDirectory.setupFromQtSharedLibrary( qtGuiLibraryFilePath, Platform::nativeOperatingSystem() );
 
   QtPluginFileList plugins;
   QtPluginsSet pluginsSet;
@@ -81,15 +83,19 @@ TEST_CASE("getPluginsForModules")
   QtModuleList modules;
   modules.addModule(QtModule::Gui);
 
-  plugins = modulePlugins.getPluginsForModules(modules, qtPluginsRoot, pluginsSet);
+  plugins = modulePlugins.getPluginsForModules(modules, qtDistributionDirectory, pluginsSet);
 
   REQUIRE( !plugins.empty() );
 
   pluginsDirectories = getQtPluginsDirectoryNames(plugins);
 
-  REQUIRE( pluginsDirectories.count( QLatin1String("iconengines") ) == 1 );
   REQUIRE( pluginsDirectories.count( QLatin1String("imageformats") ) == 1 );
   REQUIRE( pluginsDirectories.count( QLatin1String("platforms") ) == 1 );
+  /*
+   * Some distributions, like Conan center,
+   * does not distribute iconengines
+   */
+//   REQUIRE( pluginsDirectories.count( QLatin1String("iconengines") ) == 1 );
   /*
    * On some platforms (f.ex. some Windows Qt distributions),
    * platforminputcontexts is only present if some optional Qt Modules are installed,
@@ -97,34 +103,4 @@ TEST_CASE("getPluginsForModules")
    * see also: https://gitlab.com/scandyna/mdtdeployutils/-/pipelines/511260803
    */
 //   REQUIRE( pluginsDirectories.count( QLatin1String("platforminputcontexts") ) == 1 );
-}
-
-TEST_CASE("findPluginsRootFromQtLibraryPath_commonQtDistribution")
-{
-  QString qtLibraryPath;
-
-  QTemporaryDir qtRoot;
-  REQUIRE( qtRoot.isValid() );
-
-  const QString qtPluginsDir = makePath(qtRoot, "plugins");
-  const QString qtLibDir = makePath(qtRoot, "lib");
-  const QString qtBinDir = makePath(qtRoot, "bin");
-
-  REQUIRE( createDirectoryFromPath(qtPluginsDir) );
-  REQUIRE( createDirectoryFromPath(qtLibDir) );
-  REQUIRE( createDirectoryFromPath(qtBinDir) );
-
-  SECTION("QTDIR/lib/libQt5Core.so")
-  {
-    qtLibraryPath = qtLibDir + QLatin1String("/libQt5Core.so");
-
-    REQUIRE( QtModulePlugins::findPluginsRootFromQtLibraryPath(qtLibraryPath) == qtPluginsDir );
-  }
-
-  SECTION("QTDIR/bin/Qt5Core.dll")
-  {
-    qtLibraryPath = qtBinDir + QLatin1String("/Qt5Core.dll");
-
-    REQUIRE( QtModulePlugins::findPluginsRootFromQtLibraryPath(qtLibraryPath) == qtPluginsDir );
-  }
 }

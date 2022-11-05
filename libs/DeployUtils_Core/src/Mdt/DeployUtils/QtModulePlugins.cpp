@@ -19,7 +19,6 @@
  **
  ****************************************************************************/
 #include "QtModulePlugins.h"
-#include "QtPlugins.h"
 #include "QtModuleList.h"
 #include "FileCopier.h"
 #include <QLatin1String>
@@ -31,12 +30,11 @@
 #include <algorithm>
 #include <iterator>
 
-// #include <QDebug>
-
 namespace Mdt{ namespace DeployUtils{
 
 QtPluginFileList QtModulePlugins::getQtPluginsQtLibrariesDependsOn(const QtSharedLibraryFileList & qtLibraries,
-                                                                   const QtPluginsSet & pluginsSet) const noexcept
+                                                                   const QtPluginsSet & pluginsSet,
+                                                                   const QtDistributionDirectory & qtDistributionDirectory) const noexcept
 {
   QtPluginFileList plugins;
 
@@ -44,19 +42,20 @@ QtPluginFileList QtModulePlugins::getQtPluginsQtLibrariesDependsOn(const QtShare
     return plugins;
   }
 
+  assert( qtDistributionDirectory.isValidExisting() );
+
   emit statusMessage(
     tr("search required qt plugins")
   );
 
   const auto qtModules = QtModuleList::fromQtSharedLibraries(qtLibraries);
 
-  const QString qtPluginsRoot = findPluginsRootFromQtLibrary(qtLibraries[0]);
   emit verboseMessage(
     tr("will take qt plugins from %1")
-    .arg(qtPluginsRoot)
+    .arg( qtDistributionDirectory.pluginsRootAbsolutePath() )
   );
 
-  plugins = getPluginsForModules(qtModules, qtPluginsRoot, pluginsSet);
+  plugins = getPluginsForModules(qtModules, qtDistributionDirectory, pluginsSet);
 
   return plugins;
 }
@@ -120,11 +119,11 @@ QStringList QtModulePlugins::getPluginsDirectoriesForModule(QtModule module) noe
   return qtModulePluginsGetPluginsDirectoriesForModuleImpl(pred);
 }
 
-QStringList QtModulePlugins::getExistingPluginsDirectoriesForModule(QtModule module, const QFileInfo & qtPluginsRoot) noexcept
+QStringList QtModulePlugins::getExistingPluginsDirectoriesForModule(QtModule module, const QtDistributionDirectory & qtDistributionDirectory) noexcept
 {
-  assert( pathIsAbsoluteAndCouldBePluginsRoot(qtPluginsRoot) );
+  assert( qtDistributionDirectory.isValidExisting() );
 
-  QDir qtPluginsRootDir = qtPluginsRoot.absoluteFilePath();
+  QDir qtPluginsRootDir( qtDistributionDirectory.pluginsRootAbsolutePath() );
   assert( qtPluginsRootDir.isAbsolute() );
   assert( qtPluginsRootDir.exists() );
   assert( qtPluginsRootDir.dirName() == QLatin1String("plugins") );
@@ -165,23 +164,24 @@ QStringList QtModulePlugins::getPluginsDirectoriesForModules(const QtModuleList 
   return directories;
 }
 
-QStringList QtModulePlugins::getExistingPluginsDirectoriesForModules(const QtModuleList & modules, const QFileInfo & qtPluginsRoot) noexcept
+QStringList QtModulePlugins::getExistingPluginsDirectoriesForModules(const QtModuleList & modules,
+                                                                     const QtDistributionDirectory & qtDistributionDirectory) noexcept
 {
-  assert( pathIsAbsoluteAndCouldBePluginsRoot(qtPluginsRoot) );
+  assert( qtDistributionDirectory.isValidExisting() );
 
   QStringList directories;
 
   for(QtModule module : modules){
-    qtModulePluginsAddDirectoryToList(getExistingPluginsDirectoriesForModule(module, qtPluginsRoot), directories);
+    qtModulePluginsAddDirectoryToList(getExistingPluginsDirectoriesForModule(module, qtDistributionDirectory), directories);
   }
 
   return directories;
 }
 
-QtPluginFileList QtModulePlugins::getPluginsForModules(const QtModuleList & modules, const QFileInfo & qtPluginsRoot,
+QtPluginFileList QtModulePlugins::getPluginsForModules(const QtModuleList & modules, const QtDistributionDirectory & qtDistributionDirectory,
                                                        const QtPluginsSet & pluginsSet) const noexcept
 {
-  assert( pathIsAbsoluteAndCouldBePluginsRoot(qtPluginsRoot) );
+  assert( qtDistributionDirectory.isValidExisting() );
 
   QtPluginFileList plugins;
 
@@ -190,16 +190,16 @@ QtPluginFileList QtModulePlugins::getPluginsForModules(const QtModuleList & modu
 //     .arg( pluginsSet.toDebugString() )
 //   );
 
-  const QStringList pluginsDirectories = getExistingPluginsDirectoriesForModules(modules, qtPluginsRoot);
+  const QStringList pluginsDirectories = getExistingPluginsDirectoriesForModules(modules, qtDistributionDirectory);
   for(const QString & pluginsDirectory : pluginsDirectories){
     emit verboseMessage(
       tr("looking in %1")
       .arg(pluginsDirectory)
     );
-    const QDir dir( QDir::cleanPath( qtPluginsRoot.absoluteFilePath() % QLatin1Char('/') % pluginsDirectory ) );
+    const QDir dir( QDir::cleanPath( qtDistributionDirectory.pluginsRootAbsolutePath() % QLatin1Char('/') % pluginsDirectory ) );
     const auto files = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
     for(const auto & file : files){
-      if( QtPluginFile::fileCouldBePlugin(file) ){
+      if( qtDistributionDirectory.fileIsPlugin(file) ){
         const auto qtPluginFile = QtPluginFile::fromQFileInfo(file);
         if( pluginsSet.shouldDeployPlugin(qtPluginFile) ){
           plugins.emplace_back(qtPluginFile);
@@ -214,40 +214,6 @@ QtPluginFileList QtModulePlugins::getPluginsForModules(const QtModuleList & modu
   }
 
   return plugins;
-}
-
-bool QtModulePlugins::pathIsAbsoluteAndCouldBePluginsRoot(const QFileInfo & qtPluginsRoot) noexcept
-{
-  return QtPlugins::pathIsAbsoluteAndCouldBePluginsRoot(qtPluginsRoot);
-}
-
-QString QtModulePlugins::findPluginsRootFromQtLibraryPath(const QFileInfo & qtLibraryPath)
-{
-  assert( !qtLibraryPath.filePath().isEmpty() );
-  assert( qtLibraryPath.isAbsolute() );
-
-  QString qtPluginsRoot;
-  QDir dir = qtLibraryPath.dir();
-
-  if( dir.absolutePath().startsWith( QLatin1String("/usr/lib/") ) ){
-    const QString qtDir = QLatin1String("qt") + QtSharedLibraryFile::getMajorVersionStringFromFileName( qtLibraryPath.fileName() );
-    qtPluginsRoot = QDir::cleanPath( dir.absolutePath() % QLatin1Char('/') % qtDir % QLatin1String("/plugins") );
-  }else{
-    qtPluginsRoot = QDir::cleanPath( dir.absolutePath() % QLatin1String("/../plugins") );
-  }
-
-  if( !QDir(qtPluginsRoot).exists() ){
-    const QString msg = tr("could not find Qt plugins dir '%1'")
-                        .arg(qtPluginsRoot);
-    throw FindQtPluginError(msg);
-  }
-
-  return qtPluginsRoot;
-}
-
-QString QtModulePlugins::findPluginsRootFromQtLibrary(const QtSharedLibraryFile & qtLibrary)
-{
-  return findPluginsRootFromQtLibraryPath( qtLibrary.fileInfo() );
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

@@ -521,3 +521,34 @@ TEST_CASE("containsSharedLibrary")
     }
   }
 }
+
+TEST_CASE("fileIsPlugin")
+{
+  QTemporaryDir qtRoot;
+  REQUIRE( qtRoot.isValid() );
+  qtRoot.setAutoRemove(true);
+
+  /*
+   * QTDIR
+   *   |-plugins
+   *        |-platforms
+   */
+  const QString qtPluginsDir = makePath(qtRoot, "plugins");
+  const QString qtPlatformsPluginsDir = makePath(qtRoot, "plugins/platforms");
+
+  REQUIRE( createDirectoryFromPath(qtPluginsDir) );
+  REQUIRE( createDirectoryFromPath(qtPlatformsPluginsDir) );
+
+  QtDistributionDirectory directory;
+  directory.setRootAbsolutePath( qtRoot.path() );
+
+  QString filePath;
+
+  SECTION("plugins/platforms/file.txt NOT a Qt plugin")
+  {
+    filePath = makePath(qtPlatformsPluginsDir, "file.txt");
+    REQUIRE( createTextFileUtf8( filePath, QLatin1String("ABCD") ) );
+
+    REQUIRE( !directory.fileIsPlugin(filePath) );
+  }
+}

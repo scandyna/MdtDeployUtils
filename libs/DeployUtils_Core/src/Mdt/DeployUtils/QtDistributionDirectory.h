@@ -254,6 +254,18 @@ namespace Mdt{ namespace DeployUtils{
      */
     QString pluginsRootAbsolutePath() const noexcept;
 
+    /*! \brief Check if given file is a plugin
+     *
+     * Returns true if \a fileInfo is a shared library
+     * located in the Qt plugins directory of this distribution
+     *
+     * \pre \a fileInfo must have its absolute file path set
+     * \sa doc of QFileInfo::absoluteFilePath()
+     * \pre this directory must have is root path set
+     * \sa hasRootPath()
+     */
+    bool fileIsPlugin(const QFileInfo & fileInfo) const noexcept;
+
     /*! \brief Find the Qt conf file from given Qt shared library
      *
      * Will search in known directories starting from the one

@@ -24,41 +24,6 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-bool QtPluginFile::pathCouldBePluginsDirectory(const QFileInfo & path) noexcept
-{
-  if( !path.isDir() ){
-    return false;
-  }
-  /*
-   * QFileInfo::dir() returns the parent directory
-   */
-  if( path.dir().dirName() != QLatin1String("plugins") ){
-    return false;
-  }
-
-  return true;
-}
-
-bool QtPluginFile::fileCouldBePlugin(const QFileInfo & fileInfo) noexcept
-{
-  assert( !fileInfo.filePath().isEmpty() );
-  assert( fileInfo.isAbsolute() );
-
-  if( !pathCouldBePluginsDirectory( QFileInfo( fileInfo.dir().path() ) ) ){
-    return false;
-  }
-
-  ExecutableFileReader reader;
-  try{
-    reader.openFile(fileInfo);
-  }catch(...){
-    return false;
-  }
-
-  /// \todo once implemented, should use isSharedLibrary()
-  return reader.isExecutableOrSharedLibrary();
-}
-
 QStringList getQtPluginsDirectoryNames(const QtPluginFileList & qtPlugins) noexcept
 {
   QStringList directoryNames;

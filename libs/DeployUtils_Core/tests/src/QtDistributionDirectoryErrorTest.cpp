@@ -21,6 +21,8 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "Mdt/DeployUtils/QtDistributionDirectory.h"
+#include "TestFileUtils.h"
+#include <QTemporaryDir>
 #include <QLatin1String>
 #include <QString>
 

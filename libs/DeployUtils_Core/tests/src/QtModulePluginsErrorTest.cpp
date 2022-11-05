@@ -27,24 +27,3 @@
 #include <QTemporaryDir>
 
 using namespace Mdt::DeployUtils;
-
-TEST_CASE("findPluginsRootFromQtLibraryPath_pluginsDirDoesNotExist")
-{
-  QString qtLibraryPath;
-
-  QTemporaryDir qtRoot;
-  REQUIRE( qtRoot.isValid() );
-
-  const QString qtLibDir = makePath(qtRoot, "lib");
-  const QString qtBinDir = makePath(qtRoot, "bin");
-
-  REQUIRE( createDirectoryFromPath(qtLibDir) );
-  REQUIRE( createDirectoryFromPath(qtBinDir) );
-
-  SECTION("QTDIR/lib/libQt5Core.so")
-  {
-    qtLibraryPath = qtLibDir + QLatin1String("/libQt5Core.so");
-
-    REQUIRE_THROWS_AS( QtModulePlugins::findPluginsRootFromQtLibraryPath(qtLibraryPath), FindQtPluginError );
-  }
-}

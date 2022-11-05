@@ -31,66 +31,6 @@
 using namespace Mdt::DeployUtils;
 
 
-TEST_CASE("pathCouldBePluginsDirectory")
-{
-  QString path;
-
-  QTemporaryDir rootDir;
-  REQUIRE( rootDir.isValid() );
-  rootDir.setAutoRemove(true);
-
-  SECTION("plugins/platforms is a Qt plugins dir")
-  {
-    path = makePath(rootDir, "plugins/platforms");
-    REQUIRE( createDirectoryFromPath(path) );
-
-    REQUIRE( QtPluginFile::pathCouldBePluginsDirectory(path) );
-  }
-
-  SECTION("plugins/somelib.so NOT a Qt plugins dir")
-  {
-    REQUIRE( createDirectoryFromPath(rootDir, "plugins") );
-    path = makePath(rootDir, "plugins/somelib.so");
-    REQUIRE( createTextFileUtf8( path, QLatin1String("ABCD") ) );
-
-    REQUIRE( !QtPluginFile::pathCouldBePluginsDirectory(path) );
-  }
-
-  SECTION("opt/platforms NOT a Qt plugins dir")
-  {
-    path = makePath(rootDir, "opt/platforms");
-    REQUIRE( createDirectoryFromPath(path) );
-
-    REQUIRE( !QtPluginFile::pathCouldBePluginsDirectory(path) );
-  }
-
-  SECTION("plugins NOT a Qt plugins dir")
-  {
-    path = makePath(rootDir, "plugins");
-    REQUIRE( createDirectoryFromPath(path) );
-
-    REQUIRE( !QtPluginFile::pathCouldBePluginsDirectory(path) );
-  }
-}
-
-TEST_CASE("fileCouldBePlugin")
-{
-  QString path;
-
-  QTemporaryDir rootDir;
-  REQUIRE( rootDir.isValid() );
-  rootDir.setAutoRemove(true);
-
-  SECTION("plugins/platforms/file.txt NOT a Qt plugin")
-  {
-    REQUIRE( createDirectoryFromPath(rootDir, "plugins/platforms") );
-    path = makePath(rootDir, "plugins/platforms/file.txt");
-    REQUIRE( createTextFileUtf8( path, QLatin1String("ABCD") ) );
-
-    REQUIRE( !QtPluginFile::fileCouldBePlugin(path) );
-  }
-}
-
 TEST_CASE("QtPluginFile")
 {
   QString pluginPath;

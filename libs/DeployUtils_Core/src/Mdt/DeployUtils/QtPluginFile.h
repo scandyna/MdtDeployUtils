@@ -84,57 +84,18 @@ namespace Mdt{ namespace DeployUtils{
       return mFile.absoluteFilePath();
     }
 
-    /*! \brief Check if given path could be a Qt plugins directory
-     *
-     * As example, if the path ends with
-     * \code
-     * plugins/platforms
-     * \endcode
-     * and \a platforms is a directory,
-     * this function returns true.
-     *
-     * If the path does not end with a directory,
-     * false is returned
-     * \code
-     * plugins/somelib.so
-     * \endcode
-     *
-     * If the path ends with a directory,
-     * but its parent is not named \a plugins ,
-     * false is returned
-     * \code
-     * opt/platforms
-     * \endcode
-     *
-     */
-    static
-    bool pathCouldBePluginsDirectory(const QFileInfo & path) noexcept;
-
-    /*! \brief Check if given file could be a Qt plugin file
-     *
-     * Returns true if \a fileInfo is a shared library
-     * located in in a Qt plugins directory
-     *
-     * \pre \a fileInfo must have its absolute file path set
-     * \sa doc of QFileInfo::absoluteFilePath()
-     * \sa pathCouldBePluginsDirectory()
-     */
-    static
-    bool fileCouldBePlugin(const QFileInfo & fileInfo) noexcept;
-
     /*! \brief Construct a file from \a fileInfo
      *
      * \pre \a fileInfo must have its absolute file path set
      * \sa doc of QFileInfo::absoluteFilePath()
-     * \pre \a fileInfo must be a Qt plugin
-     * \sa fileCouldBePlugin()
+     * \pre \a fileInfo must exist
      */
     static
     QtPluginFile fromQFileInfo(const QFileInfo & fileInfo) noexcept
     {
       assert( !fileInfo.filePath().isEmpty() );
       assert( fileInfo.isAbsolute() );
-      assert( fileCouldBePlugin(fileInfo) );
+      assert( fileInfo.exists() );
 
       return fromQFileInfoUnchecked(fileInfo);
     }

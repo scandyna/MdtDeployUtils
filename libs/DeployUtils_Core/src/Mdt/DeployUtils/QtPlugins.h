@@ -60,11 +60,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     void deployQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
 
-    /*! \brief Check if \a qtPluginsRoot could be a Qt plugins root
-     */
-    static
-    bool pathIsAbsoluteAndCouldBePluginsRoot(const QFileInfo & qtPluginsRoot) noexcept;
-
    signals:
 
     void statusMessage(const QString & message) const;

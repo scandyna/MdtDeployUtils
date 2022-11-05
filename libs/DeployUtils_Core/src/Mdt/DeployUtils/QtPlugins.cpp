@@ -49,24 +49,6 @@ void QtPlugins::deployQtPlugins(const QtPluginFileList & plugins, const Destinat
   }
 }
 
-bool QtPlugins::pathIsAbsoluteAndCouldBePluginsRoot(const QFileInfo & qtPluginsRoot) noexcept
-{
-  if( qtPluginsRoot.filePath().isEmpty() ){
-    return false;
-  }
-  if( !qtPluginsRoot.isAbsolute() ){
-    return false;
-  }
-  if( !qtPluginsRoot.isDir() ){
-    return false;
-  }
-  if( qtPluginsRoot.fileName() != QLatin1String("plugins") ){
-    return false;
-  }
-
-  return true;
-}
-
 void QtPlugins::makeDestinationDirectoryStructure(const QStringList & qtPluginsDirectories, const DestinationDirectory & destination)
 {
   for(const QString & directory : qtPluginsDirectories){
