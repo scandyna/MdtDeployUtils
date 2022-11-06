@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2020-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -29,7 +29,7 @@ namespace Mdt{ namespace DeployUtils{
   {
     Keep,       /*!< The destination file will not be changed at all */
     Overwrite,  /*!< The destination file will be replaced */
-    Fail        /*!< A error occurs if the destination file allready exists */
+    Fail        /*!< A error occurs if the destination file already exists */
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
