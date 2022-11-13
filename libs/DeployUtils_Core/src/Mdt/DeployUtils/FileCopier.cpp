@@ -59,11 +59,9 @@ void FileCopier::setOverwriteBehavior(OverwriteBehavior behavior) noexcept
   mOverwriteBehavior = behavior;
 }
 
-void FileCopier::copyFile(const QString & sourceFilePath, const QString & destinationDirectoryPath)
+void FileCopier::copyFile(const QFileInfo & sourceFileInfo, const QString & destinationDirectoryPath)
 {
   assert( isExistingDirectory(destinationDirectoryPath) );
-
-  QFileInfo sourceFileInfo(sourceFilePath);
   assert( sourceFileInfo.exists() );
   assert( sourceFileInfo.isFile() );
 

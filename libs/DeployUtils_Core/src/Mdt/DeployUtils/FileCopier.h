@@ -73,7 +73,7 @@ namespace Mdt{ namespace DeployUtils{
       return mOverwriteBehavior;
     }
 
-    /*! \brief Copy \a sourceFilePath to \a destinationDirectoryPath
+    /*! \brief Copy given source file to given destination directory
      *
      * If the source file allready exists in the destination location,
      * but its not the same as the source
@@ -83,13 +83,13 @@ namespace Mdt{ namespace DeployUtils{
      * - If \a overwriteBehavior is OverwriteBehavior::Overwrite, the destination file will replaced.
      * - If \a overwriteBehavior is OverwriteBehavior::Fail, a fatal error is thrown.
      *
-     * \pre \a sourceFilePath must refer to a existing file
+     * \pre \a sourceFileInfo must refer to a existing file
      * \pre \a destinationDirectoryPath must be a existing directory
      * \exception FileCopyError
      * \sa overwriteBehavior()
      * \sa createDirectory()
      */
-    void copyFile(const QString & sourceFilePath, const QString & destinationDirectoryPath);
+    void copyFile(const QFileInfo & sourceFileInfo, const QString & destinationDirectoryPath);
 
     /*! \brief Copy a list of files to \a destinationDirectoryPath
      *
