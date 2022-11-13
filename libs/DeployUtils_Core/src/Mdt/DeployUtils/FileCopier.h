@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_FILE_COPIER_H
 
 #include "FileCopyError.h"
+#include "FileCopierFile.h"
 #include "OverwriteBehavior.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
@@ -101,6 +102,7 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \sa clearCopiedFilesDestinationPathList()
      */
+    [[deprecated]]
     const QStringList & copiedFilesDestinationPathList() const noexcept
     {
       return mCopiedFilesDestinationPathList;
@@ -110,6 +112,7 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \sa copiedFilesDestinationPathList()
      */
+    [[deprecated]]
     void clearCopiedFilesDestinationPathList() noexcept
     {
       mCopiedFilesDestinationPathList.clear();
