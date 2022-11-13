@@ -26,14 +26,13 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-QtSharedLibraryFileList QtSharedLibrary::getQtSharedLibraries(const QStringList & sharedLibraries) noexcept
+QtSharedLibraryFileList QtSharedLibrary::getQtSharedLibraries(const BinaryDependenciesFileList & sharedLibraries) noexcept
 {
   QtSharedLibraryFileList qtLibraries;
 
-  for(const QString & library : sharedLibraries){
-    const QFileInfo libraryFi(library);
-    if( QtSharedLibraryFile::isQtSharedLibrary(libraryFi) ){
-      qtLibraries.push_back( QtSharedLibraryFile::fromQFileInfo(libraryFi) );
+  for(const BinaryDependenciesFile & library : sharedLibraries){
+    if( QtSharedLibraryFile::isQtSharedLibrary( library.fileInfo() ) ){
+      qtLibraries.push_back( QtSharedLibraryFile::fromQFileInfo( library.fileInfo() ) );
     }
   }
 

@@ -23,6 +23,7 @@
 
 #include "QtSharedLibraryFile.h"
 #include "QtSharedLibraryError.h"
+#include "BinaryDependenciesFile.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QStringList>
@@ -50,7 +51,7 @@ namespace Mdt{ namespace DeployUtils{
      * \pre each library in \a sharedLibraries must be a absolute path
      */
     static
-    QtSharedLibraryFileList getQtSharedLibraries(const QStringList & sharedLibraries) noexcept;
+    QtSharedLibraryFileList getQtSharedLibraries(const BinaryDependenciesFileList & sharedLibraries) noexcept;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
