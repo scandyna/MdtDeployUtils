@@ -830,6 +830,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME FileCopierFileTest
+  TARGET fileCopierFileTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/FileCopierFileTest.cpp
+)
+
+mdt_add_test(
   NAME FileCopierTest
   TARGET fileCopierTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

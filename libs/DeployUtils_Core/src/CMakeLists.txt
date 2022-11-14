@@ -116,6 +116,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/BinaryDependencies.cpp
   Mdt/DeployUtils/BinaryDependencies.cpp
   Mdt/DeployUtils/FileCopyError.cpp
+  Mdt/DeployUtils/FileCopierFile.cpp
   Mdt/DeployUtils/FileCopier.cpp
   Mdt/DeployUtils/LogLevel.cpp
   Mdt/DeployUtils/DestinationDirectoryStructure.cpp
