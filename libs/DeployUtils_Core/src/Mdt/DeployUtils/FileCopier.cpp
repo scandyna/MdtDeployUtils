@@ -59,26 +59,29 @@ void FileCopier::setOverwriteBehavior(OverwriteBehavior behavior) noexcept
   mOverwriteBehavior = behavior;
 }
 
-void FileCopier::copyFile(const QFileInfo & sourceFileInfo, const QString & destinationDirectoryPath)
+FileCopierFile FileCopier::copyFile(const QFileInfo & sourceFileInfo, const QString & destinationDirectoryPath)
 {
   assert( isExistingDirectory(destinationDirectoryPath) );
   assert( sourceFileInfo.exists() );
   assert( sourceFileInfo.isFile() );
 
-  const auto fileName = sourceFileInfo.fileName();
-  const auto destinationFilePath = getDestinationFilePath(sourceFileInfo, destinationDirectoryPath);
-  const QFileInfo destinationFileInfo(destinationFilePath);
+  FileCopierFile copierFile;
 
-  if( destinationFileInfo.exists() ){
+  const auto destinationFilePath = getDestinationFilePath(sourceFileInfo, destinationDirectoryPath);
+
+  copierFile.setSourceFileInfo(sourceFileInfo);
+  copierFile.setDestinationFileInfo(destinationFilePath);
+
+  if( copierFile.destinationFileInfo().exists() ){
     if( mOverwriteBehavior == OverwriteBehavior::Keep ){
-      return;
+      return copierFile;
     }
-    if(destinationFileInfo == sourceFileInfo){
-      return;
+    if(copierFile.destinationFileInfo() == sourceFileInfo){
+      return copierFile;
     }
     if( mOverwriteBehavior == OverwriteBehavior::Fail ){
       const QString msg = tr("Copy file '%1' to '%2' failed because the destination file exists (overwrite behavior is Fail)")
-                          .arg( sourceFileInfo.absoluteFilePath(), destinationFileInfo.absoluteFilePath() );
+                          .arg( sourceFileInfo.absoluteFilePath(),copierFile.destinationFileInfo().absoluteFilePath() );
       throw FileCopyError(msg);
     }
     assert( mOverwriteBehavior == OverwriteBehavior::Overwrite );
@@ -86,10 +89,10 @@ void FileCopier::copyFile(const QFileInfo & sourceFileInfo, const QString & dest
 // //       Console::info(3) << " allready up to date: " << sourceFileInfo.fileName();
 //       return;
 //     }
-    QFile destinationFile( destinationFileInfo.absoluteFilePath() );
+    QFile destinationFile(copierFile.destinationFileInfo().absoluteFilePath() );
     if( !destinationFile.remove() ){
       const QString msg = tr("Could not remove destination file '%1'")
-                          .arg( destinationFileInfo.absoluteFilePath() );
+                          .arg(copierFile.destinationFileInfo().absoluteFilePath() );
       throw FileCopyError(msg);
     }
   }
@@ -104,7 +107,10 @@ void FileCopier::copyFile(const QFileInfo & sourceFileInfo, const QString & dest
     throw FileCopyError(msg);
   }
 
+  copierFile.setAsBeenCopied();
   mCopiedFilesDestinationPathList.append(destinationFilePath);
+
+  return copierFile;
 }
 
 void FileCopier::copyFiles(const QStringList & sourceFilePathList, const QString & destinationDirectoryPath)

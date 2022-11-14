@@ -89,7 +89,7 @@ namespace Mdt{ namespace DeployUtils{
      * \sa overwriteBehavior()
      * \sa createDirectory()
      */
-    void copyFile(const QFileInfo & sourceFileInfo, const QString & destinationDirectoryPath);
+    FileCopierFile copyFile(const QFileInfo & sourceFileInfo, const QString & destinationDirectoryPath);
 
     /*! \brief Copy a list of files to \a destinationDirectoryPath
      *

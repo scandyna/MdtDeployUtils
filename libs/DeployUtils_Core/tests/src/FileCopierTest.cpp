@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2021 Philippe Steinmann.
+ ** Copyright (C) 2015-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -109,6 +109,7 @@ TEST_CASE("isExistingDirectory")
 TEST_CASE("copyFile")
 {
   FileCopier fc;
+  FileCopierFile copierFile;
   QTemporaryDir sourceRoot;
   QTemporaryDir destinationRoot;
 
@@ -126,18 +127,22 @@ TEST_CASE("copyFile")
 
   SECTION("copy libA to a empty directory")
   {
-    fc.copyFile(libASourceFilePath, destinationDirectoryPath);
+    copierFile = fc.copyFile(libASourceFilePath, destinationDirectoryPath);
 
     REQUIRE( fileExists(libADestinationFilePath) );
     REQUIRE( readTextFileUtf8(libADestinationFilePath) == QLatin1String("A") );
+    REQUIRE( copierFile.sourceFileInfo().absoluteFilePath() == libASourceFilePath );
+    REQUIRE( copierFile.destinationFileInfo().absoluteFilePath() == libADestinationFilePath );
+    REQUIRE( copierFile.hasBeenCopied() );
     REQUIRE( fc.copiedFilesDestinationPathList() == QStringList({libADestinationFilePath}) );
   }
 
   SECTION("copy libA to itself (destination file path == source file path)")
   {
-    fc.copyFile( libASourceFilePath, sourceRoot.path() );
+    copierFile = fc.copyFile( libASourceFilePath, sourceRoot.path() );
 
     REQUIRE( readTextFileUtf8(libASourceFilePath) == QLatin1String("A") );
+    REQUIRE( !copierFile.hasBeenCopied() );
     REQUIRE( fc.copiedFilesDestinationPathList().isEmpty() );
   }
 
@@ -148,18 +153,20 @@ TEST_CASE("copyFile")
     SECTION("overwrite behavior: Keep")
     {
       fc.setOverwriteBehavior(OverwriteBehavior::Keep);
-      fc.copyFile(libASourceFilePath, destinationDirectoryPath);
+      copierFile = fc.copyFile(libASourceFilePath, destinationDirectoryPath);
 
       REQUIRE( readTextFileUtf8(libADestinationFilePath) == QLatin1String("other A") );
+      REQUIRE( !copierFile.hasBeenCopied() );
       REQUIRE( fc.copiedFilesDestinationPathList().isEmpty() );
     }
 
     SECTION("overwrite behavior: Overwrite")
     {
       fc.setOverwriteBehavior(OverwriteBehavior::Overwrite);
-      fc.copyFile(libASourceFilePath, destinationDirectoryPath);
+      copierFile = fc.copyFile(libASourceFilePath, destinationDirectoryPath);
 
       REQUIRE( readTextFileUtf8(libADestinationFilePath) == QLatin1String("A") );
+      REQUIRE( copierFile.hasBeenCopied() );
       REQUIRE( fc.copiedFilesDestinationPathList() == QStringList({libADestinationFilePath}) );
     }
   }
