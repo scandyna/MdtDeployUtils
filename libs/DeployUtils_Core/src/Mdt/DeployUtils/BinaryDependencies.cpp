@@ -121,6 +121,13 @@ QStringList BinaryDependencies::findDependencies(const QFileInfoList & binaryFil
     mImpl->findDependencies(target, dependencies, reader, platform);
   }
 
+  /*
+   * NOTE
+   * It was tempted to return BinaryDependenciesFileList from this method,
+   * in the hope to reuse the rpath that should have already been read.
+   * In reality, the dependencies list does not contain the rpath.
+   * So, do not try this again. Philippe Steinmann 2022/11/15
+   */
   return Impl::qStringListFromBinaryDependenciesFileList(dependencies);
 }
 
