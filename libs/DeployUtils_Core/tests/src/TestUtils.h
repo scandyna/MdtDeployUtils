@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2020-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2022 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -33,6 +33,7 @@
 #include <QTemporaryDir>
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <cassert>
 
 Mdt::DeployUtils::BuildType currentBuildType()
@@ -88,19 +89,39 @@ QStringList getTestPrefixPath(const char * const prefixPath)
   return QString::fromLocal8Bit(prefixPath).split( QLatin1Char(',') );
 }
 
-bool containsLibrary(const QStringList & libraries, const QString & libraryName)
+template<typename Container, typename GetLibraryName>
+bool containsLibrary(const Container & libraries, GetLibraryName getLibraryName, const QString & libraryName)
 {
   const Mdt::DeployUtils::LibraryName searchedLibraryName(libraryName);
 
-  for(const QString & library : libraries){
-    const QFileInfo libraryFile(library);
+  const auto pred = [&searchedLibraryName, &getLibraryName](const auto & currentItem){
+    const QFileInfo libraryFile( getLibraryName(currentItem) );
     const Mdt::DeployUtils::LibraryName currentLibraryName( libraryFile.fileName() );
-    if( currentLibraryName.nameWithoutDebugSuffix() == searchedLibraryName.nameWithoutDebugSuffix() ){
-      return true;
-    }
-  }
+    return currentLibraryName.nameWithoutDebugSuffix() == searchedLibraryName.nameWithoutDebugSuffix();
+  };
 
-  return false;
+  const auto it = std::find_if(libraries.cbegin(), libraries.cend(), pred);
+
+  return it != libraries.cend();
+}
+
+bool containsLibrary(const QStringList & libraries, const QString & libraryName)
+{
+//   const Mdt::DeployUtils::LibraryName searchedLibraryName(libraryName);
+//
+//   for(const QString & library : libraries){
+//     const QFileInfo libraryFile(library);
+//     const Mdt::DeployUtils::LibraryName currentLibraryName( libraryFile.fileName() );
+//     if( currentLibraryName.nameWithoutDebugSuffix() == searchedLibraryName.nameWithoutDebugSuffix() ){
+//       return true;
+//     }
+//   }
+
+  const auto getLibraryName = [](const QString & library){
+    return library;
+  };
+
+  return containsLibrary(libraries, getLibraryName, libraryName);
 }
 
 bool dirContainsLibrary(const QTemporaryDir & dir, const QString & libraryName)
