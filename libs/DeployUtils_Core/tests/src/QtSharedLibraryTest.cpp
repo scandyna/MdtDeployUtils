@@ -23,7 +23,6 @@
 #include "TestUtils.h"
 #include "TestFileUtils.h"
 #include "Mdt/DeployUtils/QtSharedLibrary.h"
-#include "Mdt/DeployUtils/BinaryDependenciesFile.h"
 #include <QLatin1String>
 #include <QLatin1Char>
 #include <QString>
@@ -41,21 +40,10 @@ void setLibraryAbsoluteFilePath(QFileInfo & library, const QString & dirPath, co
   library.setFile(filePath);
 }
 
-BinaryDependenciesFileList binaryDependenciesFileListFromUtf8Strings(const std::vector<std::string> & args)
-{
-  BinaryDependenciesFileList files;
-
-  for(const auto & arg : args){
-    files.emplace_back( BinaryDependenciesFile::fromQFileInfo( QString::fromStdString(arg) ) );
-  }
-
-  return files;
-}
-
 
 TEST_CASE("getQtSharedLibraries_OnlyReturnsQtLibraries")
 {
-  BinaryDependenciesFileList allLibraries;
+  QStringList allLibraries;
   QtSharedLibraryFileList qtLibraries;
 
   SECTION("empty list")
@@ -67,7 +55,7 @@ TEST_CASE("getQtSharedLibraries_OnlyReturnsQtLibraries")
 
   SECTION("/opt/libQt5Core.so")
   {
-    allLibraries = binaryDependenciesFileListFromUtf8Strings({"/opt/libQt5Core.so"});
+    allLibraries = qStringListFromUtf8Strings({"/opt/libQt5Core.so"});
 
     qtLibraries = QtSharedLibrary::getQtSharedLibraries(allLibraries);
 
@@ -77,7 +65,7 @@ TEST_CASE("getQtSharedLibraries_OnlyReturnsQtLibraries")
 
   SECTION("/opt/libm.so,/opt/libQt5Core.so")
   {
-    allLibraries = binaryDependenciesFileListFromUtf8Strings({"/opt/libm.so","/opt/libQt5Core.so"});
+    allLibraries = qStringListFromUtf8Strings({"/opt/libm.so","/opt/libQt5Core.so"});
 
     qtLibraries = QtSharedLibrary::getQtSharedLibraries(allLibraries);
 
