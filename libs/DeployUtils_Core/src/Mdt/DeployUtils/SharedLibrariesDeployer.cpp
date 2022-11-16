@@ -30,6 +30,8 @@
 #include <memory>
 #include <cassert>
 
+// #include <QDebug>
+
 namespace Mdt{ namespace DeployUtils{
 
 SharedLibrariesDeployer::SharedLibrariesDeployer(std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory,
@@ -89,6 +91,46 @@ void SharedLibrariesDeployer::setRemoveRpath(bool remove) noexcept
   mRemoveRpath = remove;
 }
 
+bool SharedLibrariesDeployer::hasToUpdateRpath(const CopiedSharedLibraryFile & file, const RPath & rpath, const PathList & systemWideLocations) const noexcept
+{
+  if(file.rpath == rpath){
+    return false;
+  }
+  if( file.rpath.isEmpty() ){
+    if( !systemWideLocations.containsPath( file.file.sourceFileInfo().absoluteFilePath() ) ){
+      return false;
+    }
+  }
+
+  return true;
+}
+
+CopiedSharedLibraryFileList SharedLibrariesDeployer::copySharedLibraries(const QStringList & libraries, const QString & destinationDirectoryPath)
+{
+  CopiedSharedLibraryFileList copiedFiles;
+
+  FileCopier fileCopier;
+  fileCopier.setOverwriteBehavior(mOverwriteBehavior);
+  connect(&fileCopier, &FileCopier::verboseMessage, this, &SharedLibrariesDeployer::verboseMessage);
+
+  fileCopier.createDirectory(destinationDirectoryPath);
+
+  for(const QString & library : libraries){
+    CopiedSharedLibraryFile copiedShLib;
+    copiedShLib.file = fileCopier.copyFile(library, destinationDirectoryPath);
+    if( copiedShLib.file.hasBeenCopied() ){
+      ExecutableFileReader reader;
+      reader.openFile(library);
+      copiedShLib.rpath = reader.getRunPath();
+      reader.close();
+
+      copiedFiles.push_back(copiedShLib);
+    }
+  }
+
+  return copiedFiles;
+}
+
 void SharedLibrariesDeployer::copySharedLibrariesTargetDependsOn(const QFileInfo & targetFilePath, const QString & destinationDirectoryPath)
 {
   assert( !targetFilePath.filePath().isEmpty() );
@@ -131,17 +173,14 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFil
 
   emitFoundDependenciesMessage();
 
-  FileCopier fileCopier;
-  fileCopier.setOverwriteBehavior(mOverwriteBehavior);
-  connect(&fileCopier, &FileCopier::verboseMessage, this, &SharedLibrariesDeployer::verboseMessage);
-  fileCopier.copyFiles(mFoundDependencies, destinationDirectoryPath);
+  const CopiedSharedLibraryFileList copiedFiles = copySharedLibraries(mFoundDependencies, destinationDirectoryPath);
 
   if( mPlatform.supportsRPath() ){
-    setRPathToCopiedDependencies( fileCopier.copiedFilesDestinationPathList() );
+    setRPathToCopiedDependencies(copiedFiles);
   }
 }
 
-void SharedLibrariesDeployer::setRPathToCopiedDependencies(const QStringList & destinationFilePathList)
+void SharedLibrariesDeployer::setRPathToCopiedDependencies(const CopiedSharedLibraryFileList & copiedFiles)
 {
   assert( mPlatform.supportsRPath() );
 
@@ -154,11 +193,13 @@ void SharedLibrariesDeployer::setRPathToCopiedDependencies(const QStringList & d
   connect(&writer, &ExecutableFileWriter::message, this, &SharedLibrariesDeployer::verboseMessage);
   connect(&writer, &ExecutableFileWriter::verboseMessage, this, &SharedLibrariesDeployer::verboseMessage);
 
-  for(const QString & filePath : destinationFilePathList){
-    writer.openFile(filePath, mPlatform);
-    if(writer.getRunPath() != rpath){
-      const QString msg = tr("update rpath for %1").arg(filePath);
+  const PathList systemWideLocations = PathList::getSystemLibraryKnownPathList(mPlatform);
+
+  for(const CopiedSharedLibraryFile & copiedFile : copiedFiles){
+    if( hasToUpdateRpath(copiedFile, rpath, systemWideLocations) ){
+      const QString msg = tr("update rpath for %1").arg( copiedFile.file.destinationFileInfo().absoluteFilePath() );
       emit verboseMessage(msg);
+      writer.openFile(copiedFile.file.destinationFileInfo(), mPlatform);
       writer.setRunPath(rpath);
     }
     writer.close();

@@ -103,6 +103,77 @@ TEST_CASE("removeRpath")
   }
 }
 
+TEST_CASE("hasToUpdateRpath")
+{
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibrariesDeployer deployer(qtDistributionDirectory);
+
+  CopiedSharedLibraryFile copiedFile;
+
+  PathList systemWideLocations{QLatin1String("/usr/lib")};
+
+  RPath rpath;
+  rpath.appendPath( QLatin1String(".") );
+
+  SECTION("copied file already has correct rpath")
+  {
+    copiedFile.rpath = rpath;
+
+    REQUIRE( !deployer.hasToUpdateRpath(copiedFile, rpath, systemWideLocations) );
+  }
+
+  // https://gitlab.com/scandyna/mdtdeployutils/-/issues/3
+  SECTION("take in to account the source location")
+  {
+    QFileInfo sourceFile;
+    QFileInfo destinationFile;
+
+    SECTION("file comes from /usr/lib")
+    {
+      sourceFile.setFile( QLatin1String("/usr/lib") );
+      destinationFile.setFile( QLatin1String("/tmp/app/lib") );
+      copiedFile.file.setSourceFileInfo(sourceFile);
+      copiedFile.file.setDestinationFileInfo(destinationFile);
+
+      SECTION("copied file has no rpath (must be updated)")
+      {
+        REQUIRE( copiedFile.rpath.isEmpty() );
+
+        REQUIRE( deployer.hasToUpdateRpath(copiedFile, rpath, systemWideLocations) );
+      }
+    }
+
+    SECTION("file comes from /opt/qt/lib")
+    {
+      sourceFile.setFile( QLatin1String("/opt/qt/lib") );
+      destinationFile.setFile( QLatin1String("/tmp/app/lib") );
+      copiedFile.file.setSourceFileInfo(sourceFile);
+      copiedFile.file.setDestinationFileInfo(destinationFile);
+
+      SECTION("copied file has no rpath (must NOT be updated)")
+      {
+        REQUIRE( copiedFile.rpath.isEmpty() );
+
+        REQUIRE( !deployer.hasToUpdateRpath(copiedFile, rpath, systemWideLocations) );
+      }
+
+      SECTION("copied file has the correct rpath (must NOT be updated)")
+      {
+        copiedFile.rpath = rpath;
+
+        REQUIRE( !deployer.hasToUpdateRpath(copiedFile, rpath, systemWideLocations) );
+      }
+
+      SECTION("copied file has wrong rpath (must be updated)")
+      {
+        copiedFile.rpath.appendPath( QLatin1String("/build/project") );
+
+        REQUIRE( deployer.hasToUpdateRpath(copiedFile, rpath, systemWideLocations) );
+      }
+    }
+  }
+}
+
 TEST_CASE("copySharedLibrariesTargetsDependsOn")
 {
   QTemporaryDir destinationDir;
@@ -139,7 +210,7 @@ TEST_CASE("copySharedLibrariesTargetsDependsOn")
   deployer.copySharedLibrariesTargetsDependsOn( targets, toQFileInfo, destinationDir.path() );
 
   REQUIRE( deployer.currentPlatform() == Platform::nativePlatform() );
-  REQUIRE( !deployer.foundDependencies().isEmpty() );
+  REQUIRE( !deployer.foundDependencies().empty() );
   REQUIRE( containsTestSharedLibrary( deployer.foundDependencies() ) );
   REQUIRE( dirContainsTestSharedLibrary(destinationDir) );
   if(checkRPath){

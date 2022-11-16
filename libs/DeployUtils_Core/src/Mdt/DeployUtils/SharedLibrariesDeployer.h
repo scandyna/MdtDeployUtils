@@ -22,11 +22,13 @@
 #define MDT_DEPLOY_UTILS_SHARED_LIBRARIES_DEPLOYER_FILE_H
 
 #include "PathList.h"
+#include "FileCopierFile.h"
 #include "CompilerLocationRequest.h"
 #include "OverwriteBehavior.h"
 #include "Platform.h"
 #include "BinaryDependencies.h"
 #include "QtDistributionDirectory.h"
+#include "RPath.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -34,8 +36,21 @@
 #include <QFileInfo>
 #include <QFileInfoList>
 #include <memory>
+#include <vector>
 
 namespace Mdt{ namespace DeployUtils{
+
+  /*! \internal
+   */
+  struct CopiedSharedLibraryFile
+  {
+    FileCopierFile file;
+    RPath rpath;
+  };
+
+  /*! \internal
+   */
+  using CopiedSharedLibraryFileList = std::vector<CopiedSharedLibraryFile>;
 
   /*! \brief Deploy a set of shared libraries some target depends on
    *
@@ -65,11 +80,11 @@ namespace Mdt{ namespace DeployUtils{
     explicit SharedLibrariesDeployer(std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory,
                                      QObject *parent = nullptr) noexcept;
 
-    /*! \brief Set the list of paths prefixes where to locate teh shared libraries
+    /*! \brief Set the list of paths prefixes where to locate the shared libraries
      */
     void setSearchPrefixPathList(const PathList & pathList) noexcept;
 
-    /*! \brief Get the list of paths prefixes where to locate teh shared libraries
+    /*! \brief Get the list of paths prefixes where to locate the shared libraries
      *
      * \sa setSearchPrefixPathList()
      */
@@ -131,12 +146,25 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Get the Rpath removal
      *
+     * \todo rename to something like removeRpathIsSet()
      * \sa setRemoveRpath()
      */
     bool removeRpath() const noexcept
     {
       return mRemoveRpath;
     }
+
+    /*! \brief Check if given Rpath has to be changed for given file
+     *
+     * \sa https://gitlab.com/scandyna/mdtdeployutils/-/issues/3
+     */
+    bool hasToUpdateRpath(const CopiedSharedLibraryFile & file, const RPath & rpath, const PathList & systemWideLocations) const noexcept;
+
+    /*! \brief Copy a set of shared libraries to given destination
+     *
+     * \exception FileCopyError
+     */
+    CopiedSharedLibraryFileList copySharedLibraries(const QStringList & libraries, const QString & destinationDirectoryPath);
 
     /*! \brief Copy shared libraries given target depends on to given destination
      *
@@ -200,7 +228,9 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Get a list to the full path of found shared libraries dependning on the target
      *
-     * The returned list has only sense once execute() succeeded.
+     * The returned list has only sense once
+     * copySharedLibrariesTargetDependsOn() or copySharedLibrariesTargetsDependsOn()
+     * succeeded.
      */
     const QStringList & foundDependencies() const noexcept
     {
@@ -216,7 +246,7 @@ namespace Mdt{ namespace DeployUtils{
    private:
 
     void copySharedLibrariesTargetsDependsOnImpl(const QFileInfoList & targetFilePathList, const QString & destinationDirectoryPath);
-    void setRPathToCopiedDependencies(const QStringList & destinationFilePathList);
+    void setRPathToCopiedDependencies(const CopiedSharedLibraryFileList & copiedFiles);
     void emitStartMessage(const QFileInfoList & targetFilePathList) const;
     void emitSearchPrefixPathListMessage() const;
     void emitFoundDependenciesMessage() const;
