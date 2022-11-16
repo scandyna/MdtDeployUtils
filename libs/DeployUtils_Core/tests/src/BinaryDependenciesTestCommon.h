@@ -19,6 +19,7 @@
  **
  ****************************************************************************/
 #include "TestIsExistingSharedLibrary.h"
+#include "TestUtils.h"
 #include "TestFileUtils.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
 #include "Mdt/DeployUtils/BinaryDependenciesFile.h"

@@ -20,13 +20,12 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
-#include "TestUtils.h"
+#include "BinaryDependenciesTestCommon.h"
 #include "Mdt/DeployUtils/BinaryDependencies.h"
 #include "Mdt/DeployUtils/QtDistributionDirectory.h"
 #include "Mdt/DeployUtils/PathList.h"
 #include "Mdt/DeployUtils/MessageLogger.h"
 #include "Mdt/DeployUtils/CompilerFinder.h"
-// #include "Mdt/DeployUtils/Platform.h"
 #include <QString>
 #include <QLatin1String>
 #include <QStringList>
