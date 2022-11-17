@@ -180,13 +180,12 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFil
   }
 }
 
-void SharedLibrariesDeployer::setRPathToCopiedDependencies(const CopiedSharedLibraryFileList & copiedFiles)
+void SharedLibrariesDeployer::setRPathToCopiedSharedLibraries(const CopiedSharedLibraryFileList & copiedFiles, const RPath & rpath)
 {
   assert( mPlatform.supportsRPath() );
 
-  RPath rpath;
-  if(!mRemoveRpath){
-    rpath.appendPath( QLatin1String(".") );
+  if( copiedFiles.empty() ){
+    return;
   }
 
   ExecutableFileWriter writer;
@@ -204,6 +203,18 @@ void SharedLibrariesDeployer::setRPathToCopiedDependencies(const CopiedSharedLib
     }
     writer.close();
   }
+}
+
+void SharedLibrariesDeployer::setRPathToCopiedDependencies(const CopiedSharedLibraryFileList & copiedFiles)
+{
+  assert( mPlatform.supportsRPath() );
+
+  RPath rpath;
+  if(!mRemoveRpath){
+    rpath.appendPath( QLatin1String(".") );
+  }
+
+  setRPathToCopiedSharedLibraries(copiedFiles, rpath);
 }
 
 void SharedLibrariesDeployer::emitStartMessage(const QFileInfoList & targetFilePathList) const

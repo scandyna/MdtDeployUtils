@@ -213,6 +213,12 @@ namespace Mdt{ namespace DeployUtils{
       copySharedLibrariesTargetsDependsOnImpl(targetFilePathList, destinationDirectoryPath);
     }
 
+    /*! \brief Set given rpath to given copied shared libraries
+     *
+     * \pre current platform must support RPath
+     */
+    void setRPathToCopiedSharedLibraries(const CopiedSharedLibraryFileList & copiedFiles, const RPath & rpath);
+
     /*! \brief Get the current platform
      *
      * The current platform is null until

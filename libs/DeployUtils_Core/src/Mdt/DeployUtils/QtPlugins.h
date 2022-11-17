@@ -69,9 +69,10 @@ namespace Mdt{ namespace DeployUtils{
    private:
 
     void makeDestinationDirectoryStructure(const QStringList & qtPluginsDirectories, const DestinationDirectory & destination);
-    QStringList copyPluginsToDestination(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
+    CopiedSharedLibraryFileList copyPluginsToDestination(const QtPluginFileList & plugins,
+                                                         const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
     void copySharedLibrariesPluginsDependsOn(const QtPluginFileList & plugins, const DestinationDirectory & destination);
-    void setRPathToCopiedPlugins(const QStringList & destinationFilePathList, const Platform & platform, const DestinationDirectory & destination);
+    void setRPathToCopiedPlugins(const CopiedSharedLibraryFileList & copiedPlugins, const DestinationDirectory & destination);
 
     std::shared_ptr<SharedLibrariesDeployer> mShLibDeployer;
   };

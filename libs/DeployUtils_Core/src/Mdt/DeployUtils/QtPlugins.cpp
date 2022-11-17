@@ -22,7 +22,7 @@
 #include "FileCopier.h"
 #include "SharedLibrariesDeployer.h"
 #include "RPath.h"
-#include "ExecutableFileWriter.h"
+#include "ExecutableFileReader.h"
 #include <QStringBuilder>
 #include <QLatin1Char>
 #include <cassert>
@@ -41,11 +41,11 @@ void QtPlugins::deployQtPlugins(const QtPluginFileList & plugins, const Destinat
   const QStringList pluginsDirectories = getQtPluginsDirectoryNames(plugins);
 
   makeDestinationDirectoryStructure(pluginsDirectories, destination);
-  const QStringList copiedPlugins = copyPluginsToDestination(plugins, destination, overwriteBehavior);
+  const CopiedSharedLibraryFileList copiedPlugins = copyPluginsToDestination(plugins, destination, overwriteBehavior);
   copySharedLibrariesPluginsDependsOn(plugins, destination);
 
   if( mShLibDeployer->currentPlatform().supportsRPath() ){
-   setRPathToCopiedPlugins(copiedPlugins, mShLibDeployer->currentPlatform(), destination);
+   setRPathToCopiedPlugins(copiedPlugins, destination);
   }
 }
 
@@ -61,10 +61,16 @@ void QtPlugins::makeDestinationDirectoryStructure(const QStringList & qtPluginsD
   }
 }
 
-QStringList QtPlugins::copyPluginsToDestination(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
+CopiedSharedLibraryFileList
+QtPlugins::copyPluginsToDestination(const QtPluginFileList & plugins,
+                                    const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
 {
+  assert( mShLibDeployer.get() != nullptr );
+
+  CopiedSharedLibraryFileList copiedPlugins;
+
   if( plugins.empty() ){
-    return QStringList();
+    return copiedPlugins;
   }
 
   emit verboseMessage(
@@ -75,12 +81,21 @@ QStringList QtPlugins::copyPluginsToDestination(const QtPluginFileList & plugins
   fileCopier.setOverwriteBehavior(overwriteBehavior);
   connect(&fileCopier, &FileCopier::verboseMessage, this, &QtPlugins::verboseMessage);
 
+  ExecutableFileReader reader;
+
   for(const auto & plugin : plugins){
     const QString destinationDirectoryPath = QDir::cleanPath( destination.qtPluginsRootDirectoryPath() % QLatin1Char('/') % plugin.directoryName() );
-    fileCopier.copyFile(plugin.absoluteFilePath(), destinationDirectoryPath);
+    CopiedSharedLibraryFile copiedPlugin;
+    copiedPlugin.file = fileCopier.copyFile(plugin.absoluteFilePath(), destinationDirectoryPath);
+    if( copiedPlugin.file.hasBeenCopied() ){
+      reader.openFile( plugin.absoluteFilePath(), mShLibDeployer->currentPlatform() );
+      copiedPlugin.rpath = reader.getRunPath();
+      reader.close();
+      copiedPlugins.push_back(copiedPlugin);
+    }
   }
 
-  return fileCopier.copiedFilesDestinationPathList();
+  return copiedPlugins;
 }
 
 void QtPlugins::copySharedLibrariesPluginsDependsOn(const QtPluginFileList & plugins, const DestinationDirectory & destination)
@@ -94,13 +109,11 @@ void QtPlugins::copySharedLibrariesPluginsDependsOn(const QtPluginFileList & plu
   mShLibDeployer->copySharedLibrariesTargetsDependsOn( plugins, toFileInfo, destination.sharedLibrariesDirectoryPath() );
 }
 
-void QtPlugins::setRPathToCopiedPlugins(const QStringList & destinationFilePathList, const Platform & platform, const DestinationDirectory & destination)
+void QtPlugins::setRPathToCopiedPlugins(const CopiedSharedLibraryFileList & copiedPlugins,
+                                        const DestinationDirectory & destination)
 {
-  assert( platform.supportsRPath() );
-
-  if( destinationFilePathList.isEmpty() ){
-    return;
-  }
+  assert( mShLibDeployer.get() != nullptr );
+  assert( mShLibDeployer->currentPlatform().supportsRPath() );
 
   RPath rpath;
   rpath.appendPath( destination.structure().qtPluginsToSharedLibrariesRelativePath() );
@@ -109,19 +122,7 @@ void QtPlugins::setRPathToCopiedPlugins(const QStringList & destinationFilePathL
     tr("update Rpath for copied Qt plugins if required")
   );
 
-  ExecutableFileWriter writer;
-  connect(&writer, &ExecutableFileWriter::message, this, &QtPlugins::verboseMessage);
-  connect(&writer, &ExecutableFileWriter::verboseMessage, this, &QtPlugins::verboseMessage);
-
-  for(const QString & filePath : destinationFilePathList){
-    writer.openFile(filePath, platform);
-    if(writer.getRunPath() != rpath){
-      const QString msg = tr("update rpath for %1").arg(filePath);
-      emit verboseMessage(msg);
-      writer.setRunPath(rpath);
-    }
-    writer.close();
-  }
+  mShLibDeployer->setRPathToCopiedSharedLibraries(copiedPlugins, rpath);
 }
 
 }} // namespace Mdt{ namespace DeployUtils{
