@@ -34,6 +34,17 @@ TEST_CASE("default constructed")
   REQUIRE( file.isNull() );
 }
 
+TEST_CASE("fromLibraryName")
+{
+  QFileInfo fi( QLatin1String("arbitraryFile.so") );
+
+  auto file = BinaryDependenciesFile::fromLibraryName(fi);
+
+  REQUIRE( file.fileName() == QLatin1String("arbitraryFile.so") );
+  REQUIRE( file.absoluteDirectoryPath().isEmpty() );
+  REQUIRE( !file.isNull() );
+}
+
 TEST_CASE("fromQFileInfo")
 {
   QFileInfo fi( QLatin1String("/path/to/some/arbitraryFile") );

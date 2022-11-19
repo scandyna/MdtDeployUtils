@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2021 Philippe Steinmann.
+ ** Copyright (C) 2015-2022 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -59,6 +59,8 @@ namespace Mdt{ namespace DeployUtils{
     BinaryDependenciesFile & operator=(BinaryDependenciesFile && other) noexcept = default;
 
     /*! \brief Check if this file is null
+     *
+     * This file is null if it has no file name.
      */
     bool isNull() const noexcept
     {
@@ -132,6 +134,13 @@ namespace Mdt{ namespace DeployUtils{
     {
       return mRPath;
     }
+
+    /*! \brief Construct a file from given library name
+     *
+     * \pre \a name must only be a file name without any path
+     */
+    static
+    BinaryDependenciesFile fromLibraryName(const QFileInfo & name) noexcept;
 
     /*! \brief Construct a file from \a fileInfo
      *
