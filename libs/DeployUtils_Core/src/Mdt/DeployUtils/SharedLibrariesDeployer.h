@@ -27,6 +27,7 @@
 #include "OverwriteBehavior.h"
 #include "Platform.h"
 #include "BinaryDependencies.h"
+#include "BinaryDependenciesResult.h"
 #include "QtDistributionDirectory.h"
 #include "RPath.h"
 #include "mdt_deployutilscore_export.h"
@@ -255,7 +256,7 @@ namespace Mdt{ namespace DeployUtils{
     void setRPathToCopiedDependencies(const CopiedSharedLibraryFileList & copiedFiles);
     void emitStartMessage(const QFileInfoList & targetFilePathList) const;
     void emitSearchPrefixPathListMessage() const;
-    void emitFoundDependenciesMessage() const;
+    void emitFoundDependenciesMessage(const BinaryDependenciesResultList & resultList) const;
 
     static
     QString overwriteBehaviorToString(OverwriteBehavior overwriteBehavior) noexcept;

@@ -56,14 +56,14 @@ TEST_CASE("findDependencies")
 
   auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
   PathList searchFirstPathPrefixList = PathList::fromStringList( getTestPrefixPath(PREFIX_PATH) );
-  QStringList dependencies;
+//   QStringList dependencies;
 
   SECTION("Executable")
   {
     const QFileInfo target( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
-    dependencies = solver.findDependencies(target, searchFirstPathPrefixList, qtDistributionDirectory);
+    const BinaryDependenciesResult dependencies = solver.findDependencies(target, searchFirstPathPrefixList, qtDistributionDirectory);
 
-    std::cout << "deps:\n" << dependencies.join( QLatin1Char('\n') ).toStdString() << std::endl;
+//     std::cout << "deps:\n" << dependencies.join( QLatin1Char('\n') ).toStdString() << std::endl;
 
     REQUIRE( containsTestSharedLibrary(dependencies) );
     REQUIRE( containsQt5Core(dependencies) );

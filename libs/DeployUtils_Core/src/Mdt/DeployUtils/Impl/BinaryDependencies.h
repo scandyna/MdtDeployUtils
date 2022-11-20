@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_IMPL_BINARY_DEPENDENCIES_H
 
 #include "Mdt/DeployUtils/BinaryDependenciesFile.h"
+#include "Mdt/DeployUtils/BinaryDependenciesResult.h"
 #include "Mdt/DeployUtils/FindDependencyError.h"
 #include "Mdt/DeployUtils/ExecutableFileReader.h"
 #include "Mdt/DeployUtils/AbstractSharedLibraryFinder.h"
@@ -47,17 +48,17 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
   /*! \internal
    */
-  inline
-  QStringList qStringListFromBinaryDependenciesFileList(const BinaryDependenciesFileList & files) noexcept
-  {
-    QStringList list;
-
-    for(const auto & file : files){
-      list.push_back( file.absoluteFilePath() );
-    }
-
-    return list;
-  }
+//   inline
+//   QStringList qStringListFromBinaryDependenciesFileList(const BinaryDependenciesFileList & files) noexcept
+//   {
+//     QStringList list;
+//
+//     for(const auto & file : files){
+//       list.push_back( file.absoluteFilePath() );
+//     }
+//
+//     return list;
+//   }
 
   /*! \internal
    */
@@ -111,7 +112,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     /*! \internal
      */
     template<typename Reader>
-    void findDependencies(BinaryDependenciesFile & currentFile, BinaryDependenciesFileList & allDependencies,
+    void findDependencies(BinaryDependenciesFile & currentFile,
+                          BinaryDependenciesResult & result,
+                          BinaryDependenciesFileList & allDependencies,
                           Reader & reader, const Platform & platform)
     {
       assert( !reader.isOpen() );
@@ -139,16 +142,17 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
       reader.close();
 
-      BinaryDependenciesFileList dependencies = mShLibFinder->findLibrariesAbsolutePath( currentFile, platform.operatingSystem() );
+      BinaryDependenciesFileList directDependencies = mShLibFinder->findLibrariesAbsolutePath( currentFile, platform.operatingSystem() );
 
-      emitSolvedDirectDependenciesMessage(currentFile, dependencies);
+      emitSolvedDirectDependenciesMessage(currentFile, directDependencies);
 
       setDirectDependenciesSolved(currentFile);
       removeDuplicates(allDependencies);
 
-      for(BinaryDependenciesFile & library : dependencies){
+      for(BinaryDependenciesFile & library : directDependencies){
         allDependencies.push_back(library);
-        findDependencies(library, allDependencies, reader, platform);
+        result.addLibrary(library);
+        findDependencies(library, result, allDependencies, reader, platform);
       }
 
       removeDuplicates(allDependencies);

@@ -22,6 +22,7 @@
 #define MDT_DEPLOY_UTILS_BINARY_DEPENDENCIES_H
 
 #include "FindDependencyError.h"
+#include "BinaryDependenciesResult.h"
 #include "PathList.h"
 #include "ProcessorISA.h"
 #include "CompilerFinder.h"
@@ -82,28 +83,28 @@ namespace Mdt{ namespace DeployUtils{
      * Some libraries, known not have to be distributed,
      * will not be part of the result.
      *
-     * Each library returned in the result will have its absolute file path.
-     *
      * \pre \a binaryFilePath must have its absolute path set
      * \exception FindDependencyError
      *
      * \sa SharedLibraryFinderLinux
      * \sa SharedLibraryFinderWindows
      */
-    QStringList findDependencies(const QFileInfo & binaryFilePath,
-                                 const PathList & searchFirstPathPrefixList,
-                                 std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory);
+    BinaryDependenciesResult
+    findDependencies(const QFileInfo & binaryFilePath,
+                     const PathList & searchFirstPathPrefixList,
+                     std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory);
 
     /*! \brief Find dependencies for a list executables or a shared libraries
      *
      * \pre \a binaryFilePathList must not be empty
      * \pre each element in \a binaryFilePathList must have its absolute path set
      *
-     * \sa findDependencies(const QFileInfo &, const PathList &)
+     * \sa findDependencies(const QFileInfo &, const PathList &, std::shared_ptr<QtDistributionDirectory> &)
      */
-    QStringList findDependencies(const QFileInfoList & binaryFilePathList,
-                                 const PathList & searchFirstPathPrefixList,
-                                 std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory);
+    BinaryDependenciesResultList
+    findDependencies(const QFileInfoList & binaryFilePathList,
+                     const PathList & searchFirstPathPrefixList,
+                     std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory);
 
    signals:
 

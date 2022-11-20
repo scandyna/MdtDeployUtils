@@ -24,6 +24,8 @@
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
 #include "Mdt/DeployUtils/BinaryDependenciesFile.h"
 
+#include "Mdt/DeployUtils/BinaryDependenciesResult.h"
+
 // #include "Mdt/DeployUtils/QtDistributionDirectory.h"
 
 #include "Mdt/DeployUtils/AbstractSharedLibraryFinder.h"
@@ -37,6 +39,26 @@
 #include <memory>
 
 using namespace Mdt::DeployUtils;
+
+
+bool containsLibrary(const BinaryDependenciesResult & result, const QString & libraryName)
+{
+  const auto getLibraryName = [](const BinaryDependenciesResultLibrary & library){
+    return library.libraryName();
+  };
+
+  return containsLibrary(result, getLibraryName, libraryName);
+}
+
+bool containsQt5Core(const BinaryDependenciesResult & result)
+{
+  return containsLibrary(result, QLatin1String("Qt5Core"));
+}
+
+bool containsTestSharedLibrary(const BinaryDependenciesResult & result)
+{
+  return containsLibrary( result, QLatin1String("testSharedLibrary") );
+}
 
 
 inline

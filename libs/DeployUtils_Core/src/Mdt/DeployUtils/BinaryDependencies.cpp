@@ -55,25 +55,36 @@ void BinaryDependencies::setCompilerFinder(const std::shared_ptr<CompilerFinder>
   mCompilerFinder = compilerFinder;
 }
 
-QStringList BinaryDependencies::findDependencies(const QFileInfo & binaryFilePath,
-                                                 const PathList & searchFirstPathPrefixList,
-                                                 std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory)
+BinaryDependenciesResult
+BinaryDependencies::findDependencies(const QFileInfo & binaryFilePath,
+                                     const PathList & searchFirstPathPrefixList,
+                                     std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory)
 {
   assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
   assert( binaryFilePath.isAbsolute() );
   assert(qtDistributionDirectory.get() != nullptr);
 
-  return findDependencies(QFileInfoList{binaryFilePath}, searchFirstPathPrefixList, qtDistributionDirectory);
+  const BinaryDependenciesResultList resultList =
+    findDependencies(QFileInfoList{binaryFilePath}, searchFirstPathPrefixList, qtDistributionDirectory);
+
+  if( resultList.empty() ){
+    return BinaryDependenciesResult(binaryFilePath);
+  }
+  assert(resultList.size() == 1);
+
+  return resultList[0];
 }
 
-QStringList BinaryDependencies::findDependencies(const QFileInfoList & binaryFilePathList,
-                                                 const PathList & searchFirstPathPrefixList,
-                                                 std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory)
+BinaryDependenciesResultList
+BinaryDependencies::findDependencies(const QFileInfoList & binaryFilePathList,
+                                     const PathList & searchFirstPathPrefixList,
+                                     std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory)
 {
   assert( !binaryFilePathList.isEmpty() );
   assert(qtDistributionDirectory.get() != nullptr);
 
-  BinaryDependenciesFileList dependencies;
+  BinaryDependenciesResultList resultList;
+  BinaryDependenciesFileList allDependencies;
 
   const QFileInfo & firstBinaryFilePath = binaryFilePathList.at(0);
 
@@ -118,7 +129,9 @@ QStringList BinaryDependencies::findDependencies(const QFileInfoList & binaryFil
     assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
     assert( binaryFilePath.isAbsolute() );
     auto target = BinaryDependenciesFile::fromQFileInfo(binaryFilePath);
-    mImpl->findDependencies(target, dependencies, reader, platform);
+    BinaryDependenciesResult result(binaryFilePath);
+    mImpl->findDependencies(target, result, allDependencies, reader, platform);
+    resultList.push_back(result);
   }
 
   /*
@@ -128,7 +141,9 @@ QStringList BinaryDependencies::findDependencies(const QFileInfoList & binaryFil
    * In reality, the dependencies list does not contain the rpath.
    * So, do not try this again. Philippe Steinmann 2022/11/15
    */
-  return Impl::qStringListFromBinaryDependenciesFileList(dependencies);
+//   return Impl::qStringListFromBinaryDependenciesFileList(allDependencies);
+
+  return resultList;
 }
 
 void BinaryDependencies::emitSearchPathListMessage(const PathList & pathList) const

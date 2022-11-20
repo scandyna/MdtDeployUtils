@@ -489,10 +489,12 @@ TEST_CASE("findDependencies")
   SECTION("no dependencies")
   {
     BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/libm.so");
+    BinaryDependenciesResult result( target.fileInfo() );
 //     debugExecutableFileInfo(target);
-    impl.findDependencies(target, dependencies, reader, platform);
+    impl.findDependencies(target, result, dependencies, reader, platform);
 //     debugExecutableFileInfoList(dependencies);
     REQUIRE( dependencies.size() == 0 );
+    REQUIRE( result.libraryCount() == 0 );
   }
 
   /*
@@ -503,14 +505,18 @@ TEST_CASE("findDependencies")
   SECTION("myapp depends on MyLibA")
   {
     BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/myapp");
+    BinaryDependenciesResult result( target.fileInfo() );
     shLibFinder->setSearchPathList({"/opt/MyLibs/"});
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so"});
     reader.setDirectDependencies({"libMyLibA.so"});
 
-    impl.findDependencies(target, dependencies, reader, platform);
+    impl.findDependencies(target, result, dependencies, reader, platform);
 
     REQUIRE( dependencies.size() == 1 );
     REQUIRE( dependenciesEquals(dependencies, {"/opt/MyLibs/libMyLibA.so"}) );
+    REQUIRE( result.libraryCount() == 1 );
+    REQUIRE( result.containsLibraryName( QLatin1String("libMyLibA.so") ) );
+    REQUIRE( result.isSolved() );
   }
 
   /*
@@ -523,15 +529,20 @@ TEST_CASE("findDependencies")
   SECTION("myapp depends on MyLibA which depends on Qt5Core")
   {
     BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/myapp");
+    BinaryDependenciesResult result( target.fileInfo() );
     shLibFinder->setSearchPathList({"/opt/MyLibs/","/opt/qt/"});
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so","/opt/qt/libQt5Core.so"});
     reader.setDirectDependencies({"libMyLibA.so"});
     reader.addDependenciesToDirectDependency("libMyLibA.so",{"libQt5Core.so"});
 
-    impl.findDependencies(target, dependencies, reader, platform);
+    impl.findDependencies(target, result, dependencies, reader, platform);
 
     REQUIRE( dependencies.size() == 2 );
     REQUIRE( dependenciesEquals(dependencies, {"/opt/MyLibs/libMyLibA.so","/opt/qt/libQt5Core.so"}) );
+    REQUIRE( result.libraryCount() == 2 );
+    REQUIRE( result.containsLibraryName( QLatin1String("libMyLibA.so") ) );
+    REQUIRE( result.containsLibraryName( QLatin1String("libQt5Core.so") ) );
+    REQUIRE( result.isSolved() );
   }
 
   /*

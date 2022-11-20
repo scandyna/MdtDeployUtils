@@ -105,7 +105,8 @@ bool SharedLibrariesDeployer::hasToUpdateRpath(const CopiedSharedLibraryFile & f
   return true;
 }
 
-CopiedSharedLibraryFileList SharedLibrariesDeployer::copySharedLibraries(const QStringList & libraries, const QString & destinationDirectoryPath)
+CopiedSharedLibraryFileList
+SharedLibrariesDeployer::copySharedLibraries(const QStringList & libraries, const QString & destinationDirectoryPath)
 {
   CopiedSharedLibraryFileList copiedFiles;
 
@@ -169,9 +170,14 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFil
     }
   }
 
-  mFoundDependencies = mBinaryDependencies.findDependencies(targetFilePathList, mSearchPrefixPathList, mQtDistributionDirectory);
+//   mFoundDependencies = mBinaryDependencies.findDependencies(targetFilePathList, mSearchPrefixPathList, mQtDistributionDirectory);
 
-  emitFoundDependenciesMessage();
+  const BinaryDependenciesResultList dependencies
+    = mBinaryDependencies.findDependencies(targetFilePathList, mSearchPrefixPathList, mQtDistributionDirectory);
+
+  emitFoundDependenciesMessage(dependencies);
+
+  mFoundDependencies = getLibrariesAbsoluteFilePathList(dependencies);
 
   const CopiedSharedLibraryFileList copiedFiles = copySharedLibraries(mFoundDependencies, destinationDirectoryPath);
 
@@ -246,14 +252,36 @@ void SharedLibrariesDeployer::emitSearchPrefixPathListMessage() const
   }
 }
 
-void SharedLibrariesDeployer::emitFoundDependenciesMessage() const
+void SharedLibrariesDeployer::emitFoundDependenciesMessage(const BinaryDependenciesResultList & resultList) const
 {
   const QString startMessage = tr("found dependencies:");
   emit verboseMessage(startMessage);
 
-  for(const QString & dependency : mFoundDependencies){
-    const QString msg = tr(" %1").arg(dependency);
-    emit verboseMessage(msg);
+//   for(const QString & dependency : mFoundDependencies){
+//     const QString msg = tr(" %1").arg(dependency);
+//     emit verboseMessage(msg);
+//   }
+
+  for(const BinaryDependenciesResult & result : resultList){
+    QString solvedText;
+    if( result.isSolved() ){
+      solvedText = tr("yes");
+    }else{
+      solvedText = tr("no");
+    }
+    const QString targetMessage = tr(" %1 (solved: %2):")
+                                  .arg(result.target().fileName(), solvedText);
+    emit verboseMessage(targetMessage);
+
+    for(const BinaryDependenciesResultLibrary & library : result){
+      if( library.isFound() ){
+        const QString msg = tr("  %1").arg( library.absoluteFilePath() );
+        emit verboseMessage(msg);
+      }else{
+        const QString msg = tr("  %1 (not found)").arg( library.libraryName() );
+        emit verboseMessage(msg);
+      }
+    }
   }
 }
 
