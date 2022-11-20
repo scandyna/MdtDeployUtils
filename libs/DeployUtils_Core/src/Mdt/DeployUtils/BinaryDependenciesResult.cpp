@@ -48,4 +48,22 @@ void BinaryDependenciesResult::addLibrary(const BinaryDependenciesFile & library
   }
 }
 
+QStringList getLibrariesAbsoluteFilePathList(const BinaryDependenciesResultList & resultList)
+{
+  QStringList pathList;
+
+  for(const BinaryDependenciesResult & result : resultList){
+    assert( result.isSolved() );
+    for(const BinaryDependenciesResultLibrary & library : result){
+      assert( library.isFound() );
+      const QString path = library.absoluteFilePath();
+      if( !pathList.contains(path) ){
+        pathList.append(path);
+      }
+    }
+  }
+
+  return pathList;
+}
+
 }} // namespace Mdt{ namespace DeployUtils{

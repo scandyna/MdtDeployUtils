@@ -14,6 +14,7 @@
 #include "mdt_deployutilscore_export.h"
 #include <QFileInfo>
 #include <QString>
+#include <QStringList>
 #include <vector>
 
 namespace Mdt{ namespace DeployUtils{
@@ -22,7 +23,13 @@ namespace Mdt{ namespace DeployUtils{
    */
   class MDT_DEPLOYUTILSCORE_EXPORT BinaryDependenciesResult
   {
+    using LibraryContainer = std::vector<BinaryDependenciesResultLibrary>;
+
    public:
+
+    /*! \brief STL const iterator
+     */
+    using const_iterator = LibraryContainer::const_iterator;
 
     BinaryDependenciesResult() = delete;
 
@@ -98,16 +105,54 @@ namespace Mdt{ namespace DeployUtils{
      */
     void addLibrary(const BinaryDependenciesFile & library) noexcept;
 
+    /*! \brief Get an iterator to the beginning of the list of libraries this result contains
+     */
+    const_iterator cbegin() const noexcept
+    {
+      return mEntries.cbegin();
+    }
+
+    /*! \brief Get an iterator to the beginning of the list of libraries this result contains
+     */
+    const_iterator begin() const noexcept
+    {
+      return cbegin();
+    }
+
+    /*! \brief Get an iterator to the end of the list of libraries this result contains
+     */
+    const_iterator cend() const noexcept
+    {
+      return mEntries.cend();
+    }
+
+    /*! \brief Get an iterator to the end of the list of libraries this result contains
+     */
+    const_iterator end() const noexcept
+    {
+      return cend();
+    }
+
    private:
 
     bool mIsSolved = false;
     QFileInfo mTarget;
-    std::vector<BinaryDependenciesResultLibrary> mEntries;
+    LibraryContainer mEntries;
   };
 
   /*! \brief A list of BinaryDependenciesResult
    */
   using BinaryDependenciesResultList = std::vector<BinaryDependenciesResult>;
+
+  /*! \brief Get a list of absolute file paths for each library in given list of results
+   *
+   * Each path is unique in the returned list.
+   *
+   * \pre each result in \a resultList must be solved
+   * (i.e. every library has its absolute file path set).
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QStringList getLibrariesAbsoluteFilePathList(const BinaryDependenciesResultList & resultList);
 
 }} // namespace Mdt{ namespace DeployUtils{
 
