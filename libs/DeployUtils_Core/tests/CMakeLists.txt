@@ -799,6 +799,22 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME BinaryDependenciesResultLibraryTest
+  TARGET binaryDependenciesResultLibraryTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BinaryDependenciesResultLibraryTest.cpp
+)
+
+mdt_add_test(
+  NAME BinaryDependenciesResultTest
+  TARGET binaryDependenciesResultTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BinaryDependenciesResultTest.cpp
+)
+
+mdt_add_test(
   NAME BinaryDependenciesImplTest
   TARGET binaryDependenciesImplTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
