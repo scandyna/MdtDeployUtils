@@ -26,6 +26,7 @@ TEST_CASE("fromQFileInfo")
 
     REQUIRE( resultLibrary.libraryName() == QLatin1String("arbitraryFile.so") );
     REQUIRE( resultLibrary.isFound() );
+    REQUIRE( resultLibrary.absoluteFilePath() == makeAbsolutePath("/opt/lib/arbitraryFile.so") );
   }
 
   SECTION("file with library name only (is NOT found)")

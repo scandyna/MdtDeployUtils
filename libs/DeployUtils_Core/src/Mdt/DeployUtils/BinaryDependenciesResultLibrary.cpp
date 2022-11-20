@@ -24,6 +24,13 @@ bool BinaryDependenciesResultLibrary::isFound() const noexcept
   return true;
 }
 
+QString BinaryDependenciesResultLibrary::absoluteFilePath() const noexcept
+{
+  assert( isFound() );
+
+  return mFile.absoluteFilePath();
+}
+
 BinaryDependenciesResultLibrary BinaryDependenciesResultLibrary::fromQFileInfo(const QFileInfo & fileInfo) noexcept
 {
   assert( !fileInfo.fileName().trimmed().isEmpty() );

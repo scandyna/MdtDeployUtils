@@ -15,7 +15,7 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-  /*! \internal
+  /*! \brief Represents a library in a BinaryDependenciesResult
    */
   class MDT_DEPLOYUTILSCORE_EXPORT BinaryDependenciesResultLibrary
   {
@@ -52,6 +52,13 @@ namespace Mdt{ namespace DeployUtils{
     {
       return mFile.fileName();
     }
+
+    /*! \brief Get the absolute path of this library
+     *
+     * \pre this library must be found (i.e. have its full path set)
+     * \sa isFound()
+     */
+    QString absoluteFilePath() const noexcept;
 
     /*! \brief Construct a result library from \a fileInfo
      *
