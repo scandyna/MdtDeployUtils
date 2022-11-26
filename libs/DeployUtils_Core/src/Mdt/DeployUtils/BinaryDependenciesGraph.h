@@ -9,6 +9,8 @@
 #ifndef MDT_DEPLOY_UTILS_BINARY_DEPENDENCIES_GRAPH_H
 #define MDT_DEPLOY_UTILS_BINARY_DEPENDENCIES_GRAPH_H
 
+#include "BinaryDependenciesFile.h"
+#include "BinaryDependenciesResult.h"
 #include "mdt_deployutilscore_export.h"
 
 namespace Mdt{ namespace DeployUtils{
@@ -28,7 +30,7 @@ namespace Mdt{ namespace DeployUtils{
    *
    * The dependency graph will look like that:
    * \code
-   *      (app)tgt
+   *      (app)
    *      /   \
    *  (libA)   |
    *     |  \  |
@@ -49,7 +51,7 @@ namespace Mdt{ namespace DeployUtils{
    * \endcode
    *
    * Attributes, like "is it solved" or the full path to each dependency
-   * is not represented here, but is required.
+   * is not represented here, but is required in the result.
    *
    * Now we want to solve multiple targets at the same time.
    * Most of them have common dependencies,
@@ -69,16 +71,7 @@ namespace Mdt{ namespace DeployUtils{
    *  |->libB
    * \endcode
    *
-   * The graph is very similar to the previous one.
-   * The only difference is that \a app AND \a libA
-   * are marked as a given target:
-   * \code
-   *      (app)tgt
-   *      /    \
-   *  (libA)tgt |
-   *     |  \  /
-   * (libB) (Qt5Core)
-   * \endcode
+   * The graph will be exactly the same as above.
    *
    * The result will be each given target
    * with their transitive dependencies:
@@ -93,68 +86,13 @@ namespace Mdt{ namespace DeployUtils{
    *  |->libB
    * \endcode
    *
-   * Solving example OLD
-   * 
-   * Start with app:
-   * \code
-   *  auto app = BinaryDependenciesFile::fromQFileInfo("/path/to/app");
-   *
-   * // Read the file and set the direct dependencies file names and rpath
-   * app.setDependenciesFileNames( mReader.getNeededSharedLibraries() );
-   * app.setRPath( mReader.getRunPath() );
-   *
-   * mGraph.addNodeXY(app);
-   * \endcode
-   *
-   * At this state, the graph looks like this:
-   * \code
-   *        ( app )P
-   *       /   |   \
-   * (libA) (libB) (Qt5Core)
-   * \endcode
-   *
-   * app has its full path and its dependencies,
-   * it is now considered as processed.
-   *
-   * libA, libB and Qt5Core are NOT considered as processed.
-   *
-   * \note we use processed, because we could have unsolved results at the end.
-   *
-   * 
-   * \todo for the parent problem, see add_edge() !
-   * 
-   * \code
-   * XXX = findUnprocessedBinaires();
-   * // Will return libA, libB and Qt5Core
-   *
-   * for(library : XXX){
-   *   x.setAbsoluteFilePath(  );
-   * }
-   * \endcode
-   *
-   * \code
-   * auto app = BinaryDependenciesFile::fromQFileInfo("/path/to/app");
-   *
-   * mGraph.addNodeXY(app);
-   *
-   * x = findUnprocessedBinaires();
-   * // x contains app
-   * 
-   * for(bin : x){
-   *   setFullPathToBinIfRequired(bin);
-   *   setDirectDependenciesAndRPath(bin);
-   *   directDeps = findDirectDepenencies(bin);
-   *   mGraph.addNodesXYZ(directDeps);
-   * }
-   * \endcode
-   *
-   * Solving example
+   * ## Solving example
    *
    * Start with app:
    * \code
-   * auto app = BinaryDependenciesFile::fromQFileInfo("/path/to/app");
+   * const auto app = BinaryDependenciesFile::fromQFileInfo("/path/to/app");
    *
-   * mGraph.addFile(app);
+   * graph.addFile(app);
    * \endcode
    *
    * The graph contains only \a app ,
@@ -166,15 +104,13 @@ namespace Mdt{ namespace DeployUtils{
    * Now we can get the unprocessed binaries,
    * that will return a list that contains \a app :
    * \code
-   * x = findUnprocessedBinaries();
-   * // x contains app
-   * auto fileList = findUnprocessedFiles();
+   * auto fileList = graph.findUnprocessedFiles();
    * // fileList contains app
    *
    * for(auto & file : fileList){
    *   setDirectDependenciesAndRPath(file);
-   *   auto directDependencies = findDirectDepenencies(file);
-   *   mGraph.addDirectDependencies(directDependencies, file);
+   *   const auto directDependencies = findDirectDepenencies(file);
+   *   graph.addDirectDependencies(file, directDependencies);
    * }
    * \endcode
    *
@@ -182,7 +118,7 @@ namespace Mdt{ namespace DeployUtils{
    * to get its direct dependencies library names,
    * and also its rpath to help find them (on system that supports rpath).
    *
-   * findDirectDepenencies() returns a list of BinaryDependenciesFile.
+   * %findDirectDepenencies() returns a list of BinaryDependenciesFile.
    * Each file in this list contains the full path to it (it is found),
    * or only the library name (it is NOT found).
    *
@@ -195,15 +131,17 @@ namespace Mdt{ namespace DeployUtils{
    *
    * Now \a app is marked as processed.
    *
+   * \note we use processed, because we could have unsolved results at the end.
+   *
    * We can repeat the process:
    * \code
-   * x = findUnprocessedBinaires();
-   * // x contains libA, Qt5Core
-   * 
-   * for(bin : x){
-   *   setDirectDependenciesAndRPath(bin);
-   *   auto directDependencies = findDirectDepenencies(bin);
-   *   mGraph.addNodesXYZ(directDependencies, bin);
+   * auto fileList = graph.findUnprocessedFiles();
+   * // fileList contains libA, Qt5Core
+   *
+   * for(auto & file : fileList){
+   *   setDirectDependenciesAndRPath(file);
+   *   const auto directDependencies = findDirectDepenencies(file);
+   *   graph.addDirectDependencies(file, directDependencies);
    * }
    * \endcode
    *
@@ -220,18 +158,18 @@ namespace Mdt{ namespace DeployUtils{
    *
    * Repeat the process again:
    * \code
-   * x = findUnprocessedBinaires();
-   * // x contains libB
-   * 
-   * for(bin : x){
-   *   setDirectDependenciesAndRPath(bin);
-   *   auto directDependencies  = findDirectDepenencies(bin);
-   *   mGraph.addNodesXYZ(directDependencies, bin);
+   * auto fileList = graph.findUnprocessedFiles();
+   * // fileList contains libB
+   *
+   * for(auto & file : fileList){
+   *   setDirectDependenciesAndRPath(file);
+   *   const auto directDependencies = findDirectDepenencies(file);
+   *   graph.addDirectDependencies(file, directDependencies);
    * }
    * \endcode
    *
    * libB has no direct dependencies,
-   * so no new binary is added to the graph.
+   * so no new file is added to the graph.
    * The only change: libB is marked as processed:
    * \code
    *      (app)P
@@ -241,177 +179,196 @@ namespace Mdt{ namespace DeployUtils{
    * (libB)P (Qt5Core)P
    * \endcode
    *
-   * Now findUnprocessedBinaires() will return a empty list:
+   * Now findUnprocessedFiles() will return a empty list:
    * \code
-   * x = findUnprocessedBinaires();
-   * // x is empty
+   * auto fileList = graph.findUnprocessedFiles();
+   * // fileList is empty
    * \endcode
    *
    * We found all transitive dependencies of \a app .
    *
    * The complete code looks like:
    * \code
-   * auto app = BinaryDependenciesFile::fromQFileInfo("/path/to/app");
+   * BinaryDependenciesGraph graph;
    *
-   * mGraph.addNodeXY(app);
+   * const auto app = BinaryDependenciesFile::fromQFileInfo("/path/to/app");
+   *
+   * graph.addFile(app);
    *
    * do{
    *   // MUST return a copy because of iterator invalidation !
-   *   x = findUnprocessedBinaires();
+   *   auto fileList = graph.findUnprocessedFiles();
    *
-   *   for(bin : x){
-   *     setDirectDependenciesAndRPath(bin);
-   *     auto directDependencies  = findDirectDepenencies(bin);
-   *     mGraph.addNodesXYZ(directDependencies, bin);
+   *   for(auto & file : fileList){
+   *     setDirectDependenciesAndRPath(file);
+   *     const auto directDependencies = findDirectDepenencies(file);
+   *     graph.addDirectDependencies(file, directDependencies);
    *   }
-   * }while( !x.isEmpty() );
+   * }while( !fileList.isEmpty() );
    * \endcode
-   * 
-   * For each unprocessed files, we have to:
-   * - find its absolute path
-   * - read it and set its direct dependencies and rpath
-   * \todo if find absolute path fails, set some flag
    *
+   * ## Solving multiple targets at the same time
+   *
+   * The targets to solve are \a app and \a libA :
    * \code
-   * const auto f = [](){
-   * };
+   * const auto targets = ...
+   * // targets contains app and libA
    *
-   * mGraph.solveUnprocessedBinaries();
+   * graph.addFiles(targets);
    * \endcode
-   * 
-   * OR: BFS !! or not
-   * 
-   * 
-   * Solving example II
    *
+   * The graph contains \a app and \a libA,
+   * which have their full path:
    * \code
-   * auto app = BinaryDependenciesFile::fromQFileInfo("/path/to/app");
-   *
-   * mGraph.addNodeXY(app);
+   * (app) (libA)
    * \endcode
    *
    * \code
-   * (app)
+   * auto fileList = graph.findUnprocessedFiles();
+   * // fileList contains app and libA
+   *
+   * for(auto & file : fileList){
+   *   setDirectDependenciesAndRPath(file);
+   *   const auto directDependencies = findDirectDepenencies(file);
+   *   graph.addDirectDependencies(file, directDependencies);
+   * }
    * \endcode
    *
+   * If we unroll the loop:
    * \code
-   * const auto f = [](){
-   * };
-   *
-   * mGraph.solveUnprocessedBinaries();
+   * setDirectDependenciesAndRPath(app);
+   * const auto directDependencies = findDirectDepenencies(app);
+   * // directDependencies contains libA and Qt5Core
+   * graph.addDirectDependencies(app, directDependencies);
    * \endcode
    *
-   * f will be called with app.
-   * app already has its full path, so we have to:
-   * - read it, set its direct dependencies and rpath
-   * - find the full path for each of its dependency
-   *
+   * This is the graph after \a app have been processed:
    * \code
-   *        ( app )P
-   *       /   |   \
-   * (libA) (libB) (Qt5Core)
+   *      (app)P
+   *      /   \
+   * (libA)  (Qt5Core)
    * \endcode
    *
-   * 
-   * 
-   * app has its full path, so it is found.
-   * libA, libB and Qt5Core only have their file names, no path.
+   * Then \a libA is processed:
+   * \code
+   * setDirectDependenciesAndRPath(libA);
+   * const auto directDependencies = findDirectDepenencies(libA);
+   * // directDependencies contains libB and Qt5Core
+   * graph.addDirectDependencies(libA, directDependencies);
+   * \endcode
    *
-   * findNotFoundBinaries() 
-   * app has its full path set and its direct dependencies file names.
-   * \todo define a state for that
+   * This is the graph after \a libA have been processed:
+   * \code
+   *      (app)P
+   *      /    \
+   *  (libA)P   |
+   *     |  \  /
+   * (libB) (Qt5Core)
+   * \endcode
    *
-   * Now we need to find the absolute path
-   * for libA, libB and Qt5Core.
-   *
-   * \note is marking as target required ?
-   * While extracting a result,
-   * a arbitrary target should be given
+   * While the starting point is slightly different,
+   * the ongoing process is the same as above.
    *
    * \todo circular dependencies
    *
-   * \todo this graph is a graph, it does not read files etc..
-   * User must pass things ?
-   * 
-   * For impl, see https://github.com/mmccoo/nerd_mmccoo/tree/master/boost_properties
+   * ## Getting results
+   *
+   * Given a completely processed graph:
+   * \code
+   *      (app)P
+   *      /    \
+   *   (libA)P  |
+   *     |  \  /
+   * (libB)P (Qt5Core)P
+   * \endcode
+   *
+   * We can get all transitive dependencies for \a app :
+   * \code
+   * const BinaryDependenciesResult result = graph.findTransitiveDependencies(app);
+   * \endcode
+   *
+   * \a result will look like:
+   * \code
+   * app
+   *  |->libA
+   *  |->libB
+   *  |->Qt5Core
+   * \endcode
+   *
+   * \sa findTransitiveDependencies()
+   *
+   * ## Design choices
+   *
+   * This graph does not read files to solve dependencies,
+   * it is only a graph to represent them.
+   * This avoids to much coupling and make it more easy to test.
    */
   class MDT_DEPLOYUTILSCORE_EXPORT BinaryDependenciesGraph
   {
    public:
 
-    /*! \brief Add given target to this graph
-     *
-     * If given target already exists in this graph,
-     * it will be marked as target.
-     *
-     * Otherwise, ... 
-     */
-    void addTarget() noexcept;
+    /// \todo disable copy
 
-    /*! \brief Find a nodeXY in this graph
+    /// \todo For impl, see https://github.com/mmccoo/nerd_mmccoo/tree/master/boost_properties
+
+    /*! \brief Add given file to this graph
      *
-     * Returns a iterator if found,
-     * otherwise ??
-     * 
-     * \todo find is a impl detail
+     * If given file already exists in this graph,
+     * nothing is done.
+     *
+     * The comparison is done using filesAreEqualByName().
+     *
+     * Given file can have its full path (it is found),
+     * or only its file name (it is NOT found).
+     *
+     * \pre Given file must not be null
+     * \pre Given file must not have any direct dependency
      */
-    
-    
-    /*! \brief Add given nodeXY to this graph
+    void addFile(const BinaryDependenciesFile & file) noexcept;
+
+    /*! \brief Add a list of direct dependencies
      *
-     * Will add given nodeXY to this graph.
-     * Each direct dependency will also be added
-     * as a dependency of the nodeXY...
+     * Will add a dependency from \a file to each file in \a dependencies .
      *
-     * \todo document above example by adding step by step
-     * 
-     * \note One "node" is unique.
-     * Ex: LibA will always have the same lib name and direct dependencies !
+     * Each dependency will also be added if it does not already exist.
+     * \sa addFile()
      *
-     * As example, add \a libA with its direct dependencies:
-     * \code
-     * libA
-     *  |->Qt5Core
-     *  |->libB
-     * \endcode
+     * \note It is not checked if given dependencies are coherent
+     * to the direct dependencies file names in \a file .
+     * It is the caller responsability to keep this clean.
      *
-     * Each library will be added (as vertices).
-     * The dependencies of libA to libB and Qt5Core
-     * will also be added (edges):
-     * \code
-     *     (libA)
-     *     /    \
-     * (libB) (Qt5Core)
-     * \endcode
-     *
-     * Now add \a app with its direct dependencies:
-     * \code
-     * app
-     *  |->libA
-     *  |->Qt5Core
-     * \endcode
-     *
-     * \a app does not exist, so it will be added (new vertex).
-     * libA already exists in the graph.
-     * A dependency will be added from app to libA (new edge).
-     * The same happens for Qt5Core.
-     * The graph now looks like this:
-     * \code
-     *      (app)
-     *      /   \
-     *  (libA)   |
-     *     |  \ /
-     * (libB) (Qt5Core)
-     * \endcode
-     *
-     * \pre given nodeXY must have its full path set ?
-     * -> NO, flag..
+     * \pre \a file must already exist in this graph
+     * \pre each dependency in \a dependencies must meet the preconditions of addFile()
      */
-    void addNodeXY() noexcept;
+    void addDirectDependencies(const BinaryDependenciesFile & file, const BinaryDependenciesFileList & dependencies) noexcept;
+
+    /*! \brief Get a list of the unprocessed files in this graph
+     *
+     * Returns a copy of the files in this graph.
+     * This allows to mutate this graph while processing returned list.
+     */
+    BinaryDependenciesFileList findUnprocessedFiles() const noexcept;
+
+    /*! \brief Find the transitive dependencies starting from given file
+     *
+     * \pre This graph must be entirely processed
+     */
+    BinaryDependenciesResult findTransitiveDependencies(const BinaryDependenciesFile & file) const noexcept;
+
+    /*! \brief Check if given files are equal by file name
+     */
+    static
+    bool filesAreEqualByName() noexcept;
 
    private:
 
-    
+    /*! \brief Check if this graph is entirely processed
+     *
+     * \note This method will traverse the graph
+     * \sa findUnprocessedFiles()
+     */
+    bool checkIsEntirelyProcessed() const noexcept;
+
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
