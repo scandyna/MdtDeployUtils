@@ -24,7 +24,7 @@ using namespace Mdt::DeployUtils;
 /** \todo
  *
  * - To find some file (Vertex), not BFS required, find by using vertex iterators
- * 
+ *
  * - Cound we solve all transitive deps in implementation ? Would be very nice !
  *   -> findTransitiveDependencies( targets, someVisitor )
  */
@@ -60,28 +60,9 @@ using namespace Mdt::DeployUtils;
  *
  * So, process the graph (BFS) and return a list of new dependencies.
  *
- * \code
- * struct XY
- * {
- *   using event_filter = boost::on_discover_vertex;
  *
- *   // Called when a new vertex is discovered
- *   void operator()()
- *   {
- *     // Check state of u
- *   }
- *
- *   void discover_vertex(VertexDescriptor u, const Graph & g) const
- *   {
- *   }
- *
- *   X findLibraryAbsolutePath(fileName, rpath, os);
- * };
- * \endcode
- * 
  * \todo document that we have to handle things like colors
- * 
- * \todo See BFS alogorithm to help !
+ *
  * 
  * \code
  * BinaryDependenciesGraphBuildVisitor visitor(...,...);
@@ -91,10 +72,10 @@ using namespace Mdt::DeployUtils;
  * while( !queue.isEmpty() ){
  *   u = queue.dequeue();
  *   // process() calls BFS - No graph modifications here
- *   directDepenencies = graph.processXY(u, visitor);
+ *   directDependencies = graph.processXY(u, visitor);
  *   // Now add the new direct dependencies to the graph
- *   graph.addDependencies(u, directDepenencies);
- *   queue.enqueue(directDepenencies);
+ *   graph.addDependencies(u, directDependencies);
+ *   queue.enqueue(directDependencies);
  * }
  * \endcode
  *
@@ -106,18 +87,6 @@ using namespace Mdt::DeployUtils;
  * queue.enqueue(targets);
  * \endcode
  *
- * 
- * \code
- * graph.addXY(target);
- * VertexList newDependencies;
- * do{
- *   // Could return a leaf an finish to early !!
- *   Vertex currentTarget = graph.findUnprocessedXY();
- *   // process() calls BFS
- *   VertexList newDependencies = graph.processXY(currentTarget, f);
- *   graph.addDependencies(currentTarget, newDependencies);
- * }while( !newDependencies.isEmpty() );
- * \endcode
  */
 
 using Graph = boost::adjacency_list<
@@ -136,9 +105,6 @@ template<typename Reader>
 class BinaryDependenciesGraphBuildVisitor : public boost::default_bfs_visitor
 {
  public:
-
-//   using event_filter = boost::on_discover_vertex;
-//   using event_filter = boost::on_examine_edge;
 
   /*! \brief Read the file associated with the new discovered vertex
    *
@@ -176,29 +142,6 @@ class BinaryDependenciesGraphBuildVisitor : public boost::default_bfs_visitor
 
     qDebug() << " find full path of " << g[current] << " using rpath from " << g[parent];
   }
-
-//     template<typename Vertex, typename Graph>
-
-//     void operator()(VertexDescriptor u, const Graph & g) /*const*/
-//   void operator()(EdgeDescriptor e, const Graph & g) /*const*/
-//   {
-// //       qDebug() << "new vertex: " << u;
-//     qDebug() << "new? edge, source: " << boost::source(e, g) << ", target: " << boost::target(e, g);
-//     
-//     const VertexDescriptor parent = boost::source(e, g);
-//     const VertexDescriptor current = boost::target(e, g);
-//     
-//     // Find absolute path for current using rpath from parent
-//     
-//     // Read current to extract rpath + direct dependencies file names
-//     
-//   }
-
- private:
-
-//   void findLibraryAbsolutePath()
-//   {
-//   }
 };
 
 
