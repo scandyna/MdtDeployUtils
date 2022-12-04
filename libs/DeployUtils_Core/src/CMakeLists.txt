@@ -113,6 +113,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/SharedLibraryFinderLinux.cpp
   Mdt/DeployUtils/SharedLibraryFinderWindows.cpp
   Mdt/DeployUtils/BinaryDependenciesFile.cpp
+  Mdt/DeployUtils/BinaryDependenciesGraph.cpp
   Mdt/DeployUtils/Impl/BinaryDependencies.cpp
   Mdt/DeployUtils/BinaryDependenciesResultLibrary.cpp
   Mdt/DeployUtils/BinaryDependenciesResult.cpp
@@ -167,6 +168,7 @@ target_include_directories(Mdt_DeployUtilsCore
 target_link_libraries(Mdt_DeployUtilsCore
   PUBLIC
     Qt5::Core
+    Boost::boost
 )
 
 generate_export_header(Mdt_DeployUtilsCore)

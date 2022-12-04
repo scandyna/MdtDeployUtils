@@ -799,6 +799,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME BinaryDependenciesGraphTest
+  TARGET binaryDependenciesGraphTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BinaryDependenciesGraphTest.cpp
+)
+
+mdt_add_test(
   NAME BinaryDependenciesResultLibraryTest
   TARGET binaryDependenciesResultLibraryTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
