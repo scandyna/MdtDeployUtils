@@ -29,6 +29,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME FileInfoUtilsTest
+  TARGET fileInfoUtilsTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/FileInfoUtilsTest.cpp
+)
+
+mdt_add_test(
   NAME MessageLoggerTest
   TARGET messageLoggerTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
