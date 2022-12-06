@@ -22,6 +22,14 @@ namespace Mdt{ namespace DeployUtils{
   MDT_DEPLOYUTILSCORE_EXPORT
   bool fileInfoHasFileName(const QFileInfo & fileInfo) noexcept;
 
+  /*! \brief Check if given file is a file name without any path
+   *
+   * \note This function uses methods that don't require
+   * the file to exist on the file system
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  bool fileInfoIsFileNameWithoutPath(const QFileInfo & fileInfo) noexcept;
+
   /*! \brief Check if given file info is an absolute path
    *
    * \note This function uses methods that don't require

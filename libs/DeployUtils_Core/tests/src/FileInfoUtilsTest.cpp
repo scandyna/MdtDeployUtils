@@ -31,6 +31,30 @@ TEST_CASE("fileInfoHasFileName")
   }
 }
 
+TEST_CASE("fileInfoIsFileNameWithoutPath")
+{
+  SECTION("empty file info")
+  {
+    QFileInfo fi;
+
+    REQUIRE( !fileInfoIsFileNameWithoutPath(fi) );
+  }
+
+  SECTION("file info with a file name")
+  {
+    QFileInfo fi( QString::fromLatin1("file.txt") );
+
+    REQUIRE( fileInfoIsFileNameWithoutPath(fi) );
+  }
+
+  SECTION("relative path")
+  {
+    QFileInfo fi( QString::fromLatin1("opt/file.txt") );
+
+    REQUIRE( !fileInfoIsFileNameWithoutPath(fi) );
+  }
+}
+
 TEST_CASE("fileInfoIsAbsolutePath")
 {
   SECTION("empty file info")
