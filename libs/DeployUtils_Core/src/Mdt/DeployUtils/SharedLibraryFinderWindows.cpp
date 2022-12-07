@@ -228,6 +228,27 @@ bool SharedLibraryFinderWindows::isDirect3D_11_Library(const QString & library) 
   return direct3dLibraries.contains(library, Qt::CaseInsensitive);
 }
 
+bool SharedLibraryFinderWindows::doLibraryShouldBeDistributed(const QString & libraryName) const noexcept
+{
+  if( libraryHasToBeExcluded(libraryName) ){
+    return false;
+  }
+  if( libraryIsInExcludeList(libraryName) ){
+    return false;
+  }
+
+  return true;
+}
+
+bool SharedLibraryFinderWindows::libraryIsInExcludeList(const QString & libraryName) noexcept
+{
+  return libraryExcludelistWindows.contains(libraryName, Qt::CaseInsensitive);
+}
+
+QFileInfo SharedLibraryFinderWindows::doFindLibraryAbsolutePath(const QString & libraryName, OperatingSystem os, const RPath & rpath) const
+{
+}
+
 void SharedLibraryFinderWindows::removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept
 {
   removeLibrariesInExcludeList(file);

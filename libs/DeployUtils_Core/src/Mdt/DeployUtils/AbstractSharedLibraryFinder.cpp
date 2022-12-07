@@ -21,9 +21,25 @@
 #include "AbstractSharedLibraryFinder.h"
 #include "AbstractIsExistingValidSharedLibrary.h"
 
-#include "QtSharedLibraryFile.h"
+// #include "QtSharedLibraryFile.h"
 
 namespace Mdt{ namespace DeployUtils{
+
+bool AbstractSharedLibraryFinder::libraryShouldBeDistributed(const QString & libraryName) const noexcept
+{
+  assert( !libraryName.trimmed().isEmpty() );
+
+  return doLibraryShouldBeDistributed(libraryName);
+}
+
+QFileInfo AbstractSharedLibraryFinder::findLibraryAbsolutePath(const QString & libraryName, OperatingSystem os, const RPath & rpath) const
+{
+  assert( !libraryName.trimmed().isEmpty() );
+  assert( libraryShouldBeDistributed(libraryName) );
+  assert(os != OperatingSystem::Unknown);
+
+  return doFindLibraryAbsolutePath(libraryName, os, rpath);
+}
 
 BinaryDependenciesFileList AbstractSharedLibraryFinder::findLibrariesAbsolutePath(BinaryDependenciesFile & file, OperatingSystem os)
 {

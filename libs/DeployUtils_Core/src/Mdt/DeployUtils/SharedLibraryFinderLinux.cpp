@@ -102,6 +102,56 @@ BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePath(const Q
   return library;
 }
 
+bool SharedLibraryFinderLinux::doLibraryShouldBeDistributed(const QString & libraryName) const noexcept
+{
+  if( libraryIsInLocalExcludeList(libraryName) ){
+    return false;
+  }
+  if( libraryIsInGeneratedExcludeList(libraryName) ){
+    return false;
+  }
+
+  return true;
+}
+
+bool SharedLibraryFinderLinux::libraryIsInLocalExcludeList(const QString & libraryName) noexcept
+{
+  static
+  const QStringList excludeList{
+    /*
+     * libdbus-1.so.3
+     *
+     * it is located in /lib/x86_64-linux-gnu (Ubuntu 18.04)
+     * that lets think that it is strongly dependent of the system
+     *
+     * See also https://github.com/AppImage/pkg2appimage/issues/450
+     */
+    QLatin1String("libdbus-1.so.3"),
+    /*
+     * next libraries are installed in
+     * /lib/x86_64-linux-gnu (Ubuntu 18.04)
+     *
+     * don't know if those must be redistributed or not,
+     * should test that in some way
+     */
+    QLatin1String("libkeyutils.so.1"),
+    QLatin1String("libbz2.so.1.0"),
+    QLatin1String("liblzma.so.5"),
+    QLatin1String("libudev.so.1")
+  };
+
+  return excludeList.contains(libraryName);
+}
+
+bool SharedLibraryFinderLinux::libraryIsInGeneratedExcludeList(const QString & libraryName) noexcept
+{
+  return libraryExcludelistLinux.contains(libraryName);
+}
+
+QFileInfo SharedLibraryFinderLinux::doFindLibraryAbsolutePath(const QString & libraryName, OperatingSystem os, const RPath & rpath) const
+{
+}
+
 BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePathBySearchPath(const QString & libraryName) const
 {
   assert( !libraryName.trimmed().isEmpty() );
@@ -131,32 +181,10 @@ void SharedLibraryFinderLinux::removeLibrariesToNotRedistribute(BinaryDependenci
 
 void SharedLibraryFinderLinux::removeLibrariesInLocalExcludeList(BinaryDependenciesFile & file) noexcept
 {
-  static
-  const QStringList excludeList{
-    /*
-     * libdbus-1.so.3
-     *
-     * it is located in /lib/x86_64-linux-gnu (Ubuntu 18.04)
-     * that lets think that it is strongly dependent of the system
-     *
-     * See also https://github.com/AppImage/pkg2appimage/issues/450
-     */
-    QLatin1String("libdbus-1.so.3"),
-    /*
-     * next libraries are installed in
-     * /lib/x86_64-linux-gnu (Ubuntu 18.04)
-     *
-     * don't know if those must be redistributed or not,
-     * should test that in some way
-     */
-    QLatin1String("libkeyutils.so.1"),
-    QLatin1String("libbz2.so.1.0"),
-    QLatin1String("liblzma.so.5"),
-    QLatin1String("libudev.so.1")
-  };
 
   const auto pred = [](const QString & libraryName){
-    return excludeList.contains(libraryName);
+    return libraryIsInLocalExcludeList(libraryName);
+//     return excludeList.contains(libraryName);
   };
 
   file.removeDependenciesFileNames(pred);

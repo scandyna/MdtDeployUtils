@@ -67,6 +67,23 @@ TEST_CASE("buildSearchPathList")
   }
 }
 
+TEST_CASE("libraryShouldBeDistributed")
+{
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderLinux finder(isExistingSharedLibraryOp, qtDistributionDirectory);
+
+  SECTION("libQt5Core.so should be distributed")
+  {
+    REQUIRE( finder.libraryShouldBeDistributed( QLatin1String("libQt5Core.so") ) );
+  }
+
+  SECTION("ld-linux.so.2 should not be distributed")
+  {
+    REQUIRE( !finder.libraryShouldBeDistributed( QLatin1String("ld-linux.so.2") ) );
+  }
+}
+
 TEST_CASE("makeDirectoryFromRpathEntry")
 {
   const auto originExecutable = makeBinaryDependenciesFileFromUtf8Path("/opt/myapp");
@@ -127,7 +144,7 @@ TEST_CASE("findLibraryAbsolutePathByRPath")
   }
 }
 
-TEST_CASE("findLibraryAbsolutePath")
+TEST_CASE("findLibraryAbsolutePath_OLD")
 {
   QString libraryName;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
@@ -169,6 +186,11 @@ TEST_CASE("findLibraryAbsolutePath")
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
   }
+}
+
+TEST_CASE("findLibraryAbsolutePath")
+{
+  REQUIRE(false);
 }
 
 TEST_CASE("findLibrariesAbsolutePath")

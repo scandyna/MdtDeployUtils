@@ -82,6 +82,20 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
+    /*! \brief Check if given \a libraryName should be distributed
+     */
+    bool doLibraryShouldBeDistributed(const QString & libraryName) const noexcept override;
+
+    static
+    bool libraryIsInLocalExcludeList(const QString & libraryName) noexcept;
+
+    static
+    bool libraryIsInGeneratedExcludeList(const QString & libraryName) noexcept;
+
+    /*! \brief Find the absolute path for given \a libraryName
+     */
+    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, OperatingSystem os, const RPath & rpath) const override;
+
     BinaryDependenciesFile findLibraryAbsolutePathBySearchPath(const QString & libraryName) const;
 
     /*! \brief Remove libraries that should not be distributed

@@ -57,7 +57,7 @@ namespace Mdt{ namespace DeployUtils{
     {
     }
 
-    /*! \brief Set a custom list of paths where this finders locates shared libraries
+    /*! \brief Set a custom list of paths where this finder locates shared libraries
      */
     void setSearchPathList(const PathList & pathList) noexcept
     {
@@ -70,6 +70,25 @@ namespace Mdt{ namespace DeployUtils{
     {
       return mSearchPathList;
     }
+
+    /*! \brief Check if given \a libraryName should be distributed
+     *
+     * \pre \a libraryName must not be empty
+     */
+    bool libraryShouldBeDistributed(const QString & libraryName) const noexcept;
+
+    /*! \brief Find the absolute path for given \a libraryName
+     *
+     * \pre \a libraryName must not be empty
+     * \pre given library should be distributed
+     * \sa libraryShouldBeDistributed()
+     * \pre \a os must be valid
+     * \exception FindDependencyError Thrown if given library could not be found
+     * Other exception could be thrown (for example corrupted file have been read)
+     * 
+     * \todo Why do we need os here ?? 
+     */
+    QFileInfo findLibraryAbsolutePath(const QString & libraryName, OperatingSystem os, const RPath & rpath) const;
 
     /*! \brief Find the absolute path for each direct dependency of \a file
      *
@@ -90,6 +109,22 @@ namespace Mdt{ namespace DeployUtils{
     void debugMessage(const QString & message) const;
 
    private:
+
+    /*! \brief Check if given \a libraryName should be distributed
+     *
+     * This method has to be implemented by the concrete class.
+     */
+    virtual
+    bool doLibraryShouldBeDistributed(const QString & libraryName) const noexcept = 0;
+
+    /*! \brief Find the absolute path for given \a libraryName
+     *
+     * This method has to be implemented by the concrete class.
+     * 
+     * \todo Why do we need os here ?? 
+     */
+    virtual
+    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, OperatingSystem os, const RPath & rpath) const = 0;
 
     /*! \brief Remove libraries that should not be distributed
      *

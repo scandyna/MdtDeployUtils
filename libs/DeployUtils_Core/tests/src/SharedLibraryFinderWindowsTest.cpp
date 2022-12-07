@@ -267,6 +267,28 @@ TEST_CASE("libraryHasToBeExcluded")
   }
 }
 
+TEST_CASE("libraryShouldBeDistributed")
+{
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
+
+  SECTION("Qt5Core.dll should be distributed")
+  {
+    REQUIRE( finder.libraryShouldBeDistributed( QLatin1String("Qt5Core.dll") ) );
+  }
+
+  SECTION("KERNEL32.DLL should not be distributed")
+  {
+    REQUIRE( !finder.libraryShouldBeDistributed( QLatin1String("KERNEL32.DLL") ) );
+  }
+
+  SECTION("kernel32.dll should not be distributed")
+  {
+    REQUIRE( !finder.libraryShouldBeDistributed( QLatin1String("kernel32.dll") ) );
+  }
+}
+
 TEST_CASE("buildSearchPathList")
 {
 /*
@@ -354,7 +376,7 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
   }
 }
 
-TEST_CASE("findLibraryAbsolutePath")
+TEST_CASE("findLibraryAbsolutePath_OLD")
 {
   QString libraryName;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
@@ -397,6 +419,11 @@ TEST_CASE("findLibraryAbsolutePath")
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
   }
+}
+
+TEST_CASE("findLibraryAbsolutePath")
+{
+  REQUIRE(false);
 }
 
 TEST_CASE("findLibrariesAbsolutePath")
