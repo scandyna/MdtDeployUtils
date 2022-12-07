@@ -398,7 +398,7 @@ TEST_CASE("findLibraryAbsolutePath_OLD")
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll"});
 
-    auto library = finder.findLibraryAbsolutePath(libraryName);
+    auto library = finder.findLibraryAbsolutePath_OLD(libraryName);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
   }
@@ -413,7 +413,7 @@ TEST_CASE("findLibraryAbsolutePath_OLD")
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/a.dll"});
 
-    auto library = finder.findLibraryAbsolutePath(libraryName);
+    auto library = finder.findLibraryAbsolutePath_OLD(libraryName);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/a.dll") );
   }
@@ -424,7 +424,7 @@ TEST_CASE("findLibraryAbsolutePath_OLD")
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp","/opt"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll","/opt/A.dll"});
 
-    auto library = finder.findLibraryAbsolutePath(libraryName);
+    auto library = finder.findLibraryAbsolutePath_OLD(libraryName);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
   }
@@ -432,7 +432,48 @@ TEST_CASE("findLibraryAbsolutePath_OLD")
 
 TEST_CASE("findLibraryAbsolutePath")
 {
-  REQUIRE(false);
+  QString libraryName;
+  auto dependentFile = makeBinaryDependenciesFileFromUtf8Path("/tmp/executable");
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
+
+  SECTION("A.dll - pathList:/tmp - exists")
+  {
+    libraryName = QLatin1String("A.dll");
+    finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll"});
+
+    auto library = finder.findLibraryAbsolutePath(libraryName, dependentFile);
+
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
+  }
+
+  /*
+   * This is important if we search dependencies for a Windows binary
+   * from a non Windows machine.
+   */
+  SECTION("A.DLL - pathList:/tmp - exists as /tmp/a.dll")
+  {
+    libraryName = QLatin1String("A.DLL");
+    finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/a.dll"});
+
+    auto library = finder.findLibraryAbsolutePath(libraryName, dependentFile);
+
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/a.dll") );
+  }
+
+  SECTION("A.dll - pathList:/tmp,/opt - exists in both path - must pick the first one")
+  {
+    libraryName = QLatin1String("A.dll");
+    finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp","/opt"}) );
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll","/opt/A.dll"});
+
+    auto library = finder.findLibraryAbsolutePath(libraryName, dependentFile);
+
+    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
+  }
 }
 
 TEST_CASE("findLibrariesAbsolutePath")

@@ -30,7 +30,7 @@
 
 using namespace Mdt::DeployUtils;
 
-TEST_CASE("findLibraryAbsolutePath")
+TEST_CASE("findLibraryAbsolutePath_OLD")
 {
   QString libraryName;
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
@@ -44,6 +44,24 @@ TEST_CASE("findLibraryAbsolutePath")
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libB.so","/opt/libA.so"});
 
-    REQUIRE_THROWS_AS( finder.findLibraryAbsolutePath(libraryName, executable), FindDependencyError );
+    REQUIRE_THROWS_AS( finder.findLibraryAbsolutePath_OLD(libraryName, executable), FindDependencyError );
+  }
+}
+
+TEST_CASE("findLibraryAbsolutePath")
+{
+  QString libraryName;
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderLinux finder(isExistingSharedLibraryOp, qtDistributionDirectory);
+
+  SECTION("libA.so - pathList:/tmp - not exists in given pathList")
+  {
+    auto dependentFile = makeBinaryDependenciesFileFromUtf8Path("/tmp/executable");
+    libraryName = QLatin1String("libA.so");
+    finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
+    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libB.so","/opt/libA.so"});
+
+    REQUIRE_THROWS_AS( finder.findLibraryAbsolutePath(libraryName, dependentFile), FindDependencyError );
   }
 }

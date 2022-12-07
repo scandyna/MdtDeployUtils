@@ -85,13 +85,16 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Find the absolute path for given \a libraryName
      *
+     * \a dependentFile is the file that has \a libraryName as direct dependency.
+     * This can typically be used to get rpath informations (for platforms that support it).
+     *
      * \pre \a libraryName must not be empty
      * \pre given library should be distributed
      * \sa libraryShouldBeDistributed()
      * \exception FindDependencyError Thrown if given library could not be found
      * Other exception could be thrown (for example corrupted file have been read)
      */
-    QFileInfo findLibraryAbsolutePath(const QString & libraryName, const RPath & rpath) const;
+    QFileInfo findLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile);
 
     /*! \brief Find the absolute path for each direct dependency of \a file
      */
@@ -126,7 +129,7 @@ namespace Mdt{ namespace DeployUtils{
      * This method has to be implemented by the concrete class.
      */
     virtual
-    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const RPath & rpath) const = 0;
+    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) const = 0;
 
     /*! \brief Remove libraries that should not be distributed
      *
@@ -144,8 +147,9 @@ namespace Mdt{ namespace DeployUtils{
      * \pre \a libraryName must not be empty
      * \exception FindDependencyError
      */
+    [[deprecated]]
     virtual
-    BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName,
+    BinaryDependenciesFile findLibraryAbsolutePath_OLD(const QString & libraryName,
                                                    const BinaryDependenciesFile & dependentFile) const = 0;
 
     /*! \brief Check if given library is valid reagarding library specific criteria
@@ -162,7 +166,7 @@ namespace Mdt{ namespace DeployUtils{
      * This method can be implemented if required
      */
     virtual
-    void performLibrarySpecificAction(const BinaryDependenciesFile & library);
+    void performLibrarySpecificAction(const QFileInfo & library);
 
     const AbstractIsExistingValidSharedLibrary & mIsExistingValidShLibOp;
     PathList mSearchPathList;

@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "AbstractSharedLibraryFinder.h"
 #include "AbstractIsExistingValidSharedLibrary.h"
+#include "FileInfoUtils.h"
 
 // #include "QtSharedLibraryFile.h"
 
@@ -41,12 +42,17 @@ bool AbstractSharedLibraryFinder::libraryShouldBeDistributed(const QString & lib
   return doLibraryShouldBeDistributed(libraryName);
 }
 
-QFileInfo AbstractSharedLibraryFinder::findLibraryAbsolutePath(const QString & libraryName, const RPath & rpath) const
+QFileInfo AbstractSharedLibraryFinder::findLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile)
 {
   assert( !libraryName.trimmed().isEmpty() );
   assert( libraryShouldBeDistributed(libraryName) );
 
-  return doFindLibraryAbsolutePath(libraryName, rpath);
+  const QFileInfo library = doFindLibraryAbsolutePath(libraryName, dependentFile);
+  assert( fileInfoIsAbsolutePath(library) );
+
+  performLibrarySpecificAction(library);
+
+  return library;
 }
 
 BinaryDependenciesFileList AbstractSharedLibraryFinder::findLibrariesAbsolutePath(BinaryDependenciesFile & file)
@@ -56,9 +62,9 @@ BinaryDependenciesFileList AbstractSharedLibraryFinder::findLibrariesAbsolutePat
   removeLibrariesToNotRedistribute(file);
 
   for( const QString & libraryName : file.dependenciesFileNames() ){
-    const BinaryDependenciesFile library = findLibraryAbsolutePath(libraryName, file);
+    const BinaryDependenciesFile library = findLibraryAbsolutePath_OLD(libraryName, file);
 
-    performLibrarySpecificAction(library);
+    performLibrarySpecificAction( library.fileInfo() );
 
     libraries.push_back(library);
   }
@@ -86,7 +92,7 @@ bool AbstractSharedLibraryFinder::isValidSpecificSharedLibrary(const QFileInfo &
   return true;
 }
 
-void AbstractSharedLibraryFinder::performLibrarySpecificAction(const BinaryDependenciesFile &)
+void AbstractSharedLibraryFinder::performLibrarySpecificAction(const QFileInfo &)
 {
 }
 

@@ -77,7 +77,7 @@ namespace Mdt{ namespace DeployUtils{
      * \todo case of \a libraryName containing slashes is not implemented
      * \todo LD_LIBRARY_PATH is not implemented
      */
-    BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName,
+    BinaryDependenciesFile findLibraryAbsolutePath_OLD(const QString & libraryName,
                                                    const BinaryDependenciesFile & dependentFile) const override;
 
    private:
@@ -98,8 +98,15 @@ namespace Mdt{ namespace DeployUtils{
     bool libraryIsInGeneratedExcludeList(const QString & libraryName) noexcept;
 
     /*! \brief Find the absolute path for given \a libraryName
+     *
+     * \pre \a libraryName must not be empty
+     * \exception FindDependencyError
+     * \sa https://man7.org/linux/man-pages/man8/ld.so.8.html
+     *
+     * \todo case of \a libraryName containing slashes is not implemented
+     * \todo LD_LIBRARY_PATH is not implemented
      */
-    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const RPath & rpath) const override;
+    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) const override;
 
     BinaryDependenciesFile findLibraryAbsolutePathBySearchPath(const QString & libraryName) const;
 

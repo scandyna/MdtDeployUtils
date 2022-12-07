@@ -98,11 +98,37 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
 
  private:
 
+  OperatingSystem doOperatingSystem() const noexcept override
+  {
+    return OperatingSystem::Linux;
+  }
+
+  bool doLibraryShouldBeDistributed(const QString & /*libraryName*/) const noexcept override
+  {
+    return true;
+  }
+
+  QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & /*dependentFile*/) const override
+  {
+    assert( !libraryName.trimmed().isEmpty() );
+
+    for(const QString & directory : mSearchPathList){
+      QFileInfo libraryFile(directory, libraryName);
+      if( isExistingValidSharedLibrary(libraryFile) ){
+        return libraryFile;
+      }
+    }
+
+    const QString message = tr("could not find the absolute path for %1")
+                            .arg(libraryName);
+    throw FindDependencyError(message);
+  }
+
   void removeLibrariesToNotRedistribute(BinaryDependenciesFile & /*file*/) const noexcept override
   {
   }
 
-  BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName,
+  BinaryDependenciesFile findLibraryAbsolutePath_OLD(const QString & libraryName,
                                                   const BinaryDependenciesFile & /*dependentFile*/) const override
   {
     assert( !libraryName.trimmed().isEmpty() );

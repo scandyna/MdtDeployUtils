@@ -120,7 +120,7 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \todo case of \a libraryName containing a full path is not implemented
      */
-    BinaryDependenciesFile findLibraryAbsolutePath(const QString & libraryName,
+    BinaryDependenciesFile findLibraryAbsolutePath_OLD(const QString & libraryName,
                                                    const BinaryDependenciesFile & dependentFile = BinaryDependenciesFile() ) const override;
 
     /*! \brief If \a exclude is true, dependencies that are part of MSVC runtime are excluded
@@ -236,7 +236,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Find the absolute path for given \a libraryName
      */
-    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const RPath & rpath) const override;
+    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) const override;
 
     /*! \brief Remove libraries that should not be distributed
      */

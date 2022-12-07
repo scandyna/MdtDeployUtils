@@ -82,7 +82,7 @@ BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePathByRPath(
   return BinaryDependenciesFile();
 }
 
-BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePath(const QString & libraryName,
+BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePath_OLD(const QString & libraryName,
                                                                          const BinaryDependenciesFile & dependentFile) const
 {
   assert( !libraryName.trimmed().isEmpty() );
@@ -148,8 +148,29 @@ bool SharedLibraryFinderLinux::libraryIsInGeneratedExcludeList(const QString & l
   return libraryExcludelistLinux.contains(libraryName);
 }
 
-QFileInfo SharedLibraryFinderLinux::doFindLibraryAbsolutePath(const QString & libraryName, const RPath & rpath) const
+QFileInfo SharedLibraryFinderLinux::doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) const
 {
+  assert( !libraryName.trimmed().isEmpty() );
+
+  /** \todo See if we keep using BinaryDependenciesFile or not here
+   *
+   * Seems better than a naked QFileInfo
+   * \sa https://gitlab.com/scandyna/mdtdeployutils/-/issues/5 (BinaryDependenciesFile has to much attributes and is confusing)
+   */
+
+  BinaryDependenciesFile library = findLibraryAbsolutePathByRPath(libraryName, dependentFile);
+
+  if( library.isNull() ){
+    library = findLibraryAbsolutePathBySearchPath(libraryName);
+  }
+
+  if( library.isNull() ){
+    const QString message = tr("could not find the absolute path for %1")
+                            .arg(libraryName);
+    throw FindDependencyError(message);
+  }
+
+  return QFileInfo( library.fileInfo() );
 }
 
 BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePathBySearchPath(const QString & libraryName) const

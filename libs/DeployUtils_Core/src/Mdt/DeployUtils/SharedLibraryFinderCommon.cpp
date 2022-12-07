@@ -52,13 +52,13 @@ bool SharedLibraryFinderCommon::isValidSpecificSharedLibrary(const QFileInfo & l
   return true;
 }
 
-void SharedLibraryFinderCommon::performLibrarySpecificAction(const BinaryDependenciesFile & library)
+void SharedLibraryFinderCommon::performLibrarySpecificAction(const QFileInfo & library)
 {
   assert(mQtDistributionDirectory.get() != nullptr);
 
   if( mQtDistributionDirectory->isNull() ){
-    if( QtSharedLibraryFile::isQtSharedLibrary( library.fileInfo() ) ){
-      mQtDistributionDirectory->setupFromQtSharedLibrary( library.fileInfo(), operatingSystem() );
+    if( QtSharedLibraryFile::isQtSharedLibrary( library ) ){
+      mQtDistributionDirectory->setupFromQtSharedLibrary( library, operatingSystem() );
       if( !mQtDistributionDirectory->isValidExisting() ){
         const QString msg = tr("found a Qt distribution located at '%1' , but seems not to be valid")
                             .arg( mQtDistributionDirectory->rootAbsolutePath() );
