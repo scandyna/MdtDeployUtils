@@ -245,7 +245,7 @@ bool SharedLibraryFinderWindows::libraryIsInExcludeList(const QString & libraryN
   return libraryExcludelistWindows.contains(libraryName, Qt::CaseInsensitive);
 }
 
-QFileInfo SharedLibraryFinderWindows::doFindLibraryAbsolutePath(const QString & libraryName, OperatingSystem os, const RPath & rpath) const
+QFileInfo SharedLibraryFinderWindows::doFindLibraryAbsolutePath(const QString & libraryName, const RPath & rpath) const
 {
 }
 

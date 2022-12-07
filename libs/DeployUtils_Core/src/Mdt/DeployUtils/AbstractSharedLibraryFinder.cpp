@@ -25,6 +25,15 @@
 
 namespace Mdt{ namespace DeployUtils{
 
+OperatingSystem AbstractSharedLibraryFinder::operatingSystem() const noexcept
+{
+  const OperatingSystem os = doOperatingSystem();
+
+  assert(os != OperatingSystem::Unknown);
+
+  return os;
+}
+
 bool AbstractSharedLibraryFinder::libraryShouldBeDistributed(const QString & libraryName) const noexcept
 {
   assert( !libraryName.trimmed().isEmpty() );
@@ -32,19 +41,16 @@ bool AbstractSharedLibraryFinder::libraryShouldBeDistributed(const QString & lib
   return doLibraryShouldBeDistributed(libraryName);
 }
 
-QFileInfo AbstractSharedLibraryFinder::findLibraryAbsolutePath(const QString & libraryName, OperatingSystem os, const RPath & rpath) const
+QFileInfo AbstractSharedLibraryFinder::findLibraryAbsolutePath(const QString & libraryName, const RPath & rpath) const
 {
   assert( !libraryName.trimmed().isEmpty() );
   assert( libraryShouldBeDistributed(libraryName) );
-  assert(os != OperatingSystem::Unknown);
 
-  return doFindLibraryAbsolutePath(libraryName, os, rpath);
+  return doFindLibraryAbsolutePath(libraryName, rpath);
 }
 
-BinaryDependenciesFileList AbstractSharedLibraryFinder::findLibrariesAbsolutePath(BinaryDependenciesFile & file, OperatingSystem os)
+BinaryDependenciesFileList AbstractSharedLibraryFinder::findLibrariesAbsolutePath(BinaryDependenciesFile & file)
 {
-  assert(os != OperatingSystem::Unknown);
-
   BinaryDependenciesFileList libraries;
 
   removeLibrariesToNotRedistribute(file);
@@ -52,7 +58,7 @@ BinaryDependenciesFileList AbstractSharedLibraryFinder::findLibrariesAbsolutePat
   for( const QString & libraryName : file.dependenciesFileNames() ){
     const BinaryDependenciesFile library = findLibraryAbsolutePath(libraryName, file);
 
-    performLibrarySpecificAction(library, os);
+    performLibrarySpecificAction(library);
 
     libraries.push_back(library);
   }
@@ -80,7 +86,7 @@ bool AbstractSharedLibraryFinder::isValidSpecificSharedLibrary(const QFileInfo &
   return true;
 }
 
-void AbstractSharedLibraryFinder::performLibrarySpecificAction(const BinaryDependenciesFile &, OperatingSystem)
+void AbstractSharedLibraryFinder::performLibrarySpecificAction(const BinaryDependenciesFile &)
 {
 }
 

@@ -82,6 +82,11 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
+    OperatingSystem doOperatingSystem() const noexcept override
+    {
+      return OperatingSystem::Linux;
+    }
+
     /*! \brief Check if given \a libraryName should be distributed
      */
     bool doLibraryShouldBeDistributed(const QString & libraryName) const noexcept override;
@@ -94,7 +99,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Find the absolute path for given \a libraryName
      */
-    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, OperatingSystem os, const RPath & rpath) const override;
+    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const RPath & rpath) const override;
 
     BinaryDependenciesFile findLibraryAbsolutePathBySearchPath(const QString & libraryName) const;
 

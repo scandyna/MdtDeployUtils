@@ -57,6 +57,12 @@ namespace Mdt{ namespace DeployUtils{
     {
     }
 
+    /*! \brief Returns the operating system this finder targets
+     *
+     * \post Returned OS is valid
+     */
+    OperatingSystem operatingSystem() const noexcept;
+
     /*! \brief Set a custom list of paths where this finder locates shared libraries
      */
     void setSearchPathList(const PathList & pathList) noexcept
@@ -82,19 +88,14 @@ namespace Mdt{ namespace DeployUtils{
      * \pre \a libraryName must not be empty
      * \pre given library should be distributed
      * \sa libraryShouldBeDistributed()
-     * \pre \a os must be valid
      * \exception FindDependencyError Thrown if given library could not be found
      * Other exception could be thrown (for example corrupted file have been read)
-     * 
-     * \todo Why do we need os here ?? 
      */
-    QFileInfo findLibraryAbsolutePath(const QString & libraryName, OperatingSystem os, const RPath & rpath) const;
+    QFileInfo findLibraryAbsolutePath(const QString & libraryName, const RPath & rpath) const;
 
     /*! \brief Find the absolute path for each direct dependency of \a file
-     *
-     * \pre \a os must be valid
      */
-    BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & file, OperatingSystem os); /*const*/
+    BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & file); /*const*/
 
     /*! \brief Check if \a libraryFile is a existing shared library
      *
@@ -110,6 +111,9 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
+    virtual
+    OperatingSystem doOperatingSystem() const noexcept = 0;
+
     /*! \brief Check if given \a libraryName should be distributed
      *
      * This method has to be implemented by the concrete class.
@@ -120,11 +124,9 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Find the absolute path for given \a libraryName
      *
      * This method has to be implemented by the concrete class.
-     * 
-     * \todo Why do we need os here ?? 
      */
     virtual
-    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, OperatingSystem os, const RPath & rpath) const = 0;
+    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const RPath & rpath) const = 0;
 
     /*! \brief Remove libraries that should not be distributed
      *
@@ -160,7 +162,7 @@ namespace Mdt{ namespace DeployUtils{
      * This method can be implemented if required
      */
     virtual
-    void performLibrarySpecificAction(const BinaryDependenciesFile & library, OperatingSystem os);
+    void performLibrarySpecificAction(const BinaryDependenciesFile & library);
 
     const AbstractIsExistingValidSharedLibrary & mIsExistingValidShLibOp;
     PathList mSearchPathList;

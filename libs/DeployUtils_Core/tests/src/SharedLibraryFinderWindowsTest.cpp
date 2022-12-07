@@ -29,6 +29,15 @@
 
 using namespace Mdt::DeployUtils;
 
+TEST_CASE("OperatingSystem")
+{
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
+
+  REQUIRE( finder.operatingSystem() == OperatingSystem::Windows );
+}
+
 TEST_CASE("ExcludeMsvcLibraries")
 {
   TestIsExistingSharedLibrary isExistingSharedLibraryOp;
@@ -440,7 +449,7 @@ TEST_CASE("findLibrariesAbsolutePath")
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll","/tmp/KERNEL32.DLL"});
 
-    libraries = finder.findLibrariesAbsolutePath(executable, OperatingSystem::Windows);
+    libraries = finder.findLibrariesAbsolutePath(executable);
 
     REQUIRE( libraries.size() == 1 );
     REQUIRE( libraries[0].absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );

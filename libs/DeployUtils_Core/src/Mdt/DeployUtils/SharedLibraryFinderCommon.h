@@ -60,7 +60,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Perform a action specific to some library
      */
-    void performLibrarySpecificAction(const BinaryDependenciesFile & library, OperatingSystem os) override;
+    void performLibrarySpecificAction(const BinaryDependenciesFile & library) override;
 
     std::shared_ptr<QtDistributionDirectory> mQtDistributionDirectory;
   };

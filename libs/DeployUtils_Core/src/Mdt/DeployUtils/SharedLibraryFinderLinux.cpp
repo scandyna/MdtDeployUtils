@@ -148,7 +148,7 @@ bool SharedLibraryFinderLinux::libraryIsInGeneratedExcludeList(const QString & l
   return libraryExcludelistLinux.contains(libraryName);
 }
 
-QFileInfo SharedLibraryFinderLinux::doFindLibraryAbsolutePath(const QString & libraryName, OperatingSystem os, const RPath & rpath) const
+QFileInfo SharedLibraryFinderLinux::doFindLibraryAbsolutePath(const QString & libraryName, const RPath & rpath) const
 {
 }
 

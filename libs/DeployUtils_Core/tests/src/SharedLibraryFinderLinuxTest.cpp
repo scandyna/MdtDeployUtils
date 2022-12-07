@@ -32,6 +32,15 @@
 
 using namespace Mdt::DeployUtils;
 
+TEST_CASE("OperatingSystem")
+{
+  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderLinux finder(isExistingSharedLibraryOp, qtDistributionDirectory);
+
+  REQUIRE( finder.operatingSystem() == OperatingSystem::Linux );
+}
+
 TEST_CASE("buildSearchPathList")
 {
 /*
@@ -207,7 +216,7 @@ TEST_CASE("findLibrariesAbsolutePath")
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
     isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/libA.so","/tmp/libm.so.6"});
 
-    libraries = finder.findLibrariesAbsolutePath(executable, OperatingSystem::Linux);
+    libraries = finder.findLibrariesAbsolutePath(executable);
 
     REQUIRE( libraries.size() == 1 );
     REQUIRE( libraries[0].absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );

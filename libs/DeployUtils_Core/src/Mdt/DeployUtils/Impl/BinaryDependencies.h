@@ -110,6 +110,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
     }
 
     /*! \internal
+     *
+     * \todo allDependencies seems not to be used anymore 
      */
     template<typename Reader>
     void findDependencies(BinaryDependenciesFile & currentFile,
@@ -142,7 +144,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{
 
       reader.close();
 
-      BinaryDependenciesFileList directDependencies = mShLibFinder->findLibrariesAbsolutePath( currentFile, platform.operatingSystem() );
+      BinaryDependenciesFileList directDependencies = mShLibFinder->findLibrariesAbsolutePath(currentFile);
 
       emitSolvedDirectDependenciesMessage(currentFile, directDependencies);
 
