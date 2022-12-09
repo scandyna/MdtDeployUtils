@@ -6,6 +6,9 @@
  ** Copyright (C) 2022-2022 Philippe Steinmann.
  **
  ****************************************************************************/
+#ifndef MDT_DEPLOY_UTILS_IMPL_BINARY_DEPENDENCIES_FILE_COMPARISON_H
+#define MDT_DEPLOY_UTILS_IMPL_BINARY_DEPENDENCIES_FILE_COMPARISON_H
+
 #include "Mdt/DeployUtils/OperatingSystem.h"
 #include <QString>
 #include <cassert>
@@ -34,3 +37,5 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
   }
 
 }}}} // namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependencies{
+
+#endif // #ifndef MDT_DEPLOY_UTILS_IMPL_BINARY_DEPENDENCIES_FILE_COMPARISON_H
