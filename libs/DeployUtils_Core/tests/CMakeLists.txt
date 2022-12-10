@@ -799,11 +799,35 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME BinaryDependenciesFileComparisonImplTest
+  TARGET binaryDependenciesFileComparisonImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BinaryDependenciesFileComparisonImplTest.cpp
+)
+
+mdt_add_test(
+  NAME BinaryDependenciesDiscoveredDependenciesListImplTest
+  TARGET binaryDependenciesDiscoveredDependenciesListImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BinaryDependenciesDiscoveredDependenciesListImplTest.cpp
+)
+
+mdt_add_test(
   NAME BinaryDependenciesFileTest
   TARGET binaryDependenciesFileTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/BinaryDependenciesFileTest.cpp
+)
+
+mdt_add_test(
+  NAME BinaryDependenciesGraphFileImplTest
+  TARGET binaryDependenciesGraphFileImplTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BinaryDependenciesGraphFileImplTest.cpp
 )
 
 mdt_add_test(
