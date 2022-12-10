@@ -831,11 +831,11 @@ mdt_add_test(
 )
 
 mdt_add_test(
-  NAME BinaryDependenciesGraphTest
-  TARGET binaryDependenciesGraphTest
+  NAME BinaryDependenciesGraphImplTest
+  TARGET binaryDependenciesGraphImplTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
-    src/BinaryDependenciesGraphTest.cpp
+    src/BinaryDependenciesGraphImplTest.cpp
 )
 
 mdt_add_test(
