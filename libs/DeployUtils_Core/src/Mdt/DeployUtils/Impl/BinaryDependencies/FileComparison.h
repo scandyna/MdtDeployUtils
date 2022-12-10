@@ -20,6 +20,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
    * \pre \a a and \a b must not be empty
    * \pre \a os must be valid
    */
+  inline
   bool fileNamesAreEqual(const QString & a, const QString & b, OperatingSystem os) noexcept
   {
     assert( !a.trimmed().isEmpty() );

@@ -113,6 +113,9 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/SharedLibraryFinderCommon.cpp
   Mdt/DeployUtils/SharedLibraryFinderLinux.cpp
   Mdt/DeployUtils/SharedLibraryFinderWindows.cpp
+  Mdt/DeployUtils/Impl/BinaryDependencies/DiscoveredDependenciesList.cpp
+  Mdt/DeployUtils/Impl/BinaryDependencies/FileComparison.cpp
+  Mdt/DeployUtils/Impl/BinaryDependencies/GraphFile.cpp
   Mdt/DeployUtils/BinaryDependenciesFile.cpp
   Mdt/DeployUtils/BinaryDependenciesGraph.cpp
   Mdt/DeployUtils/Impl/BinaryDependencies.cpp
