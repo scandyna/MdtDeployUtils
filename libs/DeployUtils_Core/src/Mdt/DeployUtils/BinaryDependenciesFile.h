@@ -33,6 +33,8 @@
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Represents a file and its attributes used by BinaryDependencies
+   *
+   * \todo see https://gitlab.com/scandyna/mdtdeployutils/-/issues/5 (BinaryDependenciesFile has to much attributes and is confusing)
    */
   class MDT_DEPLOYUTILSCORE_EXPORT BinaryDependenciesFile
   {
