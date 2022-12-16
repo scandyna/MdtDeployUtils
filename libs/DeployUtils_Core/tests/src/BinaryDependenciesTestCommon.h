@@ -84,7 +84,8 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
 {
  public:
 
-  explicit SharedLibraryFinderBDTest(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp, QObject *parent = nullptr)
+  explicit SharedLibraryFinderBDTest(const std::shared_ptr<const AbstractIsExistingValidSharedLibrary> & isExistingValidShLibOp,
+                                     QObject *parent = nullptr)
    : AbstractSharedLibraryFinder(isExistingValidShLibOp, parent)
   {
   }

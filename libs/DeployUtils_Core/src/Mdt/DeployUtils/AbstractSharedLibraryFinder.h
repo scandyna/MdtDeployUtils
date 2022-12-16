@@ -29,6 +29,7 @@
 #include <QObject>
 #include <QString>
 #include <QFileInfo>
+#include <memory>
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
@@ -49,12 +50,14 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Constructor
      *
+     * \pre \a isExistingValidShLibOp must be a valid pointer
      */
-    explicit AbstractSharedLibraryFinder(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp,
+    explicit AbstractSharedLibraryFinder(const std::shared_ptr<const AbstractIsExistingValidSharedLibrary> & isExistingValidShLibOp,
                                          QObject *parent = nullptr)
      : QObject(parent),
        mIsExistingValidShLibOp(isExistingValidShLibOp)
     {
+      assert( mIsExistingValidShLibOp.get() != nullptr );
     }
 
     /*! \brief Returns the operating system this finder targets
@@ -168,7 +171,7 @@ namespace Mdt{ namespace DeployUtils{
     virtual
     void performLibrarySpecificAction(const QFileInfo & library);
 
-    const AbstractIsExistingValidSharedLibrary & mIsExistingValidShLibOp;
+    const std::shared_ptr<const AbstractIsExistingValidSharedLibrary> mIsExistingValidShLibOp;
     PathList mSearchPathList;
   };
 

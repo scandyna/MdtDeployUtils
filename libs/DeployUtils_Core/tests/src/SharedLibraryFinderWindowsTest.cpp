@@ -31,7 +31,7 @@ using namespace Mdt::DeployUtils;
 
 TEST_CASE("OperatingSystem")
 {
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
   auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
   SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
@@ -40,7 +40,7 @@ TEST_CASE("OperatingSystem")
 
 TEST_CASE("ExcludeMsvcLibraries")
 {
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
   auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
   SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
@@ -198,7 +198,7 @@ TEST_CASE("isDirect3D_11_Library")
 
 TEST_CASE("libraryHasToBeExcluded")
 {
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
   auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
   SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
@@ -278,7 +278,7 @@ TEST_CASE("libraryHasToBeExcluded")
 
 TEST_CASE("libraryShouldBeDistributed")
 {
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
   auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
   SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
@@ -311,7 +311,7 @@ TEST_CASE("buildSearchPathList")
   constexpr bool checkResult = false;
 #endif // #ifdef Q_OS_WIN
 
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
   auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
   SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
   PathList searchFirstPathPrefixList;
@@ -340,14 +340,14 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
 {
   BinaryDependenciesFile library;
   QFileInfo libraryFile;
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
   auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
   SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
   SECTION("A.dll exists as /tmp/A.dll")
   {
     libraryFile.setFile( QLatin1String("/tmp/A.dll") );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll"});
+    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/A.dll"});
 
     library = finder.findLibraryAbsolutePathByAlternateNames(libraryFile);
 
@@ -357,7 +357,7 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
   SECTION("A.dll exists as /tmp/a.dll")
   {
     libraryFile.setFile( QLatin1String("/tmp/A.dll") );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/a.dll"});
+    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/a.dll"});
 
     library = finder.findLibraryAbsolutePathByAlternateNames(libraryFile);
 
@@ -367,7 +367,7 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
   SECTION("A.DLL exists as /tmp/a.dll")
   {
     libraryFile.setFile( QLatin1String("/tmp/A.DLL") );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/a.dll"});
+    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/a.dll"});
 
     library = finder.findLibraryAbsolutePathByAlternateNames(libraryFile);
 
@@ -377,7 +377,7 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
   SECTION("a.dll exists as /tmp/A.DLL")
   {
     libraryFile.setFile( QLatin1String("/tmp/a.dll") );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.DLL"});
+    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/A.DLL"});
 
     library = finder.findLibraryAbsolutePathByAlternateNames(libraryFile);
 
@@ -388,7 +388,7 @@ TEST_CASE("findLibraryAbsolutePathByAlternateNames")
 TEST_CASE("findLibraryAbsolutePath_OLD")
 {
   QString libraryName;
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
   auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
   SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
@@ -396,7 +396,7 @@ TEST_CASE("findLibraryAbsolutePath_OLD")
   {
     libraryName = QLatin1String("A.dll");
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll"});
+    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/A.dll"});
 
     auto library = finder.findLibraryAbsolutePath_OLD(libraryName);
 
@@ -411,7 +411,7 @@ TEST_CASE("findLibraryAbsolutePath_OLD")
   {
     libraryName = QLatin1String("A.DLL");
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/a.dll"});
+    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/a.dll"});
 
     auto library = finder.findLibraryAbsolutePath_OLD(libraryName);
 
@@ -422,7 +422,7 @@ TEST_CASE("findLibraryAbsolutePath_OLD")
   {
     libraryName = QLatin1String("A.dll");
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp","/opt"}) );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll","/opt/A.dll"});
+    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/A.dll","/opt/A.dll"});
 
     auto library = finder.findLibraryAbsolutePath_OLD(libraryName);
 
@@ -434,7 +434,7 @@ TEST_CASE("findLibraryAbsolutePath")
 {
   QString libraryName;
   auto dependentFile = makeBinaryDependenciesFileFromUtf8Path("/tmp/executable");
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
   auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
   SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
 
@@ -442,7 +442,7 @@ TEST_CASE("findLibraryAbsolutePath")
   {
     libraryName = QLatin1String("A.dll");
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll"});
+    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/A.dll"});
 
     auto library = finder.findLibraryAbsolutePath(libraryName, dependentFile);
 
@@ -457,7 +457,7 @@ TEST_CASE("findLibraryAbsolutePath")
   {
     libraryName = QLatin1String("A.DLL");
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/a.dll"});
+    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/a.dll"});
 
     auto library = finder.findLibraryAbsolutePath(libraryName, dependentFile);
 
@@ -468,7 +468,7 @@ TEST_CASE("findLibraryAbsolutePath")
   {
     libraryName = QLatin1String("A.dll");
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp","/opt"}) );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll","/opt/A.dll"});
+    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/A.dll","/opt/A.dll"});
 
     auto library = finder.findLibraryAbsolutePath(libraryName, dependentFile);
 
@@ -478,7 +478,7 @@ TEST_CASE("findLibraryAbsolutePath")
 
 TEST_CASE("findLibrariesAbsolutePath")
 {
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
   auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
   SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
   BinaryDependenciesFileList libraries;
@@ -488,7 +488,7 @@ TEST_CASE("findLibrariesAbsolutePath")
     auto executable = makeBinaryDependenciesFileFromUtf8Path("/tmp/executable.exe");
     executable.setDependenciesFileNames({QLatin1String("A.dll"),QLatin1String("KERNEL32.DLL")});
     finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/tmp/A.dll","/tmp/KERNEL32.DLL"});
+    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/A.dll","/tmp/KERNEL32.DLL"});
 
     libraries = finder.findLibrariesAbsolutePath(executable);
 

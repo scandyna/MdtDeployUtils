@@ -27,7 +27,7 @@
 
 namespace Mdt{ namespace DeployUtils{
 
-SharedLibraryFinderCommon::SharedLibraryFinderCommon(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp,
+SharedLibraryFinderCommon::SharedLibraryFinderCommon(const std::shared_ptr<const AbstractIsExistingValidSharedLibrary> & isExistingValidShLibOp,
                                                      std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory,
                                                      QObject *parent) noexcept
  : AbstractSharedLibraryFinder(isExistingValidShLibOp, parent),

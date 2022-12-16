@@ -50,7 +50,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Constructor
      */
-    explicit SharedLibraryFinderWindows(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp,
+    explicit SharedLibraryFinderWindows(const std::shared_ptr<const AbstractIsExistingValidSharedLibrary> & isExistingValidShLibOp,
                                         std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory,
                                         QObject *parent = nullptr);
 

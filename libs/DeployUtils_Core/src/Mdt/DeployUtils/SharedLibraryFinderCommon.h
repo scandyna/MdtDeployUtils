@@ -46,7 +46,7 @@ namespace Mdt{ namespace DeployUtils{
      * \pre \a reader must be a valid pointer
      * \pre \a qtDistributionDirectory must be a valid pointer
      */
-    explicit SharedLibraryFinderCommon(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp,
+    explicit SharedLibraryFinderCommon(const std::shared_ptr<const AbstractIsExistingValidSharedLibrary> & isExistingValidShLibOp,
                                        std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory,
                                        QObject *parent = nullptr) noexcept;
 

@@ -77,7 +77,7 @@ bool AbstractSharedLibraryFinder::isExistingValidSharedLibrary(const QFileInfo &
   assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
   assert( libraryFile.isAbsolute() );
 
-  if( !mIsExistingValidShLibOp.isExistingValidSharedLibrary(libraryFile) ){
+  if( !mIsExistingValidShLibOp->isExistingValidSharedLibrary(libraryFile) ){
     return false;
   }
   if( !isValidSpecificSharedLibrary(libraryFile) ){

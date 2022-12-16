@@ -47,7 +47,7 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Constructor
      */
-    explicit SharedLibraryFinderLinux(const AbstractIsExistingValidSharedLibrary & isExistingValidShLibOp,
+    explicit SharedLibraryFinderLinux(const std::shared_ptr<const AbstractIsExistingValidSharedLibrary> & isExistingValidShLibOp,
                                       std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory,
                                       QObject *parent = nullptr) noexcept;
 
