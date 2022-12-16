@@ -23,6 +23,8 @@
 
 #include "FindDependencyError.h"
 #include "BinaryDependenciesResult.h"
+#include "BinaryDependenciesResultList.h"
+#include "ExecutableFileReader.h"
 #include "PathList.h"
 #include "ProcessorISA.h"
 #include "CompilerFinder.h"
@@ -45,6 +47,7 @@ namespace Mdt{ namespace DeployUtils{
   } // namespace Impl{
 
   class QtDistributionDirectory;
+  class AbstractSharedLibraryFinder;
 
   /*! \brief Find dependencies for a executable or a library
    */
@@ -113,6 +116,12 @@ namespace Mdt{ namespace DeployUtils{
     void debugMessage(const QString & message) const;
 
    private:
+
+    Platform setupFindDependencies(ExecutableFileReader & reader,
+                                   std::shared_ptr<AbstractSharedLibraryFinder> & shLibFinder,
+                                   const PathList & searchFirstPathPrefixList,
+                                   std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory,
+                                   const QFileInfo & target);
 
     void emitSearchPathListMessage(const PathList & pathList) const;
 
