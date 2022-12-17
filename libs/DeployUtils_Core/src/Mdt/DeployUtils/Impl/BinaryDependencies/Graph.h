@@ -31,6 +31,75 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
 
   /*! \internal
    *
+   * Given we have to solve \a app :
+   * \code
+   * Target to solve: app
+   *
+   * app
+   *  |->libA
+   *  |   |->Qt5Core
+   *  |   |->libB
+   *  |->Qt5Core
+   * \endcode
+   *
+   * The dependency graph will look like that:
+   * \code
+   *      (app)
+   *      /   \
+   *  (libA)   |
+   *     |  \  |
+   * (libB) (Qt5Core)
+   * \endcode
+   *
+   * In above graph, no full path is represented.
+   * In reality, it will be required while solving,
+   * because each binary must be read to get its direct dependencies.
+   *
+   * The result will be the given target
+   * with all its transitive dependencies:
+   * \code
+   * app
+   *  |->libA
+   *  |->libB
+   *  |->Qt5Core
+   * \endcode
+   *
+   * Attributes, like "is it solved" or the full path to each dependency
+   * is not represented here, but is required in the result.
+   *
+   * Now we want to solve multiple targets at the same time.
+   * Most of them have common dependencies,
+   * so we try to avoid to solve them again and again.
+   * But, we also need to know the transitive dependencies for each given target.
+   * \code
+   * Targets to solve: app,libA
+   *
+   * app
+   *  |->libA
+   *  |   |->Qt5Core
+   *  |   |->libB
+   *  |->Qt5Core
+   *
+   * libA
+   *  |->Qt5Core
+   *  |->libB
+   * \endcode
+   *
+   * The graph will be exactly the same as above.
+   *
+   * The result will be each given target
+   * with their transitive dependencies:
+   * \code
+   * app
+   *  |->libA
+   *  |->libB
+   *  |->Qt5Core
+   *
+   * libA
+   *  |->Qt5Core
+   *  |->libB
+   * \endcode
+   *
    * # How to build the graph
    *
    * We begin with some target,
@@ -142,6 +211,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
     {
       assert( !mPlatform.isNull() );
     }
+
+    /// \todo disable copy
 
     /*! \brief Find a vertex by given file name
      *
