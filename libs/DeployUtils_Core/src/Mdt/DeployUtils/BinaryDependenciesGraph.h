@@ -86,7 +86,13 @@ namespace Mdt{ namespace DeployUtils{
    *  |->libB
    * \endcode
    *
-   * ## Solving example
+   * ## Example
+   *
+   * \code
+   * 
+   * \endcode
+   *
+   * ## Solving example - This is IMPL detail
    *
    * Start with app:
    * \code
@@ -101,6 +107,20 @@ namespace Mdt{ namespace DeployUtils{
    * (app)
    * \endcode
    *
+   * \todo Should we mark file as solved ? 
+   * More precisely, case of no dependencies
+   * 
+   * \todo Should we take some handle to the file ?
+   *  Avoid searching it again and again.. 
+   *
+   * \todo should do some process that returns a list of new dependencies ? Seems good :)
+   * Document that we can't add elements to the graph while BFS()
+   * -> is this true
+   * Also update "Design choices" section
+   * \code
+   * auto x = graph.
+   * \endcode
+   * 
    * Now we can get the unprocessed binaries,
    * that will return a list that contains \a app :
    * \code
@@ -284,7 +304,7 @@ namespace Mdt{ namespace DeployUtils{
    *
    * We can get all transitive dependencies for \a app :
    * \code
-   * const BinaryDependenciesResult result = graph.findTransitiveDependencies(app);
+   * const BinaryDependenciesResult result = graph.getResult(app);
    * \endcode
    *
    * \a result will look like:
@@ -295,7 +315,7 @@ namespace Mdt{ namespace DeployUtils{
    *  |->Qt5Core
    * \endcode
    *
-   * \sa findTransitiveDependencies()
+   * \sa getResult()
    *
    * ## Design choices
    *
@@ -349,11 +369,11 @@ namespace Mdt{ namespace DeployUtils{
      */
     BinaryDependenciesFileList findUnprocessedFiles() const noexcept;
 
-    /*! \brief Find the transitive dependencies starting from given file
+    /*! \brief Get a result for given file
      *
      * \pre This graph must be entirely processed
      */
-    BinaryDependenciesResult findTransitiveDependencies(const BinaryDependenciesFile & file) const noexcept;
+    BinaryDependenciesResult getResult(const BinaryDependenciesFile & file) const noexcept;
 
     /*! \brief Check if given files are equal by file name
      */
