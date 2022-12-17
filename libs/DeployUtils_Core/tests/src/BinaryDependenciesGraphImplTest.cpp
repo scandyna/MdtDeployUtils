@@ -9,6 +9,7 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "TestUtils.h"
+#include "TestFileUtils.h"
 #include "TestIsExistingSharedLibrary.h"
 #include "BinaryDependenciesTestCommon.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies/Graph.h"
@@ -22,6 +23,8 @@
 #include <QFileInfoList>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <memory>
 #include <cassert>
 
 #include "Mdt/DeployUtils/BinaryDependenciesResult.h"
@@ -222,7 +225,7 @@ TEST_CASE("findDependencies")
   const OperatingSystem os = platform.operatingSystem();
   Graph graph(platform);
   DiscoveredDependenciesList discoveredDependenciesList(os);
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
   SharedLibraryFinderBDTest shLibFinder(isExistingSharedLibraryOp);
   GraphBuildVisitorWorker visitorWorker(shLibFinder, platform, discoveredDependenciesList);
   TestExecutableFileReader reader;
@@ -294,7 +297,7 @@ TEST_CASE("buildGraph_docExample")
   const OperatingSystem os = platform.operatingSystem();
   Graph graph(platform);
   DiscoveredDependenciesList discoveredDependenciesList(os);
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
   SharedLibraryFinderBDTest shLibFinder(isExistingSharedLibraryOp);
   GraphBuildVisitorWorker visitorWorker(shLibFinder, platform, discoveredDependenciesList);
   TestExecutableFileReader reader;
@@ -304,7 +307,7 @@ TEST_CASE("buildGraph_docExample")
   reader.setNeededSharedLibraries("libA.so", {"libB.so","libQt5Core.so"});
 
   shLibFinder.setSearchPathList({"/tmp"});
-  isExistingSharedLibraryOp.setExistingSharedLibraries({
+  isExistingSharedLibraryOp->setExistingSharedLibraries({
     "/tmp/libA.so",
     "/tmp/libB.so",
     "/tmp/libQt5Core.so"
@@ -399,14 +402,14 @@ TEST_CASE("buildGraph_docExample")
 TEST_CASE("findTransitiveDependencies")
 {
   const Platform platform(OperatingSystem::Linux, ExecutableFileFormat::Elf, Compiler::Gcc, ProcessorISA::X86_64);
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
   SharedLibraryFinderBDTest shLibFinder(isExistingSharedLibraryOp);
   TestExecutableFileReader reader;
   Graph graph(platform);
 
   shLibFinder.setSearchPathList({"/tmp"});
 
-  isExistingSharedLibraryOp.setExistingSharedLibraries({
+  isExistingSharedLibraryOp->setExistingSharedLibraries({
     "/tmp/libA.so",
     "/tmp/libB.so",
     "/tmp/libC.so",
@@ -576,4 +579,181 @@ TEST_CASE("findTransitiveDependencies")
     REQUIRE( graph.containsFileName( QLatin1String("libB.so") ) );
     REQUIRE( graph.containsFileName( QLatin1String("libQt5Core.so") ) );
   }
+}
+
+
+bool resultContainsLibraryAbsolutePath(const BinaryDependenciesResult & result, const std::string & path)
+{
+  // Take care to check absolute path also on Windows
+  const QString qPath = makeAbsolutePath(path);
+
+  const auto pred = [&qPath](const BinaryDependenciesResultLibrary & library){
+    if( !library.isFound() ){
+      return false;
+    }
+    return library.absoluteFilePath() == qPath;
+  };
+
+  return std::find_if(result.cbegin(), result.cend(), pred) != result.cend();
+}
+
+
+TEST_CASE("addGraphFileToResult")
+{
+  const auto os = OperatingSystem::Linux;
+  QFileInfo app( QString::fromLatin1("/tmp/app") );
+  BinaryDependenciesResult result(app, os);
+
+  SECTION("add a found library")
+  {
+    const auto file = GraphFile::fromQFileInfo( QString::fromLatin1("/tmp/libA.so") );
+    REQUIRE( !file.isNotFound() );
+
+    addGraphFileToResult(file, result, os);
+
+    REQUIRE( result.libraryCount() == 1 );
+    REQUIRE( resultContainsLibraryAbsolutePath(result, "/tmp/libA.so") );
+  }
+
+  SECTION("adding the target does nothing")
+  {
+    const auto file = GraphFile::fromQFileInfo(app);
+    REQUIRE( !file.isNotFound() );
+
+    addGraphFileToResult(file, result, os);
+
+    REQUIRE( result.libraryCount() == 0 );
+  }
+
+  SECTION("add a not found library")
+  {
+    auto file = GraphFile::fromLibraryName( QLatin1String("libA.so") );
+    file.markAsNotFound();
+    REQUIRE( file.isNotFound() );
+
+    addGraphFileToResult(file, result, os);
+
+    REQUIRE( result.libraryCount() == 1 );
+    REQUIRE( !result.libraryAt(0).isFound() );
+    REQUIRE( result.libraryAt(0).libraryName() == QLatin1String("libA.so") );
+  }
+
+  SECTION("add a library to not redistribute")
+  {
+    auto file = GraphFile::fromLibraryName( QLatin1String("libA.so") );
+    file.markAsNotToBeRedistributed();
+    REQUIRE( file.shouldNotBeRedistributed() );
+
+    addGraphFileToResult(file, result, os);
+
+    REQUIRE( result.libraryCount() == 1 );
+    REQUIRE( result.libraryAt(0).shouldNotBeRedistributed() );
+    REQUIRE( result.libraryAt(0).libraryName() == QLatin1String("libA.so") );
+  }
+}
+
+/*
+ * app
+ *  |->libA
+ *  |   |->Qt5Core
+ *  |   |->libB
+ *  |->Qt5Core
+ *
+ *
+ *      (app)
+ *      /   \
+ *  (libA)   |
+ *     |  \  |
+ * (libB) (Qt5Core)
+ */
+void buildExampleGraphLinux(Graph & graph)
+{
+  const Platform platform(OperatingSystem::Linux, ExecutableFileFormat::Elf, Compiler::Gcc, ProcessorISA::X86_64);
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
+  SharedLibraryFinderBDTest shLibFinder(isExistingSharedLibraryOp);
+  TestExecutableFileReader reader;
+
+  shLibFinder.setSearchPathList({"/tmp"});
+
+  isExistingSharedLibraryOp->setExistingSharedLibraries({
+    "/tmp/libA.so",
+    "/tmp/libB.so",
+    "/tmp/libQt5Core.so"
+  });
+
+  reader.setNeededSharedLibraries("app", {"libA.so","libQt5Core.so"});
+  reader.setNeededSharedLibraries("libA.so", {"libB.so","libQt5Core.so"});
+
+  QFileInfo app( QString::fromLatin1("/tmp/app") );
+
+  graph.addTarget(app);
+  graph.findTransitiveDependencies(shLibFinder, reader);
+}
+
+TEST_CASE("getResult")
+{
+  /// \todo add libs to not redistribute + not found libs
+
+  const Platform platform(OperatingSystem::Linux, ExecutableFileFormat::Elf, Compiler::Gcc, ProcessorISA::X86_64);
+  Graph graph(platform);
+  buildExampleGraphLinux(graph);
+  REQUIRE( graph.fileCount() == 4 );
+
+  QFileInfo app( QString::fromLatin1("/tmp/app") );
+
+  /*
+   * app
+   *  |->libA
+   *  |->libB
+   *  |->Qt5Core
+   */
+  SECTION("result for app")
+  {
+    const BinaryDependenciesResult result = graph.getResult(app);
+
+    /// \todo check states
+    REQUIRE( result.target().absoluteFilePath() == QLatin1String("/tmp/app") );
+    REQUIRE( result.libraryCount() == 3 );
+    REQUIRE( resultContainsLibraryAbsolutePath(result, "/tmp/libA.so") );
+    REQUIRE( resultContainsLibraryAbsolutePath(result, "/tmp/libB.so") );
+    REQUIRE( resultContainsLibraryAbsolutePath(result, "/tmp/libQt5Core.so") );
+  }
+}
+
+TEST_CASE("getResultList")
+{
+  const Platform platform(OperatingSystem::Linux, ExecutableFileFormat::Elf, Compiler::Gcc, ProcessorISA::X86_64);
+  Graph graph(platform);
+  buildExampleGraphLinux(graph);
+  REQUIRE( graph.fileCount() == 4 );
+
+  QFileInfo app( QString::fromLatin1("/tmp/app") );
+  QFileInfo libA( QString::fromLatin1("/tmp/libA.so") );
+
+  /*
+   * app
+   *  |->libA
+   *  |->libB
+   *  |->Qt5Core
+   *
+   * libA
+   *  |->Qt5Core
+   *  |->libB
+   */
+  const BinaryDependenciesResultList resultList = graph.getResultList({app, libA});
+
+  REQUIRE( resultList.resultCount() == 2 );
+
+  const auto appResult = resultList.findResultForTargetName( app.fileName() );
+  REQUIRE( appResult.has_value() );
+  REQUIRE( appResult->libraryCount() == 3 );
+  REQUIRE( appResult->containsLibraryName( QLatin1String("libA.so") ) );
+  REQUIRE( appResult->containsLibraryName( QLatin1String("libB.so") ) );
+  REQUIRE( appResult->containsLibraryName( QLatin1String("libQt5Core.so") ) );
+
+  const auto libAResult = resultList.findResultForTargetName( libA.fileName() );
+  REQUIRE( libAResult.has_value() );
+  REQUIRE( libAResult->libraryCount() == 2 );
+  REQUIRE( libAResult->containsLibraryName( QLatin1String("libQt5Core.so") ) );
+  REQUIRE( libAResult->containsLibraryName( QLatin1String("libB.so") ) );
 }

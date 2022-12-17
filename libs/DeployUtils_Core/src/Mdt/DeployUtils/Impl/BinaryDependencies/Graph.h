@@ -13,8 +13,11 @@
 #include "GraphBuildVisitor.h"
 #include "FileComparison.h"
 #include "DiscoveredDependenciesList.h"
+#include "GraphResultVisitor.h"
 #include "Mdt/DeployUtils/Platform.h"
 #include "Mdt/DeployUtils/AbstractSharedLibraryFinder.h"
+#include "Mdt/DeployUtils/BinaryDependenciesResult.h"
+#include "Mdt/DeployUtils/BinaryDependenciesResultList.h"
 #include "Mdt/DeployUtils/FileInfoUtils.h"
 #include <QString>
 #include <QFileInfo>
@@ -297,7 +300,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
       boost::breadth_first_search( mGraph, u, boost::visitor(visitor) );
     }
 
-    /*! \internal Find transitive dependencies for files in this graph
+    /*! \brief Find transitive dependencies for files in this graph
      *
      * \pre This graph must have at least one file
      * \sa addTarget()
@@ -317,6 +320,47 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
         findDependencies(visitor);
         addDependencies(discoveredDependenciesList);
       }while( !discoveredDependenciesList.isEmpty() );
+    }
+
+    /*! \brief Get a result for given target
+     *
+     * \pre \a target must be an absolute path to a file
+     * \sa fileInfoIsAbsolutePath()
+     * \pre \a target must exist in this graph
+     */
+    BinaryDependenciesResult getResult(const QFileInfo & target) const noexcept
+    {
+      assert( fileInfoIsAbsolutePath(target) );
+
+      BinaryDependenciesResult result( target, mPlatform.operatingSystem() );
+
+      GraphResultVisitor visitor( result, mPlatform.operatingSystem() );
+      auto bfsVisitor = boost::make_bfs_visitor(visitor);
+
+      const auto u = findVertex( target.fileName() );
+      assert( u.has_value() );
+
+      boost::breadth_first_search( mGraph, *u, boost::visitor(bfsVisitor) );
+
+      return result;
+    }
+
+    /*! \brief Get a list of results for given targets
+     *
+     * \pre each target in \a targets must be an absolute path to a file
+     * \sa fileInfoIsAbsolutePath()
+     * \sa getResult()
+     */
+    BinaryDependenciesResultList getResultList(const QFileInfoList & targets) const noexcept
+    {
+      BinaryDependenciesResultList resultList( mPlatform.operatingSystem() );
+
+      for(const QFileInfo & target : targets){
+        assert( fileInfoIsAbsolutePath(target) );
+        resultList.addResult( getResult(target) );
+      }
+
+      return resultList;
     }
 
     /*! \internal Reference the internal graph
