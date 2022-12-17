@@ -855,6 +855,14 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME BinaryDependenciesResultListTest
+  TARGET binaryDependenciesResultListTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/BinaryDependenciesResultListTest.cpp
+)
+
+mdt_add_test(
   NAME BinaryDependenciesImplTest
   TARGET binaryDependenciesImplTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

@@ -118,12 +118,14 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/BinaryDependencies/GraphFile.cpp
   Mdt/DeployUtils/Impl/BinaryDependencies/GraphDef.cpp
   Mdt/DeployUtils/Impl/BinaryDependencies/GraphBuildVisitor.cpp
+  Mdt/DeployUtils/Impl/BinaryDependencies/GraphResultVisitor.cpp
   Mdt/DeployUtils/Impl/BinaryDependencies/Graph.cpp
   Mdt/DeployUtils/BinaryDependenciesFile.cpp
   Mdt/DeployUtils/BinaryDependenciesGraph.cpp
   Mdt/DeployUtils/Impl/BinaryDependencies.cpp
   Mdt/DeployUtils/BinaryDependenciesResultLibrary.cpp
   Mdt/DeployUtils/BinaryDependenciesResult.cpp
+  Mdt/DeployUtils/BinaryDependenciesResultList.cpp
   Mdt/DeployUtils/BinaryDependencies.cpp
   Mdt/DeployUtils/FileCopyError.cpp
   Mdt/DeployUtils/FileCopierFile.cpp
@@ -175,6 +177,7 @@ target_include_directories(Mdt_DeployUtilsCore
 target_link_libraries(Mdt_DeployUtilsCore
   PUBLIC
     Qt5::Core
+  PRIVATE
     Boost::boost
 )
 

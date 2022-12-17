@@ -11,6 +11,7 @@
 
 #include "BinaryDependenciesResultLibrary.h"
 #include "BinaryDependenciesFile.h"
+#include "OperatingSystem.h"
 #include "mdt_deployutilscore_export.h"
 #include <QFileInfo>
 #include <QString>
@@ -20,6 +21,45 @@
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Collection of found binary dependencies
+   *
+   * \todo
+   * One result should concern multiple targets. < NO
+   *
+   * \todo update doc
+   *
+   * \note
+   * The solver can accept multiple targets at the same time.
+   * It then try to avoid solving the same binary multiple times.
+   * The litle drawback of this solution is that it will not
+   * give the dependencies for each target in a reliable way.
+   * As example, \a app depends on \a libQt5Core.so .
+   * Both also depend on \a libstdc++.so :
+   * \code
+   * BinaryDependencies solver;
+   * QFileInfoList binaryFilePathList{"/opt/bin/app","/opt/qt/lib/libQt5Core.so"}
+   *
+   * auto result = solver.findDependencies(binaryFilePathList, ...);
+   *
+   * // First target, app, will be solved:
+   * // - app will be solved and depends on libQt5Core.so and libstdc++.so
+   * // - libQt5Core.so will be solved (transitive solving) and depends on libstdc++.so
+   * // - result: app depends on libQt5Core.so and libstdc++.so (flat list of all transitive dependencies)
+   * // - app and libQt5Core.so will be marked as solved
+   *
+   * // Second target, libQt5Core.so, will be solved:
+   * // - libQt5Core.so is already solved
+   * // - result: empty dependency list (which is wrong)
+   * \endcode
+   *
+   * It should be possible to change the implementation
+   * so that it reports reliable results for each given target,
+   * but this is not a priority for the moment
+   * (is it worth it ?).
+   *
+   *
+   * \todo What about checking if a plugin is solved or not ?
+   * Maybe a error message for given target ?
+   * Associate a error with a particular target..
    */
   class MDT_DEPLOYUTILSCORE_EXPORT BinaryDependenciesResult
   {
@@ -31,15 +71,19 @@ namespace Mdt{ namespace DeployUtils{
      */
     using const_iterator = LibraryContainer::const_iterator;
 
+    using const_reference = LibraryContainer::const_reference;
+
     BinaryDependenciesResult() = delete;
 
     /*! \brief Construct a result for given target
      *
      * \sa target()
      * \pre \a fileInfo must have its absolute file path set
-     * \sa doc of QFileInfo::absoluteFilePath()
+     * \sa fileInfoIsAbsolutePath()
+     * \pre \a os must be valid
      */
-    BinaryDependenciesResult(const QFileInfo & target);
+    explicit
+    BinaryDependenciesResult(const QFileInfo & target, OperatingSystem os);
 
     /*! \brief Copy construct a result from \a other
      */
@@ -56,6 +100,13 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Move assign \a other to this result
      */
     BinaryDependenciesResult & operator=(BinaryDependenciesResult && other) noexcept = default;
+
+    /*! \brief Get the OS of this result
+     */
+    OperatingSystem operatingSystem() const noexcept
+    {
+      return mOs;
+    }
 
     /*! \brief Get the target
      *
@@ -88,11 +139,49 @@ namespace Mdt{ namespace DeployUtils{
       return mEntries.size();
     }
 
+    /*! \brief Get the library at \a index
+     *
+     * \pre \a index must be in valid range
+     */
+    const BinaryDependenciesResultLibrary & libraryAt(size_t index) const noexcept
+    {
+      assert( index < libraryCount() );
+
+      return mEntries[index];
+    }
+
     /*! \brief Check if this result contains a library by name
      *
      * \pre \a name must not be empty
      */
     bool containsLibraryName(const QString & name) const noexcept;
+
+    /*! \brief Add given found library to this result
+     *
+     * If a library with the same name as given \a library already exists in this result,
+     * given \a library will not be added.
+     *
+     * \pre \a library must be a absolute path
+     */
+    void addFoundLibrary(const QFileInfo & library) noexcept;
+
+    /*! \brief Add given not found library to this result
+     *
+     * If a library with the same name as given \a library already exists in this result,
+     * given \a library will not be added.
+     *
+     * \pre \a library must have its file name
+     */
+    void addNotFoundLibrary(const QFileInfo & library) noexcept;
+
+    /*! \brief Add given library to not redistribute to this result
+     *
+     * If a library with the same name as given \a library already exists in this result,
+     * given \a library will not be added.
+     *
+     * \pre \a library must have its file name
+     */
+    void addLibraryToNotRedistribute(const QFileInfo & library) noexcept;
 
     /*! \brief Add given library to this result
      *
@@ -103,6 +192,7 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \pre \a library must not be null
      */
+    [[deprecated]]
     void addLibrary(const BinaryDependenciesFile & library) noexcept;
 
     /*! \brief Get an iterator to the beginning of the list of libraries this result contains
@@ -136,23 +226,10 @@ namespace Mdt{ namespace DeployUtils{
    private:
 
     bool mIsSolved = false;
+    OperatingSystem mOs;
     QFileInfo mTarget;
     LibraryContainer mEntries;
   };
-
-  /*! \brief A list of BinaryDependenciesResult
-   */
-  using BinaryDependenciesResultList = std::vector<BinaryDependenciesResult>;
-
-  /*! \brief Get a list of absolute file paths for each library in given list of results
-   *
-   * Each path is unique in the returned list.
-   *
-   * \pre each result in \a resultList must be solved
-   * (i.e. every library has its absolute file path set).
-   */
-  MDT_DEPLOYUTILSCORE_EXPORT
-  QStringList getLibrariesAbsoluteFilePathList(const BinaryDependenciesResultList & resultList);
 
 }} // namespace Mdt{ namespace DeployUtils{
 

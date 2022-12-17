@@ -43,6 +43,10 @@ namespace Mdt{ namespace DeployUtils{
      */
     bool isFound() const noexcept;
 
+    /*! \brief Check if this library should not be redistributed
+     */
+    bool shouldNotBeRedistributed() const noexcept;
+
     /*! \brief Get the library name
      *
      * Returns the file name of the library,
@@ -67,6 +71,13 @@ namespace Mdt{ namespace DeployUtils{
     static
     BinaryDependenciesResultLibrary fromQFileInfo(const QFileInfo & fileInfo) noexcept;
 
+    /*! \brief Construct a result library to not redistribute from \a fileInfo
+     *
+     * \pre \a fileInfo must have at least a file name
+     */
+    static
+    BinaryDependenciesResultLibrary libraryToNotRedistrbuteFromFileInfo(const QFileInfo & fileInfo) noexcept;
+
    private:
 
     BinaryDependenciesResultLibrary(const QFileInfo & fileInfo)
@@ -75,6 +86,7 @@ namespace Mdt{ namespace DeployUtils{
     }
 
     QFileInfo mFile;
+    bool mNotRedistrbute = false;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

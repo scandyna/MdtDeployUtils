@@ -7,6 +7,7 @@
  **
  ****************************************************************************/
 #include "BinaryDependenciesResultLibrary.h"
+#include "FileInfoUtils.h"
 #include <QLatin1String>
 #include <cassert>
 
@@ -24,6 +25,11 @@ bool BinaryDependenciesResultLibrary::isFound() const noexcept
   return true;
 }
 
+bool BinaryDependenciesResultLibrary::shouldNotBeRedistributed() const noexcept
+{
+  return mNotRedistrbute;
+}
+
 QString BinaryDependenciesResultLibrary::absoluteFilePath() const noexcept
 {
   assert( isFound() );
@@ -33,9 +39,20 @@ QString BinaryDependenciesResultLibrary::absoluteFilePath() const noexcept
 
 BinaryDependenciesResultLibrary BinaryDependenciesResultLibrary::fromQFileInfo(const QFileInfo & fileInfo) noexcept
 {
-  assert( !fileInfo.fileName().trimmed().isEmpty() );
+  assert( fileInfoHasFileName(fileInfo) );
 
   return BinaryDependenciesResultLibrary(fileInfo);
+}
+
+BinaryDependenciesResultLibrary
+BinaryDependenciesResultLibrary::libraryToNotRedistrbuteFromFileInfo(const QFileInfo & fileInfo) noexcept
+{
+  assert( fileInfoHasFileName(fileInfo) );
+
+  BinaryDependenciesResultLibrary library(fileInfo);
+  library.mNotRedistrbute = true;
+
+  return library;
 }
 
 }} // namespace Mdt{ namespace DeployUtils{
