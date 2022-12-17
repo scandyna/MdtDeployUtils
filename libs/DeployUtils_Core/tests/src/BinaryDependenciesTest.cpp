@@ -68,4 +68,25 @@ TEST_CASE("findDependencies")
     REQUIRE( containsTestSharedLibrary(dependencies) );
     REQUIRE( containsQt5Core(dependencies) );
   }
+
+  SECTION("solve 2 targets")
+  {
+    const QFileInfo library( QString::fromLocal8Bit(TEST_SHARED_LIBRARY_FILE_PATH) );
+    const QFileInfo app( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
+
+    const BinaryDependenciesResultList dependenciesList = solver.findDependencies({library, app}, searchFirstPathPrefixList, qtDistributionDirectory);
+
+    REQUIRE( dependenciesList.resultCount() == 2 );
+
+    const auto libraryResult = dependenciesList.findResultForTargetName( library.fileName() );
+    REQUIRE( libraryResult.has_value() );
+    REQUIRE( libraryResult->target().fileName() == library.fileName() );
+    REQUIRE( containsQt5Core(*libraryResult) );
+
+    const auto appResult = dependenciesList.findResultForTargetName( app.fileName() );
+    REQUIRE( appResult.has_value() );
+    REQUIRE( appResult->target().fileName() == app.fileName() );
+    REQUIRE( containsTestSharedLibrary(*appResult) );
+    REQUIRE( containsQt5Core(*appResult) );
+  }
 }
