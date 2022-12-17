@@ -18,18 +18,20 @@ using namespace Mdt::DeployUtils;
 
 TEST_CASE("construct")
 {
+  const auto os = OperatingSystem::Linux;
   QFileInfo file( QLatin1String("/opt/project/app") );
 
-  BinaryDependenciesResult result(file);
+  BinaryDependenciesResult result(file, os);
 
   REQUIRE( result.target().absoluteFilePath() == makeAbsolutePath("/opt/project/app") );
   REQUIRE( result.isSolved() );
 }
 
-TEST_CASE("addLibrary")
+TEST_CASE("addLibrary_OLD")
 {
+  const auto os = OperatingSystem::Linux;
   QFileInfo file( QLatin1String("/opt/project/app") );
-  BinaryDependenciesResult result(file);
+  BinaryDependenciesResult result(file, os);
 
   SECTION("add a library with its full path (found)")
   {
@@ -62,6 +64,7 @@ TEST_CASE("addLibrary")
     REQUIRE( !result.isSolved() );
   }
 
+  /*
   SECTION("add a library 2x but with different case")
   {
     QFileInfo libA( QLatin1String("libA.DLL") );
@@ -76,70 +79,121 @@ TEST_CASE("addLibrary")
     REQUIRE( result.containsLibraryName( QLatin1String("libA.DLL") ) );
     REQUIRE( !result.isSolved() );
   }
+  */
 }
 
-TEST_CASE("getLibrariesAbsoluteFilePathList")
+TEST_CASE("addLibrary")
 {
-  BinaryDependenciesResultList resultList;
-  QStringList pathList;
+  const auto os = OperatingSystem::Linux;
+  QFileInfo file( QLatin1String("/opt/project/app") );
+  BinaryDependenciesResult result(file, os);
 
-  SECTION("empty list of results")
+  SECTION("add a library with its full path (found)")
   {
-    pathList = getLibrariesAbsoluteFilePathList(resultList);
+    QFileInfo libA( QLatin1String("/opt/libA.so") );
 
-    REQUIRE( pathList.isEmpty() );
+    result.addFoundLibrary(libA);
+
+    REQUIRE( result.libraryCount() == 1 );
+    REQUIRE( result.libraryAt(0).isFound() );
+    REQUIRE( !result.libraryAt(0).shouldNotBeRedistributed() );
+    REQUIRE( result.containsLibraryName( QLatin1String("libA.so") ) );
+    REQUIRE( result.isSolved() );
   }
 
-  SECTION("1 result")
+  SECTION("add a library that was not found")
   {
-    QFileInfo app( QLatin1String("/opt/app") );
-    BinaryDependenciesResult result(app);
+    QFileInfo libA( QLatin1String("libA.so") );
 
-    SECTION("1 library")
-    {
-      QFileInfo libA( QLatin1String("/opt/libA.so") );
-      result.addLibrary( BinaryDependenciesFile::fromQFileInfo(libA) );
-      resultList.push_back(result);
+    result.addNotFoundLibrary(libA);
 
-      pathList = getLibrariesAbsoluteFilePathList(resultList);
-
-      REQUIRE( pathList.size() == 1 );
-      REQUIRE( pathList.contains( QLatin1String("/opt/libA.so") ) );
-    }
+    REQUIRE( result.libraryCount() == 1 );
+    REQUIRE( !result.libraryAt(0).isFound() );
+    REQUIRE( !result.libraryAt(0).shouldNotBeRedistributed() );
+    REQUIRE( result.containsLibraryName( QLatin1String("libA.so") ) );
+    REQUIRE( !result.isSolved() );
   }
 
-  SECTION("2 results")
+  SECTION("add a library that should not be redistributed")
   {
-    QFileInfo app1( QLatin1String("/opt/app1") );
-    BinaryDependenciesResult result1(app1);
-    QFileInfo app2( QLatin1String("/opt/app2") );
-    BinaryDependenciesResult result2(app2);
+    QFileInfo libA( QLatin1String("libA.so") );
 
-    /*
-     * NOTE
-     * Libraries in the results are solved.
-     * This means that they have been found on the system.
-     * As result, we should never encounter a situation with different cases.
-     * Example:
-     *  C:/opt/libA.DLL
-     *  C:/opt/liba.dll
-     * above should never happen.
-     * The existing library will be returned by the shared library finder correctly
-     * (each result will then contain the unique variant that exists on the system)
-     */
-    SECTION("each result has same library")
-    {
-      QFileInfo libA( QLatin1String("/opt/libA.so") );
+    result.addLibraryToNotRedistribute(libA);
 
-      result1.addLibrary( BinaryDependenciesFile::fromQFileInfo(libA) );
-      result2.addLibrary( BinaryDependenciesFile::fromQFileInfo(libA) );
-      resultList.push_back(result1);
-      resultList.push_back(result2);
+    REQUIRE( result.libraryCount() == 1 );
+    REQUIRE( !result.libraryAt(0).isFound() );
+    REQUIRE( result.libraryAt(0).shouldNotBeRedistributed() );
+    REQUIRE( result.containsLibraryName( QLatin1String("libA.so") ) );
+    REQUIRE( result.isSolved() );
+  }
 
-      pathList = getLibrariesAbsoluteFilePathList(resultList);
+  SECTION("add a found library 2x")
+  {
+    QFileInfo libA( QLatin1String("/opt/libA.so") );
 
-      REQUIRE( pathList.size() == 1 );
-      REQUIRE( pathList.contains( QLatin1String("/opt/libA.so") ) );
-    }
+    result.addFoundLibrary(libA);
+    result.addFoundLibrary(libA);
+
+    REQUIRE( result.libraryCount() == 1 );
+  }
+
+  SECTION("add a NOT found library 2x")
+  {
+    QFileInfo libA( QLatin1String("libA.so") );
+
+    result.addNotFoundLibrary(libA);
+    result.addNotFoundLibrary(libA);
+
+    REQUIRE( result.libraryCount() == 1 );
+  }
+
+  SECTION("add a library that should not be redistributed 2x")
+  {
+    QFileInfo libA( QLatin1String("libA.so") );
+
+    result.addLibraryToNotRedistribute(libA);
+    result.addLibraryToNotRedistribute(libA);
+
+    REQUIRE( result.libraryCount() == 1 );
+  }
+}
+
+TEST_CASE("addLibrary_WindowsSpecifics")
+{
+  const auto os = OperatingSystem::Windows;
+  QFileInfo file( QLatin1String("/opt/project/app") );
+  BinaryDependenciesResult result(file, os);
+
+  SECTION("add LIBA.DLL.DLL and libA.dll as found")
+  {
+    QFileInfo LIBA( QLatin1String("/opt/LIBA.DLL") );
+    QFileInfo libA( QLatin1String("/opt/libA.dll") );
+
+    result.addFoundLibrary(LIBA);
+    result.addFoundLibrary(libA);
+
+    REQUIRE( result.libraryCount() == 1 );
+  }
+
+  SECTION("add LIBA.DLL and libA.dll as NOT found")
+  {
+    QFileInfo LIBA( QLatin1String("LIBA.DLL") );
+    QFileInfo libA( QLatin1String("libA.dll") );
+
+    result.addNotFoundLibrary(LIBA);
+    result.addNotFoundLibrary(libA);
+
+    REQUIRE( result.libraryCount() == 1 );
+  }
+
+  SECTION("add KERNEL32.DLL and kernel32.dll as not to be redistributed")
+  {
+    QFileInfo KERNEL32( QLatin1String("KERNEL32.DLL") );
+    QFileInfo kernel32( QLatin1String("kernel32.dll") );
+
+    result.addLibraryToNotRedistribute(KERNEL32);
+    result.addLibraryToNotRedistribute(kernel32);
+
+    REQUIRE( result.libraryCount() == 1 );
   }
 }

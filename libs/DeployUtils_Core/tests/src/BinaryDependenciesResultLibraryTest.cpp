@@ -39,3 +39,13 @@ TEST_CASE("fromQFileInfo")
     REQUIRE( !resultLibrary.isFound() );
   }
 }
+
+TEST_CASE("libraryToNotRedistrbuteFromFileInfo")
+{
+  const QFileInfo fi( QLatin1String("arbitraryFile.so") );
+
+  const auto resultLibrary = BinaryDependenciesResultLibrary::libraryToNotRedistrbuteFromFileInfo(fi);
+
+  REQUIRE( resultLibrary.libraryName() == QLatin1String("arbitraryFile.so") );
+  REQUIRE( resultLibrary.shouldNotBeRedistributed() );
+}
