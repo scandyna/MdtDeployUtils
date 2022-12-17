@@ -27,14 +27,23 @@ bool BinaryDependenciesResult::containsLibraryName(const QString & name) const n
 {
   assert( !name.trimmed().isEmpty() );
 
-  const OperatingSystem os = mOs;
-  const auto pred = [&name, os](const BinaryDependenciesResultLibrary & library){
-    return Impl::BinaryDependencies::fileNamesAreEqual(library.libraryName(), name, os);
-  };
+  const auto it = findIteratorByLibraryName(name);
 
-  const auto it = std::find_if(mEntries.cbegin(), mEntries.cend(), pred);
+  return it != cend();
+}
 
-  return it != mEntries.cend();
+std::optional<BinaryDependenciesResultLibrary>
+BinaryDependenciesResult::findLibraryByName(const QString & name) const noexcept
+{
+  assert( !name.trimmed().isEmpty() );
+
+  const auto it = findIteratorByLibraryName(name);
+
+  if( it == cend() ){
+    return {};
+  }
+
+  return *it;
 }
 
 void BinaryDependenciesResult::addFoundLibrary(const QFileInfo & library) noexcept
@@ -85,6 +94,17 @@ void BinaryDependenciesResult::addLibrary(const BinaryDependenciesFile & library
   if( !resultLibrary.isFound() ){
     mIsSolved = false;
   }
+}
+
+BinaryDependenciesResult::const_iterator
+BinaryDependenciesResult::findIteratorByLibraryName(const QString & name) const noexcept
+{
+  const OperatingSystem os = mOs;
+  const auto pred = [&name, os](const BinaryDependenciesResultLibrary & library){
+    return Impl::BinaryDependencies::fileNamesAreEqual(library.libraryName(), name, os);
+  };
+
+  return std::find_if(mEntries.cbegin(), mEntries.cend(), pred);
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

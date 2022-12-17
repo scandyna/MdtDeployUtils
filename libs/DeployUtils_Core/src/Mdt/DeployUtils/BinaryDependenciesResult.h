@@ -17,6 +17,7 @@
 #include <QString>
 #include <QStringList>
 #include <vector>
+#include <optional>
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -156,6 +157,13 @@ namespace Mdt{ namespace DeployUtils{
      */
     bool containsLibraryName(const QString & name) const noexcept;
 
+    /*! \brief Find a library for given name
+     *
+     * \pre \a name must not be empty
+     */
+    std::optional<BinaryDependenciesResultLibrary>
+    findLibraryByName(const QString & name) const noexcept;
+
     /*! \brief Add given found library to this result
      *
      * If a library with the same name as given \a library already exists in this result,
@@ -224,6 +232,8 @@ namespace Mdt{ namespace DeployUtils{
     }
 
    private:
+
+    const_iterator findIteratorByLibraryName(const QString & name) const noexcept;
 
     bool mIsSolved = false;
     OperatingSystem mOs;

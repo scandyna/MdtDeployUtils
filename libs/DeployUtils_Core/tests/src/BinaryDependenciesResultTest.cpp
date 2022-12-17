@@ -197,3 +197,20 @@ TEST_CASE("addLibrary_WindowsSpecifics")
     REQUIRE( result.libraryCount() == 1 );
   }
 }
+
+TEST_CASE("findLibraryByName")
+{
+  const auto os = OperatingSystem::Linux;
+  QFileInfo file( QLatin1String("/opt/project/app") );
+  BinaryDependenciesResult result(file, os);
+
+  QFileInfo libAfi( QLatin1String("/opt/libA.so") );
+  result.addFoundLibrary(libAfi);
+
+  const auto libA = result.findLibraryByName( QLatin1String("libA.so") );
+  REQUIRE( libA.has_value() );
+  REQUIRE( libA->libraryName() == QLatin1String("libA.so") );
+
+  const auto notFound = result.findLibraryByName( QLatin1String("notFound.so") );
+  REQUIRE( !notFound.has_value() );
+}
