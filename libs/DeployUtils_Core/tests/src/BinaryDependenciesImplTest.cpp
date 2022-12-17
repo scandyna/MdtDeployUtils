@@ -478,7 +478,7 @@ TEST_CASE("binaryDependenciesFilesAreEqual")
 
 TEST_CASE("findDependencies")
 {
-  TestIsExistingSharedLibrary isExistingSharedLibraryOp;
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
   auto shLibFinder = std::make_shared<SharedLibraryFinderBDTest>(isExistingSharedLibraryOp);
   Impl::FindDependenciesImpl impl;
   impl.setSharedLibrariesFinder(shLibFinder);
@@ -489,7 +489,7 @@ TEST_CASE("findDependencies")
   SECTION("no dependencies")
   {
     BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/libm.so");
-    BinaryDependenciesResult result( target.fileInfo() );
+    BinaryDependenciesResult result( target.fileInfo(), platform.operatingSystem() );
 //     debugExecutableFileInfo(target);
     impl.findDependencies(target, result, dependencies, reader, platform);
 //     debugExecutableFileInfoList(dependencies);
@@ -505,9 +505,9 @@ TEST_CASE("findDependencies")
   SECTION("myapp depends on MyLibA")
   {
     BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/myapp");
-    BinaryDependenciesResult result( target.fileInfo() );
+    BinaryDependenciesResult result( target.fileInfo(), platform.operatingSystem() );
     shLibFinder->setSearchPathList({"/opt/MyLibs/"});
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so"});
+    isExistingSharedLibraryOp->setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so"});
     reader.setDirectDependencies({"libMyLibA.so"});
 
     impl.findDependencies(target, result, dependencies, reader, platform);
@@ -529,9 +529,9 @@ TEST_CASE("findDependencies")
   SECTION("myapp depends on MyLibA which depends on Qt5Core")
   {
     BinaryDependenciesFile target = binaryDependenciesFileFromFullPath("/tmp/myapp");
-    BinaryDependenciesResult result( target.fileInfo() );
+    BinaryDependenciesResult result( target.fileInfo(), platform.operatingSystem() );
     shLibFinder->setSearchPathList({"/opt/MyLibs/","/opt/qt/"});
-    isExistingSharedLibraryOp.setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so","/opt/qt/libQt5Core.so"});
+    isExistingSharedLibraryOp->setExistingSharedLibraries({"/opt/MyLibs/libMyLibA.so","/opt/qt/libQt5Core.so"});
     reader.setDirectDependencies({"libMyLibA.so"});
     reader.addDependenciesToDirectDependency("libMyLibA.so",{"libQt5Core.so"});
 
