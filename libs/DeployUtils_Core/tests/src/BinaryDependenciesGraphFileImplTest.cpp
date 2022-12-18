@@ -156,6 +156,45 @@ TEST_CASE("hasBeenSearched")
   }
 }
 
+TEST_CASE("hasToBeRead")
+{
+  GraphFile file;
+
+  SECTION("a default constructed file has not to be read (now)")
+  {
+    REQUIRE( !file.hasToBeRead() );
+  }
+
+  SECTION("a file that has its absolute path has to be read")
+  {
+    file.setAbsoluteFilePath( QString::fromLatin1("/opt/app") );
+
+    REQUIRE( file.hasToBeRead() );
+  }
+
+  SECTION("a file that has been read has NOT to be read")
+  {
+    file.setAbsoluteFilePath( QString::fromLatin1("/opt/app") );
+    file.markAsReaden();
+
+    REQUIRE( !file.hasToBeRead() );
+  }
+
+  SECTION("a file that is not found has NOT to be read")
+  {
+    file.markAsNotFound();
+
+    REQUIRE( !file.hasToBeRead() );
+  }
+
+  SECTION("a file marked as not to be redistributes has not to be read")
+  {
+    file.markAsNotToBeRedistributed();
+
+    REQUIRE( !file.hasToBeRead() );
+  }
+}
+
 TEST_CASE("isReaden")
 {
   GraphFile file;

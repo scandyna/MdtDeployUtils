@@ -80,6 +80,26 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
       return mFile;
     }
 
+    /*! \brief Check if this file has to be read
+     */
+    bool hasToBeRead() const noexcept
+    {
+      if( isReaden() ){
+        return false;
+      }
+      if( isNotFound() ){
+        return false;
+      }
+      if( shouldNotBeRedistributed() ){
+        return false;
+      }
+      if( !hasAbsolutePath() ){
+        return false;
+      }
+
+      return true;
+    }
+
     /*! \brief Check if this file have been readen
      *
      * A file is readen when:
