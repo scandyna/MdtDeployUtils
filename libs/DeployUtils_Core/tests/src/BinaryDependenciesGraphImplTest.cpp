@@ -692,8 +692,6 @@ void buildExampleGraphLinux(Graph & graph)
 
 TEST_CASE("getResult")
 {
-  /// \todo add libs to not redistribute + not found libs
-
   const Platform platform(OperatingSystem::Linux, ExecutableFileFormat::Elf, Compiler::Gcc, ProcessorISA::X86_64);
   Graph graph(platform);
   buildExampleGraphLinux(graph);
@@ -711,7 +709,6 @@ TEST_CASE("getResult")
   {
     const BinaryDependenciesResult result = graph.getResult(app);
 
-    /// \todo check states
     REQUIRE( result.target().absoluteFilePath() == QLatin1String("/tmp/app") );
     REQUIRE( result.libraryCount() == 3 );
     REQUIRE( resultContainsLibraryAbsolutePath(result, "/tmp/libA.so") );
