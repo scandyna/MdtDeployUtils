@@ -757,3 +757,85 @@ TEST_CASE("getResultList")
   REQUIRE( libAResult->containsLibraryName( QLatin1String("libQt5Core.so") ) );
   REQUIRE( libAResult->containsLibraryName( QLatin1String("libB.so") ) );
 }
+
+/*
+ * This test aims to take libararies
+ * that has not to be distributed
+ * and not found libraries
+ *
+ * app
+ *  |->Mylib
+ *  |   |->Qt5Core
+ *  |   |->libc
+ *  |   |->NotFound
+ *  |->Qt5Core
+ *      |->libc
+ *
+ * libc must not be redistributed
+ *
+ *           (app)
+ *           /   \
+ *        (Mylib) |
+ *        /  \  \ |
+ * (NotFound) \ (Qt5Core)
+ *             \  /
+ *            (libc)
+ */
+TEST_CASE("LibrariesStateTest")
+{
+  const Platform platform(OperatingSystem::Linux, ExecutableFileFormat::Elf, Compiler::Gcc, ProcessorISA::X86_64);
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
+  SharedLibraryFinderBDTest shLibFinder(isExistingSharedLibraryOp);
+  TestExecutableFileReader reader;
+
+  shLibFinder.setSearchPathList({"/tmp"});
+  shLibFinder.setLibraryNamesToNotRedistribute({"libc.so"});
+
+  isExistingSharedLibraryOp->setExistingSharedLibraries({
+    "/tmp/libMylib.so",
+    "/tmp/libc.so",
+    "/tmp/libQt5Core.so"
+  });
+
+  reader.setNeededSharedLibraries("app", {"libMylib.so","libQt5Core.so"});
+  reader.setNeededSharedLibraries("libMylib.so", {"libc.so","libQt5Core.so","libNotFound.so"});
+  reader.setNeededSharedLibraries("libQt5Core.so", {"libc.so"});
+
+  QFileInfo app( QString::fromLatin1("/tmp/app") );
+
+  Graph graph(platform);
+  graph.addTarget(app);
+  graph.findTransitiveDependencies(shLibFinder, reader);
+
+  /*
+   * app
+   *  |->Mylib
+   *  |->libc
+   *  |->Qt5Core
+   *  |->NotFound
+   */
+  const BinaryDependenciesResult result = graph.getResult(app);
+
+  REQUIRE( result.libraryCount() == 4 );
+
+  const auto myLib = result.findLibraryByName( QLatin1String("libMylib.so") );
+  REQUIRE( myLib.has_value() );
+  REQUIRE( myLib->isFound() );
+  REQUIRE( !myLib->shouldNotBeRedistributed() );
+
+  const auto libc = result.findLibraryByName( QLatin1String("libc.so") );
+  REQUIRE( libc.has_value() );
+  REQUIRE( libc->shouldNotBeRedistributed() );
+
+  const auto qt5Core = result.findLibraryByName( QLatin1String("libQt5Core.so") );
+  REQUIRE( qt5Core.has_value() );
+  REQUIRE( qt5Core->isFound() );
+  REQUIRE( !qt5Core->shouldNotBeRedistributed() );
+
+  const auto notFound = result.findLibraryByName( QLatin1String("libNotFound.so") );
+  REQUIRE( notFound.has_value() );
+  REQUIRE( !notFound->isFound() );
+  REQUIRE( !notFound->shouldNotBeRedistributed() );
+
+  REQUIRE( !result.isSolved() );
+}
