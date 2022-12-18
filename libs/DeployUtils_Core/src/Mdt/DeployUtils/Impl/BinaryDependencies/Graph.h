@@ -19,11 +19,14 @@
 #include "Mdt/DeployUtils/BinaryDependenciesResult.h"
 #include "Mdt/DeployUtils/BinaryDependenciesResultList.h"
 #include "Mdt/DeployUtils/FileInfoUtils.h"
+#include "mdt_deployutilscore_export.h"
+#include <QObject>
 #include <QString>
 #include <QFileInfo>
 #include <QFileInfoList>
 #include <boost/graph/breadth_first_search.hpp>
 #include <optional>
+#include <vector>
 #include <algorithm>
 #include <cassert>
 
@@ -189,11 +192,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
    *   queue.enqueue(directDependencies);
    * }
    * \endcode
-   *
-   * \todo Maybe inherit QObject for tr() + signal/slot
    */
-  class Graph
+  class MDT_DEPLOYUTILSCORE_EXPORT Graph : public QObject
   {
+    Q_OBJECT
+
    public:
 
     /*! \brief Constructor
@@ -271,7 +274,12 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
     {
       assert( fileInfoIsAbsolutePath(file) );
 
-      addFile( GraphFile::fromQFileInfo(file) );
+      if( containsFileName( file.fileName() ) ){
+        return;
+      }
+
+      const VertexDescriptor v = boost::add_vertex( GraphFile::fromQFileInfo(file), mGraph );
+      mTargetVertexList.push_back(v);
     }
 
     /*! \brief Add given list of targets to this graph
@@ -366,9 +374,9 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
     {
       assert( fileCount() > 0 );
 
-      const VertexDescriptor u = boost::vertex(0, mGraph);
-
-      boost::breadth_first_search( mGraph, u, boost::visitor(visitor) );
+      for(const VertexDescriptor u : mTargetVertexList){
+        boost::breadth_first_search( mGraph, u, boost::visitor(visitor) );
+      }
     }
 
     /*! \brief Find transitive dependencies for files in this graph
@@ -384,6 +392,8 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
 
       DiscoveredDependenciesList discoveredDependenciesList( mPlatform.operatingSystem() );
       GraphBuildVisitorWorker visitorWorker(shLibFinder, mPlatform, discoveredDependenciesList);
+      connect(&visitorWorker, &GraphBuildVisitorWorker::verboseMessage, this, &Graph::verboseMessage);
+      connect(&visitorWorker, &GraphBuildVisitorWorker::debugMessage, this, &Graph::debugMessage);
       GraphBuildVisitor<Reader> visitor(visitorWorker, reader, mGraph);
 
       do{
@@ -441,9 +451,15 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
       return mGraph;
     }
 
+   signals:
+
+    void verboseMessage(const QString & message) const;
+    void debugMessage(const QString & message) const;
+
    private:
 
     GraphAL mGraph;
+    std::vector<VertexDescriptor> mTargetVertexList;
     Platform mPlatform;
   };
 

@@ -15,6 +15,7 @@
 #include "Mdt/DeployUtils/Impl/BinaryDependencies/Graph.h"
 #include "Mdt/DeployUtils/RPath.h"
 #include "Mdt/DeployUtils/Platform.h"
+#include "Mdt/DeployUtils/BinaryDependenciesResult.h"
 #include <QHash>
 #include <QLatin1String>
 #include <QString>
@@ -26,8 +27,6 @@
 #include <algorithm>
 #include <memory>
 #include <cassert>
-
-#include "Mdt/DeployUtils/BinaryDependenciesResult.h"
 
 #include <QDebug>
 
@@ -156,6 +155,35 @@ TEST_CASE("TestExecutableFileReader_NeededSharedLibraries")
   }
 }
 
+
+TEST_CASE("addFile")
+{
+  const Platform platform(OperatingSystem::Linux, ExecutableFileFormat::Elf, Compiler::Gcc, ProcessorISA::X86_64);
+  Graph graph(platform);
+
+  const auto app = GraphFile::fromQFileInfo( QString::fromLatin1("/tmp/app") );
+
+  SECTION("app")
+  {
+    const VertexDescriptor v = graph.addFile(app);
+
+    REQUIRE( graph.fileCount() == 1 );
+    REQUIRE( graph.internalGraph()[v].fileName() == QLatin1String("app") );
+  }
+
+  SECTION("adding same file twice only adds it once")
+  {
+    VertexDescriptor v = graph.addFile(app);
+
+    REQUIRE( graph.fileCount() == 1 );
+    REQUIRE( graph.internalGraph()[v].fileName() == QLatin1String("app") );
+
+    v = graph.addFile(app);
+
+    REQUIRE( graph.fileCount() == 1 );
+    REQUIRE( graph.internalGraph()[v].fileName() == QLatin1String("app") );
+  }
+}
 
 TEST_CASE("addTarget")
 {
@@ -563,7 +591,7 @@ TEST_CASE("findTransitiveDependencies")
   /*
    * Doc example as above but start with 2 targets
    */
-  SECTION("starting with multiple targets")
+  SECTION("starting with multiple targets (app,Qt5Core)")
   {
     reader.setNeededSharedLibraries("app", {"libA.so","libQt5Core.so"});
     reader.setNeededSharedLibraries("libA.so", {"libB.so","libQt5Core.so"});
@@ -578,6 +606,53 @@ TEST_CASE("findTransitiveDependencies")
     REQUIRE( graph.containsFileName( QLatin1String("libA.so") ) );
     REQUIRE( graph.containsFileName( QLatin1String("libB.so") ) );
     REQUIRE( graph.containsFileName( QLatin1String("libQt5Core.so") ) );
+  }
+
+  /*
+   * Same as above, but pass Qt5Core then app
+   * Bug from 2022/12/18
+   */
+  SECTION("starting with multiple targets (Qt5Core,app)")
+  {
+    reader.setNeededSharedLibraries("app", {"libA.so","libQt5Core.so"});
+    reader.setNeededSharedLibraries("libA.so", {"libB.so","libQt5Core.so"});
+
+    QFileInfo qt5Core( QString::fromLatin1("/tmp/libQt5Core.so") );
+    graph.addTargets({qt5Core,app});
+
+    graph.findTransitiveDependencies(shLibFinder, reader);
+
+    REQUIRE( graph.fileCount() == 4 );
+    REQUIRE( graph.containsFileName( QLatin1String("app") ) );
+    REQUIRE( graph.containsFileName( QLatin1String("libA.so") ) );
+    REQUIRE( graph.containsFileName( QLatin1String("libB.so") ) );
+    REQUIRE( graph.containsFileName( QLatin1String("libQt5Core.so") ) );
+  }
+
+  /*
+   *    (app1)     (app2)
+   *     /  \        |
+   * (LibA) (libB) (libC)
+   */
+  SECTION("2 apps with different dependencies")
+  {
+    QFileInfo app1( QString::fromLatin1("/tmp/app1") );
+    reader.setNeededSharedLibraries("app1", {"libA.so","libB.so"});
+
+    QFileInfo app2( QString::fromLatin1("/tmp/app2") );
+    reader.setNeededSharedLibraries("app2", {"libC.so"});
+
+    graph.addTarget(app1);
+    graph.addTarget(app2);
+
+    graph.findTransitiveDependencies(shLibFinder, reader);
+
+    REQUIRE( graph.fileCount() == 5 );
+    REQUIRE( graph.containsFileName( QLatin1String("app1") ) );
+    REQUIRE( graph.containsFileName( QLatin1String("app2") ) );
+    REQUIRE( graph.containsFileName( QLatin1String("libA.so") ) );
+    REQUIRE( graph.containsFileName( QLatin1String("libB.so") ) );
+    REQUIRE( graph.containsFileName( QLatin1String("libC.so") ) );
   }
 }
 
