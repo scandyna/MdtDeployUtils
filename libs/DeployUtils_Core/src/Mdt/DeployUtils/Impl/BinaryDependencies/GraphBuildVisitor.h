@@ -19,10 +19,10 @@
 #include <QObject>
 #include <QFileInfo>
 #include <QString>
+#include <QStringList>
 #include <boost/graph/breadth_first_search.hpp>
 #include <cassert>
 
-#include <QDebug>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependencies{
 
@@ -59,21 +59,18 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
       assert( file.hasAbsolutePath() );
       assert( !reader.isOpen() );
 
-      qDebug() << "read: " << file.fileName() << " (path: " << file.fileInfo().absoluteFilePath() << ")";
-      /// emitProcessingCurrentFileMessage(currentFile);
+      emitProcessingCurrentFileMessage(file);
 
       reader.openFile(file.fileInfo(), mPlatform);
       if( !reader.isExecutableOrSharedLibrary() ){
-        /**
         const QString message = tr("'%1' is not a executable or a shared library")
-                                .arg( file.absoluteFilePath() );
+                                .arg( file.fileInfo().absoluteFilePath() );
         throw FindDependencyError(message);
-        */
       }
 
-      mDiscoveredDependenciesList.setDirectDependenciesFileNames( file, reader.getNeededSharedLibraries() );
-
-      /// emitDirectDependenciesMessage(currentFile);
+      const QStringList directDependenciesFileNames = reader.getNeededSharedLibraries();
+      mDiscoveredDependenciesList.setDirectDependenciesFileNames(file, directDependenciesFileNames);
+      emitDirectDependenciesMessage(file, directDependenciesFileNames);
 
       file.setRPath( reader.getRunPath() );
 
@@ -93,9 +90,10 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
         file.markAsNotToBeRedistributed();
         return;
       }
-      qDebug() << " find full path of " << libraryName << " using rpath from " << parentFile.fileName();
 
-      const auto dependentFile = BinaryDependenciesFile::fromQFileInfo( parentFile.fileInfo() );
+      /// \todo build function to make BinaryDependenciesFile from GraphFile
+      auto dependentFile = BinaryDependenciesFile::fromQFileInfo( parentFile.fileInfo() );
+      dependentFile.setRPath( parentFile.rPath() );
       try{
         const QFileInfo path = mSharedLibraryFinder.findLibraryAbsolutePath( libraryName, dependentFile );
         assert( fileInfoIsAbsolutePath(path) );
@@ -105,7 +103,31 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
       }
     }
 
+   signals:
+
+    void verboseMessage(const QString & message) const;
+    void debugMessage(const QString & message) const;
+
    private:
+
+    void emitProcessingCurrentFileMessage(const GraphFile & file) const noexcept
+    {
+      const QString message = tr("searching dependencies for %1").arg( file.fileName() );
+      emit verboseMessage(message);
+    }
+
+    void emitDirectDependenciesMessage(const GraphFile & file, const QStringList & directDependenciesFileNames) const noexcept
+    {
+      if( directDependenciesFileNames.isEmpty() ){
+        return;
+      }
+      const QString startMessage = tr("%1 has following direct dependencies:").arg( file.fileName() );
+      emit verboseMessage(startMessage);
+      for( const QString & dependency : directDependenciesFileNames ){
+        const QString msg = tr(" %1").arg(dependency);
+        emit verboseMessage(msg);
+      }
+    }
 
     AbstractSharedLibraryFinder & mSharedLibraryFinder;
     const Platform & mPlatform;
@@ -153,16 +175,11 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
     {
       GraphFile & file = mGraph[u];
 
-  //     qDebug() << "discover vertex " << file.fileName();
-
-      if( file.isReaden() ){
-        return;
+      if( file.hasToBeRead() ){
+        assert( file.hasAbsolutePath() );
+        mWorker.readFile(file, mReader);
+        file.markAsReaden();
       }
-      assert( file.hasAbsolutePath() );
-
-      mWorker.readFile(file, mReader);
-
-      file.markAsReaden();
     }
 
     /*! \brief Find the full path for the file associated with given target vertex
@@ -184,7 +201,6 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
       const VertexDescriptor parent = boost::source(e, g);
       const VertexDescriptor current = boost::target(e, g);
 
-  //     const GraphFile & parentFile = mGraph[parent];
       GraphFile & currentFile = mGraph[current];
 
       if( currentFile.hasBeenSearched() ){
