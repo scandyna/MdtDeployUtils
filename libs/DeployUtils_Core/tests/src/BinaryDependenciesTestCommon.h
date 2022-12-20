@@ -90,6 +90,11 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
   {
   }
 
+  void setLibraryNamesToNotRedistribute(const std::vector<std::string> & names)
+  {
+    mLibraryNamesToNotRedistribute = qStringListFromUtf8Strings(names);
+  }
+
   void setSearchPathList(const std::vector<std::string> & pathList)
   {
     for(const std::string & path : pathList){
@@ -104,9 +109,9 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
     return OperatingSystem::Linux;
   }
 
-  bool doLibraryShouldBeDistributed(const QString & /*libraryName*/) const noexcept override
+  bool doLibraryShouldBeDistributed(const QString & libraryName) const noexcept override
   {
-    return true;
+    return !mLibraryNamesToNotRedistribute.contains(libraryName);
   }
 
   QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & /*dependentFile*/) const override
@@ -145,4 +150,5 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
   }
 
   PathList mSearchPathList;
+  QStringList mLibraryNamesToNotRedistribute;
 };
