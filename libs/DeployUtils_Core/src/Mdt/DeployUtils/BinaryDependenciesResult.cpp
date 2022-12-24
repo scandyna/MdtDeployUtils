@@ -107,4 +107,22 @@ BinaryDependenciesResult::findIteratorByLibraryName(const QString & name) const 
   return std::find_if(mEntries.cbegin(), mEntries.cend(), pred);
 }
 
+
+std::vector<BinaryDependenciesResultLibrary>
+getLibrariesToRedistribute(const BinaryDependenciesResult & result) noexcept
+{
+  assert( result.isSolved() );
+
+  std::vector<BinaryDependenciesResultLibrary> libraries;
+
+  for(const BinaryDependenciesResultLibrary & library : result){
+    if( !library.shouldNotBeRedistributed() ){
+      assert( library.isFound() );
+      libraries.push_back(library);
+    }
+  }
+
+  return libraries;
+}
+
 }} // namespace Mdt{ namespace DeployUtils{

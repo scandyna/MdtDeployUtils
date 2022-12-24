@@ -8,12 +8,15 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "BinaryDependenciesTestCommon.h"
 
 // #include "TestFileUtils.h"
 
 #include "Mdt/DeployUtils/BinaryDependenciesResultList.h"
 #include <QLatin1String>
 #include <QFileInfo>
+#include <algorithm>
+#include <cassert>
 
 using namespace Mdt::DeployUtils;
 
@@ -129,5 +132,111 @@ TEST_CASE("getLibrariesAbsoluteFilePathList")
   SECTION("2 results having KERNEL32.DLL and kernel32.dll")
   {
     REQUIRE( false );
+  }
+}
+
+TEST_CASE("getLibrariesToRedistribute")
+{
+  const auto os = OperatingSystem::Linux;
+  BinaryDependenciesResultList resultList(os);
+  std::vector<BinaryDependenciesResultLibrary> libraries;
+
+  SECTION("1 result")
+  {
+    QFileInfo app( QLatin1String("/opt/app") );
+    BinaryDependenciesResult result(app, os);
+
+    SECTION("1 library to redistribute")
+    {
+      QFileInfo libA( QLatin1String("/opt/libA.so") );
+      result.addFoundLibrary(libA);
+      resultList.addResult(result);
+
+      libraries = getLibrariesToRedistribute(resultList);
+
+      REQUIRE( libraries.size() == 1 );
+      REQUIRE( libraryListContainsPath(libraries, "/opt/libA.so") );
+    }
+
+    SECTION("1 library to redistribute and 1 not")
+    {
+      QFileInfo MyLib( QLatin1String("/opt/MyLib.so") );
+      result.addFoundLibrary(MyLib);
+      QFileInfo libc( QLatin1String("/lib/libc.so") );
+      result.addLibraryToNotRedistribute(libc);
+      resultList.addResult(result);
+
+      libraries = getLibrariesToRedistribute(resultList);
+
+      REQUIRE( libraries.size() == 1 );
+      REQUIRE( libraryListContainsPath(libraries, "/opt/MyLib.so") );
+    }
+  }
+
+  SECTION("2 results")
+  {
+    QFileInfo app1( QLatin1String("/opt/app1") );
+    BinaryDependenciesResult result1(app1, os);
+    QFileInfo app2( QLatin1String("/opt/app2") );
+    BinaryDependenciesResult result2(app2, os);
+
+    SECTION("both results have different libraries do redistribute")
+    {
+      QFileInfo MyLib1( QLatin1String("/opt/MyLib1.so") );
+      result1.addFoundLibrary(MyLib1);
+      resultList.addResult(result1);
+      QFileInfo MyLib2( QLatin1String("/opt/MyLib2.so") );
+      result2.addFoundLibrary(MyLib2);
+      resultList.addResult(result2);
+      REQUIRE( resultList.resultCount() == 2 );
+
+      libraries = getLibrariesToRedistribute(resultList);
+
+      REQUIRE( libraries.size() == 2 );
+      REQUIRE( libraryListContainsPath(libraries, "/opt/MyLib1.so") );
+      REQUIRE( libraryListContainsPath(libraries, "/opt/MyLib2.so") );
+    }
+
+    SECTION("both results have the same library to redistribute")
+    {
+      QFileInfo MyLib( QLatin1String("/opt/MyLib.so") );
+      result1.addFoundLibrary(MyLib);
+      resultList.addResult(result1);
+      result2.addFoundLibrary(MyLib);
+      resultList.addResult(result2);
+      REQUIRE( resultList.resultCount() == 2 );
+
+      libraries = getLibrariesToRedistribute(resultList);
+
+      REQUIRE( libraries.size() == 1 );
+      REQUIRE( libraryListContainsPath(libraries, "/opt/MyLib.so") );
+    }
+  }
+}
+
+TEST_CASE("getLibrariesToRedistribute_WindowsSpecifics")
+{
+  const auto os = OperatingSystem::Windows;
+  BinaryDependenciesResultList resultList(os);
+  std::vector<BinaryDependenciesResultLibrary> libraries;
+
+  QFileInfo app1( QLatin1String("/opt/app1") );
+  BinaryDependenciesResult result1(app1, os);
+  QFileInfo app2( QLatin1String("/opt/app2") );
+  BinaryDependenciesResult result2(app2, os);
+
+  SECTION("both result have the same library to redistribute with different cases")
+  {
+    QFileInfo LIBA( QLatin1String("/opt/LIBA.DLL") );
+    result1.addFoundLibrary(LIBA);
+    QFileInfo liba( QLatin1String("/opt/liba.dll") );
+    result2.addFoundLibrary(liba);
+    resultList.addResult(result1);
+    resultList.addResult(result2);
+    REQUIRE( resultList.resultCount() == 2 );
+
+    libraries = getLibrariesToRedistribute(resultList);
+
+    REQUIRE( libraries.size() == 1 );
   }
 }

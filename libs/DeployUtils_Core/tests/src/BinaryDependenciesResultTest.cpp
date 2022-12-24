@@ -8,6 +8,7 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "BinaryDependenciesTestCommon.h"
 #include "TestFileUtils.h"
 #include "Mdt/DeployUtils/BinaryDependenciesResult.h"
 #include "Mdt/DeployUtils/BinaryDependenciesFile.h"
@@ -213,4 +214,43 @@ TEST_CASE("findLibraryByName")
 
   const auto notFound = result.findLibraryByName( QLatin1String("notFound.so") );
   REQUIRE( !notFound.has_value() );
+}
+
+TEST_CASE("getLibrariesToRedistribute")
+{
+  const auto os = OperatingSystem::Linux;
+  QFileInfo app( QLatin1String("/opt/project/app") );
+  BinaryDependenciesResult result(app, os);
+  std::vector<BinaryDependenciesResultLibrary> libraries;
+
+  SECTION("result contains 1 library to redistribute")
+  {
+    QFileInfo libA( QLatin1String("/opt/libA.so") );
+    result.addFoundLibrary(libA);
+
+    libraries = getLibrariesToRedistribute(result);
+
+    REQUIRE( libraries.size() == 1 );
+    REQUIRE( libraryListContainsPath(libraries, "/opt/libA.so") );
+  }
+
+  SECTION("result contains 1 library to not redistribute")
+  {
+    QFileInfo libA( QLatin1String("libA.so") );
+    result.addLibraryToNotRedistribute(libA);
+
+    libraries = getLibrariesToRedistribute(result);
+
+    REQUIRE( libraries.size() == 0 );
+  }
+
+  SECTION("result contains 1 library to not redistribute with its absolute path")
+  {
+    QFileInfo libc( QLatin1String("/lib/libc.so") );
+    result.addLibraryToNotRedistribute(libc);
+
+    libraries = getLibrariesToRedistribute(result);
+
+    REQUIRE( libraries.size() == 0 );
+  }
 }

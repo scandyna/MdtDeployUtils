@@ -10,6 +10,7 @@
 #define MDT_DEPLOY_UTILS_BINARY_DEPENDENCIES_RESULT_LIST_H
 
 #include "BinaryDependenciesResult.h"
+#include "BinaryDependenciesResultLibrary.h"
 #include "OperatingSystem.h"
 #include "mdt_deployutilscore_export.h"
 #include <QString>
@@ -56,6 +57,13 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Move assign \a other to this list of results
      */
     BinaryDependenciesResultList & operator=(BinaryDependenciesResultList && other) noexcept = default;
+
+    /*! \brief Get the OS of this result
+     */
+    OperatingSystem operatingSystem() const noexcept
+    {
+      return mOs;
+    }
 
     /*! \brief Add a result to this list
      */
@@ -126,6 +134,16 @@ namespace Mdt{ namespace DeployUtils{
   [[deprecated]]
   MDT_DEPLOYUTILSCORE_EXPORT
   QStringList getLibrariesAbsoluteFilePathList(const BinaryDependenciesResultList & resultList);
+
+  /*! \internal Get a list of libraries to redistribute from given list of results
+   *
+   * Each library is unique in the returned list.
+   *
+   * \pre each result in \a resultList must be solved
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  std::vector<BinaryDependenciesResultLibrary>
+  getLibrariesToRedistribute(const BinaryDependenciesResultList & resultList) noexcept;
 
 }} // namespace Mdt{ namespace DeployUtils{
 

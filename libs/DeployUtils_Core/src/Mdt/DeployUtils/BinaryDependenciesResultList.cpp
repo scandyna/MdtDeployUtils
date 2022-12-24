@@ -52,7 +52,7 @@ QStringList getLibrariesAbsoluteFilePathList(const BinaryDependenciesResultList 
   for(const BinaryDependenciesResult & result : resultList){
     assert( result.isSolved() );
     for(const BinaryDependenciesResultLibrary & library : result){
-      assert( library.isFound() );
+      assert( library.isFound() || library.shouldNotBeRedistributed() );
       const QString path = library.absoluteFilePath();
       if( !pathList.contains(path) ){
         pathList.append(path);
@@ -61,6 +61,32 @@ QStringList getLibrariesAbsoluteFilePathList(const BinaryDependenciesResultList 
   }
 
   return pathList;
+}
+
+void addLibrariesToList(const std::vector<BinaryDependenciesResultLibrary> & libraries, std::vector<BinaryDependenciesResultLibrary> & list) noexcept
+{
+  list.insert( list.end(), libraries.cbegin(), libraries.cend() );
+}
+
+std::vector<BinaryDependenciesResultLibrary>
+getLibrariesToRedistribute(const BinaryDependenciesResultList & resultList) noexcept
+{
+  std::vector<BinaryDependenciesResultLibrary> libraries;
+
+  for(const BinaryDependenciesResult & result : resultList){
+    assert( result.isSolved() );
+    addLibrariesToList(getLibrariesToRedistribute(result), libraries);
+  }
+
+  const OperatingSystem os = resultList.operatingSystem();
+  const auto pred = [os](const BinaryDependenciesResultLibrary & a, const BinaryDependenciesResultLibrary & b){
+    return Impl::BinaryDependencies::fileNamesAreEqual(a.libraryName(), b.libraryName(), os);
+  };
+
+  const auto newEndIt = std::unique(libraries.begin(), libraries.end(), pred);
+  libraries.erase( newEndIt, libraries.end() );
+
+  return libraries;
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

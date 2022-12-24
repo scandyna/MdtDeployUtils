@@ -23,6 +23,7 @@
 #include "TestFileUtils.h"
 #include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
 #include "Mdt/DeployUtils/BinaryDependenciesFile.h"
+#include "Mdt/DeployUtils/BinaryDependenciesResultLibrary.h"
 
 #include "Mdt/DeployUtils/BinaryDependenciesResult.h"
 
@@ -35,6 +36,7 @@
 #include <QDir>
 #include <QMap>
 #include <vector>
+#include <algorithm>
 #include <string>
 #include <memory>
 
@@ -58,6 +60,21 @@ bool containsQt5Core(const BinaryDependenciesResult & result)
 bool containsTestSharedLibrary(const BinaryDependenciesResult & result)
 {
   return containsLibrary( result, QLatin1String("testSharedLibrary") );
+}
+
+inline
+bool libraryListContainsPath(const std::vector<BinaryDependenciesResultLibrary> & libraryList, const std::string & path)
+{
+  const QString qPath = QString::fromStdString(path);
+
+  const auto pred = [&qPath](const BinaryDependenciesResultLibrary & library){
+    assert( library.isFound() );
+    return library.absoluteFilePath() == qPath;
+  };
+
+  const auto it = std::find_if(libraryList.cbegin(), libraryList.cend(), pred);
+
+  return it != libraryList.cend();
 }
 
 
