@@ -138,6 +138,7 @@ TEST_CASE("getLibrariesAbsoluteFilePathList")
 TEST_CASE("getLibrariesToRedistribute")
 {
   const auto os = OperatingSystem::Linux;
+  RPath rpath;
   BinaryDependenciesResultList resultList(os);
   std::vector<BinaryDependenciesResultLibrary> libraries;
 
@@ -149,7 +150,7 @@ TEST_CASE("getLibrariesToRedistribute")
     SECTION("1 library to redistribute")
     {
       QFileInfo libA( QLatin1String("/opt/libA.so") );
-      result.addFoundLibrary(libA);
+      result.addFoundLibrary(libA, rpath);
       resultList.addResult(result);
 
       libraries = getLibrariesToRedistribute(resultList);
@@ -161,7 +162,7 @@ TEST_CASE("getLibrariesToRedistribute")
     SECTION("1 library to redistribute and 1 not")
     {
       QFileInfo MyLib( QLatin1String("/opt/MyLib.so") );
-      result.addFoundLibrary(MyLib);
+      result.addFoundLibrary(MyLib, rpath);
       QFileInfo libc( QLatin1String("/lib/libc.so") );
       result.addLibraryToNotRedistribute(libc);
       resultList.addResult(result);
@@ -183,10 +184,10 @@ TEST_CASE("getLibrariesToRedistribute")
     SECTION("both results have different libraries do redistribute")
     {
       QFileInfo MyLib1( QLatin1String("/opt/MyLib1.so") );
-      result1.addFoundLibrary(MyLib1);
+      result1.addFoundLibrary(MyLib1, rpath);
       resultList.addResult(result1);
       QFileInfo MyLib2( QLatin1String("/opt/MyLib2.so") );
-      result2.addFoundLibrary(MyLib2);
+      result2.addFoundLibrary(MyLib2, rpath);
       resultList.addResult(result2);
       REQUIRE( resultList.resultCount() == 2 );
 
@@ -200,9 +201,9 @@ TEST_CASE("getLibrariesToRedistribute")
     SECTION("both results have the same library to redistribute")
     {
       QFileInfo MyLib( QLatin1String("/opt/MyLib.so") );
-      result1.addFoundLibrary(MyLib);
+      result1.addFoundLibrary(MyLib, rpath);
       resultList.addResult(result1);
-      result2.addFoundLibrary(MyLib);
+      result2.addFoundLibrary(MyLib, rpath);
       resultList.addResult(result2);
       REQUIRE( resultList.resultCount() == 2 );
 
@@ -217,6 +218,7 @@ TEST_CASE("getLibrariesToRedistribute")
 TEST_CASE("getLibrariesToRedistribute_WindowsSpecifics")
 {
   const auto os = OperatingSystem::Windows;
+  RPath rpath;
   BinaryDependenciesResultList resultList(os);
   std::vector<BinaryDependenciesResultLibrary> libraries;
 
@@ -228,9 +230,9 @@ TEST_CASE("getLibrariesToRedistribute_WindowsSpecifics")
   SECTION("both result have the same library to redistribute with different cases")
   {
     QFileInfo LIBA( QLatin1String("/opt/LIBA.DLL") );
-    result1.addFoundLibrary(LIBA);
+    result1.addFoundLibrary(LIBA, rpath);
     QFileInfo liba( QLatin1String("/opt/liba.dll") );
-    result2.addFoundLibrary(liba);
+    result2.addFoundLibrary(liba, rpath);
     resultList.addResult(result1);
     resultList.addResult(result2);
     REQUIRE( resultList.resultCount() == 2 );

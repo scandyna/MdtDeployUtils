@@ -9,6 +9,7 @@
 #ifndef MDT_DEPLOY_UTILS_BINARY_DEPENDENCIES_RESULT_LIBRARY_H
 #define MDT_DEPLOY_UTILS_BINARY_DEPENDENCIES_RESULT_LIBRARY_H
 
+#include "RPath.h"
 #include "mdt_deployutilscore_export.h"
 #include <QFileInfo>
 #include <QString>
@@ -64,6 +65,20 @@ namespace Mdt{ namespace DeployUtils{
      */
     QString absoluteFilePath() const noexcept;
 
+    /*! \brief Get the rpath of this library
+     */
+    const RPath & rPath() const noexcept
+    {
+      return mRPath;
+    }
+
+    /*! \brief Construct a result library from a found library
+     *
+     * \pre \a file must be a absolute path
+     */
+    static
+    BinaryDependenciesResultLibrary fromFoundLibrary(const QFileInfo & file, const RPath & rpath) noexcept;
+
     /*! \brief Construct a result library from \a fileInfo
      *
      * \pre \a fileInfo must have at least a file name
@@ -80,13 +95,20 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
-    BinaryDependenciesResultLibrary(const QFileInfo & fileInfo)
+    BinaryDependenciesResultLibrary(const QFileInfo & fileInfo) noexcept
      : mFile(fileInfo)
     {
     }
 
-    QFileInfo mFile;
+    BinaryDependenciesResultLibrary(const QFileInfo & fileInfo, const RPath & rpath) noexcept
+     : mFile(fileInfo),
+       mRPath(rpath)
+    {
+    }
+
     bool mNotRedistrbute = false;
+    QFileInfo mFile;
+    RPath mRPath;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{

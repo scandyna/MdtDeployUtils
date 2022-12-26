@@ -89,15 +89,19 @@ TEST_CASE("addLibrary")
   QFileInfo file( QLatin1String("/opt/project/app") );
   BinaryDependenciesResult result(file, os);
 
+  RPath rpath;
+  rpath.appendPath( QLatin1String("/opt") );
+
   SECTION("add a library with its full path (found)")
   {
     QFileInfo libA( QLatin1String("/opt/libA.so") );
 
-    result.addFoundLibrary(libA);
+    result.addFoundLibrary(libA, rpath);
 
     REQUIRE( result.libraryCount() == 1 );
     REQUIRE( result.libraryAt(0).isFound() );
     REQUIRE( !result.libraryAt(0).shouldNotBeRedistributed() );
+    REQUIRE( result.libraryAt(0).rPath() == rpath );
     REQUIRE( result.containsLibraryName( QLatin1String("libA.so") ) );
     REQUIRE( result.isSolved() );
   }
@@ -132,8 +136,8 @@ TEST_CASE("addLibrary")
   {
     QFileInfo libA( QLatin1String("/opt/libA.so") );
 
-    result.addFoundLibrary(libA);
-    result.addFoundLibrary(libA);
+    result.addFoundLibrary(libA, rpath);
+    result.addFoundLibrary(libA, rpath);
 
     REQUIRE( result.libraryCount() == 1 );
   }
@@ -163,6 +167,7 @@ TEST_CASE("addLibrary_WindowsSpecifics")
 {
   const auto os = OperatingSystem::Windows;
   QFileInfo file( QLatin1String("/opt/project/app") );
+  RPath rpath;
   BinaryDependenciesResult result(file, os);
 
   SECTION("add LIBA.DLL.DLL and libA.dll as found")
@@ -170,8 +175,8 @@ TEST_CASE("addLibrary_WindowsSpecifics")
     QFileInfo LIBA( QLatin1String("/opt/LIBA.DLL") );
     QFileInfo libA( QLatin1String("/opt/libA.dll") );
 
-    result.addFoundLibrary(LIBA);
-    result.addFoundLibrary(libA);
+    result.addFoundLibrary(LIBA, rpath);
+    result.addFoundLibrary(libA, rpath);
 
     REQUIRE( result.libraryCount() == 1 );
   }
@@ -203,10 +208,11 @@ TEST_CASE("findLibraryByName")
 {
   const auto os = OperatingSystem::Linux;
   QFileInfo file( QLatin1String("/opt/project/app") );
+  RPath rpath;
   BinaryDependenciesResult result(file, os);
 
   QFileInfo libAfi( QLatin1String("/opt/libA.so") );
-  result.addFoundLibrary(libAfi);
+  result.addFoundLibrary(libAfi, rpath);
 
   const auto libA = result.findLibraryByName( QLatin1String("libA.so") );
   REQUIRE( libA.has_value() );
@@ -220,13 +226,14 @@ TEST_CASE("getLibrariesToRedistribute")
 {
   const auto os = OperatingSystem::Linux;
   QFileInfo app( QLatin1String("/opt/project/app") );
+  RPath rpath;
   BinaryDependenciesResult result(app, os);
   std::vector<BinaryDependenciesResultLibrary> libraries;
 
   SECTION("result contains 1 library to redistribute")
   {
     QFileInfo libA( QLatin1String("/opt/libA.so") );
-    result.addFoundLibrary(libA);
+    result.addFoundLibrary(libA, rpath);
 
     libraries = getLibrariesToRedistribute(result);
 

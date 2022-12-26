@@ -46,11 +46,11 @@ BinaryDependenciesResult::findLibraryByName(const QString & name) const noexcept
   return *it;
 }
 
-void BinaryDependenciesResult::addFoundLibrary(const QFileInfo & library) noexcept
+void BinaryDependenciesResult::addFoundLibrary(const QFileInfo & library, const RPath & rpath) noexcept
 {
   assert( fileInfoIsAbsolutePath(library) );
 
-  const auto resultLibrary = BinaryDependenciesResultLibrary::fromQFileInfo(library);
+  const auto resultLibrary = BinaryDependenciesResultLibrary::fromFoundLibrary(library, rpath);
 
   if( !containsLibraryName( resultLibrary.libraryName() ) ){
     mEntries.push_back(resultLibrary);

@@ -12,6 +12,7 @@
 #include "BinaryDependenciesResultLibrary.h"
 #include "BinaryDependenciesFile.h"
 #include "OperatingSystem.h"
+#include "RPath.h"
 #include "mdt_deployutilscore_export.h"
 #include <QFileInfo>
 #include <QString>
@@ -171,7 +172,7 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \pre \a library must be a absolute path
      */
-    void addFoundLibrary(const QFileInfo & library) noexcept;
+    void addFoundLibrary(const QFileInfo & library, const RPath & rpath) noexcept;
 
     /*! \brief Add given not found library to this result
      *

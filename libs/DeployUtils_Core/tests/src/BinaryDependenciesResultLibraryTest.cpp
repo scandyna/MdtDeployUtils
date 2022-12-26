@@ -40,6 +40,21 @@ TEST_CASE("fromQFileInfo")
   }
 }
 
+TEST_CASE("fromFoundLibrary")
+{
+  RPath rpath;
+  rpath.appendPath( QLatin1String("/opt/lib") );
+
+  const QFileInfo fi( QLatin1String("/opt/lib/arbitraryFile.so") );
+
+  const auto resultLibrary = BinaryDependenciesResultLibrary::fromFoundLibrary(fi, rpath);
+
+  REQUIRE( resultLibrary.libraryName() == QLatin1String("arbitraryFile.so") );
+  REQUIRE( resultLibrary.isFound() );
+  REQUIRE( resultLibrary.absoluteFilePath() == makeAbsolutePath("/opt/lib/arbitraryFile.so") );
+  REQUIRE( resultLibrary.rPath() == rpath );
+}
+
 TEST_CASE("libraryToNotRedistrbuteFromFileInfo")
 {
   const QFileInfo fi( QLatin1String("arbitraryFile.so") );

@@ -37,6 +37,13 @@ QString BinaryDependenciesResultLibrary::absoluteFilePath() const noexcept
   return mFile.absoluteFilePath();
 }
 
+BinaryDependenciesResultLibrary BinaryDependenciesResultLibrary::fromFoundLibrary(const QFileInfo & file, const RPath & rpath) noexcept
+{
+  assert( fileInfoIsAbsolutePath(file) );
+
+  return BinaryDependenciesResultLibrary(file, rpath);
+}
+
 BinaryDependenciesResultLibrary BinaryDependenciesResultLibrary::fromQFileInfo(const QFileInfo & fileInfo) noexcept
 {
   assert( fileInfoHasFileName(fileInfo) );

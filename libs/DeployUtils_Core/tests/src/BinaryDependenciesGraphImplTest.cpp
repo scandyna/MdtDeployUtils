@@ -84,9 +84,13 @@ class TestExecutableFileReader
     mFileMap[QString::fromStdString(dependendFileName)].neededSharedLibraries = qStringListFromUtf8Strings(librariesFileNames);
   }
 
-  void setRunPath(const std::string & fileName, const RPath & paths)
+  void setRunPath(const std::string & fileName, const std::vector<std::string> & paths)
   {
-    mFileMap[QString::fromStdString(fileName)].runPath = paths;
+    RPath rpath;
+    for(const auto & path : paths){
+      rpath.appendPath( QString::fromStdString(path) );
+    }
+    mFileMap[QString::fromStdString(fileName)].runPath = rpath;
   }
 
  private:
@@ -152,6 +156,46 @@ TEST_CASE("TestExecutableFileReader_NeededSharedLibraries")
     REQUIRE( dependencies.size() == 2 );
     REQUIRE( dependencies.contains( QLatin1String("libQt5Core.so") ) );
     REQUIRE( dependencies.contains( QLatin1String("libB.so") ) );
+  }
+}
+
+TEST_CASE("TestExecutableFileReader_RPath")
+{
+  TestExecutableFileReader reader;
+  RPath rpath;
+
+  /*
+   * app: {/tmp}
+   * libA: {/opt}
+   */
+  reader.setRunPath("app", {"/tmp"});
+  reader.setRunPath("libA.so", {"/opt"});
+
+  SECTION("read libB that does not have any rpath")
+  {
+    reader.openFile( QString::fromLatin1("/tmp/libB.so") );
+
+    REQUIRE( reader.getRunPath().isEmpty() );
+  }
+
+  SECTION("read app rpath: {/tmp}")
+  {
+    reader.openFile( QString::fromLatin1("/tmp/app") );
+
+    rpath = reader.getRunPath();
+
+    REQUIRE( rpath.entriesCount() == 1 );
+    REQUIRE( rpath.entryAt(0).path() == QLatin1String("/tmp") );
+  }
+
+  SECTION("read libA rpath: {/opt}")
+  {
+    reader.openFile( QString::fromLatin1("/tmp/libA.so") );
+
+    rpath = reader.getRunPath();
+
+    REQUIRE( rpath.entriesCount() == 1 );
+    REQUIRE( rpath.entryAt(0).path() == QLatin1String("/opt") );
   }
 }
 
@@ -656,6 +700,49 @@ TEST_CASE("findTransitiveDependencies")
   }
 }
 
+TEST_CASE("findTransitiveDependencies_RPath")
+{
+  const Platform platform(OperatingSystem::Linux, ExecutableFileFormat::Elf, Compiler::Gcc, ProcessorISA::X86_64);
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
+  SharedLibraryFinderBDTest shLibFinder(isExistingSharedLibraryOp);
+  TestExecutableFileReader reader;
+  Graph graph(platform);
+
+  isExistingSharedLibraryOp->setExistingSharedLibraries({
+    "/tmp/libA.so"
+  });
+
+  QFileInfo app( QString::fromLatin1("/tmp/app") );
+
+  /*
+   * app
+   *  |->libA
+   */
+  SECTION("app - depends on libA")
+  {
+    reader.setNeededSharedLibraries("app", {"libA.so"});
+    reader.setRunPath("app", {"/tmp"});
+    graph.addTarget(app);
+
+    graph.findTransitiveDependencies(shLibFinder, reader);
+
+    REQUIRE( graph.fileCount() == 2 );
+    REQUIRE( graph.containsFileName( QLatin1String("app") ) );
+    REQUIRE( graph.containsFileName( QLatin1String("libA.so") ) );
+
+    const auto appVertex = graph.findVertex( QLatin1String("app") );
+    REQUIRE( appVertex.has_value() );
+    const GraphFile & appFile = graph.internalGraph()[*appVertex];
+    REQUIRE( appFile.rPath().entriesCount() == 1 );
+    REQUIRE( appFile.rPath().entryAt(0).path() == QLatin1String("/tmp") );
+
+    const auto libAVertex = graph.findVertex( QLatin1String("libA.so") );
+    REQUIRE( libAVertex.has_value() );
+    const GraphFile & libAFile = graph.internalGraph()[*libAVertex];
+    REQUIRE( libAFile.hasAbsolutePath() );
+    REQUIRE( libAFile.fileInfo().absoluteFilePath() == QLatin1String("/tmp/libA.so") );
+  }
+}
 
 bool resultContainsLibraryAbsolutePath(const BinaryDependenciesResult & result, const std::string & path)
 {
@@ -688,6 +775,24 @@ TEST_CASE("addGraphFileToResult")
 
     REQUIRE( result.libraryCount() == 1 );
     REQUIRE( resultContainsLibraryAbsolutePath(result, "/tmp/libA.so") );
+  }
+
+  SECTION("add a found library with rpath")
+  {
+    RPath rpath;
+    rpath.appendPath( QLatin1String("/tmp") );
+
+    auto file = GraphFile::fromQFileInfo( QString::fromLatin1("/tmp/libA.so") );
+    file.setRPath(rpath);
+    REQUIRE( !file.isNotFound() );
+
+    addGraphFileToResult(file, result, os);
+
+    REQUIRE( result.libraryCount() == 1 );
+    const auto library = result.findLibraryByName( QLatin1String("libA.so") );
+    REQUIRE( library.has_value() );
+    REQUIRE( library->absoluteFilePath() == QLatin1String("/tmp/libA.so") );
+    REQUIRE( library->rPath() == rpath );
   }
 
   SECTION("adding the target does nothing")
@@ -764,6 +869,7 @@ void buildExampleGraphLinux(Graph & graph)
   graph.addTarget(app);
   graph.findTransitiveDependencies(shLibFinder, reader);
 }
+
 
 TEST_CASE("getResult")
 {

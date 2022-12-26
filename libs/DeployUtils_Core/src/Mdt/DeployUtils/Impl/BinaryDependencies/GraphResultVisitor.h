@@ -52,7 +52,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
       return;
     }
 
-    result.addFoundLibrary( file.fileInfo() );
+    result.addFoundLibrary( file.fileInfo(), file.rPath() );
   }
 
   /*! \internal
