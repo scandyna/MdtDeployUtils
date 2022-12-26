@@ -39,6 +39,7 @@
 #include <algorithm>
 #include <string>
 #include <memory>
+#include <cassert>
 
 using namespace Mdt::DeployUtils;
 
@@ -131,11 +132,19 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
     return !mLibraryNamesToNotRedistribute.contains(libraryName);
   }
 
-  QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & /*dependentFile*/) const override
+  QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) const override
   {
     assert( !libraryName.trimmed().isEmpty() );
 
-    for(const QString & directory : mSearchPathList){
+    QStringList pathList;
+
+    for( const auto & rpathEntry : dependentFile.rPath() ){
+      assert( !rpathEntry.isRelative() );
+      pathList.append( rpathEntry.path() );
+    }
+    pathList.append( mSearchPathList.toStringList() );
+
+    for(const QString & directory : pathList){
       QFileInfo libraryFile(directory, libraryName);
       if( isExistingValidSharedLibrary(libraryFile) ){
         return libraryFile;
