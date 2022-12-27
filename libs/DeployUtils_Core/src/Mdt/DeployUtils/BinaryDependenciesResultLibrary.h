@@ -44,6 +44,13 @@ namespace Mdt{ namespace DeployUtils{
      */
     bool isFound() const noexcept;
 
+    /*! \brief Check if this library is missing
+     *
+     * A missing library should be redistrbuted,
+     * but has not been found.
+     */
+    bool isMissing() const noexcept;
+
     /*! \brief Check if this library should not be redistributed
      */
     bool shouldNotBeRedistributed() const noexcept;

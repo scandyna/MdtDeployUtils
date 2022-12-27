@@ -25,6 +25,15 @@ bool BinaryDependenciesResultLibrary::isFound() const noexcept
   return true;
 }
 
+bool BinaryDependenciesResultLibrary::isMissing() const noexcept
+{
+  if( shouldNotBeRedistributed() ){
+    return false;
+  }
+
+  return !isFound();
+}
+
 bool BinaryDependenciesResultLibrary::shouldNotBeRedistributed() const noexcept
 {
   return mNotRedistrbute;
