@@ -252,6 +252,16 @@ namespace Mdt{ namespace DeployUtils{
   std::vector<BinaryDependenciesResultLibrary>
   getLibrariesToRedistribute(const BinaryDependenciesResult & result) noexcept;
 
+  /*! \internal Get a list of file path of libraries to redistribute from given result
+   *
+   * Each library is unique in the returned list.
+   *
+   * \pre \a result must be solved
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QStringList
+  getLibrariesToRedistributeFilePathList(const BinaryDependenciesResult & result) noexcept;
+
 }} // namespace Mdt{ namespace DeployUtils{
 
 #endif // #ifndef MDT_DEPLOY_UTILS_BINARY_DEPENDENCIES_RESULT_H

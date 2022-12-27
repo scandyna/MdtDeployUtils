@@ -261,3 +261,43 @@ TEST_CASE("getLibrariesToRedistribute")
     REQUIRE( libraries.size() == 0 );
   }
 }
+
+TEST_CASE("getLibrariesToRedistributeFilePathList")
+{
+  const auto os = OperatingSystem::Linux;
+  QFileInfo app( QLatin1String("/opt/project/app") );
+  RPath rpath;
+  BinaryDependenciesResult result(app, os);
+  QStringList libraries;
+
+  SECTION("result contains 1 library to redistribute")
+  {
+    QFileInfo libA( QLatin1String("/opt/libA.so") );
+    result.addFoundLibrary(libA, rpath);
+
+    libraries = getLibrariesToRedistributeFilePathList(result);
+
+    REQUIRE( libraries.size() == 1 );
+    REQUIRE( libraries.contains( QLatin1String("/opt/libA.so") ) );
+  }
+
+  SECTION("result contains 1 library to not redistribute")
+  {
+    QFileInfo libA( QLatin1String("libA.so") );
+    result.addLibraryToNotRedistribute(libA);
+
+    libraries = getLibrariesToRedistributeFilePathList(result);
+
+    REQUIRE( libraries.size() == 0 );
+  }
+
+  SECTION("result contains 1 library to not redistribute with its absolute path")
+  {
+    QFileInfo libc( QLatin1String("/lib/libc.so") );
+    result.addLibraryToNotRedistribute(libc);
+
+    libraries = getLibrariesToRedistributeFilePathList(result);
+
+    REQUIRE( libraries.size() == 0 );
+  }
+}

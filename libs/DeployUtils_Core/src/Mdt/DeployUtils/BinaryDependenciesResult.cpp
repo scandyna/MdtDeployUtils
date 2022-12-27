@@ -116,9 +116,26 @@ getLibrariesToRedistribute(const BinaryDependenciesResult & result) noexcept
   std::vector<BinaryDependenciesResultLibrary> libraries;
 
   for(const BinaryDependenciesResultLibrary & library : result){
-    if( !library.shouldNotBeRedistributed() ){
+    if( library.isToRedistribute() ){
       assert( library.isFound() );
       libraries.push_back(library);
+    }
+  }
+
+  return libraries;
+}
+
+QStringList
+getLibrariesToRedistributeFilePathList(const BinaryDependenciesResult & result) noexcept
+{
+  assert( result.isSolved() );
+
+  QStringList libraries;
+
+  for(const BinaryDependenciesResultLibrary & library : result){
+    if( library.isToRedistribute() ){
+      assert( library.isFound() );
+      libraries.push_back( library.absoluteFilePath() );
     }
   }
 
