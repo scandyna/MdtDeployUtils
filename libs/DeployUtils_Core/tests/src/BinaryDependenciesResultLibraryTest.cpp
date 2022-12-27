@@ -27,6 +27,7 @@ TEST_CASE("fromQFileInfo")
     REQUIRE( resultLibrary.libraryName() == QLatin1String("arbitraryFile.so") );
     REQUIRE( resultLibrary.isFound() );
     REQUIRE( resultLibrary.absoluteFilePath() == makeAbsolutePath("/opt/lib/arbitraryFile.so") );
+    REQUIRE( resultLibrary.isToRedistribute() );
   }
 
   SECTION("file with library name only (is NOT found)")
@@ -37,6 +38,7 @@ TEST_CASE("fromQFileInfo")
 
     REQUIRE( resultLibrary.libraryName() == QLatin1String("arbitraryFile.so") );
     REQUIRE( !resultLibrary.isFound() );
+    REQUIRE( !resultLibrary.isToRedistribute() );
   }
 }
 
@@ -53,6 +55,7 @@ TEST_CASE("fromFoundLibrary")
   REQUIRE( resultLibrary.isFound() );
   REQUIRE( resultLibrary.absoluteFilePath() == makeAbsolutePath("/opt/lib/arbitraryFile.so") );
   REQUIRE( resultLibrary.rPath() == rpath );
+  REQUIRE( resultLibrary.isToRedistribute() );
 }
 
 TEST_CASE("libraryToNotRedistrbuteFromFileInfo")
@@ -63,4 +66,5 @@ TEST_CASE("libraryToNotRedistrbuteFromFileInfo")
 
   REQUIRE( resultLibrary.libraryName() == QLatin1String("arbitraryFile.so") );
   REQUIRE( resultLibrary.shouldNotBeRedistributed() );
+  REQUIRE( !resultLibrary.isToRedistribute() );
 }

@@ -48,6 +48,10 @@ namespace Mdt{ namespace DeployUtils{
      */
     bool shouldNotBeRedistributed() const noexcept;
 
+    /*! \brief Check if this library is to redistribute
+     */
+    bool isToRedistribute() const noexcept;
+
     /*! \brief Get the library name
      *
      * Returns the file name of the library,

@@ -30,6 +30,18 @@ bool BinaryDependenciesResultLibrary::shouldNotBeRedistributed() const noexcept
   return mNotRedistrbute;
 }
 
+bool BinaryDependenciesResultLibrary::isToRedistribute() const noexcept
+{
+  if( shouldNotBeRedistributed() ){
+    return false;
+  }
+  if( !isFound() ){
+    return false;
+  }
+
+  return true;
+}
+
 QString BinaryDependenciesResultLibrary::absoluteFilePath() const noexcept
 {
   assert( isFound() );
