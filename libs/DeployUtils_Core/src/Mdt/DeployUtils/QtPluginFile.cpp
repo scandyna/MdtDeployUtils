@@ -48,4 +48,15 @@ QStringList getQtPluginsFilePathList(const QtPluginFileList & qtPlugins) noexcep
   return pathList;
 }
 
+QFileInfoList toFileInfoList(const QtPluginFileList & qtPlugins) noexcept
+{
+  QFileInfoList files;
+
+  for(const auto & plugin : qtPlugins){
+    files.append( plugin.fileInfo() );
+  }
+
+  return files;
+}
+
 }} // namespace Mdt{ namespace DeployUtils{

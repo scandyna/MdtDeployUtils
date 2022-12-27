@@ -25,6 +25,7 @@
 #include <QString>
 #include <QStringList>
 #include <QFileInfo>
+#include <QFileInfoList>
 #include <QDir>
 #include <vector>
 #include <cassert>
@@ -140,6 +141,11 @@ namespace Mdt{ namespace DeployUtils{
    */
   MDT_DEPLOYUTILSCORE_EXPORT
   QStringList getQtPluginsFilePathList(const QtPluginFileList & qtPlugins) noexcept;
+
+  /*! \brief Get a list of file info from given plugins
+   */
+  MDT_DEPLOYUTILSCORE_EXPORT
+  QFileInfoList toFileInfoList(const QtPluginFileList & qtPlugins) noexcept;
 
 }} // namespace Mdt{ namespace DeployUtils{
 

@@ -129,3 +129,30 @@ TEST_CASE("getQtPluginsFilePathList")
     REQUIRE( filePathList.contains( makeAbsolutePath("/tmp/plugins/platforms/libqxcb.so") ) );
   }
 }
+
+TEST_CASE("toFileInfoList")
+{
+  QtPluginFileList qtPlugins;
+  QFileInfoList files;
+
+  SECTION("empty list")
+  {
+    REQUIRE( toFileInfoList(qtPlugins).isEmpty() );
+  }
+
+  SECTION("imageformats/libqjpeg.so,imageformats/libqsvg.so,platforms/libqxcb.so")
+  {
+    qtPlugins = makeQtPluginsForFilePaths(
+      {"/tmp/plugins/imageformats/libqjpeg.so",
+      "/tmp/plugins/imageformats/libqsvg.so",
+      "/tmp/plugins/platforms/libqxcb.so"}
+    );
+
+    files = toFileInfoList(qtPlugins);
+
+    REQUIRE( files.size() == 3 );
+    REQUIRE( files.contains( makeAbsolutePath("/tmp/plugins/imageformats/libqjpeg.so") ) );
+    REQUIRE( files.contains( makeAbsolutePath("/tmp/plugins/imageformats/libqsvg.so") ) );
+    REQUIRE( files.contains( makeAbsolutePath("/tmp/plugins/platforms/libqxcb.so") ) );
+  }
+}
