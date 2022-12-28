@@ -24,12 +24,14 @@ using namespace Mdt::DeployUtils;
 TEST_CASE("addResult")
 {
   const auto os = OperatingSystem::Linux;
+  RPath rpath;
   BinaryDependenciesResultList resultList(os);
 
   SECTION("empty list")
   {
     REQUIRE( resultList.resultCount() == 0 );
     REQUIRE( resultList.isEmpty() );
+    REQUIRE( !resultList.isSolved() );
   }
 
   SECTION("add 1 empty result")
@@ -41,6 +43,55 @@ TEST_CASE("addResult")
 
     REQUIRE( resultList.resultCount() == 1 );
     REQUIRE( !resultList.isEmpty() );
+    REQUIRE( resultList.isSolved() );
+  }
+
+  SECTION("add 1 solved result")
+  {
+    QFileInfo app( QLatin1String("/opt/app") );
+    BinaryDependenciesResult result(app, os);
+
+    QFileInfo libA( QLatin1String("/opt/libA.so") );
+    result.addFoundLibrary(libA, rpath);
+
+    resultList.addResult(result);
+
+    REQUIRE( resultList.resultCount() == 1 );
+    REQUIRE( resultList.isSolved() );
+  }
+
+  SECTION("2 results")
+  {
+    QFileInfo app1( QLatin1String("/opt/app1") );
+    BinaryDependenciesResult solvedResult(app1, os);
+    QFileInfo MyLib( QLatin1String("/opt/libMyLib.so") );
+    solvedResult.addFoundLibrary(MyLib, rpath);
+
+    QFileInfo app2( QLatin1String("/opt/app2") );
+    BinaryDependenciesResult unsolvedResult(app2, os);
+    QFileInfo NotFoundLib( QLatin1String("libNotFoundLib.so") );
+    unsolvedResult.addNotFoundLibrary(NotFoundLib);
+
+    REQUIRE( solvedResult.isSolved() );
+    REQUIRE( !unsolvedResult.isSolved() );
+
+    SECTION("add a solved result then a unsolved one")
+    {
+      resultList.addResult(solvedResult);
+      resultList.addResult(unsolvedResult);
+
+      REQUIRE( resultList.resultCount() == 2 );
+      REQUIRE( !resultList.isSolved() );
+    }
+
+    SECTION("add a unsolved result then a solved one")
+    {
+      resultList.addResult(unsolvedResult);
+      resultList.addResult(solvedResult);
+
+      REQUIRE( resultList.resultCount() == 2 );
+      REQUIRE( !resultList.isSolved() );
+    }
   }
 }
 
