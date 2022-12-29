@@ -31,7 +31,7 @@ TEST_CASE("addResult")
   {
     REQUIRE( resultList.resultCount() == 0 );
     REQUIRE( resultList.isEmpty() );
-    REQUIRE( !resultList.isSolved() );
+    REQUIRE( resultList.isSolved() );
   }
 
   SECTION("add 1 empty result")

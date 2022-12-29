@@ -24,7 +24,7 @@ void BinaryDependenciesResultList::addResult(const BinaryDependenciesResult & re
   assert( result.operatingSystem() == mOs );
 
   if( !result.isSolved() ){
-    mIsSolvedState = false;
+    mIsSolved = false;
   }
   mList.push_back(result);
 }

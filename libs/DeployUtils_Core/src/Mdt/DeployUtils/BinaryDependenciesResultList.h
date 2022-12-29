@@ -78,14 +78,11 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Check if all results in this list are solved
      *
-     * \note A empty list is not solved
+     * \note A empty list is also considered as solved
      */
     bool isSolved() const noexcept
     {
-      if( isEmpty() ){
-        return false;
-      }
-      return mIsSolvedState;
+      return mIsSolved;
     }
 
     /*! \brief Get count of results in this list
@@ -133,7 +130,7 @@ namespace Mdt{ namespace DeployUtils{
    private:
 
     OperatingSystem mOs;
-    bool mIsSolvedState = true;
+    bool mIsSolved = true;
     ResultContainer mList;
   };
 
