@@ -66,10 +66,31 @@ QStringList getLibrariesAbsoluteFilePathList(const BinaryDependenciesResultList 
   return pathList;
 }
 
-void addLibrariesToList(const std::vector<BinaryDependenciesResultLibrary> & libraries, std::vector<BinaryDependenciesResultLibrary> & list) noexcept
+bool listContainsLibrary(const std::vector<BinaryDependenciesResultLibrary> & list,
+                         const BinaryDependenciesResultLibrary & library,
+                         OperatingSystem os) noexcept
 {
-  list.insert( list.end(), libraries.cbegin(), libraries.cend() );
+  const QString name = library.libraryName();
+  const auto pred = [&name, os](const BinaryDependenciesResultLibrary & library){
+    return Impl::BinaryDependencies::fileNamesAreEqual(library.libraryName(), name, os);
+  };
+
+  const auto it = std::find_if(list.cbegin(), list.cend(), pred);
+
+  return it != list.cend();
 }
+
+void addLibrariesToList(const std::vector<BinaryDependenciesResultLibrary> & libraries,
+                        std::vector<BinaryDependenciesResultLibrary> & list,
+                        OperatingSystem os) noexcept
+{
+  for(const BinaryDependenciesResultLibrary & library : libraries){
+    if( !listContainsLibrary(list, library, os) ){
+      list.push_back(library);
+    }
+  }
+}
+
 
 std::vector<BinaryDependenciesResultLibrary>
 getLibrariesToRedistribute(const BinaryDependenciesResultList & resultList) noexcept
@@ -78,16 +99,8 @@ getLibrariesToRedistribute(const BinaryDependenciesResultList & resultList) noex
 
   for(const BinaryDependenciesResult & result : resultList){
     assert( result.isSolved() );
-    addLibrariesToList(getLibrariesToRedistribute(result), libraries);
+    addLibrariesToList( getLibrariesToRedistribute(result), libraries, resultList.operatingSystem() );
   }
-
-  const OperatingSystem os = resultList.operatingSystem();
-  const auto pred = [os](const BinaryDependenciesResultLibrary & a, const BinaryDependenciesResultLibrary & b){
-    return Impl::BinaryDependencies::fileNamesAreEqual(a.libraryName(), b.libraryName(), os);
-  };
-
-  const auto newEndIt = std::unique(libraries.begin(), libraries.end(), pred);
-  libraries.erase( newEndIt, libraries.end() );
 
   return libraries;
 }

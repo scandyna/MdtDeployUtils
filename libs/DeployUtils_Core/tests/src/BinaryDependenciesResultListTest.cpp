@@ -113,7 +113,7 @@ TEST_CASE("findResultForTargetName")
 }
 
 
-TEST_CASE("getLibrariesAbsoluteFilePathList")
+TEST_CASE("getLibrariesAbsoluteFilePathList", "[.]")
 {
   const auto os = OperatingSystem::Linux;
   BinaryDependenciesResultList resultList(os);
@@ -232,7 +232,7 @@ TEST_CASE("getLibrariesToRedistribute")
     QFileInfo app2( QLatin1String("/opt/app2") );
     BinaryDependenciesResult result2(app2, os);
 
-    SECTION("both results have different libraries do redistribute")
+    SECTION("both results have different libraries to redistribute")
     {
       QFileInfo MyLib1( QLatin1String("/opt/MyLib1.so") );
       result1.addFoundLibrary(MyLib1, rpath);
@@ -262,6 +262,31 @@ TEST_CASE("getLibrariesToRedistribute")
 
       REQUIRE( libraries.size() == 1 );
       REQUIRE( libraryListContainsPath(libraries, "/opt/MyLib.so") );
+    }
+
+    /*
+     * First implementation used std::unique() without any sorting
+     * So previous test passed, but the list contained lots of dupplicates
+     */
+    SECTION("both results have the same library to redistribute (not conscutive)")
+    {
+      QFileInfo MyLibA( QLatin1String("/opt/MyLibA.so") );
+      QFileInfo MyLibB( QLatin1String("/opt/MyLibB.so") );
+
+      result1.addFoundLibrary(MyLibA, rpath);
+      result1.addFoundLibrary(MyLibB, rpath);
+      resultList.addResult(result1);
+
+      result2.addFoundLibrary(MyLibA, rpath);
+      resultList.addResult(result2);
+
+      REQUIRE( resultList.resultCount() == 2 );
+
+      libraries = getLibrariesToRedistribute(resultList);
+
+      REQUIRE( libraries.size() == 2 );
+      REQUIRE( libraryListContainsPath(libraries, "/opt/MyLibA.so") );
+      REQUIRE( libraryListContainsPath(libraries, "/opt/MyLibB.so") );
     }
   }
 }
