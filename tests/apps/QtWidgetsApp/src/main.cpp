@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - Tools to help deploy C/C++ application binaries and their dependencies.
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU General Public License as published by
@@ -20,11 +20,18 @@
  ****************************************************************************/
 #include <QApplication>
 #include <QTimer>
+#include <QDebug>
 
 int main(int argc, char **argv)
 {
+  qDebug() << "Qt Widgets app starting ...";
+
   QApplication app(argc, argv);
   QTimer::singleShot(500, &app, &QApplication::quit);
 
-  return app.exec();
+  const int retval = app.exec();
+
+  qDebug() << "Qt Widgets app, exec finished";
+
+  return retval;
 }
