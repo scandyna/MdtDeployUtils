@@ -116,9 +116,8 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
   assert( libraries.isSolved() );
 
   makeDirectoryStructure(destination);
+
   installExecutable( request, destination.structure() );
-  ///copySharedLibrariesTargetDependsOn(request);
-  ///deployRequiredQtPlugins(destination, request);
 
   installSharedLibraries(libraries);
 
@@ -286,17 +285,6 @@ void DeployApplication::installSharedLibraries(const BinaryDependenciesResultLis
   assert( mShLibDeployer.get() != nullptr );
 
   mShLibDeployer->installSharedLibraries(libraries, mLibDirDestinationPath);
-}
-
-void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicationRequest & request)
-{
-  assert( !mLibDirDestinationPath.isEmpty() );
-  assert( mShLibDeployer.get() != nullptr );
-
-  // Take the given target, it has the RPath informations
-  mShLibDeployer->copySharedLibrariesTargetDependsOn(request.targetFilePath, mLibDirDestinationPath);
-
-  /// mSharedLibrariesTargetDependsOn = mShLibDeployer->foundDependencies();
 }
 
 

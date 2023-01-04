@@ -116,9 +116,6 @@ namespace Mdt{ namespace DeployUtils{
 
     void installSharedLibraries(const BinaryDependenciesResultList & libraries);
 
-    [[deprecated]]
-    void copySharedLibrariesTargetDependsOn(const DeployApplicationRequest & request);
-
     QtPluginFileList getRequiredQtPlugins(const BinaryDependenciesResult & libraries, const DeployApplicationRequest & request);
     BinaryDependenciesResultList findSharedLibrariesQtPluginsDependsOn(const QtPluginFileList & plugins);
 
