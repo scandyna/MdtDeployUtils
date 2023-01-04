@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -99,10 +99,31 @@ void DeployApplication::execute(const DeployApplicationRequest & request)
   );
 
   setupShLibDeployer(request);
+
+  const BinaryDependenciesResult librariesExecutableDependsOn = mShLibDeployer->findSharedLibrariesTargetDependsOn(request.targetFilePath);
+  if( !librariesExecutableDependsOn.isSolved() ){
+    throwApplicationDependenciesNotSolvedError(librariesExecutableDependsOn);
+  }
+
+  const QtPluginFileList qtPlugins = getRequiredQtPlugins(librariesExecutableDependsOn, request);
+
+  BinaryDependenciesResultList libraries = findSharedLibrariesQtPluginsDependsOn(qtPlugins);
+  if( !libraries.isSolved() ){
+    throwQtPluginsDependenciesNotSolvedError(libraries);
+  }
+
+  libraries.addResult(librariesExecutableDependsOn);
+  assert( libraries.isSolved() );
+
   makeDirectoryStructure(destination);
   installExecutable( request, destination.structure() );
-  copySharedLibrariesTargetDependsOn(request);
-  deployRequiredQtPlugins(destination, request);
+  ///copySharedLibrariesTargetDependsOn(request);
+  ///deployRequiredQtPlugins(destination, request);
+
+  installSharedLibraries(libraries);
+
+  installQtPlugins(qtPlugins, destination, request.shLibOverwriteBehavior);
+
   writeQtConfFile(destination);
 }
 
@@ -131,6 +152,46 @@ DeployApplication::destinationDirectoryStructureFromRuntimeAndLibraryDestination
   structure.setQtPluginsRootDirectory( DestinationDirectoryStructure::qtPluginsRootDirectoryFromOs(os) );
 
   return structure;
+}
+
+QString DeployApplication::getMissingLibrariesListText(const BinaryDependenciesResult & result) const noexcept
+{
+  assert( !result.isSolved() );
+
+  QStringList missingLibraries;
+  for(const BinaryDependenciesResultLibrary & library : result){
+    if( library.isMissing() ){
+      missingLibraries.append( library.libraryName() );
+    }
+  }
+
+  return missingLibraries.join( QLatin1String(", ") );
+}
+
+void DeployApplication::throwQtPluginsDependenciesNotSolvedError(const BinaryDependenciesResultList & resultList) const
+{
+  assert( !resultList.isSolved() );
+
+  QString notSolvedPluginsMsg;
+  for(const BinaryDependenciesResult & result : resultList){
+    if( !result.isSolved() ){
+      notSolvedPluginsMsg += tr("\n %1: missing libraries: %2")
+                             .arg( result.target().fileName(), getMissingLibrariesListText(result) );
+    }
+  }
+
+  const QString msg = tr("some Qt plugins depends on shared libraries that have not been found: %1")
+                      .arg(notSolvedPluginsMsg);
+  throw FindDependencyError(msg);
+}
+
+void DeployApplication::throwApplicationDependenciesNotSolvedError(const BinaryDependenciesResult & result) const
+{
+  assert( !result.isSolved() );
+
+  const QString msg = tr("some shared libraries %1 depends on could not be found. missing libraries: %2")
+                      .arg( result.target().fileName(), getMissingLibrariesListText(result) );
+  throw FindDependencyError(msg);
 }
 
 void DeployApplication::setupShLibDeployer(const DeployApplicationRequest & request)
@@ -219,6 +280,14 @@ void DeployApplication::setRPathToInstalledExecutable(const QString & executable
   writer.close();
 }
 
+void DeployApplication::installSharedLibraries(const BinaryDependenciesResultList & libraries)
+{
+  assert( !mLibDirDestinationPath.isEmpty() );
+  assert( mShLibDeployer.get() != nullptr );
+
+  mShLibDeployer->installSharedLibraries(libraries, mLibDirDestinationPath);
+}
+
 void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicationRequest & request)
 {
   assert( !mLibDirDestinationPath.isEmpty() );
@@ -227,11 +296,13 @@ void DeployApplication::copySharedLibrariesTargetDependsOn(const DeployApplicati
   // Take the given target, it has the RPath informations
   mShLibDeployer->copySharedLibrariesTargetDependsOn(request.targetFilePath, mLibDirDestinationPath);
 
-  mSharedLibrariesTargetDependsOn = mShLibDeployer->foundDependencies();
+  /// mSharedLibrariesTargetDependsOn = mShLibDeployer->foundDependencies();
 }
 
-void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & destination, const DeployApplicationRequest & request)
+
+QtPluginFileList DeployApplication::getRequiredQtPlugins(const BinaryDependenciesResult & libraries, const DeployApplicationRequest & request)
 {
+  assert( libraries.isSolved() );
   assert( mShLibDeployer.get() != nullptr );
   assert( mQtDistributionDirectory.get() != nullptr );
 
@@ -239,21 +310,40 @@ void DeployApplication::deployRequiredQtPlugins(const DestinationDirectory & des
     tr("get Qt libraries out from dependencies (will be used to know which Qt plugins are required)")
   );
 
-  const QtSharedLibraryFileList qtSharedLibraries = QtSharedLibrary::getQtSharedLibraries(mSharedLibrariesTargetDependsOn);
+  const QStringList librariesToRedistribute = getLibrariesToRedistributeFilePathList(libraries);
+
+  const QtSharedLibraryFileList qtSharedLibraries = QtSharedLibrary::getQtSharedLibraries(librariesToRedistribute);
 
   QtModulePlugins qtModulePlugins;
   connect(&qtModulePlugins, &QtModulePlugins::statusMessage, this, &DeployApplication::statusMessage);
   connect(&qtModulePlugins, &QtModulePlugins::verboseMessage, this, &DeployApplication::verboseMessage);
   connect(&qtModulePlugins, &QtModulePlugins::debugMessage, this, &DeployApplication::debugMessage);
 
-  const QtPluginFileList plugins = qtModulePlugins.getQtPluginsQtLibrariesDependsOn(qtSharedLibraries, request.qtPluginsSet, *mQtDistributionDirectory);
+  return qtModulePlugins.getQtPluginsQtLibrariesDependsOn(qtSharedLibraries, request.qtPluginsSet, *mQtDistributionDirectory);
+}
 
-  QtPlugins qtPlugins(mShLibDeployer);
-  connect(&qtPlugins, &QtPlugins::statusMessage, this, &DeployApplication::statusMessage);
-  connect(&qtPlugins, &QtPlugins::verboseMessage, this, &DeployApplication::verboseMessage);
-  connect(&qtPlugins, &QtPlugins::debugMessage, this, &DeployApplication::debugMessage);
+BinaryDependenciesResultList DeployApplication::findSharedLibrariesQtPluginsDependsOn(const QtPluginFileList & plugins)
+{
+  assert( mShLibDeployer.get() != nullptr );
+  assert( !mPlatform.isNull() );
 
-  qtPlugins.deployQtPlugins(plugins, destination, request.shLibOverwriteBehavior);
+  if( plugins.empty() ){
+    return BinaryDependenciesResultList( mPlatform.operatingSystem() );
+  }
+
+  return mShLibDeployer->findSharedLibrariesTargetsDependsOn( toFileInfoList(plugins) );
+}
+
+void DeployApplication::installQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
+{
+  assert( mShLibDeployer.get() != nullptr );
+
+  QtPlugins qtPluginsInstaller(mShLibDeployer);
+  connect(&qtPluginsInstaller, &QtPlugins::statusMessage, this, &DeployApplication::statusMessage);
+  connect(&qtPluginsInstaller, &QtPlugins::verboseMessage, this, &DeployApplication::verboseMessage);
+  connect(&qtPluginsInstaller, &QtPlugins::debugMessage, this, &DeployApplication::debugMessage);
+
+  qtPluginsInstaller.installQtPlugins(plugins, destination, overwriteBehavior);
 }
 
 void DeployApplication::writeQtConfFile(const DestinationDirectory & destination)

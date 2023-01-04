@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -23,13 +23,16 @@
 
 #include "DeployApplicationRequest.h"
 #include "DeployApplicationError.h"
+#include "FindDependencyError.h"
 #include "OperatingSystem.h"
 #include "Platform.h"
 #include "DestinationDirectory.h"
 #include "OverwriteBehavior.h"
 #include "SharedLibrariesDeployer.h"
 #include "QtDistributionDirectory.h"
+#include "QtPluginFile.h"
 #include "DestinationDirectoryStructure.h"
+#include "BinaryDependenciesResult.h"
 #include "mdt_deployutilscore_export.h"
 #include <QObject>
 #include <QString>
@@ -101,13 +104,26 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
+    QString getMissingLibrariesListText(const BinaryDependenciesResult & result) const noexcept;
+    void throwApplicationDependenciesNotSolvedError(const BinaryDependenciesResult & result) const;
+    void throwQtPluginsDependenciesNotSolvedError(const BinaryDependenciesResultList & resultList) const;
+
     void setupShLibDeployer(const DeployApplicationRequest & request);
     void makeDirectoryStructure(const DestinationDirectory & destination);
     void installExecutable(const DeployApplicationRequest & request, const DestinationDirectoryStructure & destinationStructure);
     void setRPathToInstalledExecutable(const QString & executableFilePath, const DeployApplicationRequest & request,
                                        const DestinationDirectoryStructure & destinationStructure);
+
+    void installSharedLibraries(const BinaryDependenciesResultList & libraries);
+
+    [[deprecated]]
     void copySharedLibrariesTargetDependsOn(const DeployApplicationRequest & request);
-    void deployRequiredQtPlugins(const DestinationDirectory & destination, const DeployApplicationRequest & request);
+
+    QtPluginFileList getRequiredQtPlugins(const BinaryDependenciesResult & libraries, const DeployApplicationRequest & request);
+    BinaryDependenciesResultList findSharedLibrariesQtPluginsDependsOn(const QtPluginFileList & plugins);
+
+    void installQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
+
     void writeQtConfFile(const DestinationDirectory & destination);
 
     static
@@ -118,7 +134,6 @@ namespace Mdt{ namespace DeployUtils{
     QString mLibDirDestinationPath;
     std::shared_ptr<QtDistributionDirectory> mQtDistributionDirectory;
     std::shared_ptr<SharedLibrariesDeployer> mShLibDeployer;
-    QStringList mSharedLibrariesTargetDependsOn;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
