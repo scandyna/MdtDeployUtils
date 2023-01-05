@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -19,22 +19,21 @@
  **
  ****************************************************************************/
 #include "FileCopierFile.h"
+#include "FileInfoUtils.h"
 #include <cassert>
 
 namespace Mdt{ namespace DeployUtils{
 
 void FileCopierFile::setSourceFileInfo(const QFileInfo & file) noexcept
 {
-  assert( !file.filePath().isEmpty() );
-  assert( file.isAbsolute() );
+  assert( fileInfoIsAbsolutePath(file) );
 
   mSourceFileInfo = file;
 }
 
 void FileCopierFile::setDestinationFileInfo(const QFileInfo & file) noexcept
 {
-  assert( !file.filePath().isEmpty() );
-  assert( file.isAbsolute() );
+  assert( fileInfoIsAbsolutePath(file) );
 
   mDestinationFileInfo = file;
 }
