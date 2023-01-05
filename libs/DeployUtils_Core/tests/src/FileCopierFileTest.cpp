@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -20,6 +20,7 @@
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
+#include "TestFileUtils.h"
 #include "Mdt/DeployUtils/FileCopierFile.h"
 #include <QString>
 #include <QLatin1String>
@@ -40,7 +41,9 @@ TEST_CASE("set_SourceAndDestimation")
   copierFile.setDestinationFileInfo(destination);
 
   REQUIRE( copierFile.sourceFileInfo().fileName() == QLatin1String("source.txt") );
+  REQUIRE( copierFile.sourceAbsoluteFilePath() == makeAbsolutePath("/tmp/source.txt") );
   REQUIRE( copierFile.destinationFileInfo().fileName() == QLatin1String("destination.txt") );
+  REQUIRE( copierFile.destinationAbsoluteFilePath() == makeAbsolutePath("/tmp/destination.txt") );
 }
 
 TEST_CASE("hasBeenCopied")

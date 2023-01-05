@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -38,7 +38,7 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Set the source file info
      *
      * \pre \a file must have its absolute file path set
-     * \sa doc of QFileInfo::absoluteFilePath()
+     * \sa fileInfoIsAbsolutePath()
      */
     void setSourceFileInfo(const QFileInfo & file) noexcept;
 
@@ -49,10 +49,17 @@ namespace Mdt{ namespace DeployUtils{
       return mSourceFileInfo;
     }
 
+    /*! \brief Get the absolute path of the source file
+     */
+    QString sourceAbsoluteFilePath() const noexcept
+    {
+      return mSourceFileInfo.absoluteFilePath();
+    }
+
     /*! \brief Set the destination file info
      *
      * \pre \a file must have its absolute file path set
-     * \sa doc of QFileInfo::absoluteFilePath()
+     * \sa fileInfoIsAbsolutePath()
      */
     void setDestinationFileInfo(const QFileInfo & file) noexcept;
 
@@ -61,6 +68,13 @@ namespace Mdt{ namespace DeployUtils{
     const QFileInfo & destinationFileInfo() const noexcept
     {
       return mDestinationFileInfo;
+    }
+
+    /*! \brief Get the absolute path of the destination file
+     */
+    QString destinationAbsoluteFilePath() const noexcept
+    {
+      return mDestinationFileInfo.absoluteFilePath();
     }
 
     /*! \brief Mark this file as been copied
