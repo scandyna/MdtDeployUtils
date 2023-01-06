@@ -247,11 +247,11 @@ void DeployApplication::installExecutable(const DeployApplicationRequest & reque
   fileCopier.setOverwriteBehavior(OverwriteBehavior::Overwrite);
   connect(&fileCopier, &FileCopier::verboseMessage, this, &DeployApplication::verboseMessage);
 
-  fileCopier.copyFile(request.targetFilePath, mBinDirDestinationPath);
-  assert( fileCopier.copiedFilesDestinationPathList().size() == 1 );
+  const FileCopierFile copierFile = fileCopier.copyFile(request.targetFilePath, mBinDirDestinationPath);
+  assert( copierFile.hasBeenCopied() );
 
   if( mPlatform.supportsRPath() ){
-    setRPathToInstalledExecutable(fileCopier.copiedFilesDestinationPathList().at(0), request, destinationStructure);
+    setRPathToInstalledExecutable(copierFile.destinationAbsoluteFilePath(), request, destinationStructure);
   }
 }
 
