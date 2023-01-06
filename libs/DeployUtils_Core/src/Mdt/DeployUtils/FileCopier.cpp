@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2022 Philippe Steinmann.
+ ** Copyright (C) 2015-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -108,7 +108,6 @@ FileCopierFile FileCopier::copyFile(const QFileInfo & sourceFileInfo, const QStr
   }
 
   copierFile.setAsBeenCopied();
-  mCopiedFilesDestinationPathList.append(destinationFilePath);
 
   return copierFile;
 }

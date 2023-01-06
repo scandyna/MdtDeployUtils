@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2022 Philippe Steinmann.
+ ** Copyright (C) 2015-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -134,7 +134,6 @@ TEST_CASE("copyFile")
     REQUIRE( copierFile.sourceFileInfo().absoluteFilePath() == libASourceFilePath );
     REQUIRE( copierFile.destinationFileInfo().absoluteFilePath() == libADestinationFilePath );
     REQUIRE( copierFile.hasBeenCopied() );
-    REQUIRE( fc.copiedFilesDestinationPathList() == QStringList({libADestinationFilePath}) );
   }
 
   SECTION("copy libA to itself (destination file path == source file path)")
@@ -143,7 +142,6 @@ TEST_CASE("copyFile")
 
     REQUIRE( readTextFileUtf8(libASourceFilePath) == QLatin1String("A") );
     REQUIRE( !copierFile.hasBeenCopied() );
-    REQUIRE( fc.copiedFilesDestinationPathList().isEmpty() );
   }
 
   SECTION("copy libA to a existing file")
@@ -157,7 +155,6 @@ TEST_CASE("copyFile")
 
       REQUIRE( readTextFileUtf8(libADestinationFilePath) == QLatin1String("other A") );
       REQUIRE( !copierFile.hasBeenCopied() );
-      REQUIRE( fc.copiedFilesDestinationPathList().isEmpty() );
     }
 
     SECTION("overwrite behavior: Overwrite")
@@ -167,7 +164,6 @@ TEST_CASE("copyFile")
 
       REQUIRE( readTextFileUtf8(libADestinationFilePath) == QLatin1String("A") );
       REQUIRE( copierFile.hasBeenCopied() );
-      REQUIRE( fc.copiedFilesDestinationPathList() == QStringList({libADestinationFilePath}) );
     }
   }
 }

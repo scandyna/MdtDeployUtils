@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2022 Philippe Steinmann.
+ ** Copyright (C) 2015-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -98,26 +98,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     void copyFiles(const QStringList & sourceFilePathList, const QString & destinationDirectoryPath);
 
-    /*! \brief Get a list of destination paths to the files that have been copied
-     *
-     * \sa clearCopiedFilesDestinationPathList()
-     */
-    [[deprecated]]
-    const QStringList & copiedFilesDestinationPathList() const noexcept
-    {
-      return mCopiedFilesDestinationPathList;
-    }
-
-    /*! \brief Clear the list of destination paths to the files that have been copied
-     *
-     * \sa copiedFilesDestinationPathList()
-     */
-    [[deprecated]]
-    void clearCopiedFilesDestinationPathList() noexcept
-    {
-      mCopiedFilesDestinationPathList.clear();
-    }
-
     /*! \brief Check if \a directoryPath is a path to a existing directory
      */
     static
@@ -139,7 +119,6 @@ namespace Mdt{ namespace DeployUtils{
     QString getDestinationFilePath(const QFileInfo & sourceFile, const QString & destinationDirectoryPath) noexcept;
 
     OverwriteBehavior mOverwriteBehavior = OverwriteBehavior::Fail;
-    QStringList mCopiedFilesDestinationPathList;
   };
 
 }} // namespace Mdt{ namespace DeployUtils{
