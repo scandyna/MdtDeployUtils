@@ -143,34 +143,6 @@ BinaryDependenciesResultList SharedLibrariesDeployer::findSharedLibrariesTargets
   return dependencies;
 }
 
-// CopiedSharedLibraryFileList
-// SharedLibrariesDeployer::copySharedLibraries(const QStringList & libraries, const QString & destinationDirectoryPath)
-// {
-//   CopiedSharedLibraryFileList copiedFiles;
-//
-//   FileCopier fileCopier;
-//   fileCopier.setOverwriteBehavior(mOverwriteBehavior);
-//   connect(&fileCopier, &FileCopier::verboseMessage, this, &SharedLibrariesDeployer::verboseMessage);
-//
-//   fileCopier.createDirectory(destinationDirectoryPath);
-//
-//   /// \todo with new Impl , rpath could be available
-//   for(const QString & library : libraries){
-//     CopiedSharedLibraryFile copiedShLib;
-//     copiedShLib.file = fileCopier.copyFile(library, destinationDirectoryPath);
-//     if( copiedShLib.file.hasBeenCopied() ){
-//       ExecutableFileReader reader;
-//       reader.openFile(library);
-//       copiedShLib.rpath = reader.getRunPath();
-//       reader.close();
-//
-//       copiedFiles.push_back(copiedShLib);
-//     }
-//   }
-//
-//   return copiedFiles;
-// }
-
 void SharedLibrariesDeployer::installSharedLibraries(const BinaryDependenciesResultList & libraries, const QString & destinationDirectoryPath)
 {
   assert( libraries.isSolved() );

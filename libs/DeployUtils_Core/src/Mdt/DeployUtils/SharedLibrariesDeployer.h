@@ -196,21 +196,6 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Copy a set of shared libraries to given destination
      *
      * \exception FileCopyError
-     *
-     * \todo see https://gitlab.com/scandyna/mdtdeployutils/-/issues/11
-     */
-//     [[deprecated]]
-//     CopiedSharedLibraryFileList copySharedLibraries(const QStringList & libraries, const QString & destinationDirectoryPath);
-
-    /*! \brief Copy a set of shared libraries to given destination
-     *
-     * \exception FileCopyError
-     */
-    CopiedSharedLibraryFileList copySharedLibraries(const BinaryDependenciesResult & result, const QString & destinationDirectoryPath);
-
-    /*! \brief Copy a set of shared libraries to given destination
-     *
-     * \exception FileCopyError
      */
     CopiedSharedLibraryFileList copySharedLibraries(const BinaryDependenciesResultList & resultList, const QString & destinationDirectoryPath);
 
