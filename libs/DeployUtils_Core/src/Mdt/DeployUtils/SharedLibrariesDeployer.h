@@ -231,6 +231,7 @@ namespace Mdt{ namespace DeployUtils{
      * \todo implementation is naive !!
      */
     template<typename TargetList, typename ToQFileInfo>
+    [[deprecated]]
     void copySharedLibrariesTargetsDependsOn(const TargetList & targets, const ToQFileInfo & toQFileInfo, const QString & destinationDirectoryPath)
     {
       QFileInfoList targetFilePathList;
