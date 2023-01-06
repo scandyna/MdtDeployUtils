@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -22,6 +22,7 @@
 #include "Catch2QString.h"
 #include "TestUtils.h"
 #include "TestFileUtils.h"
+#include "BinaryDependenciesTestCommon.h"
 #include "Mdt/DeployUtils/QtDistributionDirectory.h"
 #include "Mdt/DeployUtils/SharedLibrariesDeployer.h"
 #include "Mdt/DeployUtils/PathList.h"
@@ -174,30 +175,15 @@ TEST_CASE("hasToUpdateRpath")
   }
 }
 
-TEST_CASE("copySharedLibrariesTargetsDependsOn")
+void doDeployerCommonSetup(SharedLibrariesDeployer & deployer)
 {
-  QTemporaryDir destinationDir;
-  destinationDir.setAutoRemove(true);
-  REQUIRE( destinationDir.isValid() );
-
-  MessageLogger messageLogger;
   MessageLogger::setBackend<ConsoleMessageLogger>();
-
-  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
-  SharedLibrariesDeployer deployer(qtDistributionDirectory);
   QObject::connect(&deployer, &SharedLibrariesDeployer::statusMessage, MessageLogger::info);
   QObject::connect(&deployer, &SharedLibrariesDeployer::verboseMessage, MessageLogger::info);
   QObject::connect(&deployer, &SharedLibrariesDeployer::debugMessage, MessageLogger::info);
 
-  const QStringList targets = {testExecutableFilePath, qtCoreLibraryFilePath};
-
-  const auto toQFileInfo = [](const QString & filePath){
-    return filePath;
-  };
-
   deployer.setSearchPrefixPathList(searchPrefixPathList);
-  deployer.setOverwriteBehavior(OverwriteBehavior::Fail);
-  deployer.setRemoveRpath(false);
+
 #ifdef COMPILER_IS_MSVC
   CompilerLocationRequest compilerLocation;
   compilerLocation.setType(CompilerLocationType::CompilerPath);
@@ -205,13 +191,96 @@ TEST_CASE("copySharedLibrariesTargetsDependsOn")
   deployer.setCompilerLocation(compilerLocation);
 #endif // #ifdef COMPILER_IS_MSVC
 
+}
+
+TEST_CASE("findSharedLibrariesTargetDependsOn")
+{
+  MessageLogger messageLogger;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibrariesDeployer deployer(qtDistributionDirectory);
+
+  doDeployerCommonSetup(deployer);
+
+  const QFileInfo target(testExecutableFilePath);
+
+  REQUIRE( deployer.currentPlatform().isNull() );
+
+  const BinaryDependenciesResult libraries = deployer.findSharedLibrariesTargetDependsOn(target);
+
+  REQUIRE( deployer.currentPlatform() == Platform::nativePlatform() );
+  REQUIRE( libraries.isSolved() );
+  REQUIRE( containsTestSharedLibrary(libraries) );
+  REQUIRE( containsQt5Core(libraries) );
+}
+
+TEST_CASE("findSharedLibrariesTargetsDependsOn")
+{
+  MessageLogger messageLogger;
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibrariesDeployer deployer(qtDistributionDirectory);
+
+  doDeployerCommonSetup(deployer);
+
+  const QFileInfoList targets{testExecutableFilePath, qtCoreLibraryFilePath};
+
+  REQUIRE( deployer.currentPlatform().isNull() );
+
+  const BinaryDependenciesResultList resultList = deployer.findSharedLibrariesTargetsDependsOn(targets);
+
+  REQUIRE( deployer.currentPlatform() == Platform::nativePlatform() );
+  REQUIRE( resultList.resultCount() == 2 );
+
+  const auto exeResult = resultList.findResultForTargetName( targets.at(0).fileName() );
+  REQUIRE( exeResult.has_value() );
+  REQUIRE( exeResult->isSolved() );
+  REQUIRE( containsTestSharedLibrary(*exeResult) );
+  REQUIRE( containsQt5Core(*exeResult) );
+
+  const auto qtCoreResult = resultList.findResultForTargetName( targets.at(0).fileName() );
+  REQUIRE( qtCoreResult.has_value() );
+  REQUIRE( qtCoreResult->isSolved() );
+}
+
+TEST_CASE("copySharedLibrariesTargetsDependsOn")
+{
+  QTemporaryDir destinationDir;
+  destinationDir.setAutoRemove(true);
+  REQUIRE( destinationDir.isValid() );
+
+  MessageLogger messageLogger;
+//   MessageLogger::setBackend<ConsoleMessageLogger>();
+
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibrariesDeployer deployer(qtDistributionDirectory);
+//   QObject::connect(&deployer, &SharedLibrariesDeployer::statusMessage, MessageLogger::info);
+//   QObject::connect(&deployer, &SharedLibrariesDeployer::verboseMessage, MessageLogger::info);
+//   QObject::connect(&deployer, &SharedLibrariesDeployer::debugMessage, MessageLogger::info);
+
+  const QStringList targets = {testExecutableFilePath, qtCoreLibraryFilePath};
+
+  const auto toQFileInfo = [](const QString & filePath){
+    return filePath;
+  };
+
+  doDeployerCommonSetup(deployer);
+
+//   deployer.setSearchPrefixPathList(searchPrefixPathList);
+  deployer.setOverwriteBehavior(OverwriteBehavior::Fail);
+  deployer.setRemoveRpath(false);
+// #ifdef COMPILER_IS_MSVC
+//   CompilerLocationRequest compilerLocation;
+//   compilerLocation.setType(CompilerLocationType::CompilerPath);
+//   compilerLocation.setValue(  QString::fromLocal8Bit(CXX_COMPILER_PATH) );
+//   deployer.setCompilerLocation(compilerLocation);
+// #endif // #ifdef COMPILER_IS_MSVC
+
   REQUIRE( deployer.currentPlatform().isNull() );
 
   deployer.copySharedLibrariesTargetsDependsOn( targets, toQFileInfo, destinationDir.path() );
 
   REQUIRE( deployer.currentPlatform() == Platform::nativePlatform() );
-  REQUIRE( !deployer.foundDependencies().empty() );
-  REQUIRE( containsTestSharedLibrary( deployer.foundDependencies() ) );
+  /// REQUIRE( !deployer.foundDependencies().empty() );
+  /// REQUIRE( containsTestSharedLibrary( deployer.foundDependencies() ) );
   REQUIRE( dirContainsTestSharedLibrary(destinationDir) );
   if(checkRPath){
     REQUIRE( getTestSharedLibraryRunPath(destinationDir).entryAt(0).path() == QLatin1String(".") );

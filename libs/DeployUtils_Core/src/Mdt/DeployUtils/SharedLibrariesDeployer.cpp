@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -21,10 +21,12 @@
 #include "SharedLibrariesDeployer.h"
 #include "ExecutableFileReader.h"
 #include "ExecutableFileWriter.h"
+#include "BinaryDependenciesResultLibrary.h"
 #include "CompilerFinder.h"
 #include "FileCopier.h"
 #include "RPath.h"
 #include "Algorithm.h"
+#include "FileInfoUtils.h"
 #include <QLatin1String>
 #include <QStringBuilder>
 #include <memory>
@@ -105,8 +107,105 @@ bool SharedLibrariesDeployer::hasToUpdateRpath(const CopiedSharedLibraryFile & f
   return true;
 }
 
+BinaryDependenciesResult SharedLibrariesDeployer::findSharedLibrariesTargetDependsOn(const QFileInfo & target)
+{
+  assert( fileInfoIsAbsolutePath(target) );
+
+  setCurrentPlatformFromFile(target);
+
+  emitStartMessage(target);
+
+  emitSearchPrefixPathListMessage();
+
+  const BinaryDependenciesResult dependencies
+    = mBinaryDependencies.findDependencies(target, mSearchPrefixPathList, mQtDistributionDirectory);
+
+  emitFoundDependenciesMessage(dependencies);
+
+  return dependencies;
+}
+
+BinaryDependenciesResultList SharedLibrariesDeployer::findSharedLibrariesTargetsDependsOn(const QFileInfoList & targets)
+{
+  assert( !targets.isEmpty() );
+
+  setCurrentPlatformFromFile( targets.at(0) );
+
+  emitStartMessage(targets);
+
+  emitSearchPrefixPathListMessage();
+
+  BinaryDependenciesResultList dependencies
+    = mBinaryDependencies.findDependencies(targets, mSearchPrefixPathList, mQtDistributionDirectory);
+
+  emitFoundDependenciesMessage(dependencies);
+
+  return dependencies;
+}
+
+// CopiedSharedLibraryFileList
+// SharedLibrariesDeployer::copySharedLibraries(const QStringList & libraries, const QString & destinationDirectoryPath)
+// {
+//   CopiedSharedLibraryFileList copiedFiles;
+//
+//   FileCopier fileCopier;
+//   fileCopier.setOverwriteBehavior(mOverwriteBehavior);
+//   connect(&fileCopier, &FileCopier::verboseMessage, this, &SharedLibrariesDeployer::verboseMessage);
+//
+//   fileCopier.createDirectory(destinationDirectoryPath);
+//
+//   /// \todo with new Impl , rpath could be available
+//   for(const QString & library : libraries){
+//     CopiedSharedLibraryFile copiedShLib;
+//     copiedShLib.file = fileCopier.copyFile(library, destinationDirectoryPath);
+//     if( copiedShLib.file.hasBeenCopied() ){
+//       ExecutableFileReader reader;
+//       reader.openFile(library);
+//       copiedShLib.rpath = reader.getRunPath();
+//       reader.close();
+//
+//       copiedFiles.push_back(copiedShLib);
+//     }
+//   }
+//
+//   return copiedFiles;
+// }
+
+void SharedLibrariesDeployer::installSharedLibraries(const BinaryDependenciesResultList & libraries, const QString & destinationDirectoryPath)
+{
+  assert( libraries.isSolved() );
+  assert( !destinationDirectoryPath.trimmed().isEmpty() );
+
+  if( libraries.isEmpty() ){
+    return;
+  }
+
+  emit statusMessage(
+    tr("installing shared libraries")
+  );
+
+  const QString overwriteBehaviorMessage = tr("overwrite behavior: %1").arg( overwriteBehaviorToString(mOverwriteBehavior) );
+  emit verboseMessage(overwriteBehaviorMessage);
+
+  if( mPlatform.supportsRPath() ){
+    if(mRemoveRpath){
+      const QString rpathMessage = tr("RPATH will be removed in copied libraries");
+      emit verboseMessage(rpathMessage);
+    }else{
+      const QString rpathMessage = tr("RPATH will be set to $ORIGIN in copied libraries");
+      emit verboseMessage(rpathMessage);
+    }
+  }
+
+  const CopiedSharedLibraryFileList copiedFiles = copySharedLibraries(libraries, destinationDirectoryPath);
+
+  if( mPlatform.supportsRPath() ){
+    setRPathToCopiedDependencies(copiedFiles);
+  }
+}
+
 CopiedSharedLibraryFileList
-SharedLibrariesDeployer::copySharedLibraries(const QStringList & libraries, const QString & destinationDirectoryPath)
+SharedLibrariesDeployer::copySharedLibraries(const BinaryDependenciesResultList & resultList, const QString & destinationDirectoryPath)
 {
   CopiedSharedLibraryFileList copiedFiles;
 
@@ -116,15 +215,13 @@ SharedLibrariesDeployer::copySharedLibraries(const QStringList & libraries, cons
 
   fileCopier.createDirectory(destinationDirectoryPath);
 
-  for(const QString & library : libraries){
-    CopiedSharedLibraryFile copiedShLib;
-    copiedShLib.file = fileCopier.copyFile(library, destinationDirectoryPath);
-    if( copiedShLib.file.hasBeenCopied() ){
-      ExecutableFileReader reader;
-      reader.openFile(library);
-      copiedShLib.rpath = reader.getRunPath();
-      reader.close();
+  const auto libraries = getLibrariesToRedistribute(resultList);
 
+  for(const BinaryDependenciesResultLibrary & library : libraries){
+    CopiedSharedLibraryFile copiedShLib;
+    copiedShLib.file = fileCopier.copyFile(library.absoluteFilePath(), destinationDirectoryPath);
+    if( copiedShLib.file.hasBeenCopied() ){
+      copiedShLib.rpath = library.rPath();
       copiedFiles.push_back(copiedShLib);
     }
   }
@@ -141,6 +238,16 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetDependsOn(const QFileInfo
   copySharedLibrariesTargetsDependsOnImpl(QFileInfoList{targetFilePath}, destinationDirectoryPath);
 }
 
+void SharedLibrariesDeployer::setCurrentPlatformFromFile(const QFileInfo & file)
+{
+  assert( fileInfoIsAbsolutePath(file) );
+
+  ExecutableFileReader reader;
+  reader.openFile(file);
+  mPlatform = reader.getFilePlatform();
+  reader.close();
+}
+
 void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFileInfoList & targetFilePathList, const QString & destinationDirectoryPath)
 {
   assert( !targetFilePathList.isEmpty() );
@@ -148,42 +255,48 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFil
 //   assert( targetFilePath.isAbsolute() );
   assert( !destinationDirectoryPath.isEmpty() );
 
-  ExecutableFileReader reader;
-  reader.openFile( targetFilePathList.at(0) );
-  mPlatform = reader.getFilePlatform();
-  reader.close();
+  const BinaryDependenciesResultList dependencies = findSharedLibrariesTargetsDependsOn(targetFilePathList);
 
-  emitStartMessage(targetFilePathList);
+  installSharedLibraries(dependencies, destinationDirectoryPath);
 
-  emitSearchPrefixPathListMessage();
+  return;
 
-  const QString overwriteBehaviorMessage = tr("overwrite behavior: %1").arg( overwriteBehaviorToString(mOverwriteBehavior) );
-  emit verboseMessage(overwriteBehaviorMessage);
+//   setCurrentPlatformFromFile( targetFilePathList.at(0) );
+//
+//   emitStartMessage(targetFilePathList);
+//
+//   emitSearchPrefixPathListMessage();
 
-  if( mPlatform.supportsRPath() ){
-    if(mRemoveRpath){
-      const QString rpathMessage = tr("RPATH will be removed in copied libraries");
-      emit verboseMessage(rpathMessage);
-    }else{
-      const QString rpathMessage = tr("RPATH will be set to $ORIGIN in copied libraries");
-      emit verboseMessage(rpathMessage);
-    }
-  }
+//   const QString overwriteBehaviorMessage = tr("overwrite behavior: %1").arg( overwriteBehaviorToString(mOverwriteBehavior) );
+//   emit verboseMessage(overwriteBehaviorMessage);
+//
+//   if( mPlatform.supportsRPath() ){
+//     if(mRemoveRpath){
+//       const QString rpathMessage = tr("RPATH will be removed in copied libraries");
+//       emit verboseMessage(rpathMessage);
+//     }else{
+//       const QString rpathMessage = tr("RPATH will be set to $ORIGIN in copied libraries");
+//       emit verboseMessage(rpathMessage);
+//     }
+//   }
 
 //   mFoundDependencies = mBinaryDependencies.findDependencies(targetFilePathList, mSearchPrefixPathList, mQtDistributionDirectory);
 
-  const BinaryDependenciesResultList dependencies
-    = mBinaryDependencies.findDependencies(targetFilePathList, mSearchPrefixPathList, mQtDistributionDirectory);
+//   const BinaryDependenciesResultList dependencies
+//     = mBinaryDependencies.findDependencies(targetFilePathList, mSearchPrefixPathList, mQtDistributionDirectory);
 
-  emitFoundDependenciesMessage(dependencies);
+//   emitFoundDependenciesMessage(dependencies);
 
-  mFoundDependencies = getLibrariesAbsoluteFilePathList(dependencies);
+//   const CopiedSharedLibraryFileList copiedFiles = copySharedLibraries(dependencies, destinationDirectoryPath);
 
-  const CopiedSharedLibraryFileList copiedFiles = copySharedLibraries(mFoundDependencies, destinationDirectoryPath);
+  /// \todo remove
+//   mFoundDependencies = getLibrariesAbsoluteFilePathList(dependencies);
 
-  if( mPlatform.supportsRPath() ){
-    setRPathToCopiedDependencies(copiedFiles);
-  }
+//   const CopiedSharedLibraryFileList copiedFiles = copySharedLibraries(mFoundDependencies, destinationDirectoryPath);
+
+//   if( mPlatform.supportsRPath() ){
+//     setRPathToCopiedDependencies(copiedFiles);
+//   }
 }
 
 void SharedLibrariesDeployer::setRPathToCopiedSharedLibraries(const CopiedSharedLibraryFileList & copiedFiles, const RPath & rpath)
@@ -193,6 +306,10 @@ void SharedLibrariesDeployer::setRPathToCopiedSharedLibraries(const CopiedShared
   if( copiedFiles.empty() ){
     return;
   }
+
+  emit statusMessage(
+    tr("updating rpath for installed shared libraries")
+  );
 
   ExecutableFileWriter writer;
   connect(&writer, &ExecutableFileWriter::message, this, &SharedLibrariesDeployer::verboseMessage);
@@ -223,6 +340,14 @@ void SharedLibrariesDeployer::setRPathToCopiedDependencies(const CopiedSharedLib
   setRPathToCopiedSharedLibraries(copiedFiles, rpath);
 }
 
+void SharedLibrariesDeployer::emitStartMessage(const QFileInfo & target) const noexcept
+{
+  emit statusMessage(
+    tr("find dependencies for %1")
+    .arg( target.fileName() )
+  );
+}
+
 void SharedLibrariesDeployer::emitStartMessage(const QFileInfoList & targetFilePathList) const
 {
   if( targetFilePathList.isEmpty() ){
@@ -236,7 +361,7 @@ void SharedLibrariesDeployer::emitStartMessage(const QFileInfoList & targetFileP
   const QString targetFilePathListString = joinToQString( targetFilePathList, toQString, QLatin1String(", ") );
 
   emit statusMessage(
-    tr("copy dependencies for %1")
+    tr("find dependencies for %1")
     .arg(targetFilePathListString)
   );
 }
@@ -252,7 +377,43 @@ void SharedLibrariesDeployer::emitSearchPrefixPathListMessage() const
   }
 }
 
-void SharedLibrariesDeployer::emitFoundDependenciesMessage(const BinaryDependenciesResultList & resultList) const
+void SharedLibrariesDeployer::emitResultMessages(const BinaryDependenciesResult & result) const noexcept
+{
+  QString solvedText;
+  if( result.isSolved() ){
+    solvedText = tr("yes");
+  }else{
+    solvedText = tr("no");
+  }
+  const QString targetMessage = tr(" %1 (solved: %2):")
+                                .arg(result.target().fileName(), solvedText);
+  emit verboseMessage(targetMessage);
+
+  for(const BinaryDependenciesResultLibrary & library : result){
+    if( library.isFound() ){
+      const QString msg = tr("  %1").arg( library.absoluteFilePath() );
+      emit verboseMessage(msg);
+    }else{
+      if( library.shouldNotBeRedistributed() ){
+        const QString msg = tr("  %1 (not to redistribute)").arg( library.libraryName() );
+        emit verboseMessage(msg);
+      }else{
+        const QString msg = tr("  %1 (not found)").arg( library.libraryName() );
+        emit verboseMessage(msg);
+      }
+    }
+  }
+}
+
+void SharedLibrariesDeployer::emitFoundDependenciesMessage(const BinaryDependenciesResult & result) const noexcept
+{
+  const QString startMessage = tr("found dependencies:");
+  emit verboseMessage(startMessage);
+
+  emitResultMessages(result);
+}
+
+void SharedLibrariesDeployer::emitFoundDependenciesMessage(const BinaryDependenciesResultList & resultList) const noexcept
 {
   const QString startMessage = tr("found dependencies:");
   emit verboseMessage(startMessage);
@@ -263,25 +424,31 @@ void SharedLibrariesDeployer::emitFoundDependenciesMessage(const BinaryDependenc
 //   }
 
   for(const BinaryDependenciesResult & result : resultList){
-    QString solvedText;
-    if( result.isSolved() ){
-      solvedText = tr("yes");
-    }else{
-      solvedText = tr("no");
-    }
-    const QString targetMessage = tr(" %1 (solved: %2):")
-                                  .arg(result.target().fileName(), solvedText);
-    emit verboseMessage(targetMessage);
-
-    for(const BinaryDependenciesResultLibrary & library : result){
-      if( library.isFound() ){
-        const QString msg = tr("  %1").arg( library.absoluteFilePath() );
-        emit verboseMessage(msg);
-      }else{
-        const QString msg = tr("  %1 (not found)").arg( library.libraryName() );
-        emit verboseMessage(msg);
-      }
-    }
+    emitResultMessages(result);
+//     QString solvedText;
+//     if( result.isSolved() ){
+//       solvedText = tr("yes");
+//     }else{
+//       solvedText = tr("no");
+//     }
+//     const QString targetMessage = tr(" %1 (solved: %2):")
+//                                   .arg(result.target().fileName(), solvedText);
+//     emit verboseMessage(targetMessage);
+//
+//     for(const BinaryDependenciesResultLibrary & library : result){
+//       if( library.isFound() ){
+//         const QString msg = tr("  %1").arg( library.absoluteFilePath() );
+//         emit verboseMessage(msg);
+//       }else{
+//         if( library.shouldNotBeRedistributed() ){
+//           const QString msg = tr("  %1 (not to redistribute)").arg( library.libraryName() );
+//           emit verboseMessage(msg);
+//         }else{
+//           const QString msg = tr("  %1 (not found)").arg( library.libraryName() );
+//           emit verboseMessage(msg);
+//         }
+//       }
+//     }
   }
 }
 

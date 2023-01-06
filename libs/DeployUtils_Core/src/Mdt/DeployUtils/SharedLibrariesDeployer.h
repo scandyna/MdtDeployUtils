@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -18,8 +18,8 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#ifndef MDT_DEPLOY_UTILS_SHARED_LIBRARIES_DEPLOYER_FILE_H
-#define MDT_DEPLOY_UTILS_SHARED_LIBRARIES_DEPLOYER_FILE_H
+#ifndef MDT_DEPLOY_UTILS_SHARED_LIBRARIES_DEPLOYER_H
+#define MDT_DEPLOY_UTILS_SHARED_LIBRARIES_DEPLOYER_H
 
 #include "PathList.h"
 #include "FileCopierFile.h"
@@ -28,6 +28,7 @@
 #include "Platform.h"
 #include "BinaryDependencies.h"
 #include "BinaryDependenciesResult.h"
+#include "BinaryDependenciesResultList.h"
 #include "QtDistributionDirectory.h"
 #include "RPath.h"
 #include "mdt_deployutilscore_export.h"
@@ -161,11 +162,57 @@ namespace Mdt{ namespace DeployUtils{
      */
     bool hasToUpdateRpath(const CopiedSharedLibraryFile & file, const RPath & rpath, const PathList & systemWideLocations) const noexcept;
 
+    /*! \brief Get a list of shared libraries given target depends on
+     *
+     * \pre \a target must be a absolute file path
+     *
+     * \exception FindCompilerError
+     * \exception FileOpenError
+     * \exception ExecutableFileReadError
+     */
+    BinaryDependenciesResult findSharedLibrariesTargetDependsOn(const QFileInfo & target);
+
+    /*! \brief Get a list of shared libraries given targets depends on
+     *
+     * \pre \a targets must not be a empty list
+     * \pre each target in \a targets must be a absolute file path
+     *
+     * \exception FindCompilerError
+     * \exception FileOpenError
+     * \exception ExecutableFileReadError
+     */
+    BinaryDependenciesResultList findSharedLibrariesTargetsDependsOn(const QFileInfoList & targets);
+
+    /*! \brief Install shared libraries to given destination
+     *
+     * \pre \a libraries must be a solved result
+     * \pre \a destinationDirectoryPath must not be empty
+     * \exception FileCopyError
+     * \sa setOverwriteBehavior()
+     * \sa setRemoveRpath()
+     */
+    void installSharedLibraries(const BinaryDependenciesResultList & libraries, const QString & destinationDirectoryPath);
+
+    /*! \brief Copy a set of shared libraries to given destination
+     *
+     * \exception FileCopyError
+     *
+     * \todo see https://gitlab.com/scandyna/mdtdeployutils/-/issues/11
+     */
+//     [[deprecated]]
+//     CopiedSharedLibraryFileList copySharedLibraries(const QStringList & libraries, const QString & destinationDirectoryPath);
+
     /*! \brief Copy a set of shared libraries to given destination
      *
      * \exception FileCopyError
      */
-    CopiedSharedLibraryFileList copySharedLibraries(const QStringList & libraries, const QString & destinationDirectoryPath);
+    CopiedSharedLibraryFileList copySharedLibraries(const BinaryDependenciesResult & result, const QString & destinationDirectoryPath);
+
+    /*! \brief Copy a set of shared libraries to given destination
+     *
+     * \exception FileCopyError
+     */
+    CopiedSharedLibraryFileList copySharedLibraries(const BinaryDependenciesResultList & resultList, const QString & destinationDirectoryPath);
 
     /*! \brief Copy shared libraries given target depends on to given destination
      *
@@ -239,10 +286,10 @@ namespace Mdt{ namespace DeployUtils{
      * copySharedLibrariesTargetDependsOn() or copySharedLibrariesTargetsDependsOn()
      * succeeded.
      */
-    const QStringList & foundDependencies() const noexcept
-    {
-      return mFoundDependencies;
-    }
+//     const QStringList & foundDependencies() const noexcept
+//     {
+//       return mFoundDependencies;
+//     }
 
    signals:
 
@@ -252,18 +299,22 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
+    void setCurrentPlatformFromFile(const QFileInfo & file);
     void copySharedLibrariesTargetsDependsOnImpl(const QFileInfoList & targetFilePathList, const QString & destinationDirectoryPath);
     void setRPathToCopiedDependencies(const CopiedSharedLibraryFileList & copiedFiles);
+    void emitStartMessage(const QFileInfo & target) const noexcept;
     void emitStartMessage(const QFileInfoList & targetFilePathList) const;
     void emitSearchPrefixPathListMessage() const;
-    void emitFoundDependenciesMessage(const BinaryDependenciesResultList & resultList) const;
+    void emitResultMessages(const BinaryDependenciesResult & result) const noexcept;
+    void emitFoundDependenciesMessage(const BinaryDependenciesResult & result) const noexcept;
+    void emitFoundDependenciesMessage(const BinaryDependenciesResultList & resultList) const noexcept;
 
     static
     QString overwriteBehaviorToString(OverwriteBehavior overwriteBehavior) noexcept;
 
     OverwriteBehavior mOverwriteBehavior = OverwriteBehavior::Fail;
     bool mRemoveRpath = false;
-    QStringList mFoundDependencies;
+    /// QStringList mFoundDependencies;
     PathList mSearchPrefixPathList;
     BinaryDependencies mBinaryDependencies;
     Platform mPlatform;
@@ -272,4 +323,4 @@ namespace Mdt{ namespace DeployUtils{
 
 }} // namespace Mdt{ namespace DeployUtils{
 
-#endif // #ifndef MDT_DEPLOY_UTILS_SHARED_LIBRARIES_DEPLOYER_FILE_H
+#endif // #ifndef MDT_DEPLOY_UTILS_SHARED_LIBRARIES_DEPLOYER_H
