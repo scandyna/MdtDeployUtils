@@ -223,8 +223,6 @@ void SharedLibrariesDeployer::setCurrentPlatformFromFile(const QFileInfo & file)
 void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFileInfoList & targetFilePathList, const QString & destinationDirectoryPath)
 {
   assert( !targetFilePathList.isEmpty() );
-//   assert( !targetFilePath.filePath().isEmpty() );
-//   assert( targetFilePath.isAbsolute() );
   assert( !destinationDirectoryPath.isEmpty() );
 
   const BinaryDependenciesResultList dependencies = findSharedLibrariesTargetsDependsOn(targetFilePathList);
@@ -232,43 +230,6 @@ void SharedLibrariesDeployer::copySharedLibrariesTargetsDependsOnImpl(const QFil
   installSharedLibraries(dependencies, destinationDirectoryPath);
 
   return;
-
-//   setCurrentPlatformFromFile( targetFilePathList.at(0) );
-//
-//   emitStartMessage(targetFilePathList);
-//
-//   emitSearchPrefixPathListMessage();
-
-//   const QString overwriteBehaviorMessage = tr("overwrite behavior: %1").arg( overwriteBehaviorToString(mOverwriteBehavior) );
-//   emit verboseMessage(overwriteBehaviorMessage);
-//
-//   if( mPlatform.supportsRPath() ){
-//     if(mRemoveRpath){
-//       const QString rpathMessage = tr("RPATH will be removed in copied libraries");
-//       emit verboseMessage(rpathMessage);
-//     }else{
-//       const QString rpathMessage = tr("RPATH will be set to $ORIGIN in copied libraries");
-//       emit verboseMessage(rpathMessage);
-//     }
-//   }
-
-//   mFoundDependencies = mBinaryDependencies.findDependencies(targetFilePathList, mSearchPrefixPathList, mQtDistributionDirectory);
-
-//   const BinaryDependenciesResultList dependencies
-//     = mBinaryDependencies.findDependencies(targetFilePathList, mSearchPrefixPathList, mQtDistributionDirectory);
-
-//   emitFoundDependenciesMessage(dependencies);
-
-//   const CopiedSharedLibraryFileList copiedFiles = copySharedLibraries(dependencies, destinationDirectoryPath);
-
-  /// \todo remove
-//   mFoundDependencies = getLibrariesAbsoluteFilePathList(dependencies);
-
-//   const CopiedSharedLibraryFileList copiedFiles = copySharedLibraries(mFoundDependencies, destinationDirectoryPath);
-
-//   if( mPlatform.supportsRPath() ){
-//     setRPathToCopiedDependencies(copiedFiles);
-//   }
 }
 
 void SharedLibrariesDeployer::setRPathToCopiedSharedLibraries(const CopiedSharedLibraryFileList & copiedFiles, const RPath & rpath)
@@ -390,37 +351,8 @@ void SharedLibrariesDeployer::emitFoundDependenciesMessage(const BinaryDependenc
   const QString startMessage = tr("found dependencies:");
   emit verboseMessage(startMessage);
 
-//   for(const QString & dependency : mFoundDependencies){
-//     const QString msg = tr(" %1").arg(dependency);
-//     emit verboseMessage(msg);
-//   }
-
   for(const BinaryDependenciesResult & result : resultList){
     emitResultMessages(result);
-//     QString solvedText;
-//     if( result.isSolved() ){
-//       solvedText = tr("yes");
-//     }else{
-//       solvedText = tr("no");
-//     }
-//     const QString targetMessage = tr(" %1 (solved: %2):")
-//                                   .arg(result.target().fileName(), solvedText);
-//     emit verboseMessage(targetMessage);
-//
-//     for(const BinaryDependenciesResultLibrary & library : result){
-//       if( library.isFound() ){
-//         const QString msg = tr("  %1").arg( library.absoluteFilePath() );
-//         emit verboseMessage(msg);
-//       }else{
-//         if( library.shouldNotBeRedistributed() ){
-//           const QString msg = tr("  %1 (not to redistribute)").arg( library.libraryName() );
-//           emit verboseMessage(msg);
-//         }else{
-//           const QString msg = tr("  %1 (not found)").arg( library.libraryName() );
-//           emit verboseMessage(msg);
-//         }
-//       }
-//     }
   }
 }
 

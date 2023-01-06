@@ -266,17 +266,6 @@ namespace Mdt{ namespace DeployUtils{
       return mPlatform;
     }
 
-    /*! \brief Get a list to the full path of found shared libraries dependning on the target
-     *
-     * The returned list has only sense once
-     * copySharedLibrariesTargetDependsOn() or copySharedLibrariesTargetsDependsOn()
-     * succeeded.
-     */
-//     const QStringList & foundDependencies() const noexcept
-//     {
-//       return mFoundDependencies;
-//     }
-
    signals:
 
     void statusMessage(const QString & message) const;
@@ -300,7 +289,6 @@ namespace Mdt{ namespace DeployUtils{
 
     OverwriteBehavior mOverwriteBehavior = OverwriteBehavior::Fail;
     bool mRemoveRpath = false;
-    /// QStringList mFoundDependencies;
     PathList mSearchPrefixPathList;
     BinaryDependencies mBinaryDependencies;
     Platform mPlatform;
