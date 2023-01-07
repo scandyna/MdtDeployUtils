@@ -1,21 +1,12 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
 
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 
 # CMAKE_PREFIX_PATH is empty before any call to project()
 # Because set_project_version() does not exist,
 # we call the project command twice (is there a cleaner solution?)
 project(MdtDeployUtils)
-
-#######################
-# Conan
-#######################
-
-if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-  include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-  conan_basic_setup(NO_OUTPUT_DIRS)
-endif()
 
 #######################################################
 # Project definition with versionning got from git tag
@@ -23,6 +14,8 @@ endif()
 
 find_package(Git REQUIRED)
 find_package(MdtCMakeModules REQUIRED)
+
+message("MDT_CMAKE_MODULES_PATH: ${MDT_CMAKE_MODULES_PATH}")
 
 include(MdtVersionUtils)
 
@@ -82,21 +75,22 @@ set_property(CACHE BUILD_TYPE_INSTRUMENTED_OPTIMIZATION_LEVEL PROPERTY STRINGS $
 option(BUILD_TYPE_INSTRUMENTED_USE_DEBUG_SYMBOLS "Add debug symbols (-g on Gcc/Clang, /DEBUG on MSVC)" ON)
 option(BUILD_TYPE_INSTRUMENTED_DEFINE_NDEBUG "Set NDEBUG definition for Instrumented build (will disable assert)" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(INSTALL_CONAN_PACKAGE_FILES "Install files required for recent conan generators, like CMakeDeps" OFF)
 
 mdt_add_address_sanitizer_option_if_available(SANITIZER_ENABLE_ADDRESS
-  HELP_STRING "Enable address sanitizer for Instrumented build"
+  HELP_STRING "Enable address sanitizer for Instrumented, RelWithDebInfo, Debug build"
   INITIAL_VALUE OFF
 )
 mdt_add_memory_sanitizer_option_if_available(SANITIZER_ENABLE_MEMORY
-  HELP_STRING "Enable memory sanitizer for Instrumented build"
+  HELP_STRING "Enable memory sanitizer for Instrumented, RelWithDebInfo, Debug build"
   INITIAL_VALUE OFF
 )
 mdt_add_undefined_sanitizer_option_if_available(SANITIZER_ENABLE_UNDEFINED
-  HELP_STRING "Enable undefined behaviour sanitizer for Instrumented build"
+  HELP_STRING "Enable undefined behaviour sanitizer for Instrumented, RelWithDebInfo, Debug build"
   INITIAL_VALUE OFF
 )
 mdt_add_thread_sanitizer_option_if_available(SANITIZER_ENABLE_THREAD
-  HELP_STRING "Enable thread sanitizer for Instrumented build (can be incompatible with other sanitizers)"
+  HELP_STRING "Enable thread sanitizer for Instrumented, RelWithDebInfo, Debug build (can be incompatible with other sanitizers)"
   INITIAL_VALUE OFF
 )
 
@@ -114,6 +108,7 @@ if(MSVC)
   # C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead (which not works with gcc/clang)
   add_compile_options(/wd4996)
 else()
+  # TODO: check about -Wshadow
   add_compile_options(-Wall -Wextra -Wpedantic -Wconversion -Wunused)
   if(WARNING_AS_ERROR)
     add_compile_options(-Werror)
@@ -144,6 +139,7 @@ find_package(Qt5 COMPONENTS Core REQUIRED)
 find_package(Mdt0 COMPONENTS CommandLineArguments ConsoleApplication REQUIRED)
 
 # CommandLineParser uses Boost optional
+# DeployUtils_Core uses Boost Graph
 # For header only library,no component is defined.
 # https://cmake.org/pipermail/cmake/2013-September/055941.html
 find_package(Boost REQUIRED)
@@ -174,16 +170,16 @@ endif()
 #######################
 
 if(SANITIZER_ENABLE_ADDRESS)
-  mdt_build_with_address_sanitizer(BUILD_TYPES Instrumented)
+  mdt_build_with_address_sanitizer(BUILD_TYPES Instrumented RelWithDebInfo Debug)
 endif()
 if(SANITIZER_ENABLE_MEMORY)
-  mdt_build_with_memory_sanitizer(BUILD_TYPES Instrumented)
+  mdt_build_with_memory_sanitizer(BUILD_TYPES Instrumented RelWithDebInfo Debug)
 endif()
 if(SANITIZER_ENABLE_UNDEFINED)
-  mdt_build_with_undefined_sanitizer(BUILD_TYPES Instrumented)
+  mdt_build_with_undefined_sanitizer(BUILD_TYPES Instrumented RelWithDebInfo Debug)
 endif()
 if(SANITIZER_ENABLE_THREAD)
-  mdt_build_with_thread_sanitizer(BUILD_TYPES Instrumented)
+  mdt_build_with_thread_sanitizer(BUILD_TYPES Instrumented RelWithDebInfo Debug)
 endif()
 
 #######################
@@ -240,6 +236,12 @@ mdt_install_namespace_package_config_file(
 # TODO: not a target property, will it be propagated trough projects ??
 add_definitions(-DQT_NO_CAST_DEFINITIONS -DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_BYTEARRAY)
 
+# TODO: enable before migrate to Qt6
+# See https://doc.qt.io/qt-6/portingguide.html
+# add_compile_definitions(QT_DISABLE_DEPRECATED_BEFORE=0x050F00)
+
+# TODO: remove before migrate to Qt6
+add_compile_definitions(QT_NO_DEPRECATED_WARNINGS=1)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
