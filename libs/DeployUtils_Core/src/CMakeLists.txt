@@ -121,7 +121,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Impl/BinaryDependencies/GraphResultVisitor.cpp
   Mdt/DeployUtils/Impl/BinaryDependencies/Graph.cpp
   Mdt/DeployUtils/BinaryDependenciesFile.cpp
-  Mdt/DeployUtils/Impl/BinaryDependencies.cpp
+#   Mdt/DeployUtils/Impl/BinaryDependencies.cpp
   Mdt/DeployUtils/BinaryDependenciesResultLibrary.cpp
   Mdt/DeployUtils/BinaryDependenciesResult.cpp
   Mdt/DeployUtils/BinaryDependenciesResultList.cpp
