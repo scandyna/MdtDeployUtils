@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2022 Philippe Steinmann.
+ ** Copyright (C) 2015-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -19,16 +19,13 @@
  **
  ****************************************************************************/
 #include "BinaryDependencies.h"
-#include "BinaryDependenciesFile.h"
 #include "SearchPathList.h"
 #include "QtDistributionDirectory.h"
 #include "SharedLibraryFinderLinux.h"
 #include "SharedLibraryFinderWindows.h"
 #include "LibraryName.h"
 #include "FileInfoUtils.h"
-
-#include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
-
+#include "Mdt/DeployUtils/Impl/BinaryDependencies/Graph.h"
 #include "IsExistingValidSharedLibrary.h"
 #include "Mdt/DeployUtils/Platform.h"
 #include <QDir>
@@ -38,14 +35,7 @@
 namespace Mdt{ namespace DeployUtils{
 
 BinaryDependencies::BinaryDependencies(QObject* parent)
- : QObject(parent),
-   mImpl( std::make_unique<Impl::FindDependenciesImpl>() )
-{
-  connect(mImpl.get(), &Impl::FindDependenciesImpl::verboseMessage, this, &BinaryDependencies::verboseMessage);
-  connect(mImpl.get(), &Impl::FindDependenciesImpl::debugMessage, this, &BinaryDependencies::debugMessage);
-}
-
-BinaryDependencies::~BinaryDependencies() noexcept
+ : QObject(parent)
 {
 }
 
@@ -62,25 +52,26 @@ BinaryDependencies::findDependencies(const QFileInfo & binaryFilePath,
                                      const PathList & searchFirstPathPrefixList,
                                      std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory)
 {
+  /// \todo 
   assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
   assert( binaryFilePath.isAbsolute() );
   assert(qtDistributionDirectory.get() != nullptr);
-
-  /// \todo should be removed
-  BinaryDependenciesFileList allDependencies;
 
   ExecutableFileReader reader;
   std::shared_ptr<AbstractSharedLibraryFinder> shLibFinder;
 
   const Platform platform = setupFindDependencies(reader, shLibFinder, searchFirstPathPrefixList, qtDistributionDirectory, binaryFilePath);
 
-  BinaryDependenciesResult result( binaryFilePath, platform.operatingSystem() );
+  using Impl::BinaryDependencies::Graph;
 
-  auto target = BinaryDependenciesFile::fromQFileInfo(binaryFilePath);
+  Graph graph(platform);
+  connect(&graph, &Graph::verboseMessage, this, &BinaryDependencies::verboseMessage);
+  connect(&graph, &Graph::debugMessage, this, &BinaryDependencies::debugMessage);
 
-  mImpl->findDependencies(target, result, allDependencies, reader, platform);
+  graph.addTarget(binaryFilePath);
+  graph.findTransitiveDependencies(*shLibFinder, reader);
 
-  return result;
+  return graph.getResult(binaryFilePath);
 }
 
 BinaryDependenciesResultList
@@ -91,37 +82,23 @@ BinaryDependencies::findDependencies(const QFileInfoList & binaryFilePathList,
   assert( !binaryFilePathList.isEmpty() );
   assert(qtDistributionDirectory.get() != nullptr);
 
-  /// \todo should be removed
-  BinaryDependenciesFileList allDependencies;
-
-  const QFileInfo & firstBinaryFilePath = binaryFilePathList.at(0);
-
   ExecutableFileReader reader;
   std::shared_ptr<AbstractSharedLibraryFinder> shLibFinder;
 
+  const QFileInfo & firstBinaryFilePath = binaryFilePathList.at(0);
+
   const Platform platform = setupFindDependencies(reader, shLibFinder, searchFirstPathPrefixList, qtDistributionDirectory, firstBinaryFilePath);
 
-  BinaryDependenciesResultList resultList( platform.operatingSystem() );
+  using Impl::BinaryDependencies::Graph;
 
-  for(const QFileInfo & binaryFilePath : binaryFilePathList){
-    assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
-    assert( binaryFilePath.isAbsolute() );
-    auto target = BinaryDependenciesFile::fromQFileInfo(binaryFilePath);
-    BinaryDependenciesResult result( binaryFilePath, platform.operatingSystem() );
-    mImpl->findDependencies(target, result, allDependencies, reader, platform);
-    resultList.addResult(result);
-  }
+  Graph graph(platform);
+  connect(&graph, &Graph::verboseMessage, this, &BinaryDependencies::verboseMessage);
+  connect(&graph, &Graph::debugMessage, this, &BinaryDependencies::debugMessage);
 
-  /*
-   * NOTE
-   * It was tempted to return BinaryDependenciesFileList from this method,
-   * in the hope to reuse the rpath that should have already been read.
-   * In reality, the dependencies list does not contain the rpath.
-   * So, do not try this again. Philippe Steinmann 2022/11/15
-   */
-//   return Impl::qStringListFromBinaryDependenciesFileList(allDependencies);
+  graph.addTargets(binaryFilePathList);
+  graph.findTransitiveDependencies(*shLibFinder, reader);
 
-  return resultList;
+  return graph.getResultList(binaryFilePathList);
 }
 
 Platform BinaryDependencies::setupFindDependencies(ExecutableFileReader & reader,
@@ -167,8 +144,6 @@ Platform BinaryDependencies::setupFindDependencies(ExecutableFileReader & reader
   connect(shLibFinder.get(), &AbstractSharedLibraryFinder::debugMessage, this, &BinaryDependencies::debugMessage);
 
   emitSearchPathListMessage( shLibFinder->searchPathList() );
-
-  mImpl->setSharedLibrariesFinder(shLibFinder);
 
   return platform;
 }
