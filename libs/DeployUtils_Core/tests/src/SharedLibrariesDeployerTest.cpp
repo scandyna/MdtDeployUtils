@@ -241,46 +241,25 @@ TEST_CASE("findSharedLibrariesTargetsDependsOn")
   REQUIRE( qtCoreResult->isSolved() );
 }
 
-TEST_CASE("copySharedLibrariesTargetsDependsOn")
+TEST_CASE("copySharedLibrariesTargetDependsOn")
 {
   QTemporaryDir destinationDir;
   destinationDir.setAutoRemove(true);
   REQUIRE( destinationDir.isValid() );
 
   MessageLogger messageLogger;
-//   MessageLogger::setBackend<ConsoleMessageLogger>();
 
   auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
   SharedLibrariesDeployer deployer(qtDistributionDirectory);
-//   QObject::connect(&deployer, &SharedLibrariesDeployer::statusMessage, MessageLogger::info);
-//   QObject::connect(&deployer, &SharedLibrariesDeployer::verboseMessage, MessageLogger::info);
-//   QObject::connect(&deployer, &SharedLibrariesDeployer::debugMessage, MessageLogger::info);
-
-  const QStringList targets = {testExecutableFilePath, qtCoreLibraryFilePath};
-
-  const auto toQFileInfo = [](const QString & filePath){
-    return filePath;
-  };
-
   doDeployerCommonSetup(deployer);
-
-//   deployer.setSearchPrefixPathList(searchPrefixPathList);
   deployer.setOverwriteBehavior(OverwriteBehavior::Fail);
   deployer.setRemoveRpath(false);
-// #ifdef COMPILER_IS_MSVC
-//   CompilerLocationRequest compilerLocation;
-//   compilerLocation.setType(CompilerLocationType::CompilerPath);
-//   compilerLocation.setValue(  QString::fromLocal8Bit(CXX_COMPILER_PATH) );
-//   deployer.setCompilerLocation(compilerLocation);
-// #endif // #ifdef COMPILER_IS_MSVC
 
   REQUIRE( deployer.currentPlatform().isNull() );
 
-  deployer.copySharedLibrariesTargetsDependsOn( targets, toQFileInfo, destinationDir.path() );
+  deployer.copySharedLibrariesTargetDependsOn( testExecutableFilePath, destinationDir.path() );
 
   REQUIRE( deployer.currentPlatform() == Platform::nativePlatform() );
-  /// REQUIRE( !deployer.foundDependencies().empty() );
-  /// REQUIRE( containsTestSharedLibrary( deployer.foundDependencies() ) );
   REQUIRE( dirContainsTestSharedLibrary(destinationDir) );
   if(checkRPath){
     REQUIRE( getTestSharedLibraryRunPath(destinationDir).entryAt(0).path() == QLatin1String(".") );

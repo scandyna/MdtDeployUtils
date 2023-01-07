@@ -216,37 +216,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     void copySharedLibrariesTargetDependsOn(const QFileInfo & targetFilePath, const QString & destinationDirectoryPath);
 
-    /*! \brief Copy shared libraries given targets depends on to given destination
-     *
-     * \a toQFileInfo is a function object that will be called
-     * to get each element in \a targets as a QFileInfo object.
-     * It signature should be equivalent to:
-     * \code
-     * QFileInfo f(const Type & a);
-     * \endcode
-     *
-     * \pre each element, once converted to a QFileInfo object, must meet the preconditions of copySharedLibrariesTargetDependsOn()
-     * \sa copySharedLibrariesTargetDependsOn()
-     * 
-     * \todo implementation is naive !!
-     */
-    template<typename TargetList, typename ToQFileInfo>
-    [[deprecated]]
-    void copySharedLibrariesTargetsDependsOn(const TargetList & targets, const ToQFileInfo & toQFileInfo, const QString & destinationDirectoryPath)
-    {
-      QFileInfoList targetFilePathList;
-
-      for(const auto & target : targets){
-        targetFilePathList.append( toQFileInfo(target) );
-      }
-
-      if( targetFilePathList.isEmpty() ){
-        return;
-      }
-
-      copySharedLibrariesTargetsDependsOnImpl(targetFilePathList, destinationDirectoryPath);
-    }
-
     /*! \brief Set given rpath to given copied shared libraries
      *
      * \pre current platform must support RPath
