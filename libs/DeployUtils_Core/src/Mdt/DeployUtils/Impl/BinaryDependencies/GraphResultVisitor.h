@@ -3,7 +3,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ****************************************************************************/
 #ifndef MDT_DEPLOY_UTILS_IMPL_BINARY_DEPENDENCIES_GRAPH_RESULT_VISITOR_H
@@ -16,8 +16,6 @@
 #include "Mdt/DeployUtils/BinaryDependenciesResultLibrary.h"
 #include "Mdt/DeployUtils/OperatingSystem.h"
 #include <boost/graph/breadth_first_search.hpp>
-
-#include <QDebug>
 
 namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependencies{
 
@@ -76,9 +74,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
     void operator()(VertexDescriptor v, const GraphAL & graph) noexcept
     {
       const GraphFile & file = graph[v];
-      
-      qDebug() << "result, add " << file.fileName();
-      
+
       addGraphFileToResult(file, mResult, mOs);
     }
 
