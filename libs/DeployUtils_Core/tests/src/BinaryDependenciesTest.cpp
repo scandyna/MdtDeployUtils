@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2022 Philippe Steinmann.
+ ** Copyright (C) 2015-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -34,9 +34,6 @@
 #include <vector>
 #include <memory>
 
-#include <iostream>
-// #include <QDebug>
-
 using namespace Mdt::DeployUtils;
 
 
@@ -47,6 +44,7 @@ TEST_CASE("findDependencies")
   MessageLogger messageLogger;
   QObject::connect(&solver, &BinaryDependencies::message, MessageLogger::info);
   QObject::connect(&solver, &BinaryDependencies::verboseMessage, MessageLogger::info);
+//   QObject::connect(&solver, &BinaryDependencies::debugMessage, MessageLogger::info);
 
 #ifdef COMPILER_IS_MSVC
   auto compilerFinder = std::make_shared<CompilerFinder>();
@@ -56,14 +54,11 @@ TEST_CASE("findDependencies")
 
   auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
   PathList searchFirstPathPrefixList = PathList::fromStringList( getTestPrefixPath(PREFIX_PATH) );
-//   QStringList dependencies;
 
   SECTION("Executable")
   {
     const QFileInfo target( QString::fromLocal8Bit(TEST_DYNAMIC_EXECUTABLE_FILE_PATH) );
     const BinaryDependenciesResult dependencies = solver.findDependencies(target, searchFirstPathPrefixList, qtDistributionDirectory);
-
-//     std::cout << "deps:\n" << dependencies.join( QLatin1Char('\n') ).toStdString() << std::endl;
 
     REQUIRE( containsTestSharedLibrary(dependencies) );
     REQUIRE( containsQt5Core(dependencies) );
