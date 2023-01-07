@@ -28,6 +28,7 @@ TEST_CASE("construct")
   REQUIRE( result.isSolved() );
 }
 
+/*
 TEST_CASE("addLibrary_OLD")
 {
   const auto os = OperatingSystem::Linux;
@@ -65,7 +66,6 @@ TEST_CASE("addLibrary_OLD")
     REQUIRE( !result.isSolved() );
   }
 
-  /*
   SECTION("add a library 2x but with different case")
   {
     QFileInfo libA( QLatin1String("libA.DLL") );
@@ -80,8 +80,8 @@ TEST_CASE("addLibrary_OLD")
     REQUIRE( result.containsLibraryName( QLatin1String("libA.DLL") ) );
     REQUIRE( !result.isSolved() );
   }
-  */
 }
+*/
 
 TEST_CASE("addLibrary")
 {
