@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -49,6 +49,15 @@ namespace Mdt{ namespace DeployUtils{
      */
     explicit QtPlugins(std::shared_ptr<SharedLibrariesDeployer> & shLibDeployer , QObject *parent = nullptr) noexcept;
 
+    /*! \brief Install given Qt plugins to given destination directory
+     *
+     * Each Qt plugin,
+     * will be copied respecting \a overwriteBehavior .
+     *
+     * \sa FileCopier::copyFile()
+     */
+    void installQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
+
     /*! \brief Deploy given Qt plugins to given destination directory
      *
      * Each Qt plugins, as well as their dependencies,
@@ -69,6 +78,7 @@ namespace Mdt{ namespace DeployUtils{
    private:
 
     void makeDestinationDirectoryStructure(const QStringList & qtPluginsDirectories, const DestinationDirectory & destination);
+
     CopiedSharedLibraryFileList copyPluginsToDestination(const QtPluginFileList & plugins,
                                                          const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
     void copySharedLibrariesPluginsDependsOn(const QtPluginFileList & plugins, const DestinationDirectory & destination);
