@@ -52,9 +52,7 @@ BinaryDependencies::findDependencies(const QFileInfo & binaryFilePath,
                                      const PathList & searchFirstPathPrefixList,
                                      std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory)
 {
-  /// \todo 
-  assert( !binaryFilePath.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
-  assert( binaryFilePath.isAbsolute() );
+  assert( fileInfoIsAbsolutePath(binaryFilePath) );
   assert(qtDistributionDirectory.get() != nullptr);
 
   ExecutableFileReader reader;
