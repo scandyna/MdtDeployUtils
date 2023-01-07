@@ -159,7 +159,7 @@ add_library(Mdt_DeployUtilsCore
 )
 add_library(Mdt::DeployUtilsCore ALIAS Mdt_DeployUtilsCore)
 
-target_compile_features(Mdt_DeployUtilsCore PUBLIC cxx_std_14)
+target_compile_features(Mdt_DeployUtilsCore PUBLIC cxx_std_17)
 
 if(BUILD_USE_IPO_LTO)
   set_target_properties(Mdt_DeployUtilsCore
