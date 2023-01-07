@@ -58,17 +58,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     void installQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
 
-    /*! \brief Deploy given Qt plugins to given destination directory
-     *
-     * Each Qt plugins, as well as their dependencies,
-     * will be copied respecting \a overwriteBehavior .
-     *
-     * \sa FileCopier::copyFile()
-     * \sa setAlreadyDeployedSharedLibraries()
-     * \sa setSearchPrefixPathList()
-     */
-    void deployQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
-
    signals:
 
     void statusMessage(const QString & message) const;
@@ -81,7 +70,6 @@ namespace Mdt{ namespace DeployUtils{
 
     CopiedSharedLibraryFileList copyPluginsToDestination(const QtPluginFileList & plugins,
                                                          const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior);
-    void copySharedLibrariesPluginsDependsOn(const QtPluginFileList & plugins, const DestinationDirectory & destination);
     void setRPathToCopiedPlugins(const CopiedSharedLibraryFileList & copiedPlugins, const DestinationDirectory & destination);
 
     std::shared_ptr<SharedLibrariesDeployer> mShLibDeployer;

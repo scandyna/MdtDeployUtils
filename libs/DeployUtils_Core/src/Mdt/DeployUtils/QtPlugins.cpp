@@ -52,19 +52,6 @@ void QtPlugins::installQtPlugins(const QtPluginFileList & plugins, const Destina
   }
 }
 
-void QtPlugins::deployQtPlugins(const QtPluginFileList & plugins, const DestinationDirectory & destination, OverwriteBehavior overwriteBehavior)
-{
-  const QStringList pluginsDirectories = getQtPluginsDirectoryNames(plugins);
-
-  makeDestinationDirectoryStructure(pluginsDirectories, destination);
-  const CopiedSharedLibraryFileList copiedPlugins = copyPluginsToDestination(plugins, destination, overwriteBehavior);
-  copySharedLibrariesPluginsDependsOn(plugins, destination);
-
-  if( mShLibDeployer->currentPlatform().supportsRPath() ){
-   setRPathToCopiedPlugins(copiedPlugins, destination);
-  }
-}
-
 void QtPlugins::makeDestinationDirectoryStructure(const QStringList & qtPluginsDirectories, const DestinationDirectory & destination)
 {
   for(const QString & directory : qtPluginsDirectories){
@@ -112,17 +99,6 @@ QtPlugins::copyPluginsToDestination(const QtPluginFileList & plugins,
   }
 
   return copiedPlugins;
-}
-
-void QtPlugins::copySharedLibrariesPluginsDependsOn(const QtPluginFileList & plugins, const DestinationDirectory & destination)
-{
-  assert( mShLibDeployer.get() != nullptr );
-
-  const auto toFileInfo = [](const QtPluginFile & plugin){
-    return plugin.fileInfo();
-  };
-
-  mShLibDeployer->copySharedLibrariesTargetsDependsOn( plugins, toFileInfo, destination.sharedLibrariesDirectoryPath() );
 }
 
 void QtPlugins::setRPathToCopiedPlugins(const CopiedSharedLibraryFileList & copiedPlugins,
