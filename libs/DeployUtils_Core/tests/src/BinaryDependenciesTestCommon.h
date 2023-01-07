@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2022 Philippe Steinmann.
+ ** Copyright (C) 2015-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -21,14 +21,10 @@
 #include "TestIsExistingSharedLibrary.h"
 #include "TestUtils.h"
 #include "TestFileUtils.h"
-#include "Mdt/DeployUtils/Impl/BinaryDependencies.h"
+#include "Mdt/DeployUtils/FindDependencyError.h"
 #include "Mdt/DeployUtils/BinaryDependenciesFile.h"
 #include "Mdt/DeployUtils/BinaryDependenciesResultLibrary.h"
-
 #include "Mdt/DeployUtils/BinaryDependenciesResult.h"
-
-// #include "Mdt/DeployUtils/QtDistributionDirectory.h"
-
 #include "Mdt/DeployUtils/AbstractSharedLibraryFinder.h"
 #include "Mdt/DeployUtils/PathList.h"
 #include <QString>
