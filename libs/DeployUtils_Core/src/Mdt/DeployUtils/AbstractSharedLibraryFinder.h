@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -150,7 +150,7 @@ namespace Mdt{ namespace DeployUtils{
      * \pre \a libraryName must not be empty
      * \exception FindDependencyError
      */
-    [[deprecated]]
+    //[[deprecated]]
     virtual
     BinaryDependenciesFile findLibraryAbsolutePath_OLD(const QString & libraryName,
                                                    const BinaryDependenciesFile & dependentFile) const = 0;
