@@ -136,7 +136,7 @@ add_qt5_to_cmake_prefix_path("${QT_PREFIX_PATH}")
 
 find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS Core REQUIRED)
-find_package(Mdt0 COMPONENTS CommandLineArguments ConsoleApplication REQUIRED)
+find_package(Mdt0 COMPONENTS CommandLineParser CommandLineArguments ConsoleApplication REQUIRED)
 
 # CommandLineParser uses Boost optional
 # DeployUtils_Core uses Boost Graph
@@ -280,7 +280,7 @@ endif()
 
 add_subdirectory(libs/DeployUtils_Core)
 
-add_subdirectory(libs/CommandLineParser)
+# add_subdirectory(libs/CommandLineParser)
 
 add_subdirectory(cmake)
 

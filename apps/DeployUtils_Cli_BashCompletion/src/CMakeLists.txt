@@ -46,7 +46,7 @@ target_include_directories(mdtdeployutilsBashCompletionScriptGenerator
 
 target_link_libraries(mdtdeployutilsBashCompletionScriptGenerator
   PRIVATE
-    Mdt::CommandLineParser
+    Mdt0::CommandLineParser
     Mdt::DeployUtils_Cli
 )
 

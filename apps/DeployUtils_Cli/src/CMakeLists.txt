@@ -32,7 +32,7 @@ target_include_directories(Mdt_DeployUtils_Cli
 target_link_libraries(Mdt_DeployUtils_Cli
   PUBLIC
     Mdt::DeployUtilsCore
-    Mdt::CommandLineParser
+    Mdt0::CommandLineParser
     Mdt0::ConsoleApplication
     Qt5::Core
 )
