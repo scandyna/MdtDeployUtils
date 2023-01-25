@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2022 Philippe Steinmann.
+ ** Copyright (C) 2021-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -137,7 +137,8 @@ bool SharedLibraryFinderLinux::libraryIsInLocalExcludeList(const QString & libra
     QLatin1String("libkeyutils.so.1"),
     QLatin1String("libbz2.so.1.0"),
     QLatin1String("liblzma.so.5"),
-    QLatin1String("libudev.so.1")
+    QLatin1String("libudev.so.1"),
+    QLatin1String("libbsd.so.0")
   };
 
   return excludeList.contains(libraryName);
