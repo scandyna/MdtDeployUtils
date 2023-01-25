@@ -32,9 +32,10 @@ class MdtDeployUtilsConan(ConanFile):
     self.requires("qt/5.15.6")
     self.requires("boost/1.72.0")
     self.requires("MdtCMakeConfig/0.0.5@scandyna/testing")
-    self.requires("MdtConsoleApplication/0.4.4@scandyna/testing")
+    self.requires("MdtConsoleApplication/0.4.5@scandyna/testing")
     # TODO: see if required once CommandLineParser is removed (if used in tests only, move to build_requirements)
-    self.requires("MdtCommandLineArguments/0.4.4@scandyna/testing")
+    #self.requires("MdtCommandLineArguments/0.4.4@scandyna/testing")
+    self.requires("MdtCommandLineParser/0.0.6@scandyna/testing")
 
   # When using --profile:build xx and --profile:host xx ,
   # the dependencies declared in build_requires and tool_requires
