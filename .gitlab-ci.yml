@@ -1,5 +1,6 @@
 
 include:
+  - local: 'ci_cd/GitLab/Doc.yml'
   - local: 'ci_cd/GitLab/Common.yml'
   - local: 'ci_cd/GitLab/ConanTemplates.yml'
 
