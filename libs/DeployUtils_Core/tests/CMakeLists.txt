@@ -1,5 +1,5 @@
 ##############################################################
-#  Copyright Philippe Steinmann 2020 - 2022.
+#  Copyright Philippe Steinmann 2020 - 2023.
 #  Distributed under the Boost Software License, Version 1.0.
 #  (See accompanying file LICENSE.txt or copy at
 #  https://www.boost.org/LICENSE_1_0.txt)
@@ -825,7 +825,7 @@ mdt_add_test(
 mdt_add_test(
   NAME BinaryDependenciesGraphFileImplTest
   TARGET binaryDependenciesGraphFileImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Boost::boost Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/BinaryDependenciesGraphFileImplTest.cpp
 )
@@ -833,7 +833,7 @@ mdt_add_test(
 mdt_add_test(
   NAME BinaryDependenciesGraphImplTest
   TARGET binaryDependenciesGraphImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  DEPENDENCIES Mdt::DeployUtilsCore Boost::boost Mdt::Catch2Main Mdt::Catch2Qt
   SOURCE_FILES
     src/BinaryDependenciesGraphImplTest.cpp
 )
