@@ -1,0 +1,54 @@
+
+include:
+  - local: 'ci_cd/GitLab/Common.yml'
+  - local: 'ci_cd/GitLab/BuildAndTest_Templates.yml'
+
+############################################
+# Build & test Windows MSVC 16 2019 X86_64
+############################################
+
+.buildAndTest_Windows_msvc16_x86_64:
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-msvc2019:latest
+  variables:
+    CONAN_PROFILE_BUILD: windows_msvc16_x86_64
+    CONAN_PROFILE_HOST: windows_msvc16_x86_64_qt_widgets_modules_boost
+    INSTALL_PREFIX: /opt/MdtDeployUtils
+
+build_Windows_msvc16_x86_64_Debug:
+  variables:
+    BUILD_TYPE: Debug
+  extends:
+    - .buildAndTest_Windows_msvc16_x86_64
+    - .build_windows
+
+test_Windows_msvc16_x86_64_Debug:
+  variables:
+    BUILD_TYPE: Debug
+  extends:
+    - .buildAndTest_Windows_msvc16_x86_64
+    - .test_windows
+  dependencies:
+    - build_Windows_msvc16_x86_64_Debug
+  needs: ["build_Windows_msvc16_x86_64_Debug"]
+
+
+# MSVC: also build and test Release config
+# See: https://gitlab.com/scandyna/mdtdeployutils/-/pipelines/436234061
+
+build_Windows_msvc16_x86_64_Release:
+  variables:
+    BUILD_TYPE: Release
+  extends:
+    - .buildAndTest_Windows_msvc16_x86_64
+    - .build_windows
+
+test_Windows_msvc16_x86_64_Release:
+  variables:
+    BUILD_TYPE: Release
+  extends:
+    - .buildAndTest_Windows_msvc16_x86_64
+    - .test_windows
+  dependencies:
+    - build_Windows_msvc16_x86_64_Release
+  needs: ["build_Windows_msvc16_x86_64_Release"]
+
