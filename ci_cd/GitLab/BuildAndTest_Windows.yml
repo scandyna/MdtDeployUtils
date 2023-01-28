@@ -4,6 +4,37 @@ include:
   - local: 'ci_cd/GitLab/BuildAndTest_Templates.yml'
 
 ############################################
+# Build & test Windows Gcc 8 (MinGW) X86_64
+############################################
+
+.buildAndTest_Windows_gcc8_x86_64:
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-win64_mingw81:latest
+  variables:
+    CONAN_PROFILE_BUILD: windows_gcc8_x86_64
+    CONAN_PROFILE_HOST: windows_gcc8_x86_64_qt_widgets_modules_boost
+    CMAKE_GENERATOR: "MinGW Makefiles"
+    INSTALL_PREFIX: /opt/MdtDeployUtils
+
+
+build_Windows_gcc8_x86_64_Debug:
+  variables:
+    BUILD_TYPE: Debug
+  extends:
+    - .buildAndTest_Windows_gcc8_x86_64
+    - .build_windows
+
+test_Windows_gcc8_x86_64_Debug:
+  variables:
+    BUILD_TYPE: Debug
+  extends:
+    - .buildAndTest_Windows_gcc8_x86_64
+    - .test_windows
+  dependencies:
+    - build_Windows_gcc8_x86_64_Debug
+  needs: ["build_Windows_gcc8_x86_64_Debug"]
+
+
+############################################
 # Build & test Windows MSVC 16 2019 X86_64
 ############################################
 
