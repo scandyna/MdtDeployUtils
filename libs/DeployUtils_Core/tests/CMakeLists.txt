@@ -10,8 +10,13 @@ include(GenerateExportHeader)
 
 # Using Conan with CMakeDeps breaks using $<TARGET_FILE:tgt>
 # See https://gitlab.com/scandyna/mdt-cmake-modules/-/issues/12
-find_file(Qt5_CORE_SHARED_LIB_PATH libQt5Core.so Qt5Core.dll Qt5Cored.dll PATH_SUFFIXES "../../../bin" REQUIRED)
-find_file(Qt5_GUI_SHARED_LIB_PATH libQt5Gui.so Qt5Gui.dll Qt5Guid.dll PATH_SUFFIXES "../../../bin" REQUIRED)
+if(WIN32)
+  find_file(Qt5_CORE_SHARED_LIB_PATH Qt5Core.dll Qt5Cored.dll PATH_SUFFIXES "../../../bin" REQUIRED)
+  find_file(Qt5_GUI_SHARED_LIB_PATH Qt5Gui.dll Qt5Guid.dll PATH_SUFFIXES "../../../bin" REQUIRED)
+else()
+  find_library(Qt5_CORE_SHARED_LIB_PATH libQt5Core.so REQUIRED)
+  find_library(Qt5_GUI_SHARED_LIB_PATH libQt5Gui.so REQUIRED)
+endif()
 
 message(DEBUG "Qt5_CORE_SHARED_LIB_PATH: ${Qt5_CORE_SHARED_LIB_PATH}")
 message(DEBUG "Qt5_GUI_SHARED_LIB_PATH: ${Qt5_GUI_SHARED_LIB_PATH}")
