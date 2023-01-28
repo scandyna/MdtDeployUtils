@@ -34,10 +34,12 @@ test_linux_gcc8_x86_64_debug:
   needs: ["build_linux_gcc8_x86_64_debug"]
 
 
+# Build with LTO fails
+# https://gitlab.com/scandyna/mdtdeployutils/-/jobs/3676633578
 build_linux_gcc8_x86_64_release:
   variables:
     BUILD_TYPE: Release
-    BUILD_USE_IPO_LTO_IF_AVAILABLE: "ON"
+    BUILD_USE_IPO_LTO_IF_AVAILABLE: "OFF"
   extends:
     - .buildAndTest_Linux_gcc8_x86_64
     - .build_linux
