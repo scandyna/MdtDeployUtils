@@ -56,6 +56,7 @@ include:
     - cmake --build . --config $BUILD_TYPE -j4
     - source deactivate_conanbuild.sh
   artifacts:
+    when: always
     expire_in: 1 day
     paths:
       - build
@@ -78,6 +79,7 @@ include:
     - cmake --build . --config "$BUILD_TYPE" -j4
     - .\deactivate_conanbuild
   artifacts:
+    when: always
     expire_in: 1 day
     paths:
       - build
