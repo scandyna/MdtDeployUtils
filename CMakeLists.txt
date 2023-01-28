@@ -121,6 +121,11 @@ if( (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU") AND (CMAKE_CXX_COMPILER_VERSION VER
   add_compile_options(-Wno-noexcept-type)
 endif()
 
+# https://gitlab.com/scandyna/mdtdeployutils/-/issues/15
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
+  add_compile_options(-Wno-error=maybe-uninitialized)
+endif()
+
 #######################
 # Paths to dependencies
 #######################
