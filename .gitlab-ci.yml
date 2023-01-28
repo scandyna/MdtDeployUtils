@@ -54,27 +54,6 @@ include:
 # Linux
 ###############################
 
-#.build_linux:
-  #stage: build
-  #image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-cpp-gui:latest
-  #before_script:
-    #- !reference [.setup_conan, script]
-  #script:
-    #- mkdir build
-    #- cd build
-    #- conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
-    #- source activate.sh
-    #- cmake -G"Unix Makefiles" -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWARNING_AS_ERROR=ON -DBUILD_TESTS=ON -DBUILD_REAL_INSTALL_TESTS=ON -DBUILD_USE_IPO_LTO=$BUILD_USE_IPO_LTO -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" ..
-    #- make -j4
-    #- source deactivate.sh
-  #artifacts:
-    #expire_in: 1 day
-    #paths:
-      #- build
-
-
-
-
 
 
 .deploy_linux_libs:
@@ -102,23 +81,6 @@ test_linux_system_wide_install:
   needs: ["build_linux_system_wide_install"]
 
 
-# With LTO ON, fails.
-# See: https://gitlab.com/scandyna/mdtdeployutils/-/jobs/1371648798
-build_linux_clang6.0_x86_64_release:
-  variables:
-    CONAN_PROFILE: linux_clang6.0_x86_64_libstdc++11
-    BUILD_TYPE: Release
-    BUILD_USE_IPO_LTO: "OFF"
-  extends: .build_linux
-
-test_linux_clang6.0_x86_64_release:
-  variables:
-    CONAN_PROFILE: linux_clang6.0_x86_64_libstdc++11
-    BUILD_TYPE: Release
-  dependencies:
-    - build_linux_clang6.0_x86_64_release
-  extends: .test_linux
-  needs: ["build_linux_clang6.0_x86_64_release"]
 
 
 build_StandaloneInstallTest_Linux_x86_64:

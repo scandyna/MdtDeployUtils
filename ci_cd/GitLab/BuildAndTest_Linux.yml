@@ -60,3 +60,34 @@ system_run_test_linux_gcc8_x86_64_release:
   dependencies:
     - test_linux_gcc8_x86_64_release
   needs: ["test_linux_gcc8_x86_64_release"]
+
+
+########################################
+# Linux Clang 10 x86_64 libc++
+########################################
+
+.buildAndTest_Linux_clang10_x86_64_libcxx:
+  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-clang-10:latest
+  variables:
+    CONAN_PROFILE_BUILD: linux_clang10_x86_64_libc++
+    CONAN_PROFILE_HOST: linux_ubuntu-18.04_clang10_x86_64_libc++_qt_widgets_modules_boost
+    INSTALL_PREFIX: /opt/MdtDeployUtils
+
+
+build_linux_clang10_x86_64_libcxx_Release:
+  variables:
+    BUILD_TYPE: Release
+    BUILD_USE_IPO_LTO_IF_AVAILABLE: "ON"
+  extends:
+    - .buildAndTest_Linux_clang10_x86_64_libcxx
+    - .build_linux
+
+test_linux_clang10_x86_64_libcxx_Release:
+  variables:
+    BUILD_TYPE: Release
+  extends:
+    - .buildAndTest_Linux_clang10_x86_64_libcxx
+    - .test_linux
+  dependencies:
+    - build_linux_clang10_x86_64_libcxx_Release
+  needs: ["build_linux_clang10_x86_64_libcxx_Release"]
