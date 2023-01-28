@@ -138,7 +138,6 @@ find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS Core REQUIRED)
 find_package(Mdt0 COMPONENTS CommandLineParser CommandLineArguments ConsoleApplication REQUIRED)
 
-# CommandLineParser uses Boost optional
 # DeployUtils_Core uses Boost Graph
 # For header only library,no component is defined.
 # https://cmake.org/pipermail/cmake/2013-September/055941.html
@@ -279,8 +278,6 @@ endif()
 #######################
 
 add_subdirectory(libs/DeployUtils_Core)
-
-# add_subdirectory(libs/CommandLineParser)
 
 add_subdirectory(cmake)
 
