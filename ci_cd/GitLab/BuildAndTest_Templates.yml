@@ -1,0 +1,99 @@
+
+include:
+  - local: 'ci_cd/GitLab/Common.yml'
+  - local: 'ci_cd/GitLab/Conan_Templates.yml'
+
+
+.buildAndTest_rules:
+  rules:
+    - changes:
+      - "*.cpp"
+      - CMakeLists.txt
+      - conanfile.py
+      - apps/**/*
+      - libs/**/*
+      - tests/**/*
+      - .gitlab-ci.yml
+      - ci_cd/GitLab/*
+      when: on_success
+
+
+.conan_install:
+  script:
+    - conan install
+      --profile:build $CONAN_PROFILE_BUILD --profile:host $CONAN_PROFILE_HOST
+      --settings:build build_type=Release --settings:host build_type=$BUILD_TYPE
+      ..
+
+
+.cmake_configure:
+  script:
+    # The toolchain file expression has to be quoted when using Powershell
+    # See https://gitlab.kitware.com/cmake/cmake/-/issues/23109
+    - cmake "-DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake"
+      "-DCMAKE_BUILD_TYPE=$BUILD_TYPE"
+      -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=ON
+      -DBUILD_REAL_INSTALL_TESTS=ON
+      "-DBUILD_USE_IPO_LTO_IF_AVAILABLE=$BUILD_USE_IPO_LTO_IF_AVAILABLE"
+      -DWARNING_AS_ERROR=ON
+      -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG
+      -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX"
+      ..
+
+
+.build_linux:
+  stage: build
+  rules:
+    - !reference [.buildAndTest_rules, rules]
+  before_script:
+    - !reference [.setup_conan, script]
+  script:
+    - mkdir build
+    - cd build
+    - !reference [.conan_install, script]
+    - source conanbuild.sh || true  # Workaround to https://gitlab.com/gitlab-org/ci-cd/pipeline-authoring-stack-rank/-/issues/1
+    - !reference [.cmake_configure, script]
+    - cmake --build . --config $BUILD_TYPE -j4
+    - source deactivate_conanbuild.sh
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - build
+
+
+.test_linux:
+  stage: test
+  before_script:
+    - !reference [.setup_conan, script]
+    - export DISPLAY=":99"
+    - /etc/init.d/xdummy-server start
+  script:
+    - cd build
+    - !reference [.conan_install, script]
+    - ctest --output-on-failure .
+  artifacts:
+    when: always
+    expire_in: 1 week
+    paths:
+      - build
+
+
+# Will run some executables that have been deployed in tests,
+# in a image that does not have Qt installed
+.system_run_test_linux:
+  stage: system_test
+  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-xserver-cmake:latest
+  before_script:
+    - export DISPLAY=":99"
+    - /etc/init.d/xdummy-server start
+  script:
+    - cd build
+    - ctest --output-on-failure . -R System_DeployUtils_Cli_Run_QtCoreApp
+    - ctest --output-on-failure . -R System_DeployUtils_Cli_Run_QtWidgetsApp -V
+    - ctest --output-on-failure . -R System_DeployUtils_CMake_Run_QtCoreApp
+    - ctest --output-on-failure . -R System_DeployUtils_CMake_Run_QtWidgetsApp
+  artifacts:
+    when: on_failure
+    expire_in: 1 week
+    paths:
+      - build

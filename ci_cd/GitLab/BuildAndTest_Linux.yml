@@ -1,0 +1,62 @@
+
+include:
+  - local: 'ci_cd/GitLab/Common.yml'
+  - local: 'ci_cd/GitLab/BuildAndTest_Templates.yml'
+
+########################################
+# Linux Gcc 8 x86_64
+########################################
+
+.buildAndTest_Linux_gcc8_x86_64:
+  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-gcc-8:latest
+  variables:
+    CONAN_PROFILE_BUILD: linux_gcc8_x86_64
+    CONAN_PROFILE_HOST: linux_ubuntu-18.04_gcc8_x86_64_qt_widgets_modules_boost
+    INSTALL_PREFIX: /opt/MdtDeployUtils
+  extends: .build_linux
+
+build_linux_gcc8_x86_64_debug:
+  variables:
+    BUILD_TYPE: Debug
+    BUILD_USE_IPO_LTO_IF_AVAILABLE: "OFF"
+  extends:
+    - .buildAndTest_Linux_gcc8_x86_64
+    - .build_linux
+
+test_linux_gcc8_x86_64_debug:
+  variables:
+    BUILD_TYPE: Debug
+  extends:
+    - .buildAndTest_Linux_gcc8_x86_64
+    - .test_linux
+  dependencies:
+    - build_linux_gcc8_x86_64_debug
+  needs: ["build_linux_gcc8_x86_64_debug"]
+
+
+build_linux_gcc8_x86_64_release:
+  variables:
+    BUILD_TYPE: Release
+    BUILD_USE_IPO_LTO_IF_AVAILABLE: "ON"
+  extends:
+    - .buildAndTest_Linux_gcc8_x86_64
+    - .build_linux
+
+test_linux_gcc8_x86_64_release:
+  variables:
+    BUILD_TYPE: Release
+  extends:
+    - .buildAndTest_Linux_gcc8_x86_64
+    - .test_linux
+  dependencies:
+    - build_linux_gcc8_x86_64_release
+  needs: ["build_linux_gcc8_x86_64_release"]
+
+
+system_run_test_linux_gcc8_x86_64_release:
+  extends: .system_run_test_linux
+  variables:
+    QT_DEBUG_PLUGINS: 1
+  dependencies:
+    - test_linux_gcc8_x86_64_release
+  needs: ["test_linux_gcc8_x86_64_release"]

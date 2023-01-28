@@ -1,8 +1,11 @@
 
+# TODO: remove templates etc..
 include:
   - local: 'ci_cd/GitLab/Doc.yml'
+  - local: 'ci_cd/GitLab/BuildAndTest_Linux.yml'
   - local: 'ci_cd/GitLab/Common.yml'
   - local: 'ci_cd/GitLab/Conan_Templates.yml'
+  - local: 'ci_cd/GitLab/BuildAndTest_Templates.yml'
 
 
 ###############################
@@ -51,65 +54,27 @@ include:
 # Linux
 ###############################
 
-.build_linux:
-  stage: build
-  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-cpp-gui:latest
-  before_script:
-    - !reference [.setup_conan, script]
-  script:
-    - mkdir build
-    - cd build
-    - conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
-    - source activate.sh
-    - cmake -G"Unix Makefiles" -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWARNING_AS_ERROR=ON -DBUILD_TESTS=ON -DBUILD_REAL_INSTALL_TESTS=ON -DBUILD_USE_IPO_LTO=$BUILD_USE_IPO_LTO -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" ..
-    - make -j4
-    - source deactivate.sh
-  artifacts:
-    expire_in: 1 day
-    paths:
-      - build
-
-
-# Here we have to get the binaries got with conan during build
-.test_linux:
-  stage: test
-  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-cpp-gui:latest
-  before_script:
-    - !reference [.setup_conan, script]
-    - export DISPLAY=":99"
-    - /etc/init.d/xdummy-server start
-  script:
-    - cd build
-    - conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
-    - ctest --output-on-failure .
-  artifacts:
-    when: always
-    expire_in: 1 week
-    paths:
-      - build
-
-
-# Will run some executables that have been deployed in tests,
-# in a image that does not have Qt installed
-.system_run_test_linux:
-  stage: system_test
-  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-xserver-cmake:latest
-  before_script:
+#.build_linux:
+  #stage: build
+  #image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-cpp-gui:latest
+  #before_script:
     #- !reference [.setup_conan, script]
-    - export DISPLAY=":99"
-    - /etc/init.d/xdummy-server start
-  script:
-    - cd build
+  #script:
+    #- mkdir build
+    #- cd build
     #- conan install --profile $CONAN_PROFILE -s build_type=$BUILD_TYPE $CONAN_EXTRA_ARGUMENTS ..
-    - ctest --output-on-failure . -R System_DeployUtils_Cli_Run_QtCoreApp
-    - ctest --output-on-failure . -R System_DeployUtils_Cli_Run_QtWidgetsApp -V
-    - ctest --output-on-failure . -R System_DeployUtils_CMake_Run_QtCoreApp
-    - ctest --output-on-failure . -R System_DeployUtils_CMake_Run_QtWidgetsApp
-  artifacts:
-    when: on_failure
-    expire_in: 1 week
-    paths:
-      - build
+    #- source activate.sh
+    #- cmake -G"Unix Makefiles" -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DWARNING_AS_ERROR=ON -DBUILD_TESTS=ON -DBUILD_REAL_INSTALL_TESTS=ON -DBUILD_USE_IPO_LTO=$BUILD_USE_IPO_LTO -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" ..
+    #- make -j4
+    #- source deactivate.sh
+  #artifacts:
+    #expire_in: 1 day
+    #paths:
+      #- build
+
+
+
+
 
 
 .deploy_linux_libs:
@@ -117,47 +82,6 @@ include:
   extends: .deploy_libs
 
 
-build_linux_gcc7_x86_64_debug:
-  variables:
-    CONAN_PROFILE: linux_gcc7_x86_64
-    BUILD_TYPE: Debug
-    INSTALL_PREFIX: /opt/MdtDeployUtils
-  extends: .build_linux
-
-test_linux_gcc7_x86_64_debug:
-  variables:
-    CONAN_PROFILE: linux_gcc7_x86_64
-    BUILD_TYPE: Debug
-  dependencies:
-    - build_linux_gcc7_x86_64_debug
-  extends: .test_linux
-  needs: ["build_linux_gcc7_x86_64_debug"]
-
-
-build_linux_gcc7_x86_64_release:
-  variables:
-    CONAN_PROFILE: linux_gcc7_x86_64
-    BUILD_TYPE: Release
-    BUILD_USE_IPO_LTO: "ON"
-    INSTALL_PREFIX: /opt/MdtDeployUtils
-  extends: .build_linux
-
-test_linux_gcc7_x86_64_release:
-  variables:
-    CONAN_PROFILE: linux_gcc7_x86_64
-    BUILD_TYPE: Release
-  dependencies:
-    - build_linux_gcc7_x86_64_release
-  extends: .test_linux
-  needs: ["build_linux_gcc7_x86_64_release"]
-
-system_run_test_linux_gcc7_x86_64_release:
-  extends: .system_run_test_linux
-  variables:
-    QT_DEBUG_PLUGINS: 1
-  dependencies:
-    - test_linux_gcc7_x86_64_release
-  needs: ["test_linux_gcc7_x86_64_release"]
 
 
 build_linux_system_wide_install:
