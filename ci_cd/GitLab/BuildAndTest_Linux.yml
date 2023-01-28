@@ -75,11 +75,12 @@ system_run_test_linux_gcc8_x86_64_release:
     CONAN_PROFILE_HOST: linux_ubuntu-18.04_clang10_x86_64_libc++_qt_widgets_modules_boost
     INSTALL_PREFIX: /opt/MdtDeployUtils
 
-
+# Build with LTO fails
+# https://gitlab.com/scandyna/mdtdeployutils/-/jobs/3676633580
 build_linux_clang10_x86_64_libcxx_Release:
   variables:
     BUILD_TYPE: Release
-    BUILD_USE_IPO_LTO_IF_AVAILABLE: "ON"
+    BUILD_USE_IPO_LTO_IF_AVAILABLE: "OFF"
   extends:
     - .buildAndTest_Linux_clang10_x86_64_libcxx
     - .build_linux
