@@ -83,6 +83,10 @@ include:
       - build
 
 
+# Some tests depends on the tests artifacts
+# Artifacts can be too big
+# Ex: https://gitlab.com/scandyna/mdtdeployutils/-/jobs/3676633601
+# So run clean after tests
 .test_base:
   stage: test
   rules:
@@ -91,8 +95,9 @@ include:
     - cd build
     - !reference [.conan_install, script]
     - ctest --output-on-failure -C "$BUILD_TYPE"
+    - cmake --build . --config "$BUILD_TYPE" --target clean
   artifacts:
-    when: on_failure
+    when: always
     expire_in: 1 week
     paths:
       - build
