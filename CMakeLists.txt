@@ -115,6 +115,10 @@ else()
   endif()
 endif()
 
+#######################
+# Compilers issues
+#######################
+
 # GCC: mangled name for 'xx' will change in C++17 because the exception specification is part of a function type [-Wnoexcept-type]
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80985
 if( (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0) )
@@ -124,6 +128,12 @@ endif()
 # https://gitlab.com/scandyna/mdtdeployutils/-/issues/15
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
   add_compile_options(-Wno-error=maybe-uninitialized)
+endif()
+
+# Workaround for the "too many sections" error on some MinGW compiler
+# See: https://stackoverflow.com/questions/16596876/object-file-has-too-many-sections
+if(MINGW)
+  add_compile_options(-Wa,-mbig-obj)
 endif()
 
 #######################
