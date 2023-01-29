@@ -91,6 +91,8 @@ test_Windows_msvc16_x86_64_Release:
 build_StandaloneInstallTest_Windows_x86_64:
   stage: build
   image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-win64_mingw81:latest
+  rules:
+    - !reference [.buildAndTest_rules, rules]
   extends:
     - .windows_runner
   variables:
@@ -122,6 +124,8 @@ build_StandaloneInstallTest_Windows_x86_64:
 StandaloneInstallTest_Windows_x86_64:
   stage: install_test
   image: mcr.microsoft.com/windows/servercore:ltsc2019
+  rules:
+    - !reference [.buildAndTest_rules, rules]
   extends:
     - .windows_runner
   script:

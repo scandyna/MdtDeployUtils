@@ -129,14 +129,14 @@ test_linux_system_wide_install:
 build_StandaloneInstallTest_Linux_x86_64:
   stage: build
   image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-gcc-8:latest
+  rules:
+    - !reference [.buildAndTest_rules, rules]
   variables:
     CONAN_PROFILE_BUILD: linux_gcc8_x86_64
     CONAN_PROFILE_HOST: linux_ubuntu-18.04_gcc8_x86_64_qt_widgets_modules_boost
     BUILD_TYPE: Release
     BUILD_USE_IPO_LTO_IF_AVAILABLE: "OFF"
     INSTALL_PREFIX: opt/MdtDeployUtils
-  rules:
-    - !reference [.buildAndTest_rules, rules]
   before_script:
     - !reference [.setup_conan, script]
   script:
@@ -157,6 +157,8 @@ build_StandaloneInstallTest_Linux_x86_64:
 StandaloneInstallTest_Linux_x86_64:
   stage: install_test
   image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-minimal:latest
+  rules:
+    - !reference [.buildAndTest_rules, rules]
   script:
     - cd build
     - opt/MdtDeployUtils/bin/mdtdeployutils --help
