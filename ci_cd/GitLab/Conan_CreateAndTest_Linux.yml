@@ -16,8 +16,8 @@ conan_createAndTest_linux_gcc8_x86_64:
   parallel:
     matrix:
       - COMPONENT:
-          - DeployUtils
-          - DeployUtilsCore
+          - MdtDeployUtils
+          - MdtDeployUtilsCore
         BUILD_TYPE:
           - Debug
 
