@@ -33,7 +33,7 @@ conan_createAndTest_windows_gcc8_x86_64:
 # Windows MSVC 16 x86_64
 ########################################
 
-conan_createAndTest_windows_gcc8_x86_64:
+conan_createAndTest_windows_msvc16_x86_64:
   extends: .conan_createAndTest_Windows
   image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-msvc2019:latest
   variables:
