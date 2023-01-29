@@ -17,7 +17,7 @@ class MdtDeployUtilsConan(ConanFile):
   # version ranges are not possible.
   # See https://gitlab.com/gitlab-org/gitlab/-/issues/333638
   # TODO: is Catch required here ? Only for builds with tests, probably not when building packages
-  build_requires = "MdtApplication/0.4.5@scandyna/testing","MdtCMakeModules/0.19.2@scandyna/testing","Catch2/v2.13.7x@scandyna/testing"
+  build_requires = "MdtConsoleApplication/0.4.5@scandyna/testing","MdtCMakeModules/0.19.2@scandyna/testing","Catch2/v2.13.7x@scandyna/testing"
   generators = "cmake", "cmake_paths", "virtualenv"
 
   # If no_copy_source is False, conan copies sources to build directory and does in-source build,
