@@ -5,6 +5,7 @@ include:
   - local: 'ci_cd/GitLab/BuildAndTest_Linux.yml'
   - local: 'ci_cd/GitLab/BuildAndTest_Windows.yml'
   - local: 'ci_cd/GitLab/Conan_CreateAndTest_Linux.yml'
+  - local: 'ci_cd/GitLab/Conan_CreateAndTest_Windows.yml'
   - local: 'ci_cd/GitLab/Common.yml'
   - local: 'ci_cd/GitLab/Conan_Templates.yml'
   - local: 'ci_cd/GitLab/BuildAndTest_Templates.yml'
