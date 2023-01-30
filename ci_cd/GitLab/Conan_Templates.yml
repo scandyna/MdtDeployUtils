@@ -43,8 +43,10 @@ include:
 # - retry
 # - rules
 # - conan upload
+# Also set stage to deploy again
 .deploy_conan:
-  stage: deploy
+  stage: build
+  #stage: deploy
   #retry: 1
   #rules:
     #- if: $CI_COMMIT_TAG
