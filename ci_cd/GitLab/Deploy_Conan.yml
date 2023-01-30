@@ -1,0 +1,93 @@
+
+include:
+  - local: 'ci_cd/GitLab/Common.yml'
+  - local: 'ci_cd/GitLab/Conan_Templates.yml'
+
+
+.deploy_conan_windows:
+  extends:
+    - .deploy_conan
+    - .windows_runner
+
+########################################
+# Linux Apps x86_64
+########################################
+
+Deploy_conan_linux_apps:
+  extends: .deploy_conan
+  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-gcc-8:latest
+  variables:
+    CONAN_PROFILE_BUILD: linux_gcc8_x86_64
+    CONAN_PROFILE_HOST: linux_ubuntu-18.04_gcc8_x86_64_qt_widgets_modules_boost
+    COMPONENT: MdtDeployUtils
+    BUILD_TYPE: Release
+
+########################################
+# Windows Apps x86_64
+########################################
+
+Deploy_conan_windows_apps:
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-win64_mingw81:latest
+  extends: .deploy_conan_windows
+    CONAN_PROFILE_BUILD: windows_gcc8_x86_64
+    CONAN_PROFILE_HOST: windows_gcc8_x86_64_qt_widgets_modules_boost
+    COMPONENT: MdtDeployUtils
+    BUILD_TYPE: Release
+
+
+########################################
+# Linux libs Gcc x86_64
+########################################
+
+Deploy_conan_libs_linux_gcc8_x86_64:
+  extends: .deploy_conan
+  image: registry.gitlab.com/scandyna/docker-images-ubuntu/ubuntu-18.04-gcc-8:latest
+  variables:
+    CONAN_PROFILE_BUILD: linux_gcc8_x86_64
+    CONAN_PROFILE_HOST: linux_ubuntu-18.04_gcc8_x86_64_qt_widgets_modules_boost
+  parallel:
+    matrix:
+      - COMPONENT:
+          - MdtDeployUtilsCore
+        BUILD_TYPE:
+          - Debug
+          - Release
+          - RelWithDebInfo
+
+
+########################################
+# Windows libs Gcc x86_64
+########################################
+
+Deploy_conan_libs_windows_gcc8_x86_64:
+  extends: .deploy_conan_windows
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-win64_mingw81:latest
+  variables:
+    CONAN_PROFILE_BUILD: windows_gcc8_x86_64
+    CONAN_PROFILE_HOST: windows_gcc8_x86_64_qt_widgets_modules_boost
+  parallel:
+    matrix:
+      - COMPONENT:
+          - MdtDeployUtilsCore
+        BUILD_TYPE:
+          - Debug
+          - Release
+
+
+########################################
+# Windows libs MSVC x86_64
+########################################
+
+Deploy_conan_libs_windows_MSVC16_x86_64:
+  extends: .deploy_conan_windows
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-msvc2019:latest
+  variables:
+    CONAN_PROFILE_BUILD: windows_msvc16_x86_64
+    CONAN_PROFILE_HOST: windows_msvc16_x86_64_qt_widgets_modules_boost
+  parallel:
+    matrix:
+      - COMPONENT:
+          - MdtDeployUtilsCore
+        BUILD_TYPE:
+          - Debug
+          - Release

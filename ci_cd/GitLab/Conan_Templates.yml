@@ -1,4 +1,8 @@
 
+include:
+  - local: 'ci_cd/GitLab/Common.yml'
+
+
 .setup_conan:
   script:
     - conan remote remove conancenter
@@ -32,3 +36,20 @@
     - conan test packaging/conan/$COMPONENT/test_package Mdt$COMPONENT/0.0.0@scandyna/testing
       --profile:build $CONAN_PROFILE_BUILD --profile:host $CONAN_PROFILE_HOST
       --settings:build build_type=Release --settings:host build_type=$BUILD_TYPE
+
+
+
+.deploy_conan:
+  stage: deploy
+  retry: 1
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: on_success
+    - when: never
+  script:
+    - !reference [.setup_conan, script]
+    - conan create packaging/conan/$COMPONENT scandyna/testing
+      --profile:build $CONAN_PROFILE_BUILD --profile:host $CONAN_PROFILE_HOST
+      --settings:build build_type=Release --settings:host build_type=$BUILD_TYPE
+    - conan user --password "${CI_JOB_TOKEN}" --remote scandyna ci_user
+    - conan upload $COMPONENT/* --remote scandyna --all -c
