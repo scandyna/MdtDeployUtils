@@ -29,6 +29,7 @@ Deploy_conan_linux_apps:
 Deploy_conan_windows_apps:
   image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-win64_mingw81:latest
   extends: .deploy_conan_windows
+  variables:
     CONAN_PROFILE_BUILD: windows_gcc8_x86_64
     CONAN_PROFILE_HOST: windows_gcc8_x86_64_qt_widgets_modules_boost
     COMPONENT: MdtDeployUtils
