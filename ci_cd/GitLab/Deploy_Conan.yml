@@ -53,7 +53,6 @@ Deploy_conan_libs_linux_gcc8_x86_64:
         BUILD_TYPE:
           - Debug
           - Release
-          - RelWithDebInfo
 
 
 ########################################
