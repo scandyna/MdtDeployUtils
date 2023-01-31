@@ -151,7 +151,11 @@ add_qt5_to_cmake_prefix_path("${QT_PREFIX_PATH}")
 
 find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS Core REQUIRED)
-find_package(Mdt0 COMPONENTS CommandLineParser CommandLineArguments ConsoleApplication REQUIRED)
+# find_package(Mdt0 COMPONENTS CommandLineParser CommandLineArguments ConsoleApplication REQUIRED)
+
+if(BUILD_APPS)
+  find_package(Mdt0 COMPONENTS CommandLineParser ConsoleApplication REQUIRED)
+endif()
 
 # DeployUtils_Core uses Boost Graph
 # For header only library,no component is defined.
