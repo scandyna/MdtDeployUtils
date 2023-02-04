@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -166,7 +166,7 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Guess the absolute path to the root of a Qt distribution from given Qt shared library
      *
      * \pre \a qtLibraryPath must have its absolute file path set
-     * \sa doc of QFileInfo::absoluteFilePath()
+     * \sa fileInfoIsAbsolutePath()
      * \pre \a qtLibraryPath must be a Qt shared library
      * \sa QtSharedLibraryFile::isQtSharedLibrary()
      */

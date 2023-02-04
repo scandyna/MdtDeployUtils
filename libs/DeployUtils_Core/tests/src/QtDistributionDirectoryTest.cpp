@@ -77,13 +77,6 @@ TEST_CASE("guessRootAbsolutePathFromQtSharedLibrary")
 
     REQUIRE( QtDistributionDirectory::guessRootAbsolutePathFromQtSharedLibrary(qtLibrary) == makeAbsolutePath("/qt") );
   }
-
-  SECTION("/usr/lib/x86_64-linux-gnu/libQt5Core.so")
-  {
-    const QFileInfo qtLibrary( QLatin1String("/usr/lib/x86_64-linux-gnu/libQt5Core.so") );
-
-    REQUIRE( QtDistributionDirectory::guessRootAbsolutePathFromQtSharedLibrary(qtLibrary) == makeAbsolutePath("/usr") );
-  }
 }
 
 TEST_CASE("setSharedLibrariesDirectoryRelativePath")
@@ -106,17 +99,6 @@ TEST_CASE("guessSharedLibrariesDirectoryRelativePathFromQtSharedLibrary")
       QtDistributionDirectory::guessSharedLibrariesDirectoryRelativePathFromQtSharedLibrary(qtLibrary)
       ==
       QLatin1String("lib")
-    );
-  }
-
-  SECTION("debian multi-arch")
-  {
-    const QFileInfo qtLibrary( QLatin1String("/usr/lib/x86_64-linux-gnu/libQt5Core.so") );
-
-    REQUIRE(
-      QtDistributionDirectory::guessSharedLibrariesDirectoryRelativePathFromQtSharedLibrary(qtLibrary)
-      ==
-      QLatin1String("lib/x86_64-linux-gnu")
     );
   }
 

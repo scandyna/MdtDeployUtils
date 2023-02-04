@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -23,6 +23,7 @@
 #include "QtConfReader.h"
 #include "ExecutableFileReader.h"
 #include "Algorithm.h"
+#include "FileInfoUtils.h"
 #include <QStringBuilder>
 #include <QLatin1Char>
 #include <QLatin1String>
@@ -109,15 +110,17 @@ void QtDistributionDirectory::setEntriesFromQtConf(const QtConf & qtConf, Operat
 void QtDistributionDirectory::setRootAbsolutePath(const QString & path) noexcept
 {
   assert( !path.trimmed().isEmpty() );
-  assert( QDir::isAbsolutePath(path) );
 
-  mRootAbsolutePath = path;
+  // Use QDir to also have Windows drive sepcification in the path (i.e. C: for example)
+  const QDir dir(path);
+  assert( dir.isAbsolute() );
+
+  mRootAbsolutePath = dir.absolutePath();
 }
 
 QString QtDistributionDirectory::guessRootAbsolutePathFromQtSharedLibrary(const QFileInfo & qtLibraryPath) noexcept
 {
-  assert( !qtLibraryPath.filePath().isEmpty() );
-  assert( qtLibraryPath.isAbsolute() );
+  assert( fileInfoIsAbsolutePath(qtLibraryPath) );
   assert( QtSharedLibraryFile::isQtSharedLibrary(qtLibraryPath) );
 
   if( qtLibraryPath.absoluteFilePath().startsWith( QLatin1String("/usr") ) ){

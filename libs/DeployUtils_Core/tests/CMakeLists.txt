@@ -763,6 +763,16 @@ mdt_add_test(
     src/QtDistributionDirectoryTest.cpp
 )
 
+if(UNIX)
+  mdt_add_test(
+    NAME QtDistributionDirectoryLinuxHostSpecificTest
+    TARGET qtDistributionDirectoryLinuxHostSpecificTest
+    DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+    SOURCE_FILES
+      src/QtDistributionDirectoryLinuxHostSpecificTest.cpp
+  )
+endif()
+
 mdt_add_test(
   NAME QtDistributionDirectoryErrorTest
   TARGET qtDistributionDirectoryErrorTest
