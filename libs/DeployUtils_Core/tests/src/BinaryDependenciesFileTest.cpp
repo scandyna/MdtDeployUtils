@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2022 Philippe Steinmann.
+ ** Copyright (C) 2015-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -41,7 +41,6 @@ TEST_CASE("fromLibraryName")
   auto file = BinaryDependenciesFile::fromLibraryName(fi);
 
   REQUIRE( file.fileName() == QLatin1String("arbitraryFile.so") );
-  REQUIRE( file.absoluteDirectoryPath().isEmpty() );
   REQUIRE( !file.isNull() );
 }
 

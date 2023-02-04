@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2022 Philippe Steinmann.
+ ** Copyright (C) 2015-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -91,6 +91,8 @@ namespace Mdt{ namespace DeployUtils{
     }
 
     /*! \brief Get the absolute path of the directory this file lives in
+     *
+     * \pre this file must be a absolute path
      */
     QString absoluteDirectoryPath() const noexcept;
 
