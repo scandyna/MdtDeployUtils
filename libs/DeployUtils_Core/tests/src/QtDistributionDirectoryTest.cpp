@@ -57,7 +57,7 @@ TEST_CASE("rootAbsolutePath")
   {
     directory.setRootAbsolutePath( QLatin1String("/opt") );
 
-    REQUIRE( directory.rootAbsolutePath() == QLatin1String("/opt") );
+    REQUIRE( directory.rootAbsolutePath() == makeAbsolutePath("/opt") );
     REQUIRE( directory.hasRootPath() );
   }
 }
@@ -86,7 +86,7 @@ TEST_CASE("setSharedLibrariesDirectoryRelativePath")
   directory.setRootAbsolutePath( QLatin1String("/opt") );
   directory.setSharedLibrariesDirectoryRelativePath( QLatin1String("lib") );
 
-  REQUIRE( directory.sharedLibrariesDirectoryAbsolutePath() == QLatin1String("/opt/lib") );
+  REQUIRE( directory.sharedLibrariesDirectoryAbsolutePath() == makeAbsolutePath("/opt/lib") );
 }
 
 TEST_CASE("guessSharedLibrariesDirectoryRelativePathFromQtSharedLibrary")
@@ -121,14 +121,14 @@ TEST_CASE("plugins root")
 
   SECTION("default")
   {
-    REQUIRE( directory.pluginsRootAbsolutePath() == QLatin1String("/opt/qt5/plugins") );
+    REQUIRE( directory.pluginsRootAbsolutePath() == makeAbsolutePath("/opt/qt5/plugins") );
   }
 
   SECTION("set a other plugins relative path")
   {
     directory.setPluginsRootRelativePath( QLatin1String("bin/archdatadir/plugins") );
 
-    REQUIRE( directory.pluginsRootAbsolutePath() == QLatin1String("/opt/qt5/bin/archdatadir/plugins") );
+    REQUIRE( directory.pluginsRootAbsolutePath() == makeAbsolutePath("/opt/qt5/bin/archdatadir/plugins") );
   }
 }
 
@@ -229,11 +229,11 @@ TEST_CASE("Change root path")
 
   directory.setRootAbsolutePath( QLatin1String("/opt") );
   directory.setSharedLibrariesDirectoryRelativePath( QLatin1String("lib") );
-  REQUIRE( directory.sharedLibrariesDirectoryAbsolutePath() == QLatin1String("/opt/lib") );
+  REQUIRE( directory.sharedLibrariesDirectoryAbsolutePath() == makeAbsolutePath("/opt/lib") );
 
   directory.setRootAbsolutePath( QLatin1String("/opt/qt5") );
 
-  REQUIRE( directory.sharedLibrariesDirectoryAbsolutePath() == QLatin1String("/opt/qt5/lib") );
+  REQUIRE( directory.sharedLibrariesDirectoryAbsolutePath() == makeAbsolutePath("/opt/qt5/lib") );
 }
 
 TEST_CASE("setEntriesFromQtConf")
