@@ -24,6 +24,7 @@
 #include "ExecutableFileReader.h"
 #include "Algorithm.h"
 #include "FileInfoUtils.h"
+#include "FileSystemUtils.h"
 #include <QStringBuilder>
 #include <QLatin1Char>
 #include <QLatin1String>
@@ -110,12 +111,9 @@ void QtDistributionDirectory::setEntriesFromQtConf(const QtConf & qtConf, Operat
 void QtDistributionDirectory::setRootAbsolutePath(const QString & path) noexcept
 {
   assert( !path.trimmed().isEmpty() );
+  assert( isAbsolutePath(path) );
 
-  // Use QDir to also have Windows drive sepcification in the path (i.e. C: for example)
-  const QDir dir(path);
-  assert( dir.isAbsolute() );
-
-  mRootAbsolutePath = dir.absolutePath();
+  mRootAbsolutePath = makeAbsolutePath(path);
 }
 
 QString QtDistributionDirectory::guessRootAbsolutePathFromQtSharedLibrary(const QFileInfo & qtLibraryPath) noexcept

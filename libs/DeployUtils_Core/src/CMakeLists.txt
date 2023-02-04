@@ -18,6 +18,7 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/CMakeStyleMessageLogger.cpp
   Mdt/DeployUtils/Algorithm.cpp
   Mdt/DeployUtils/FileInfoUtils.cpp
+  Mdt/DeployUtils/FileSystemUtils.cpp
   Mdt/DeployUtils/RPathFormatError.cpp
   Mdt/DeployUtils/RPath.cpp
   Mdt/DeployUtils/RPathElf.cpp
