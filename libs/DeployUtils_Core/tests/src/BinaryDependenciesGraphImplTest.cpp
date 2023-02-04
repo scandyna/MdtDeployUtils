@@ -3,7 +3,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ****************************************************************************/
 #include "catch2/catch.hpp"
@@ -740,7 +740,7 @@ TEST_CASE("findTransitiveDependencies_RPath")
     REQUIRE( libAVertex.has_value() );
     const GraphFile & libAFile = graph.internalGraph()[*libAVertex];
     REQUIRE( libAFile.hasAbsolutePath() );
-    REQUIRE( libAFile.fileInfo().absoluteFilePath() == QLatin1String("/tmp/libA.so") );
+    REQUIRE( libAFile.fileInfo().absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
   }
 }
 
@@ -791,7 +791,7 @@ TEST_CASE("addGraphFileToResult")
     REQUIRE( result.libraryCount() == 1 );
     const auto library = result.findLibraryByName( QLatin1String("libA.so") );
     REQUIRE( library.has_value() );
-    REQUIRE( library->absoluteFilePath() == QLatin1String("/tmp/libA.so") );
+    REQUIRE( library->absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
     REQUIRE( library->rPath() == rpath );
   }
 
@@ -890,7 +890,7 @@ TEST_CASE("getResult")
   {
     const BinaryDependenciesResult result = graph.getResult(app);
 
-    REQUIRE( result.target().absoluteFilePath() == QLatin1String("/tmp/app") );
+    REQUIRE( result.target().absoluteFilePath() == makeAbsolutePath("/tmp/app") );
     REQUIRE( result.libraryCount() == 3 );
     REQUIRE( resultContainsLibraryAbsolutePath(result, "/tmp/libA.so") );
     REQUIRE( resultContainsLibraryAbsolutePath(result, "/tmp/libB.so") );
