@@ -278,7 +278,7 @@ TEST_CASE("getLibrariesToRedistributeFilePathList")
     libraries = getLibrariesToRedistributeFilePathList(result);
 
     REQUIRE( libraries.size() == 1 );
-    REQUIRE( libraries.contains( QLatin1String("/opt/libA.so") ) );
+    REQUIRE( libraries.contains( makeAbsolutePath("/opt/libA.so") ) );
   }
 
   SECTION("result contains 1 library to not redistribute")
