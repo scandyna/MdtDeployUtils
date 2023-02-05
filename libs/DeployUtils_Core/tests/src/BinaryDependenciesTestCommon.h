@@ -62,7 +62,7 @@ bool containsTestSharedLibrary(const BinaryDependenciesResult & result)
 inline
 bool libraryListContainsPath(const std::vector<BinaryDependenciesResultLibrary> & libraryList, const std::string & path)
 {
-  const QString qPath = QString::fromStdString(path);
+  const QString qPath = makeAbsolutePath(path);
 
   const auto pred = [&qPath](const BinaryDependenciesResultLibrary & library){
     assert( library.isFound() );
