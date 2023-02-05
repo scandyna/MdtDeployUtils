@@ -34,7 +34,7 @@ class MdtDeployUtilsConan(ConanFile):
   def requirements(self):
     self.requires("MdtCMakeConfig/0.0.5@scandyna/testing")
     # MdtDeployApplication uses MdtCMakeModules modules
-    self.tool_requires("MdtCMakeModules/0.19.3@scandyna/testing", force_host_context=True)
+    self.requires("MdtCMakeModules/0.19.3@scandyna/testing")
 
 
   # When using --profile:build xx and --profile:host xx ,
