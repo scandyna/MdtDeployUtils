@@ -8,7 +8,6 @@ All Modules
 
    MdtSharedLibrariesDepencyHelpers.rst
    MdtDeployApplication.rst
-   MdtInstallCMakeModules.rst
    MdtDeployUtilsPackageConfigHelpers.rst
    MdtGenerateMdtdeployutilsInstallScript.rst
 
