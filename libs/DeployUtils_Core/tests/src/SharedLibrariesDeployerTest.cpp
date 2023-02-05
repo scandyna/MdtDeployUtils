@@ -111,7 +111,7 @@ TEST_CASE("hasToUpdateRpath")
 
   CopiedSharedLibraryFile copiedFile;
 
-  PathList systemWideLocations{QLatin1String("/usr/lib")};
+  PathList systemWideLocations{makeAbsolutePath("/usr/lib")};
 
   RPath rpath;
   rpath.appendPath( QLatin1String(".") );
