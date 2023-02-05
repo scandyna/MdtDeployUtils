@@ -49,13 +49,11 @@ else()
   set(testMdtDeployUtilsInstallPrefix "${CMAKE_INSTALL_PREFIX}")
 endif()
 
-# TODO: component install (currently headers etc.. are installed)
 add_test(NAME EndToEndTests_Install_DeployUtils_Destdir
   COMMAND "${CMAKE_COMMAND}"
     --install "${CMAKE_BINARY_DIR}"
     --config $<CONFIG>
     --component MdtDeployUtils_Runtime
-#     --component ${PROJECT_NAME}_Dev
 )
 
 # add_test(NAME EndToEndTests_Install_DeployUtils_Destdir
