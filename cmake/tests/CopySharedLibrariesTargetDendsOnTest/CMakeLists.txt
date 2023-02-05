@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.14)
 project(TestApp)
 
 # TODO: add a dependency to Qt
+# See https://gitlab.com/scandyna/mdtdeployutils/-/issues/16
 
 message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 
