@@ -292,6 +292,25 @@ if(BUILD_BENCHMARKS)
   )
 endif()
 
+###############################
+# Binary outputs in build tree
+###############################
+
+# On Windows some tests fails because of missing dll's
+# This is probably due to missing libraries like MdtDeployUtilsCore
+# See https://gitlab.com/scandyna/mdt-cmake-modules/-/issues/4
+if(WIN32)
+  if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/BuildOutputs/bin")
+  endif()
+  if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/BuildOutputs/lib")
+  endif()
+  if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/BuildOutputs/lib")
+  endif()
+endif()
+
 #######################
 # Sources
 #######################
