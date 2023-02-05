@@ -7,6 +7,8 @@ set(CMAKE_MESSAGE_LOG_LEVEL @CMAKE_MESSAGE_LOG_LEVEL@)
 # set(CMAKE_MESSAGE_LOG_LEVEL VERBOSE)
 # set(CMAKE_MESSAGE_LOG_LEVEL DEBUG)
 
+set(CMAKE_PREFIX_PATH "@MDT_DEPLOY_APPLICATION_INSTALL_CMAKE_PREFIX_PATH@")
+
 message(VERBOSE "Running mdt_deploy_application() script")
 
 set(targetFile "$<TARGET_FILE:@ARG_TARGET@>")
@@ -14,7 +16,7 @@ message(DEBUG "targetFile: ${targetFile}")
 
 message(VERBOSE "DESTDIR: $ENV{DESTDIR}")
 message(VERBOSE "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
-message(VERBOSE "CMAKE_PREFIX_PATH: @CMAKE_PREFIX_PATH@")
+message(VERBOSE "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 message(DEBUG "CMAKE_CXX_COMPILER: @CMAKE_CXX_COMPILER@")
 
 set(IS_MSVC @MSVC@)
@@ -47,7 +49,7 @@ if(CMAKE_MESSAGE_LOG_LEVEL)
   set(logLevelArguments --log-level ${CMAKE_MESSAGE_LOG_LEVEL})
 endif()
 
-string(REPLACE ";" "," searchPrefixPathList "@CMAKE_PREFIX_PATH@")
+string(REPLACE ";" "," searchPrefixPathList "${CMAKE_PREFIX_PATH}")
 message(DEBUG "searchPrefixPathList: ${searchPrefixPathList}")
 
 

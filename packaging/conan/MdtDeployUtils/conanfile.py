@@ -33,6 +33,8 @@ class MdtDeployUtilsConan(ConanFile):
 
   def requirements(self):
     self.requires("MdtCMakeConfig/0.0.5@scandyna/testing")
+    # MdtDeployApplication uses MdtCMakeModules modules
+    self.tool_requires("MdtCMakeModules/0.19.3@scandyna/testing", force_host_context=True)
 
 
   # When using --profile:build xx and --profile:host xx ,
@@ -46,7 +48,6 @@ class MdtDeployUtilsConan(ConanFile):
     # Due to a issue using GitLab Conan repository,
     # version ranges are not possible.
     # See https://gitlab.com/gitlab-org/gitlab/-/issues/333638
-    self.tool_requires("MdtCMakeModules/0.19.2@scandyna/testing", force_host_context=True)
     self.tool_requires("boost/1.72.0", force_host_context=True)
     self.tool_requires("qt/5.15.6", force_host_context=True)
     self.tool_requires("MdtCommandLineParser/0.0.6@scandyna/testing", force_host_context=True)

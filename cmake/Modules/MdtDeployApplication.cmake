@@ -19,6 +19,7 @@
 #     TARGET <target>
 #     RUNTIME_DESTINATION <dir>
 #     LIBRARY_DESTINATION <dir>
+#     [CONAN_BUILD_INFO_FILE_PATH <file-path>]
 #     [QT_PLUGINS_SET <set>]
 #     [EXPORT_NAME <export-name>]
 #     [EXPORT_NAMESPACE <export-namespace>]
@@ -32,6 +33,13 @@
 #
 # Will install the executable `target` to ``CMAKE_INSTALL_PREFIX``
 # into a subdirectory defined by ``RUNTIME_DESTINATION``.
+#
+# If the dependencies of the application are manged with Conan (with CMakeDeps generator),
+# the ``CMAKE_PREFIX_PATH`` variable will not contain paths to the shared libraries.
+# For details about this issue,
+# see `MdtRuntimeEnvironment documentation <https://scandyna.gitlab.io/mdt-cmake-modules/Modules/MdtRuntimeEnvironment.html>`_ .
+# As workaround, use the ``CONAN_BUILD_INFO_FILE_PATH`` argument to specify the location
+# of ``conanbuildinfo.txt`` in the build tree.
 #
 # On systems that supports rpath, if ``INSTALL_IS_UNIX_SYSTEM_WIDE`` is not set, or set to ``FALSE``,
 # the rpath informations is set to a relative path so that the executable finds its shared libraries
@@ -99,6 +107,7 @@
 #     TARGET myApp
 #     RUNTIME_DESTINATION ${CMAKE_INSTALL_BINDIR}
 #     LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#     CONAN_BUILD_INFO_FILE_PATH "${CMAKE_BINARY_DIR}/conanbuildinfo.txt"
 #     INSTALL_IS_UNIX_SYSTEM_WIDE ${MDT_INSTALL_IS_UNIX_SYSTEM_WIDE}
 #   )
 #
@@ -133,7 +142,7 @@ include(MdtGenerateMdtdeployutilsInstallScript)
 function(mdt_deploy_application)
 
   set(options NO_PACKAGE_CONFIG_FILE EXCLUDE_FROM_ALL)
-  set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION QT_PLUGINS_SET EXPORT_NAME EXPORT_NAMESPACE EXPORT_DIRECTORY INSTALL_IS_UNIX_SYSTEM_WIDE RUNTIME_COMPONENT DEVELOPMENT_COMPONENT)
+  set(oneValueArgs TARGET RUNTIME_DESTINATION LIBRARY_DESTINATION CONAN_BUILD_INFO_FILE_PATH QT_PLUGINS_SET EXPORT_NAME EXPORT_NAMESPACE EXPORT_DIRECTORY INSTALL_IS_UNIX_SYSTEM_WIDE RUNTIME_COMPONENT DEVELOPMENT_COMPONENT)
   set(multiValueArgs)
   cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -202,10 +211,22 @@ function(mdt_deploy_application)
 
   endif()
 
+  set(MDT_DEPLOY_APPLICATION_INSTALL_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
   set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_INSTALL_IS_UNIX_SYSTEM_WIDE ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE})
   set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_RUNTIME_DESTINATION ${ARG_RUNTIME_DESTINATION})
   set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_LIBRARY_DESTINATION ${ARG_LIBRARY_DESTINATION})
   set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_QT_PLUGINS_SET ${ARG_QT_PLUGINS_SET})
+
+  if(ARG_CONAN_BUILD_INFO_FILE_PATH)
+    include(MdtConanBuildInfoReader)
+
+    set(MDT_CONAN_BUILD_INFO_FILE_PATH "${ARG_CONAN_BUILD_INFO_FILE_PATH}")
+    mdt_get_shared_libraries_directories_from_conanbuildinfo_if_exists(sharedLibrariesDirectories)
+
+    # TODO: Should use helpers to add paths once available
+    # See https://gitlab.com/scandyna/mdt-cmake-modules/-/issues/15
+    list(PREPEND MDT_DEPLOY_APPLICATION_INSTALL_CMAKE_PREFIX_PATH ${sharedLibrariesDirectories})
+  endif()
 
   mdt_generate_mdtdeployutils_install_script(
     TARGET ${ARG_TARGET}

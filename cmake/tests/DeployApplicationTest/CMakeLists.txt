@@ -1,6 +1,6 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(TestApp)
 
 message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
@@ -30,12 +30,14 @@ mdt_deploy_application(
   TARGET testApp1
   RUNTIME_DESTINATION "testApp1/bin"
   LIBRARY_DESTINATION "testApp1/lib"
+  CONAN_BUILD_INFO_FILE_PATH "${CMAKE_BINARY_DIR}/conanbuildinfo.txt"
 )
 
 mdt_deploy_application(
   TARGET testApp2
   RUNTIME_DESTINATION "testApp2/bin"
   LIBRARY_DESTINATION "testApp2/lib"
+  CONAN_BUILD_INFO_FILE_PATH "${CMAKE_BINARY_DIR}/conanbuildinfo.txt"
   QT_PLUGINS_SET "imageformats:jpeg,svg|platforms:xcb,vnc,eglfs,windows,direct2d"
 )
 
