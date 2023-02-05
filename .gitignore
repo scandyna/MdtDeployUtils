@@ -40,3 +40,8 @@ Thumbs.db
 *.log
 *.tmp
 cpp\reporting
+
+######################
+# Other files        #
+######################
+__pycache__
