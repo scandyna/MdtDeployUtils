@@ -56,23 +56,25 @@ add_test(NAME EndToEndTests_Install_DeployUtils_Destdir
     --component MdtDeployUtils_Runtime
 )
 
-# add_test(NAME EndToEndTests_Install_DeployUtils_Destdir
-#   COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --target install --config $<CONFIG>
-# #   COMMAND "${CMAKE_COMMAND}" --install "${CMAKE_BINARY_DIR}" --component Runtime
-# )
-
 set_tests_properties(EndToEndTests_Install_DeployUtils_Destdir
   PROPERTIES
     ENVIRONMENT "DESTDIR=${CMAKE_CURRENT_BINARY_DIR}"
 )
 
+
 if(BUILD_REAL_INSTALL_TESTS)
+  add_test(NAME EndToEndTests_Install_DeployUtils_Real
+    COMMAND "${CMAKE_COMMAND}"
+      --install "${CMAKE_BINARY_DIR}"
+      --config $<CONFIG>
+      --component MdtDeployUtils_Runtime
+  )
   # TODO: maybe use cmake --install as above
   # TODO: component install (currently headers etc.. are installed)
-  add_test(NAME EndToEndTests_Install_DeployUtils_Real
-    COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --target install --config $<CONFIG>
-  #   COMMAND "${CMAKE_COMMAND}" --install "${CMAKE_BINARY_DIR}" --component Runtime
-  )
+#   add_test(NAME EndToEndTests_Install_DeployUtils_Real
+#     COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --target install --config $<CONFIG>
+#   #   COMMAND "${CMAKE_COMMAND}" --install "${CMAKE_BINARY_DIR}" --component Runtime
+#   )
 endif()
 
 ############################
