@@ -71,6 +71,7 @@ class MdtDeployUtilsConan(ConanFile):
     tc.variables["FROM_CONAN_PROJECT_VERSION"] = self.version
     tc.variables["BUILD_APPS"] = "ON"
     tc.variables["INSTALL_CONAN_PACKAGE_FILES"] = "OFF"
+    tc.variables["CMAKE_MESSAGE_LOG_LEVEL"] = "DEBUG"
     # TODO: should be conditional (not for Debug build). What about multi-config ? Also, seems to fail most of the time
     #tc.variables["BUILD_USE_IPO_LTO_IF_AVAILABLE"] = "ON"
     tc.generate()
