@@ -21,7 +21,7 @@
 # Avoid rebuilding the whole project.
 # Also, avoid to change the CMAKE_INSTALL_PREFIX of the main project.
 #
-# For some tests that are allways built,
+# For some tests that are always built,
 # we can use the DESTDIR environment variable to relocate the installation.
 # Note: this also checks that DESTDIR is used properly in some of the scripts.
 # This also works on Windows, also with MSVC,
@@ -397,6 +397,7 @@ add_test(NAME CMake_DeployApplicationTest_Configure
     -T "${CMAKE_GENERATOR_TOOLSET}"
     -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    "-DMdtDeployUtils_BINARY_DIR=${MdtDeployUtils_BINARY_DIR}"
     "-DCMAKE_PREFIX_PATH=${CMAKE_CURRENT_BINARY_DIR}${testMdtDeployUtilsInstallPrefix};${CMAKE_CURRENT_BINARY_DIR}${testItemModelInstallPrefix};${CMAKE_PREFIX_PATH}"
     "-DCMAKE_INSTALL_PREFIX=${deployApplicationTestInstallPrefix}"
 )

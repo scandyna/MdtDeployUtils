@@ -26,18 +26,20 @@ target_link_libraries(testApp2 PRIVATE Mdt0::ItemModel Qt5::Widgets)
 include(GNUInstallDirs)
 include(MdtDeployApplication)
 
+
 mdt_deploy_application(
   TARGET testApp1
   RUNTIME_DESTINATION "testApp1/bin"
   LIBRARY_DESTINATION "testApp1/lib"
-  CONAN_BUILD_INFO_FILE_PATH "${CMAKE_BINARY_DIR}/conanbuildinfo.txt"
+  CONAN_BUILD_INFO_FILE_PATH "${MdtDeployUtils_BINARY_DIR}/conanbuildinfo.txt"
 )
+
 
 mdt_deploy_application(
   TARGET testApp2
   RUNTIME_DESTINATION "testApp2/bin"
   LIBRARY_DESTINATION "testApp2/lib"
-  CONAN_BUILD_INFO_FILE_PATH "${CMAKE_BINARY_DIR}/conanbuildinfo.txt"
+  CONAN_BUILD_INFO_FILE_PATH "${MdtDeployUtils_BINARY_DIR}/conanbuildinfo.txt"
   QT_PLUGINS_SET "imageformats:jpeg,svg|platforms:xcb,vnc,eglfs,windows,direct2d"
 )
 

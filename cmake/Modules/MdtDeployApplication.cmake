@@ -211,13 +211,15 @@ function(mdt_deploy_application)
 
   endif()
 
-  set(MDT_DEPLOY_APPLICATION_INSTALL_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
-  set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_INSTALL_IS_UNIX_SYSTEM_WIDE ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE})
-  set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_RUNTIME_DESTINATION ${ARG_RUNTIME_DESTINATION})
-  set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_LIBRARY_DESTINATION ${ARG_LIBRARY_DESTINATION})
-  set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_QT_PLUGINS_SET ${ARG_QT_PLUGINS_SET})
+  # It seems that configure_file() , used by mdt_generate_mdtdeployutils_install_script() ,
+  # only subsitutes set(VAR ...)
+  # This means: if we set(VAR ...) then update it later, the update is not effective
+
+  set(installScriptPrefixPath "${CMAKE_PREFIX_PATH}")
 
   if(ARG_CONAN_BUILD_INFO_FILE_PATH)
+    message(DEBUG "mdt_deploy_application() readeing ${ARG_CONAN_BUILD_INFO_FILE_PATH} ...")
+
     include(MdtConanBuildInfoReader)
 
     set(MDT_CONAN_BUILD_INFO_FILE_PATH "${ARG_CONAN_BUILD_INFO_FILE_PATH}")
@@ -225,8 +227,17 @@ function(mdt_deploy_application)
 
     # TODO: Should use helpers to add paths once available
     # See https://gitlab.com/scandyna/mdt-cmake-modules/-/issues/15
-    list(PREPEND MDT_DEPLOY_APPLICATION_INSTALL_CMAKE_PREFIX_PATH ${sharedLibrariesDirectories})
+    list(PREPEND installScriptPrefixPath ${sharedLibrariesDirectories})
   endif()
+
+  set(MDT_DEPLOY_APPLICATION_INSTALL_CMAKE_PREFIX_PATH "${installScriptPrefixPath}")
+  set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_INSTALL_IS_UNIX_SYSTEM_WIDE ${ARG_INSTALL_IS_UNIX_SYSTEM_WIDE})
+  set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_RUNTIME_DESTINATION ${ARG_RUNTIME_DESTINATION})
+  set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_LIBRARY_DESTINATION ${ARG_LIBRARY_DESTINATION})
+  set(MDT_DEPLOY_APPLICATION_INSTALL_SCRIPT_QT_PLUGINS_SET ${ARG_QT_PLUGINS_SET})
+
+#   message(VERBOSE "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
+  message(DEBUG "MDT_DEPLOY_APPLICATION_INSTALL_CMAKE_PREFIX_PATH: ${MDT_DEPLOY_APPLICATION_INSTALL_CMAKE_PREFIX_PATH}")
 
   mdt_generate_mdtdeployutils_install_script(
     TARGET ${ARG_TARGET}
