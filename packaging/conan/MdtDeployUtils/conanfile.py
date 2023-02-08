@@ -86,6 +86,11 @@ class MdtDeployUtilsConan(ConanFile):
   def package(self):
     #cmake = self.configure_cmake()
     #cmake.install()
+    # conanbuildinfo.txt is required to find shared libraries.
+    # it is only generated at the end of the build step
+    # So, run cmake again to have a complete prefix path
+    # See also https://gitlab.com/scandyna/mdtdeployutils/-/issues/14
+    self.run("cmake .")
     self.run("cmake --install . --config %s --component MdtDeployUtils_Runtime" % self.settings.build_type)
 
 
