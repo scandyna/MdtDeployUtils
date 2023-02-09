@@ -24,14 +24,6 @@ system/Cli:
 
 Checks the CLI (command line interface).
 
-Tests named ``System_DeployUtils_Cli_Deploy_APP``
-will deploy the compiled test projects.
-
-Tests named ``System_DeployUtils_Cli_Run_APP``
-will run the deployed projects without any special environment.
-
-All those tests runs at test time (ctest).
-
 
 system/CMake
 
