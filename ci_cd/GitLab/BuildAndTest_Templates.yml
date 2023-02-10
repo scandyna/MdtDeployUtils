@@ -12,6 +12,7 @@ include:
       - conanfile.py
       - apps/**/*
       - libs/**/*
+      - cmake/**/*
       - tests/**/*
       - .gitlab-ci.yml
       - ci_cd/GitLab/*

@@ -19,6 +19,7 @@ include:
       - conanfile.py
       - apps/**/*
       - libs/**/*
+      - cmake/**/*
       - packaging/conan/**/*
       when: on_success
 
