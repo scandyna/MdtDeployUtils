@@ -220,6 +220,7 @@ function(mdt_deploy_application)
   if(ARG_CONAN_BUILD_INFO_FILE_PATH)
     message(DEBUG "mdt_deploy_application() readeing ${ARG_CONAN_BUILD_INFO_FILE_PATH} ...")
 
+    find_package(MdtCMakeModules REQUIRED)
     include(MdtConanBuildInfoReader)
 
     set(MDT_CONAN_BUILD_INFO_FILE_PATH "${ARG_CONAN_BUILD_INFO_FILE_PATH}")
