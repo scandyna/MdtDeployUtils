@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -81,7 +81,7 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Get a list of existing Qt plugins directories required for a given Qt module
      *
      * This is like getPluginsDirectoriesForModule(),
-     * but it will only include directories that exists in \a qtPluginsRoot
+     * but it will only include directories that exists in \a qtDistributionDirectory
      *
      * \pre \a qtDistributionDirectory must be valid and existing
      * \sa QtDistributionDirectory::isValidExisting()
