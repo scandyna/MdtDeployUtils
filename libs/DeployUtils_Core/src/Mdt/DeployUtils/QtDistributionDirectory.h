@@ -61,12 +61,13 @@ namespace Mdt{ namespace DeployUtils{
    *   |  |    |-plugins
    *   |  |-qt.conf
    *   |-lib
-   *   |-plugins
    * \endcode
    *
    * A reliable way to find the structure is to use the qt.conf file provided by the Qt distribution.
    * If not available, or some entries not exist in it, they can be guessed
    * by commonly known structures.
+   *
+   * \sa https://gitlab.com/scandyna/mdtdeployutils/-/issues/1
    *
    * \note It could be tempting to use QLibraryInfo to obtain the structure of the Qt distribution.
    * This will probably not work, because it will refer to the Qt library used by MdtDeployUtils itself.
@@ -243,6 +244,10 @@ namespace Mdt{ namespace DeployUtils{
      */
     void setPluginsRootRelativePath(const QString & path) noexcept;
 
+    /*! \brief Get the directory name of the plugins root
+     */
+    QString pluginsRootDirectoryName() const noexcept;
+
     /*! \brief Get the absolute path to the plugins root
      *
      * \note Will always return a path to some sub-directory relative to rootAbsolutePath(),
@@ -253,6 +258,10 @@ namespace Mdt{ namespace DeployUtils{
      * \sa hasRootPath()
      */
     QString pluginsRootAbsolutePath() const noexcept;
+
+    /*! \brief Check if this directory has a valid existing plugins root
+     */
+    bool hasValidExistingPluginsRoot() const noexcept;
 
     /*! \brief Check if given file is a plugin
      *

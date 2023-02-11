@@ -122,6 +122,7 @@ TEST_CASE("plugins root")
   SECTION("default")
   {
     REQUIRE( directory.pluginsRootAbsolutePath() == makeAbsolutePath("/opt/qt5/plugins") );
+    REQUIRE( directory.pluginsRootDirectoryName() == QLatin1String("plugins") );
   }
 
   SECTION("set a other plugins relative path")
@@ -129,6 +130,15 @@ TEST_CASE("plugins root")
     directory.setPluginsRootRelativePath( QLatin1String("bin/archdatadir/plugins") );
 
     REQUIRE( directory.pluginsRootAbsolutePath() == makeAbsolutePath("/opt/qt5/bin/archdatadir/plugins") );
+    REQUIRE( directory.pluginsRootDirectoryName() == QLatin1String("plugins") );
+  }
+
+  SECTION("set a wrong plugins relative path (GL issue 1)")
+  {
+    directory.setPluginsRootRelativePath( QLatin1String("bin") );
+
+    REQUIRE( directory.pluginsRootAbsolutePath() == makeAbsolutePath("/opt/qt5/bin") );
+    REQUIRE( directory.pluginsRootDirectoryName() == QLatin1String("bin") );
   }
 }
 
@@ -200,6 +210,15 @@ TEST_CASE("isValidExisting")
     directory.setRootAbsolutePath( qtRoot.path() );
     directory.setSharedLibrariesDirectoryRelativePath( QLatin1String("lib") );
     directory.setPluginsRootRelativePath( QLatin1String("bin/plugins") );
+
+    REQUIRE( !directory.isValidExisting() );
+  }
+
+  SECTION("not valid: plugins dir not named plugins")
+  {
+    directory.setRootAbsolutePath( qtRoot.path() );
+    directory.setSharedLibrariesDirectoryRelativePath( QLatin1String("lib") );
+    directory.setPluginsRootRelativePath( QLatin1String("bin") );
 
     REQUIRE( !directory.isValidExisting() );
   }

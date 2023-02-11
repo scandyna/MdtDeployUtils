@@ -45,7 +45,7 @@ bool QtDistributionDirectory::isValidExisting() const noexcept
   if( !QDir( sharedLibrariesDirectoryAbsolutePath() ).exists() ){
     return false;
   }
-  if( !QDir( pluginsRootAbsolutePath() ).exists() ){
+  if( !hasValidExistingPluginsRoot() ){
     return false;
   }
 
@@ -184,11 +184,35 @@ void QtDistributionDirectory::setPluginsRootRelativePath(const QString & path) n
   mPluginsRootRelativePath = path;
 }
 
+QString QtDistributionDirectory::pluginsRootDirectoryName() const noexcept
+{
+  assert( !mPluginsRootRelativePath.trimmed().isEmpty() );
+
+  QDir dir(mPluginsRootRelativePath);
+
+  return dir.dirName();
+}
+
 QString QtDistributionDirectory::pluginsRootAbsolutePath() const noexcept
 {
   assert( hasRootPath() );
 
   return QDir::cleanPath(mRootAbsolutePath % QLatin1Char('/') % mPluginsRootRelativePath);
+}
+
+bool QtDistributionDirectory::hasValidExistingPluginsRoot() const noexcept
+{
+  assert( !isNull() );
+  assert( !mPluginsRootRelativePath.trimmed().isEmpty() );
+
+  if( pluginsRootDirectoryName() != QLatin1String("plugins") ){
+    return false;
+  }
+  if( !QDir( pluginsRootAbsolutePath() ).exists() ){
+    return false;
+  }
+
+  return true;
 }
 
 bool QtDistributionDirectory::fileIsPlugin(const QFileInfo & fileInfo) const noexcept
