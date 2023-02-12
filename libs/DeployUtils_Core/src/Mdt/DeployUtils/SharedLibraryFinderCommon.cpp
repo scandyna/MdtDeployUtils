@@ -44,8 +44,8 @@ bool SharedLibraryFinderCommon::validateSpecificSharedLibrary(const QFileInfo & 
   assert(mQtDistributionDirectory.get() != nullptr);
 
   if( QtSharedLibraryFile::isQtSharedLibrary(libraryFile) ){
-    emit verboseMessage(
-      tr(" checking if %1 comes from a Qt distribution")
+    emit debugMessage(
+      tr("  checking if %1 comes from a Qt distribution")
       .arg( libraryFile.absoluteFilePath() )
     );
     if( mQtDistributionDirectory->isNull() ){
@@ -56,8 +56,8 @@ bool SharedLibraryFinderCommon::validateSpecificSharedLibrary(const QFileInfo & 
           .arg( mQtDistributionDirectory->rootAbsolutePath() )
         );
       }else{
-        emit verboseMessage(
-          tr(" %1 is not a Qt distribution")
+        emit debugMessage(
+          tr("  %1 is not a Qt distribution")
           .arg( mQtDistributionDirectory->rootAbsolutePath() )
         );
         mQtDistributionDirectory->clear();

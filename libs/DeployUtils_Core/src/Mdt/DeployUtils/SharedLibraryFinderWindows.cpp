@@ -264,6 +264,10 @@ QFileInfo SharedLibraryFinderWindows::doFindLibraryAbsolutePath(const QString & 
    * \sa https://gitlab.com/scandyna/mdtdeployutils/-/issues/5 (BinaryDependenciesFile has to much attributes and is confusing)
    */
 
+  emit verboseMessage(
+    tr(" searching %1").arg(libraryName)
+  );
+
   for( const QString & directory : searchPathList() ){
     QFileInfo libraryFile(directory, libraryName);
     const BinaryDependenciesFile library = findLibraryAbsolutePathByAlternateNames(libraryFile);
