@@ -113,6 +113,9 @@ BinaryDependenciesFile SharedLibraryFinderWindows::findLibraryAbsolutePathByAlte
   assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
   assert( libraryFile.isAbsolute() );
 
+  emit debugMessage(
+    tr("  try %1").arg( libraryFile.absoluteFilePath() )
+  );
   if( validateIsExistingValidSharedLibrary(libraryFile) ){
     return BinaryDependenciesFile::fromQFileInfo(libraryFile);
   }
@@ -121,11 +124,17 @@ BinaryDependenciesFile SharedLibraryFinderWindows::findLibraryAbsolutePathByAlte
   const QDir directory = libraryFile.absoluteDir();
 
   alternativeFile.setFile( directory, libraryFile.fileName().toLower() );
+  emit debugMessage(
+    tr("  try %1").arg( alternativeFile.absoluteFilePath() )
+  );
   if( validateIsExistingValidSharedLibrary(alternativeFile) ){
     return BinaryDependenciesFile::fromQFileInfo(alternativeFile);
   }
 
   alternativeFile.setFile( directory, libraryFile.fileName().toUpper() );
+  emit debugMessage(
+    tr("  try %1").arg( alternativeFile.absoluteFilePath() )
+  );
   if( validateIsExistingValidSharedLibrary(alternativeFile) ){
     return BinaryDependenciesFile::fromQFileInfo(alternativeFile);
   }
