@@ -240,6 +240,7 @@ TEST_CASE("clear")
 
   REQUIRE( !directory.hasRootPath() );
   REQUIRE( !directory.hasSharedLibrariesDirectory() );
+  REQUIRE( directory.isNull() );
 }
 
 TEST_CASE("Change root path")

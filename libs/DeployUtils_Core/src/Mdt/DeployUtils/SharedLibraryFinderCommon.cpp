@@ -61,6 +61,7 @@ bool SharedLibraryFinderCommon::validateSpecificSharedLibrary(const QFileInfo & 
           .arg( mQtDistributionDirectory->rootAbsolutePath() )
         );
         mQtDistributionDirectory->clear();
+        assert( mQtDistributionDirectory->isNull() );
         return false;
       }
     }
