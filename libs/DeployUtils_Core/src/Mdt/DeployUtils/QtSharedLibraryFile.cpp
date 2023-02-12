@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -28,7 +28,7 @@ bool QtSharedLibraryFile::isQtSharedLibrary(const QFileInfo & library) noexcept
 {
   const LibraryName libraryName( library.fileName() );
 
-  return libraryName.nameWithoutDebugSuffix().startsWith( QLatin1String("Qt") );
+  return libraryName.nameWithoutDebugSuffix().startsWith( QLatin1String("Qt"), Qt::CaseInsensitive );
 }
 
 QString QtSharedLibraryFile::getMajorVersionStringFromFileName(const QString & fileName) noexcept
