@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2022 Philippe Steinmann.
+ ** Copyright (C) 2021-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -66,7 +66,7 @@ namespace Mdt{ namespace DeployUtils{
     /*! \internal
      */
     BinaryDependenciesFile findLibraryAbsolutePathByRPath(const QString & libraryName,
-                                                          const BinaryDependenciesFile & dependentFile) const;
+                                                          const BinaryDependenciesFile & dependentFile);
 
     /*! \brief Find the absolute path for given \a libraryName
      *
@@ -78,7 +78,7 @@ namespace Mdt{ namespace DeployUtils{
      * \todo LD_LIBRARY_PATH is not implemented
      */
     BinaryDependenciesFile findLibraryAbsolutePath_OLD(const QString & libraryName,
-                                                   const BinaryDependenciesFile & dependentFile) const override;
+                                                   const BinaryDependenciesFile & dependentFile) override;
 
    private:
 
@@ -106,9 +106,9 @@ namespace Mdt{ namespace DeployUtils{
      * \todo case of \a libraryName containing slashes is not implemented
      * \todo LD_LIBRARY_PATH is not implemented
      */
-    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) const override;
+    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) override;
 
-    BinaryDependenciesFile findLibraryAbsolutePathBySearchPath(const QString & libraryName) const;
+    BinaryDependenciesFile findLibraryAbsolutePathBySearchPath(const QString & libraryName);
 
     /*! \brief Remove libraries that should not be distributed
      */

@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2022 Philippe Steinmann.
+ ** Copyright (C) 2021-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -21,8 +21,12 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "SharedLibraryFinderWindowsTestCommon.h"
+#include "SharedLibraryFinderTestCommon.h"
 #include "Mdt/DeployUtils/QtDistributionDirectory.h"
 #include "Mdt/DeployUtils/SharedLibraryFinderWindows.h"
+#include "Mdt/DeployUtils/MessageLogger.h"
+#include "Mdt/DeployUtils/ConsoleMessageLogger.h"
+#include <QTemporaryDir>
 #include <QLatin1String>
 #include <QtGlobal>
 #include <memory>
@@ -473,6 +477,60 @@ TEST_CASE("findLibraryAbsolutePath")
     auto library = finder.findLibraryAbsolutePath(libraryName, dependentFile);
 
     REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
+  }
+}
+
+/*
+ * see https://gitlab.com/scandyna/mdtdeployutils/-/issues/1
+ */
+TEST_CASE("find_Qt5Core_inValidDirectory")
+{
+  QTemporaryDir qtRoot;
+  REQUIRE( qtRoot.isValid() );
+  qtRoot.setAutoRemove(true);
+
+  REQUIRE( makeValidQtDistributionDirectory(qtRoot, OperatingSystem::Windows) );
+
+  const QString qt5CoreLibraryName( QLatin1String("Qt5Core.dll") );
+  const QString validQt5libDirPath( qtRoot.path() + QLatin1String("/bin") );
+  const QFileInfo validQt5CoreLibrary( validQt5libDirPath + QLatin1Char('/') + qt5CoreLibraryName );
+
+  PathList pathList;
+  auto dependentFile = makeBinaryDependenciesFileFromUtf8Path("/tmp/executable");
+  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
+  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
+  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
+
+  MessageLogger messageLogger;
+  MessageLogger::setBackend<ConsoleMessageLogger>();
+  QObject::connect(&finder, &SharedLibraryFinderWindows::statusMessage, MessageLogger::info);
+  QObject::connect(&finder, &SharedLibraryFinderWindows::verboseMessage, MessageLogger::info);
+  QObject::connect(&finder, &SharedLibraryFinderWindows::debugMessage, MessageLogger::info);
+
+  SECTION("path list only contains the valid Qt distribution")
+  {
+    pathList.appendPath(validQt5libDirPath);
+    finder.setSearchPathList(pathList);
+    isExistingSharedLibraryOp->appendExistingSharedLibrary(validQt5CoreLibrary);
+
+    auto library = finder.findLibraryAbsolutePath(qt5CoreLibraryName, dependentFile);
+
+    REQUIRE( library.absoluteFilePath() == validQt5CoreLibrary.absoluteFilePath() );
+  }
+
+  SECTION("path list contains a invalid qt distribution first")
+  {
+    const QString invalidQt5libDirPath( QLatin1String("/tmp/someProject/lib") );
+    const QFileInfo invalidQt5CoreLibrary(invalidQt5libDirPath + QLatin1Char('/') + qt5CoreLibraryName );
+    pathList.appendPath(invalidQt5libDirPath);
+    pathList.appendPath(validQt5libDirPath);
+    finder.setSearchPathList(pathList);
+    isExistingSharedLibraryOp->appendExistingSharedLibrary(invalidQt5CoreLibrary);
+    isExistingSharedLibraryOp->appendExistingSharedLibrary(validQt5CoreLibrary);
+
+    auto library = finder.findLibraryAbsolutePath(qt5CoreLibraryName, dependentFile);
+
+    REQUIRE( library.absoluteFilePath() == validQt5CoreLibrary.absoluteFilePath() );
   }
 }
 

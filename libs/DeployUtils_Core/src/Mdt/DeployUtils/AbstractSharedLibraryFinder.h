@@ -73,7 +73,7 @@ namespace Mdt{ namespace DeployUtils{
       mSearchPathList = pathList;
     }
 
-    /*! \brief Get the list of paths where this finders locates shared libraries
+    /*! \brief Get the list of paths where this finder locates shared libraries
      */
     const PathList & searchPathList() const noexcept
     {
@@ -103,11 +103,14 @@ namespace Mdt{ namespace DeployUtils{
      */
     BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & file); /*const*/
 
-    /*! \brief Check if \a libraryFile is a existing shared library
+    /*! \brief Validate that given library is a existing shared library
+     *
+     * Will first use given validation operator (derived from AbstractIsExistingValidSharedLibrary),
+     * then use validateSpecificSharedLibrary() .
      *
      * \pre \a libraryFile must be a absolute file path
      */
-    bool isExistingValidSharedLibrary(const QFileInfo & libraryFile) const;
+    bool validateIsExistingValidSharedLibrary(const QFileInfo & libraryFile);
 
    signals:
 
@@ -116,6 +119,15 @@ namespace Mdt{ namespace DeployUtils{
     void debugMessage(const QString & message) const;
 
    private:
+
+    /*! \brief Check if given library is valid reagarding library specific criteria
+     *
+     * Can be implemented if more checks have to be done to validate a specifc library.
+     *
+     * \pre \a libraryFile must be a absolute file path
+     */
+    virtual
+    bool validateSpecificSharedLibrary(const QFileInfo & libraryFile);
 
     virtual
     OperatingSystem doOperatingSystem() const noexcept = 0;
@@ -130,9 +142,16 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Find the absolute path for given \a libraryName
      *
      * This method has to be implemented by the concrete class.
+     *
+     * The concrete implementation should search in various places
+     * regarding the platform rules it targets.
+     * For each file, it should call validateIsExistingValidSharedLibrary().
+     * If the library could ne be found, a FindDependencyError should be thrown.
+     *
+     * \exception FindDependencyError Thrown if given library could not be found
      */
     virtual
-    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) const = 0;
+    QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) = 0;
 
     /*! \brief Remove libraries that should not be distributed
      *
@@ -153,23 +172,8 @@ namespace Mdt{ namespace DeployUtils{
     //[[deprecated]]
     virtual
     BinaryDependenciesFile findLibraryAbsolutePath_OLD(const QString & libraryName,
-                                                   const BinaryDependenciesFile & dependentFile) const = 0;
+                                                   const BinaryDependenciesFile & dependentFile) = 0;
 
-    /*! \brief Check if given library is valid reagarding library specific criteria
-     *
-     * Can be implemented if more checks have to be done to validate a specifc library
-     *
-     * \pre \a libraryFile must be a absolute file path
-     */
-    virtual
-    bool isValidSpecificSharedLibrary(const QFileInfo & libraryFile) const;
-
-    /*! \brief Perform a action specific to some library
-     *
-     * This method can be implemented if required
-     */
-    virtual
-    void performLibrarySpecificAction(const QFileInfo & library);
 
     const std::shared_ptr<const AbstractIsExistingValidSharedLibrary> mIsExistingValidShLibOp;
     PathList mSearchPathList;

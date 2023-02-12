@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2022 Philippe Steinmann.
+ ** Copyright (C) 2021-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -108,12 +108,12 @@ void SharedLibraryFinderWindows::buildSearchPathList(const QFileInfo & binaryFil
   setSearchPathList(searchPathList);
 }
 
-BinaryDependenciesFile SharedLibraryFinderWindows::findLibraryAbsolutePathByAlternateNames(const QFileInfo & libraryFile) const
+BinaryDependenciesFile SharedLibraryFinderWindows::findLibraryAbsolutePathByAlternateNames(const QFileInfo & libraryFile)
 {
   assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
   assert( libraryFile.isAbsolute() );
 
-  if( isExistingValidSharedLibrary(libraryFile) ){
+  if( validateIsExistingValidSharedLibrary(libraryFile) ){
     return BinaryDependenciesFile::fromQFileInfo(libraryFile);
   }
 
@@ -121,12 +121,12 @@ BinaryDependenciesFile SharedLibraryFinderWindows::findLibraryAbsolutePathByAlte
   const QDir directory = libraryFile.absoluteDir();
 
   alternativeFile.setFile( directory, libraryFile.fileName().toLower() );
-  if( isExistingValidSharedLibrary(alternativeFile) ){
+  if( validateIsExistingValidSharedLibrary(alternativeFile) ){
     return BinaryDependenciesFile::fromQFileInfo(alternativeFile);
   }
 
   alternativeFile.setFile( directory, libraryFile.fileName().toUpper() );
-  if( isExistingValidSharedLibrary(alternativeFile) ){
+  if( validateIsExistingValidSharedLibrary(alternativeFile) ){
     return BinaryDependenciesFile::fromQFileInfo(alternativeFile);
   }
 
@@ -134,7 +134,7 @@ BinaryDependenciesFile SharedLibraryFinderWindows::findLibraryAbsolutePathByAlte
 }
 
 BinaryDependenciesFile SharedLibraryFinderWindows::findLibraryAbsolutePath_OLD(const QString & libraryName,
-                                                                           const BinaryDependenciesFile & /*dependentFile*/) const
+                                                                           const BinaryDependenciesFile & /*dependentFile*/)
 {
   assert( !libraryName.trimmed().isEmpty() );
 
@@ -245,7 +245,7 @@ bool SharedLibraryFinderWindows::libraryIsInExcludeList(const QString & libraryN
   return libraryExcludelistWindows.contains(libraryName, Qt::CaseInsensitive);
 }
 
-QFileInfo SharedLibraryFinderWindows::doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & /*dependentFile*/) const
+QFileInfo SharedLibraryFinderWindows::doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & /*dependentFile*/)
 {
   assert( !libraryName.trimmed().isEmpty() );
 

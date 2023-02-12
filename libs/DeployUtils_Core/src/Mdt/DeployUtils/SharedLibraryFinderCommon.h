@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2022 Philippe Steinmann.
+ ** Copyright (C) 2021-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -56,11 +56,7 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \pre \a libraryFile must be a absolute file path
      */
-    bool isValidSpecificSharedLibrary(const QFileInfo & libraryFile) const override;
-
-    /*! \brief Perform a action specific to some library
-     */
-    void performLibrarySpecificAction(const QFileInfo & library) override;
+    bool validateSpecificSharedLibrary(const QFileInfo & libraryFile) override;
 
     std::shared_ptr<QtDistributionDirectory> mQtDistributionDirectory;
   };

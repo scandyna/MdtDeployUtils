@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -22,7 +22,6 @@
 #include "AbstractIsExistingValidSharedLibrary.h"
 #include "FileInfoUtils.h"
 
-// #include "QtSharedLibraryFile.h"
 
 namespace Mdt{ namespace DeployUtils{
 
@@ -50,8 +49,6 @@ QFileInfo AbstractSharedLibraryFinder::findLibraryAbsolutePath(const QString & l
   const QFileInfo library = doFindLibraryAbsolutePath(libraryName, dependentFile);
   assert( fileInfoIsAbsolutePath(library) );
 
-  performLibrarySpecificAction(library);
-
   return library;
 }
 
@@ -63,37 +60,29 @@ BinaryDependenciesFileList AbstractSharedLibraryFinder::findLibrariesAbsolutePat
 
   for( const QString & libraryName : file.dependenciesFileNames() ){
     const BinaryDependenciesFile library = findLibraryAbsolutePath_OLD(libraryName, file);
-
-    performLibrarySpecificAction( library.fileInfo() );
-
     libraries.push_back(library);
   }
 
   return libraries;
 }
 
-bool AbstractSharedLibraryFinder::isExistingValidSharedLibrary(const QFileInfo & libraryFile) const
+bool AbstractSharedLibraryFinder::validateIsExistingValidSharedLibrary(const QFileInfo & libraryFile)
 {
-  assert( !libraryFile.filePath().isEmpty() ); // see doc of QFileInfo::absoluteFilePath()
-  assert( libraryFile.isAbsolute() );
+  assert( fileInfoIsAbsolutePath(libraryFile) );
 
   if( !mIsExistingValidShLibOp->isExistingValidSharedLibrary(libraryFile) ){
     return false;
   }
-  if( !isValidSpecificSharedLibrary(libraryFile) ){
+  if( !validateSpecificSharedLibrary(libraryFile) ){
     return false;
   }
 
   return true;
 }
 
-bool AbstractSharedLibraryFinder::isValidSpecificSharedLibrary(const QFileInfo &) const
+bool AbstractSharedLibraryFinder::validateSpecificSharedLibrary(const QFileInfo &)
 {
   return true;
-}
-
-void AbstractSharedLibraryFinder::performLibrarySpecificAction(const QFileInfo &)
-{
 }
 
 }} // namespace Mdt{ namespace DeployUtils{

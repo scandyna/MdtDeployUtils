@@ -60,7 +60,7 @@ QString SharedLibraryFinderLinux::makeDirectoryFromRpathEntry(const BinaryDepend
 }
 
 BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePathByRPath(const QString & libraryName,
-                                                                                const BinaryDependenciesFile & dependentFile) const
+                                                                                const BinaryDependenciesFile & dependentFile)
 {
   assert( !libraryName.trimmed().isEmpty() );
 
@@ -74,7 +74,7 @@ BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePathByRPath(
     emit debugMessage(
       tr("  try %1").arg( libraryFile.absoluteFilePath() )
     );
-    if( isExistingValidSharedLibrary(libraryFile) ){
+    if( validateIsExistingValidSharedLibrary(libraryFile) ){
       return BinaryDependenciesFile::fromQFileInfo(libraryFile);
     }
   }
@@ -83,7 +83,7 @@ BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePathByRPath(
 }
 
 BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePath_OLD(const QString & libraryName,
-                                                                         const BinaryDependenciesFile & dependentFile) const
+                                                                         const BinaryDependenciesFile & dependentFile)
 {
   assert( !libraryName.trimmed().isEmpty() );
 
@@ -149,7 +149,7 @@ bool SharedLibraryFinderLinux::libraryIsInGeneratedExcludeList(const QString & l
   return libraryExcludelistLinux.contains(libraryName);
 }
 
-QFileInfo SharedLibraryFinderLinux::doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) const
+QFileInfo SharedLibraryFinderLinux::doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile)
 {
   assert( !libraryName.trimmed().isEmpty() );
 
@@ -174,7 +174,7 @@ QFileInfo SharedLibraryFinderLinux::doFindLibraryAbsolutePath(const QString & li
   return QFileInfo( library.fileInfo() );
 }
 
-BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePathBySearchPath(const QString & libraryName) const
+BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePathBySearchPath(const QString & libraryName)
 {
   assert( !libraryName.trimmed().isEmpty() );
 
@@ -187,7 +187,7 @@ BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePathBySearch
     emit debugMessage(
       tr("  try %1").arg( libraryFile.absoluteFilePath() )
     );
-    if( isExistingValidSharedLibrary(libraryFile) ){
+    if( validateIsExistingValidSharedLibrary(libraryFile) ){
       return BinaryDependenciesFile::fromQFileInfo(libraryFile);
     }
   }
