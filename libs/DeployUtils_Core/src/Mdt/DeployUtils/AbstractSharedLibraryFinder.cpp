@@ -52,20 +52,6 @@ QFileInfo AbstractSharedLibraryFinder::findLibraryAbsolutePath(const QString & l
   return library;
 }
 
-BinaryDependenciesFileList AbstractSharedLibraryFinder::findLibrariesAbsolutePath(BinaryDependenciesFile & file)
-{
-  BinaryDependenciesFileList libraries;
-
-  removeLibrariesToNotRedistribute(file);
-
-  for( const QString & libraryName : file.dependenciesFileNames() ){
-    const BinaryDependenciesFile library = findLibraryAbsolutePath_OLD(libraryName, file);
-    libraries.push_back(library);
-  }
-
-  return libraries;
-}
-
 bool AbstractSharedLibraryFinder::validateIsExistingValidSharedLibrary(const QFileInfo & libraryFile)
 {
   assert( fileInfoIsAbsolutePath(libraryFile) );

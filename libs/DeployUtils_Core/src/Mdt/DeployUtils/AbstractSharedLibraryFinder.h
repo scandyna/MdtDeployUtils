@@ -99,10 +99,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     QFileInfo findLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile);
 
-    /*! \brief Find the absolute path for each direct dependency of \a file
-     */
-    BinaryDependenciesFileList findLibrariesAbsolutePath(BinaryDependenciesFile & file); /*const*/
-
     /*! \brief Validate that given library is a existing shared library
      *
      * Will first use given validation operator (derived from AbstractIsExistingValidSharedLibrary),

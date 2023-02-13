@@ -533,24 +533,3 @@ TEST_CASE("find_Qt5Core_inValidDirectory")
     REQUIRE( library.absoluteFilePath() == validQt5CoreLibrary.absoluteFilePath() );
   }
 }
-
-TEST_CASE("findLibrariesAbsolutePath")
-{
-  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
-  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
-  SharedLibraryFinderWindows finder(isExistingSharedLibraryOp, qtDistributionDirectory);
-  BinaryDependenciesFileList libraries;
-
-  SECTION("A.dll,KERNEL32.DLL - pathList:/tmp - exists - KERNEL32.DLL must be excluded")
-  {
-    auto executable = makeBinaryDependenciesFileFromUtf8Path("/tmp/executable.exe");
-    executable.setDependenciesFileNames({QLatin1String("A.dll"),QLatin1String("KERNEL32.DLL")});
-    finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
-    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/A.dll","/tmp/KERNEL32.DLL"});
-
-    libraries = finder.findLibrariesAbsolutePath(executable);
-
-    REQUIRE( libraries.size() == 1 );
-    REQUIRE( libraries[0].absoluteFilePath() == makeAbsolutePath("/tmp/A.dll") );
-  }
-}
