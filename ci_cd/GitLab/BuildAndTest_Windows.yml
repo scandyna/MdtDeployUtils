@@ -123,7 +123,7 @@ build_StandaloneInstallTest_Windows_x86_64:
 
 StandaloneInstallTest_Windows_x86_64:
   stage: install_test
-  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-win64_mingw81:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-base:latest
   rules:
     - !reference [.buildAndTest_rules, rules]
   extends:
