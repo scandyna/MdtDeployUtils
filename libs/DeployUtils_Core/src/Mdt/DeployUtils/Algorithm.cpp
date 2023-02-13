@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2020-2022 Philippe Steinmann.
+ ** Copyright (C) 2020-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -22,47 +22,5 @@
 #include <QLatin1Char>
 
 namespace Mdt{ namespace DeployUtils{
-
-QString relativePathToBase(const QString & path, const QString & base) noexcept
-{
-  assert( !path.trimmed().isEmpty() );
-  assert( !base.trimmed().isEmpty() );
-  assert( path.startsWith(base) );
-
-  using sizeType = QString::size_type;
-
-  /*
-   * path:   /rootDir/lib
-   * base:   /rootDir
-   * result: lib
-   *
-   * path:   /usr/lib
-   * base:   /usr
-   * result: lib
-   *
-   * path:   /usr/lib
-   * base:   /usr/
-   * result: lib
-   *
-   * path:   /usr/lib/
-   * base:   /usr
-   * result: lib/
-   *
-   * path:   /usr/lib/
-   * base:   /usr/
-   * result: lib/
-   */
-  sizeType toRemove = path.length() - base.length();
-  if( !base.endsWith( QLatin1Char('/') ) ){
-    --toRemove;
-  }
-
-  return path.right(toRemove);
-}
-
-bool pathIsInBase(const QString & path, const QString & base) noexcept
-{
-  return path.startsWith(base);
-}
 
 }} // namespace Mdt{ namespace DeployUtils{

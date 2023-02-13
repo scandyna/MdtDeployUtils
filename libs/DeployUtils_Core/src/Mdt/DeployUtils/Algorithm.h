@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2020-2022 Philippe Steinmann.
+ ** Copyright (C) 2020-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -109,55 +109,6 @@ namespace Mdt{ namespace DeployUtils{
   {
     std::copy( source.cbegin(), source.cend(), std::back_inserter(destinaton) );
   }
-
-  /*! \brief Returns a abolute path made relative to a base path
-   *
-   * Examples:
-   * \code
-   * const QString relativePath = relativePathToBase("/usr/lib", "/usr");
-   * // relativePath: lib
-   *
-   * const QString relativePath = relativePathToBase("/usr/lib/x86_64-linux-gnu", "/usr");
-   * // relativePath: lib/x86_64-linux-gnu
-   * \endcode
-   *
-   * If given path ends with a slash, it will also be returned in the result:
-   * \code
-   * const QString relativePath = relativePathToBase("/usr/lib/", "/usr");
-   * // relativePath: lib/
-   * \endcode
-   *
-   * It does not matter if given base ends with a slash:
-   * \code
-   * const QString relativePath = relativePathToBase("/usr/lib", "/usr");
-   * // relativePath: lib
-   *
-   * const QString relativePath = relativePathToBase("/usr/lib", "/usr/");
-   * // relativePath: lib
-   * \endcode
-   *
-   * \note This function does not require that path exist on the file system,
-   *  it only does string manipulations
-   * \sa https://en.cppreference.com/w/cpp/filesystem/relative
-   * \pre \a path and \a base must not be empty
-   * \pre \a path must start with \a base
-   */
-  MDT_DEPLOYUTILSCORE_EXPORT
-  QString relativePathToBase(const QString & path, const QString & base) noexcept;
-
-  /*! \brief Check if given path is in given base
-   *
-   * Examples:
-   * \code
-   * b = pathIsInBase("/usr/lib", "/usr");
-   * // b is true
-   *
-   * b = pathIsInBase("/usr/lib", "/lib");
-   * // b is false
-   * \endcode
-   */
-  MDT_DEPLOYUTILSCORE_EXPORT
-  bool pathIsInBase(const QString & path, const QString & base) noexcept;
 
 }} // namespace Mdt{ namespace DeployUtils{
 

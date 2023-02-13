@@ -53,3 +53,70 @@ TEST_CASE("absoluteDirectoryPathFromAbsoluteFilePath")
     REQUIRE( absoluteDirectoryPathFromAbsoluteFilePath(path) == makeAbsolutePath("/") );
   }
 }
+
+TEST_CASE("relativePathToBase")
+{
+  using Mdt::DeployUtils::relativePathToBase;
+
+  QString path;
+  QString base;
+
+  SECTION("/usr/lib , /usr -> lib")
+  {
+    path = QLatin1String("/usr/lib");
+    base = QLatin1String("/usr");
+    REQUIRE( relativePathToBase(path, base) == QLatin1String("lib") );
+  }
+
+  SECTION("/usr/lib , /usr/ -> lib")
+  {
+    path = QLatin1String("/usr/lib");
+    base = QLatin1String("/usr/");
+    REQUIRE( relativePathToBase(path, base) == QLatin1String("lib") );
+  }
+
+  SECTION("/usr/lib/ , /usr -> lib/")
+  {
+    path = QLatin1String("/usr/lib/");
+    base = QLatin1String("/usr");
+    REQUIRE( relativePathToBase(path, base) == QLatin1String("lib/") );
+  }
+
+  SECTION("/usr/lib/ , /usr/ -> lib/")
+  {
+    path = QLatin1String("/usr/lib/");
+    base = QLatin1String("/usr/");
+    REQUIRE( relativePathToBase(path, base) == QLatin1String("lib/") );
+  }
+
+  SECTION("/usr/lib/x86_64-linux-gnu , /usr -> lib")
+  {
+    path = QLatin1String("/usr/lib/x86_64-linux-gnu");
+    base = QLatin1String("/usr");
+    REQUIRE( relativePathToBase(path, base) == QLatin1String("lib/x86_64-linux-gnu") );
+  }
+}
+
+TEST_CASE("pathIsInBase")
+{
+  using Mdt::DeployUtils::pathIsInBase;
+
+  QString path;
+  QString base;
+
+  SECTION("/usr/lib is in /usr")
+  {
+    path = QLatin1String("/usr/lib");
+    base = QLatin1String("/usr");
+
+    REQUIRE( pathIsInBase(path, base) );
+  }
+
+  SECTION("/usr/lib is NOT in /lib")
+  {
+    path = QLatin1String("/usr/lib");
+    base = QLatin1String("/lib");
+
+    REQUIRE( !pathIsInBase(path, base) );
+  }
+}
