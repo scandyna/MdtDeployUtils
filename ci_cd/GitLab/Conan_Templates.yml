@@ -39,7 +39,6 @@ include:
       --settings:build build_type=Release --settings:host build_type=$BUILD_TYPE
 
 
-
 .deploy_conan:
   stage: deploy
   retry: 1
@@ -54,3 +53,5 @@ include:
       --settings:build build_type=Release --settings:host build_type=$BUILD_TYPE
     - conan user --password "${CI_JOB_TOKEN}" --remote scandyna ci_user
     - conan upload $COMPONENT/* --remote scandyna --all -c
+  # Avoid getting artifacts from previous stages
+  dependencies: []
