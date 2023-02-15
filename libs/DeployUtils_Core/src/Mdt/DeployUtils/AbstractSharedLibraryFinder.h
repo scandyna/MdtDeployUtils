@@ -144,6 +144,10 @@ namespace Mdt{ namespace DeployUtils{
      * For each file, it should call validateIsExistingValidSharedLibrary().
      * If the library could ne be found, a FindDependencyError should be thrown.
      *
+     * \a dependentFile if the file that has \a libraryName as direct dependency.
+     * This can typically be used to get rpath informations (for platforms that support it).
+     *
+     * \pre \a libraryName must not be empty
      * \exception FindDependencyError Thrown if given library could not be found
      */
     virtual
@@ -154,21 +158,6 @@ namespace Mdt{ namespace DeployUtils{
      * This method has to be implemented by the concrete class.
      */
     virtual void removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept = 0;
-
-    /*! \brief Find the absolute path for given \a libraryName
-     *
-     * This method has to be implemented by the concrete class.
-     *
-     * \a dependentFile if the file that has \a libraryName as direct dependency.
-     * This can typically be used to get rpath informations (for platforms that support it).
-     *
-     * \pre \a libraryName must not be empty
-     * \exception FindDependencyError
-     */
-    //[[deprecated]]
-    virtual
-    BinaryDependenciesFile findLibraryAbsolutePath_OLD(const QString & libraryName,
-                                                   const BinaryDependenciesFile & dependentFile) = 0;
 
 
     const std::shared_ptr<const AbstractIsExistingValidSharedLibrary> mIsExistingValidShLibOp;

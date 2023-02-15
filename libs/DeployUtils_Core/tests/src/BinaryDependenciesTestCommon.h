@@ -156,21 +156,6 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
   {
   }
 
-  BinaryDependenciesFile findLibraryAbsolutePath_OLD(const QString & libraryName,
-                                                  const BinaryDependenciesFile & /*dependentFile*/) override
-  {
-    assert( !libraryName.trimmed().isEmpty() );
-
-    for(const QString & directory : mSearchPathList){
-      QFileInfo libraryFile(directory, libraryName);
-      if( validateIsExistingValidSharedLibrary(libraryFile) ){
-        return BinaryDependenciesFile::fromQFileInfo(libraryFile);
-      }
-    }
-
-    return BinaryDependenciesFile();
-  }
-
   PathList mSearchPathList;
   QStringList mLibraryNamesToNotRedistribute;
 };

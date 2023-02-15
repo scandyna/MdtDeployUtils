@@ -112,17 +112,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     BinaryDependenciesFile findLibraryAbsolutePathByAlternateNames(const QFileInfo & libraryFile);
 
-    /*! \brief Find the absolute path for given \a libraryName
-     *
-     * \pre \a libraryName must not be empty
-     * \exception FindDependencyError
-     * \sa https://docs.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order
-     *
-     * \todo case of \a libraryName containing a full path is not implemented
-     */
-    BinaryDependenciesFile findLibraryAbsolutePath_OLD(const QString & libraryName,
-                                                   const BinaryDependenciesFile & dependentFile = BinaryDependenciesFile() ) override;
-
     /*! \brief If \a exclude is true, dependencies that are part of MSVC runtime are excluded
      *
      * By default, dependencies that are part of the MSVC runtime
@@ -235,6 +224,12 @@ namespace Mdt{ namespace DeployUtils{
     bool libraryIsInExcludeList(const QString & libraryName) noexcept;
 
     /*! \brief Find the absolute path for given \a libraryName
+     *
+     * \pre \a libraryName must not be empty
+     * \exception FindDependencyError
+     * \sa https://docs.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order
+     *
+     * \todo case of \a libraryName containing a full path is not implemented
      */
     QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) override;
 

@@ -157,50 +157,6 @@ TEST_CASE("findLibraryAbsolutePathByRPath")
   }
 }
 
-TEST_CASE("findLibraryAbsolutePath_OLD")
-{
-  QString libraryName;
-  auto isExistingSharedLibraryOp = std::make_shared<TestIsExistingSharedLibrary>();
-  auto qtDistributionDirectory = std::make_shared<QtDistributionDirectory>();
-  SharedLibraryFinderLinux finder(isExistingSharedLibraryOp, qtDistributionDirectory);
-
-  SECTION("libA.so - pathList:/tmp - exists")
-  {
-    auto executable = makeBinaryDependenciesFileFromUtf8Path("/tmp/executable");
-    libraryName = QLatin1String("libA.so");
-    finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp"}) );
-    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/libA.so"});
-
-    auto library = finder.findLibraryAbsolutePath_OLD(libraryName, executable);
-
-    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
-  }
-
-  SECTION("libA.so - rpath:/tmp - exists")
-  {
-    auto executable = makeBinaryDependenciesFileFromUtf8Path("/tmp/executable");
-    executable.setRPath( makeRPathFromUtf8Paths({"/tmp"}) );
-    libraryName = QLatin1String("libA.so");
-    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/libA.so"});
-
-    auto library = finder.findLibraryAbsolutePath_OLD(libraryName, executable);
-
-    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
-  }
-
-  SECTION("libA.so - pathList:/tmp,/opt - exists in both path - must pick the first one")
-  {
-    auto executable = makeBinaryDependenciesFileFromUtf8Path("/tmp/executable");
-    libraryName = QLatin1String("libA.so");
-    finder.setSearchPathList( makePathListFromUtf8Paths({"/tmp","/opt"}) );
-    isExistingSharedLibraryOp->setExistingSharedLibraries({"/tmp/libA.so","/opt/libA.so"});
-
-    auto library = finder.findLibraryAbsolutePath_OLD(libraryName, executable);
-
-    REQUIRE( library.absoluteFilePath() == makeAbsolutePath("/tmp/libA.so") );
-  }
-}
-
 TEST_CASE("findLibraryAbsolutePath")
 {
   QString libraryName;

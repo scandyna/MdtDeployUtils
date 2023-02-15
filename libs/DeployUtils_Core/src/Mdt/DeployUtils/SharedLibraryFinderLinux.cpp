@@ -82,26 +82,6 @@ BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePathByRPath(
   return BinaryDependenciesFile();
 }
 
-BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePath_OLD(const QString & libraryName,
-                                                                         const BinaryDependenciesFile & dependentFile)
-{
-  assert( !libraryName.trimmed().isEmpty() );
-
-  BinaryDependenciesFile library = findLibraryAbsolutePathByRPath(libraryName, dependentFile);
-
-  if( library.isNull() ){
-    library = findLibraryAbsolutePathBySearchPath(libraryName);
-  }
-
-  if( library.isNull() ){
-    const QString message = tr("could not find the absolute path for %1")
-                            .arg(libraryName);
-    throw FindDependencyError(message);
-  }
-
-  return library;
-}
-
 bool SharedLibraryFinderLinux::doLibraryShouldBeDistributed(const QString & libraryName) const noexcept
 {
   if( libraryIsInLocalExcludeList(libraryName) ){

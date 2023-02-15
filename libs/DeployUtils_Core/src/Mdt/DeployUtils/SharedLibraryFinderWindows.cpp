@@ -142,24 +142,6 @@ BinaryDependenciesFile SharedLibraryFinderWindows::findLibraryAbsolutePathByAlte
   return BinaryDependenciesFile();
 }
 
-BinaryDependenciesFile SharedLibraryFinderWindows::findLibraryAbsolutePath_OLD(const QString & libraryName,
-                                                                           const BinaryDependenciesFile & /*dependentFile*/)
-{
-  assert( !libraryName.trimmed().isEmpty() );
-
-  for( const QString & directory : searchPathList() ){
-    QFileInfo libraryFile(directory, libraryName);
-    const BinaryDependenciesFile library = findLibraryAbsolutePathByAlternateNames(libraryFile);
-    if( !library.isNull() ){
-      return library;
-    }
-  }
-
-  const QString message = tr("could not find the absolute path for %1")
-                          .arg(libraryName);
-  throw FindDependencyError(message);
-}
-
 bool SharedLibraryFinderWindows::libraryHasToBeExcluded(const QString & library) const noexcept
 {
   if( hasToExcludeMsvcLibraries() && isMsvcLibrary(library) ){
