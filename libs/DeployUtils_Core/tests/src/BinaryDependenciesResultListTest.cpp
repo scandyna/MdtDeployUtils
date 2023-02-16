@@ -3,15 +3,12 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ****************************************************************************/
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "BinaryDependenciesTestCommon.h"
-
-// #include "TestFileUtils.h"
-
 #include "Mdt/DeployUtils/BinaryDependenciesResultList.h"
 #include <QLatin1String>
 #include <QFileInfo>
@@ -112,80 +109,6 @@ TEST_CASE("findResultForTargetName")
   REQUIRE( !noResult.has_value() );
 }
 
-
-// TEST_CASE("getLibrariesAbsoluteFilePathList", "[.]")
-// {
-//   const auto os = OperatingSystem::Linux;
-//   BinaryDependenciesResultList resultList(os);
-//   QStringList pathList;
-// 
-//   SECTION("empty list of results")
-//   {
-//     pathList = getLibrariesAbsoluteFilePathList(resultList);
-// 
-//     REQUIRE( pathList.isEmpty() );
-//   }
-// 
-//   SECTION("1 result")
-//   {
-//     QFileInfo app( QLatin1String("/opt/app") );
-//     BinaryDependenciesResult result(app, os);
-// 
-//     SECTION("1 library")
-//     {
-//       QFileInfo libA( QLatin1String("/opt/libA.so") );
-//       result.addLibrary( BinaryDependenciesFile::fromQFileInfo(libA) );
-//       resultList.addResult(result);
-// 
-//       pathList = getLibrariesAbsoluteFilePathList(resultList);
-// 
-//       REQUIRE( pathList.size() == 1 );
-//       REQUIRE( pathList.contains( QLatin1String("/opt/libA.so") ) );
-//     }
-//   }
-// 
-//   SECTION("2 results")
-//   {
-//     QFileInfo app1( QLatin1String("/opt/app1") );
-//     BinaryDependenciesResult result1(app1, os);
-//     QFileInfo app2( QLatin1String("/opt/app2") );
-//     BinaryDependenciesResult result2(app2, os);
-// 
-//     /// \todo This is probably wrong
-//     /*
-//      * NOTE
-//      * Libraries in the results are solved.
-//      * This means that they have been found on the system.
-//      * As result, we should never encounter a situation with different cases.
-//      * Example:
-//      *  C:/opt/libA.DLL
-//      *  C:/opt/liba.dll
-//      * above should never happen.
-//      * The existing library will be returned by the shared library finder correctly
-//      * (each result will then contain the unique variant that exists on the system)
-//      */
-//     SECTION("each result has same library")
-//     {
-//       QFileInfo libA( QLatin1String("/opt/libA.so") );
-// 
-//       result1.addLibrary( BinaryDependenciesFile::fromQFileInfo(libA) );
-//       result2.addLibrary( BinaryDependenciesFile::fromQFileInfo(libA) );
-//       resultList.addResult(result1);
-//       resultList.addResult(result2);
-// 
-//       pathList = getLibrariesAbsoluteFilePathList(resultList);
-// 
-//       REQUIRE( pathList.size() == 1 );
-//       REQUIRE( pathList.contains( QLatin1String("/opt/libA.so") ) );
-//     }
-//   }
-// 
-//   SECTION("2 results having KERNEL32.DLL and kernel32.dll")
-//   {
-//     REQUIRE( false );
-//   }
-// }
-
 TEST_CASE("getLibrariesToRedistribute")
 {
   const auto os = OperatingSystem::Linux;
@@ -268,7 +191,7 @@ TEST_CASE("getLibrariesToRedistribute")
      * First implementation used std::unique() without any sorting
      * So previous test passed, but the list contained lots of dupplicates
      */
-    SECTION("both results have the same library to redistribute (not conscutive)")
+    SECTION("both results have the same library to redistribute (not consecutive)")
     {
       QFileInfo MyLibA( QLatin1String("/opt/MyLibA.so") );
       QFileInfo MyLibB( QLatin1String("/opt/MyLibB.so") );

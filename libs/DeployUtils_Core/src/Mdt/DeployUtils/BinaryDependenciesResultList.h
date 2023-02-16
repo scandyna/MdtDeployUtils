@@ -3,7 +3,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ****************************************************************************/
 #ifndef MDT_DEPLOY_UTILS_BINARY_DEPENDENCIES_RESULT_LIST_H
@@ -14,9 +14,6 @@
 #include "OperatingSystem.h"
 #include "mdt_deployutilscore_export.h"
 #include <QString>
-
-#include <QStringList>
-
 #include <optional>
 #include <vector>
 
@@ -133,17 +130,6 @@ namespace Mdt{ namespace DeployUtils{
     bool mIsSolved = true;
     ResultContainer mList;
   };
-
-  /*! \brief Get a list of absolute file paths for each library in given list of results
-   *
-   * Each path is unique in the returned list.
-   *
-   * \pre each result in \a resultList must be solved
-   * (i.e. every library has its absolute file path set).
-   */
-  [[deprecated]]
-  MDT_DEPLOYUTILSCORE_EXPORT
-  QStringList getLibrariesAbsoluteFilePathList(const BinaryDependenciesResultList & resultList);
 
   /*! \internal Get a list of libraries to redistribute from given list of results
    *
