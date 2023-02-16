@@ -153,18 +153,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     void addLibraryToNotRedistribute(const QFileInfo & library) noexcept;
 
-    /*! \brief Add given library to this result
-     *
-     * Given \a library can be found or not.
-     *
-     * If a library with the same name as given \a library already exists in this result,
-     * given \a library will not be added.
-     *
-     * \pre \a library must not be null
-     */
-    [[deprecated]]
-    void addLibrary(const BinaryDependenciesFile & library) noexcept;
-
     /*! \brief Get an iterator to the beginning of the list of libraries this result contains
      */
     const_iterator cbegin() const noexcept

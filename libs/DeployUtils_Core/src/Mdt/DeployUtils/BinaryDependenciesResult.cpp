@@ -3,7 +3,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ****************************************************************************/
 #include "BinaryDependenciesResult.h"
@@ -78,21 +78,6 @@ void BinaryDependenciesResult::addLibraryToNotRedistribute(const QFileInfo & lib
 
   if( !containsLibraryName( resultLibrary.libraryName() ) ){
     mEntries.push_back(resultLibrary);
-  }
-}
-
-void BinaryDependenciesResult::addLibrary(const BinaryDependenciesFile & library) noexcept
-{
-  assert( !library.isNull() );
-
-  const auto resultLibrary = BinaryDependenciesResultLibrary::fromQFileInfo( library.fileInfo() );
-
-  if( !containsLibraryName( resultLibrary.libraryName() ) ){
-    mEntries.push_back(resultLibrary);
-  }
-
-  if( !resultLibrary.isFound() ){
-    mIsSolved = false;
   }
 }
 
