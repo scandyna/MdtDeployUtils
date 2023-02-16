@@ -3,7 +3,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ****************************************************************************/
 #ifndef MDT_DEPLOY_UTILS_BINARY_DEPENDENCIES_RESULT_H
@@ -23,45 +23,6 @@
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Collection of found binary dependencies
-   *
-   * \todo
-   * One result should concern multiple targets. < NO
-   *
-   * \todo update doc
-   *
-   * \note
-   * The solver can accept multiple targets at the same time.
-   * It then try to avoid solving the same binary multiple times.
-   * The litle drawback of this solution is that it will not
-   * give the dependencies for each target in a reliable way.
-   * As example, \a app depends on \a libQt5Core.so .
-   * Both also depend on \a libstdc++.so :
-   * \code
-   * BinaryDependencies solver;
-   * QFileInfoList binaryFilePathList{"/opt/bin/app","/opt/qt/lib/libQt5Core.so"}
-   *
-   * auto result = solver.findDependencies(binaryFilePathList, ...);
-   *
-   * // First target, app, will be solved:
-   * // - app will be solved and depends on libQt5Core.so and libstdc++.so
-   * // - libQt5Core.so will be solved (transitive solving) and depends on libstdc++.so
-   * // - result: app depends on libQt5Core.so and libstdc++.so (flat list of all transitive dependencies)
-   * // - app and libQt5Core.so will be marked as solved
-   *
-   * // Second target, libQt5Core.so, will be solved:
-   * // - libQt5Core.so is already solved
-   * // - result: empty dependency list (which is wrong)
-   * \endcode
-   *
-   * It should be possible to change the implementation
-   * so that it reports reliable results for each given target,
-   * but this is not a priority for the moment
-   * (is it worth it ?).
-   *
-   *
-   * \todo What about checking if a plugin is solved or not ?
-   * Maybe a error message for given target ?
-   * Associate a error with a particular target..
    */
   class MDT_DEPLOYUTILSCORE_EXPORT BinaryDependenciesResult
   {
