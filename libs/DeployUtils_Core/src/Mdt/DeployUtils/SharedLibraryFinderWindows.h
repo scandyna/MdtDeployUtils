@@ -233,13 +233,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) override;
 
-    /*! \brief Remove libraries that should not be distributed
-     */
-    void removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept override;
-
-    static
-    void removeLibrariesInExcludeList(BinaryDependenciesFile & file) noexcept;
-
     static
     bool hasCompilerInstallDir(const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept;
 

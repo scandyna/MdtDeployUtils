@@ -24,7 +24,6 @@
 #include "RPath.h"
 #include "mdt_deployutilscore_export.h"
 #include <QString>
-#include <QStringList>
 #include <QFileInfo>
 #include <algorithm>
 #include <vector>
@@ -33,8 +32,6 @@
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Represents a file and its attributes used by BinaryDependencies
-   *
-   * \todo see https://gitlab.com/scandyna/mdtdeployutils/-/issues/5 (BinaryDependenciesFile has to much attributes and is confusing)
    */
   class MDT_DEPLOYUTILSCORE_EXPORT BinaryDependenciesFile
   {
@@ -96,35 +93,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     QString absoluteDirectoryPath() const noexcept;
 
-    /*! \brief Set the list of dependencies of this file
-     */
-    void setDependenciesFileNames(const QStringList & fileNames) noexcept
-    {
-      mDependenciesFileNames = fileNames;
-    }
-
-    /*! \brief Get the list of dependencies of this file
-     */
-    const QStringList & dependenciesFileNames() const noexcept
-    {
-      return mDependenciesFileNames;
-    }
-
-    /*! \brief Remove the dependencies with a given predicate \a p
-     *
-     * \a p is a unary predicate which returns ​true if the element should be removed.
-     *
-     * \sa https://en.cppreference.com/w/cpp/algorithm/remove
-     */
-    template<typename UnaryPredicate>
-    void removeDependenciesFileNames(UnaryPredicate p) noexcept
-    {
-      mDependenciesFileNames.erase(
-        std::remove_if( mDependenciesFileNames.begin(), mDependenciesFileNames.end(), p),
-        mDependenciesFileNames.end()
-      );
-    }
-
     /*! \brief Set the rpath to this file
      */
     void setRPath(const RPath & rpath) noexcept
@@ -168,7 +136,6 @@ namespace Mdt{ namespace DeployUtils{
     }
 
     QFileInfo mFile;
-    QStringList mDependenciesFileNames;
     RPath mRPath;
   };
 

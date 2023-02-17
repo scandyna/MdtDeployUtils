@@ -54,30 +54,3 @@ TEST_CASE("fromQFileInfo")
   REQUIRE( file.absoluteDirectoryPath() == makeAbsolutePath("/path/to/some") );
   REQUIRE( !file.isNull() );
 }
-
-TEST_CASE("removeDependenciesFileNames")
-{
-  QFileInfo fi( QLatin1String("/path/to/some/arbitraryFile") );
-  auto file = BinaryDependenciesFile::fromQFileInfo(fi);
-
-  const auto pred = [](const QString & libraryName){
-    return libraryName == QLatin1String("libR.so");
-  };
-
-  SECTION("no dependencies")
-  {
-    file.removeDependenciesFileNames(pred);
-
-    REQUIRE( file.dependenciesFileNames().isEmpty() );
-  }
-
-  SECTION("libA.so libR.so")
-  {
-    file.setDependenciesFileNames( qStringListFromUtf8Strings({"libA.so","libR.so"}) );
-
-    file.removeDependenciesFileNames(pred);
-
-    REQUIRE( file.dependenciesFileNames().size() == 1 );
-    REQUIRE( file.dependenciesFileNames().at(0) == QLatin1String("libA.so") );
-  }
-}

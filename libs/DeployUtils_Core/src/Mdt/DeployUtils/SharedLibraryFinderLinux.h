@@ -97,18 +97,7 @@ namespace Mdt{ namespace DeployUtils{
     QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) override;
 
     BinaryDependenciesFile findLibraryAbsolutePathBySearchPath(const QString & libraryName);
-
-    /*! \brief Remove libraries that should not be distributed
-     */
-    void removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept override;
-
-    static
-    void removeLibrariesInLocalExcludeList(BinaryDependenciesFile & file) noexcept;
-
-    static
-    void removeLibrariesInGeneratedExcludeList(BinaryDependenciesFile & file) noexcept;
   };
-
 
 }} // namespace Mdt{ namespace DeployUtils{
 

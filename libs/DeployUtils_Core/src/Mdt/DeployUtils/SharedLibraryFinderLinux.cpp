@@ -175,30 +175,4 @@ BinaryDependenciesFile SharedLibraryFinderLinux::findLibraryAbsolutePathBySearch
   return BinaryDependenciesFile();
 }
 
-void SharedLibraryFinderLinux::removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept
-{
-  removeLibrariesInGeneratedExcludeList(file);
-  removeLibrariesInLocalExcludeList(file);
-}
-
-void SharedLibraryFinderLinux::removeLibrariesInLocalExcludeList(BinaryDependenciesFile & file) noexcept
-{
-
-  const auto pred = [](const QString & libraryName){
-    return libraryIsInLocalExcludeList(libraryName);
-//     return excludeList.contains(libraryName);
-  };
-
-  file.removeDependenciesFileNames(pred);
-}
-
-void SharedLibraryFinderLinux::removeLibrariesInGeneratedExcludeList(BinaryDependenciesFile & file) noexcept
-{
-  const auto pred = [](const QString & libraryName){
-    return libraryExcludelistLinux.contains(libraryName);
-  };
-
-  file.removeDependenciesFileNames(pred);
-}
-
 }} // namespace Mdt{ namespace DeployUtils{

@@ -96,6 +96,8 @@ namespace Mdt{ namespace DeployUtils{
      * \sa libraryShouldBeDistributed()
      * \exception FindDependencyError Thrown if given library could not be found
      * Other exception could be thrown (for example corrupted file have been read)
+     *
+     * \todo Should we return a BinaryDependenciesFile ? Maybe not throw a exception ?
      */
     QFileInfo findLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile);
 
@@ -152,12 +154,6 @@ namespace Mdt{ namespace DeployUtils{
      */
     virtual
     QFileInfo doFindLibraryAbsolutePath(const QString & libraryName, const BinaryDependenciesFile & dependentFile) = 0;
-
-    /*! \brief Remove libraries that should not be distributed
-     *
-     * This method has to be implemented by the concrete class.
-     */
-    virtual void removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept = 0;
 
 
     const std::shared_ptr<const AbstractIsExistingValidSharedLibrary> mIsExistingValidShLibOp;

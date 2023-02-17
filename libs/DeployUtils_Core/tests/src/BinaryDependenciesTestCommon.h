@@ -152,10 +152,6 @@ class SharedLibraryFinderBDTest : public AbstractSharedLibraryFinder
     throw FindDependencyError(message);
   }
 
-  void removeLibrariesToNotRedistribute(BinaryDependenciesFile & /*file*/) const noexcept override
-  {
-  }
-
   PathList mSearchPathList;
   QStringList mLibraryNamesToNotRedistribute;
 };

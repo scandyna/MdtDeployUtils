@@ -263,25 +263,6 @@ QFileInfo SharedLibraryFinderWindows::doFindLibraryAbsolutePath(const QString & 
   throw FindDependencyError(message);
 }
 
-void SharedLibraryFinderWindows::removeLibrariesToNotRedistribute(BinaryDependenciesFile & file) const noexcept
-{
-  removeLibrariesInExcludeList(file);
-
-  const auto pred = [this](const QString & library){
-    return libraryHasToBeExcluded(library);
-  };
-  file.removeDependenciesFileNames(pred);
-}
-
-void SharedLibraryFinderWindows::removeLibrariesInExcludeList(BinaryDependenciesFile & file) noexcept
-{
-  const auto pred = [](const QString & libraryName){
-    return libraryExcludelistWindows.contains(libraryName, Qt::CaseInsensitive);
-  };
-
-  file.removeDependenciesFileNames(pred);
-}
-
 bool SharedLibraryFinderWindows::hasCompilerInstallDir(const std::shared_ptr<CompilerFinder> & compilerFinder) noexcept
 {
   if( compilerFinder.get() == nullptr ){
