@@ -121,11 +121,9 @@ build_StandaloneInstallTest_Windows_x86_64:
       - build/opt
 
 
-# TODO: Should use a minimal image once available
-# See https://gitlab.com/scandyna/docker-images-windows/-/issues/3
 StandaloneInstallTest_Windows_x86_64:
   stage: install_test
-  image: registry.gitlab.com/scandyna/docker-images-windows/windows-cpp-win64_mingw81:latest
+  image: registry.gitlab.com/scandyna/docker-images-windows/windows-minimal:latest
   rules:
     - !reference [.buildAndTest_rules, rules]
   extends:
