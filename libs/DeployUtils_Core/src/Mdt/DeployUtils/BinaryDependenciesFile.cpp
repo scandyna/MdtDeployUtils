@@ -40,4 +40,11 @@ BinaryDependenciesFile BinaryDependenciesFile::fromLibraryName(const QFileInfo &
   return BinaryDependenciesFile(name);
 }
 
+BinaryDependenciesFile BinaryDependenciesFile::fromQFileInfo(const QFileInfo & fileInfo) noexcept
+{
+  assert( fileInfoIsAbsolutePath(fileInfo) );
+
+  return BinaryDependenciesFile(fileInfo);
+}
+
 }} // namespace Mdt{ namespace DeployUtils{

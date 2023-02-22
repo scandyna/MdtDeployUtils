@@ -117,16 +117,9 @@ namespace Mdt{ namespace DeployUtils{
     /*! \brief Construct a file from \a fileInfo
      *
      * \pre \a fileInfo must have its absolute file path set
-     * \sa doc of QFileInfo::absoluteFilePath()
      */
     static
-    BinaryDependenciesFile fromQFileInfo(const QFileInfo & fileInfo) noexcept
-    {
-      assert( !fileInfo.filePath().isEmpty() );
-      assert( fileInfo.isAbsolute() );
-
-      return BinaryDependenciesFile(fileInfo);
-    }
+    BinaryDependenciesFile fromQFileInfo(const QFileInfo & fileInfo) noexcept;
 
    private:
 
