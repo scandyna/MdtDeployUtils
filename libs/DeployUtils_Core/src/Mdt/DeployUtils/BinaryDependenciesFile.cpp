@@ -34,8 +34,7 @@ QString BinaryDependenciesFile::absoluteDirectoryPath() const noexcept
 
 BinaryDependenciesFile BinaryDependenciesFile::fromLibraryName(const QFileInfo & name) noexcept
 {
-  assert( ( name.path().trimmed() == QLatin1String(".") )
-         || name.path().trimmed().isEmpty() );
+  assert( fileInfoIsFileNameWithoutPath(name) );
 
   return BinaryDependenciesFile(name);
 }
