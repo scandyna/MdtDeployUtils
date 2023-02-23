@@ -80,6 +80,7 @@ namespace Mdt{ namespace DeployUtils{
       return mFile.fileName();
     }
 
+
     /*! \brief Get the absolute path of this file
      */
     QString absoluteFilePath() const noexcept
@@ -116,7 +117,8 @@ namespace Mdt{ namespace DeployUtils{
 
     /*! \brief Construct a file from \a fileInfo
      *
-     * \pre \a fileInfo must have its absolute file path set
+     * \pre \a fileInfo must at least have a file name
+     * \sa fileInfoHasFileName()
      */
     static
     BinaryDependenciesFile fromQFileInfo(const QFileInfo & fileInfo) noexcept;

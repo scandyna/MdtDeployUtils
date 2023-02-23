@@ -41,7 +41,7 @@ BinaryDependenciesFile BinaryDependenciesFile::fromLibraryName(const QFileInfo &
 
 BinaryDependenciesFile BinaryDependenciesFile::fromQFileInfo(const QFileInfo & fileInfo) noexcept
 {
-  assert( fileInfoIsAbsolutePath(fileInfo) );
+  assert( fileInfoHasFileName(fileInfo) );
 
   return BinaryDependenciesFile(fileInfo);
 }
