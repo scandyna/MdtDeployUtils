@@ -3,7 +3,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ****************************************************************************/
 #include "catch2/catch.hpp"
@@ -227,4 +227,41 @@ TEST_CASE("isReaden")
 // 
 //     REQUIRE( file.isProcessed() );
 //   }
+}
+
+TEST_CASE("toBinaryDependenciesFile")
+{
+  SECTION("Library name")
+  {
+    const auto graphFile = GraphFile::fromLibraryName( QLatin1String("arbitraryFile.so") );
+
+    const auto bdFile = graphFile.toBinaryDependenciesFile();
+
+    REQUIRE( bdFile.fileName() == QLatin1String("arbitraryFile.so") );
+  }
+
+  SECTION("Library with its absolute path")
+  {
+    const QFileInfo libraryPath( QLatin1String("/opt/arbitraryFile.so") );
+    const auto graphFile = GraphFile::fromQFileInfo(libraryPath);
+
+    const auto bdFile = graphFile.toBinaryDependenciesFile();
+
+    REQUIRE( bdFile.absoluteFilePath() == makeAbsolutePath("/opt/arbitraryFile.so") );
+  }
+
+  SECTION("Library with rpath")
+  {
+    RPath rpath;
+    rpath.appendPath( QLatin1String("/opt/lib") );
+
+    const QFileInfo libraryPath( QLatin1String("/opt/arbitraryFile.so") );
+    auto graphFile = GraphFile::fromQFileInfo(libraryPath);
+    graphFile.setRPath(rpath);
+
+    const auto bdFile = graphFile.toBinaryDependenciesFile();
+
+    REQUIRE( bdFile.absoluteFilePath() == makeAbsolutePath("/opt/arbitraryFile.so") );
+    REQUIRE( bdFile.rPath() == rpath );
+  }
 }

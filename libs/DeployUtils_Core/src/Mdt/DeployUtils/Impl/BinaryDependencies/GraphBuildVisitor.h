@@ -3,7 +3,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ****************************************************************************/
 #ifndef MDT_DEPLOY_UTILS_IMPL_BINARY_DEPENDENCIES_GRAPH_BUILD_VISITOR_H
@@ -91,9 +91,7 @@ namespace Mdt{ namespace DeployUtils{ namespace Impl{ namespace BinaryDependenci
         return;
       }
 
-      /// \todo build function to make BinaryDependenciesFile from GraphFile
-      auto dependentFile = BinaryDependenciesFile::fromQFileInfo( parentFile.fileInfo() );
-      dependentFile.setRPath( parentFile.rPath() );
+      const auto dependentFile = parentFile.toBinaryDependenciesFile();
       try{
         const QFileInfo path = mSharedLibraryFinder.findLibraryAbsolutePath( libraryName, dependentFile );
         assert( fileInfoIsAbsolutePath(path) );
