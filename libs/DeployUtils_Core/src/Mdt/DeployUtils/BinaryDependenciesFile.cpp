@@ -25,9 +25,14 @@
 
 namespace Mdt{ namespace DeployUtils{
 
+bool BinaryDependenciesFile::hasAbsolutePath() const noexcept
+{
+  return fileInfoIsAbsolutePath(mFile);
+}
+
 QString BinaryDependenciesFile::absoluteDirectoryPath() const noexcept
 {
-  assert( fileInfoIsAbsolutePath(mFile) );
+  assert( hasAbsolutePath() );
 
   return absoluteDirectoryPathFromAbsoluteFilePath(mFile);
 }

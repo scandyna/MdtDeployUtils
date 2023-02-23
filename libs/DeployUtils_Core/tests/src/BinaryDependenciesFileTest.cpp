@@ -46,11 +46,52 @@ TEST_CASE("fromLibraryName")
 
 TEST_CASE("fromQFileInfo")
 {
-  QFileInfo fi( QLatin1String("/path/to/some/arbitraryFile") );
+  SECTION("File with its absolute path")
+  {
+    QFileInfo fi( QLatin1String("/path/to/some/arbitraryFile") );
 
-  auto file = BinaryDependenciesFile::fromQFileInfo(fi);
+    auto file = BinaryDependenciesFile::fromQFileInfo(fi);
 
-  REQUIRE( file.fileName() == QLatin1String("arbitraryFile") );
-  REQUIRE( file.absoluteDirectoryPath() == makeAbsolutePath("/path/to/some") );
-  REQUIRE( !file.isNull() );
+    REQUIRE( file.fileName() == QLatin1String("arbitraryFile") );
+    REQUIRE( file.absoluteDirectoryPath() == makeAbsolutePath("/path/to/some") );
+    REQUIRE( !file.isNull() );
+  }
+
+  SECTION("File with its file name only")
+  {
+    QFileInfo fi( QLatin1String("arbitraryFile") );
+
+    auto file = BinaryDependenciesFile::fromQFileInfo(fi);
+
+    REQUIRE( file.fileName() == QLatin1String("arbitraryFile") );
+    REQUIRE( !file.isNull() );
+  }
+}
+
+TEST_CASE("hasAbsolutePath")
+{
+  SECTION("default constructed")
+  {
+    BinaryDependenciesFile file;
+
+    REQUIRE( !file.hasAbsolutePath() );
+  }
+
+  SECTION("File with its file name only")
+  {
+    QFileInfo fi( QLatin1String("arbitraryFile") );
+
+    auto file = BinaryDependenciesFile::fromQFileInfo(fi);
+
+    REQUIRE( !file.hasAbsolutePath() );
+  }
+
+  SECTION("File with its absolute path")
+  {
+    QFileInfo fi( QLatin1String("/path/to/some/arbitraryFile") );
+
+    auto file = BinaryDependenciesFile::fromQFileInfo(fi);
+
+    REQUIRE( file.hasAbsolutePath() );
+  }
 }

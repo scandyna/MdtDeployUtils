@@ -80,17 +80,26 @@ namespace Mdt{ namespace DeployUtils{
       return mFile.fileName();
     }
 
+    /*! \brief Check if this file has its absolute path
+     */
+    bool hasAbsolutePath() const noexcept;
 
     /*! \brief Get the absolute path of this file
+     *
+     * \pre this file must have its absolute path
+     * \sa hasAbsolutePath()
      */
     QString absoluteFilePath() const noexcept
     {
+      assert( hasAbsolutePath() );
+
       return mFile.absoluteFilePath();
     }
 
     /*! \brief Get the absolute path of the directory this file lives in
      *
-     * \pre this file must be a absolute path
+     * \pre this file must have its absolute path
+     * \sa hasAbsolutePath()
      */
     QString absoluteDirectoryPath() const noexcept;
 
