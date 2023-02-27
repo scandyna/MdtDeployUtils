@@ -160,6 +160,7 @@ namespace Mdt{ namespace DeployUtils{
      *
      * \sa https://gitlab.com/scandyna/mdtdeployutils/-/issues/3
      */
+    //[[deprecated]]
     bool hasToUpdateRpath(const CopiedSharedLibraryFile & file, const RPath & rpath, const PathList & systemWideLocations) const noexcept;
 
     /*! \brief Get a list of shared libraries given target depends on

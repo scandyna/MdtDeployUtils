@@ -111,8 +111,6 @@ namespace Mdt{ namespace DeployUtils{
     void setupShLibDeployer(const DeployApplicationRequest & request);
     void makeDirectoryStructure(const DestinationDirectory & destination);
     void installExecutable(const DeployApplicationRequest & request, const DestinationDirectoryStructure & destinationStructure);
-    void setRPathToInstalledExecutable(const QString & executableFilePath, const DeployApplicationRequest & request,
-                                       const DestinationDirectoryStructure & destinationStructure);
 
     void installSharedLibraries(const BinaryDependenciesResultList & libraries);
 

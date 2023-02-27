@@ -187,6 +187,7 @@ SharedLibrariesDeployer::copySharedLibraries(const BinaryDependenciesResultList 
 
   fileCopier.createDirectory(destinationDirectoryPath);
 
+  /// \todo should become getLibrariesToInstall() and build a ExecutableFileToInstallList
   const auto libraries = getLibrariesToRedistribute(resultList);
 
   for(const BinaryDependenciesResultLibrary & library : libraries){

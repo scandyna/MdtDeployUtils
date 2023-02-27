@@ -53,4 +53,13 @@ makeCopiedExecutableFileFromSourceAndDestinationPathAndRPath(const std::string &
   return makeCopiedExecutableFileFromSourceAndDestinationPathAndRPath(sourcePath, destinationPath, rpath);
 }
 
+Mdt::DeployUtils::CopiedExecutableFile
+makeCopiedExecutableFileFromSourceAndDestinationPath(const std::string & sourcePath,
+                                                     const std::string & destinationPath) noexcept
+{
+  using Mdt::DeployUtils::RPath;
+
+  return makeCopiedExecutableFileFromSourceAndDestinationPathAndRPath( sourcePath, destinationPath, RPath() );
+}
+
 #endif // #ifndef COPIED_EXECUTABLE_FILE_UTILS_H

@@ -132,6 +132,10 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/LogLevel.cpp
   Mdt/DeployUtils/DestinationDirectoryStructure.cpp
   Mdt/DeployUtils/DestinationDirectory.cpp
+  Mdt/DeployUtils/ExecutableFileToInstall.cpp
+  Mdt/DeployUtils/ExecutableFileToInstallList.cpp
+  Mdt/DeployUtils/CopiedExecutableFile.cpp
+  Mdt/DeployUtils/ExecutableFileInstaller.cpp
   Mdt/DeployUtils/SharedLibrariesDeployer.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOn.cpp
   Mdt/DeployUtils/CopySharedLibrariesTargetDependsOnRequest.cpp

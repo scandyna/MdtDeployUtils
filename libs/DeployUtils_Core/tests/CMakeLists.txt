@@ -941,6 +941,39 @@ mdt_add_test(
 )
 
 mdt_add_test(
+  NAME ExecutableFileToInstallTest
+  TARGET executableFileToInstallTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ExecutableFileToInstallTest.cpp
+)
+
+mdt_add_test(
+  NAME ExecutableFileToInstallListTest
+  TARGET executableFileToInstallListTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ExecutableFileToInstallListTest.cpp
+)
+
+mdt_add_test(
+  NAME CopiedExecutableFileTest
+  TARGET copiedExecutableFileTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/CopiedExecutableFileTest.cpp
+)
+
+mdt_add_test(
+  NAME ExecutableFileInstallerTest
+  TARGET executableFileInstallerTest
+  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+  SOURCE_FILES
+    src/ExecutableFileInstallerTest.cpp
+)
+target_compile_definitions(executableFileInstallerTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+
+mdt_add_test(
   NAME SharedLibrariesDeployerTest
   TARGET sharedLibrariesDeployerTest
   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt

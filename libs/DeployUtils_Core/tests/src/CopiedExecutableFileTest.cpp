@@ -38,10 +38,23 @@ TEST_CASE("fromCopierFileAndFileToInstall")
   const auto copiedFile = CopiedExecutableFile::fromCopierFileAndFileToInstall(copierFile, fileToInstall);
 
   REQUIRE( copiedFile.sourceFileInfo().absoluteFilePath() == makeAbsolutePath("/build/myapp") );
+  REQUIRE( copiedFile.sourceFileAbsoluteDirectoryPath() == makeAbsolutePath("/build") );
   REQUIRE( copiedFile.destinationFileInfo().absoluteFilePath() == makeAbsolutePath("/opt/myapp") );
   REQUIRE( copiedFile.sourceFileRPath() == rpath );
 }
 
+TEST_CASE("setSourceFileRPath")
+{
+  CopiedExecutableFile copiedFile = makeCopiedExecutableFileFromSourceAndDestinationPath("/lib/libA.so","/opt/libA.so");
+  REQUIRE( copiedFile.sourceFileRPath().isEmpty() );
+
+  RPath rpath;
+  rpath.appendPath( QLatin1String(".") );
+
+  copiedFile.setSourceFileRPath(rpath);
+
+  REQUIRE( copiedFile.sourceFileRPath() == rpath );
+}
 
 // Test helper
 TEST_CASE("makeCopiedExecutableFileFromSourceAndDestinationPathAndRPath")

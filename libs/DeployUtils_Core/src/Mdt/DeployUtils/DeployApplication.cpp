@@ -24,6 +24,8 @@
 #include "FileCopier.h"
 #include "PathList.h"
 #include "RPath.h"
+#include "ExecutableFileToInstall.h"
+#include "ExecutableFileInstaller.h"
 #include "ExecutableFileReader.h"
 #include "ExecutableFileWriter.h"
 #include "QtSharedLibrary.h"
@@ -243,40 +245,20 @@ void DeployApplication::installExecutable(const DeployApplicationRequest & reque
   assert( !request.targetFilePath.isEmpty() );
   assert( !destinationStructure.isNull() );
 
-  FileCopier fileCopier;
-  fileCopier.setOverwriteBehavior(OverwriteBehavior::Overwrite);
-  connect(&fileCopier, &FileCopier::verboseMessage, this, &DeployApplication::verboseMessage);
+  ExecutableFileInstaller installer(mPlatform);
+  connect(&installer, &ExecutableFileInstaller::statusMessage, this, &DeployApplication::statusMessage);
+  connect(&installer, &ExecutableFileInstaller::verboseMessage, this, &DeployApplication::verboseMessage);
+  connect(&installer, &ExecutableFileInstaller::debugMessage, this, &DeployApplication::debugMessage);
 
-  const FileCopierFile copierFile = fileCopier.copyFile(request.targetFilePath, mBinDirDestinationPath);
-  assert( copierFile.hasBeenCopied() );
+  const auto fileToInstall = ExecutableFileToInstall::fromFilePath(request.targetFilePath);
 
-  if( mPlatform.supportsRPath() ){
-    setRPathToInstalledExecutable(copierFile.destinationAbsoluteFilePath(), request, destinationStructure);
-  }
-}
-
-void DeployApplication::setRPathToInstalledExecutable(const QString & executableFilePath, const DeployApplicationRequest & request,
-                                                      const DestinationDirectoryStructure & destinationStructure)
-{
-  assert( mPlatform.supportsRPath() );
-  assert( !destinationStructure.isNull() );
-
-  RPath rpath;
+  RPath installRpath;
   if(!request.removeRpath){
-    rpath.appendPath( destinationStructure.executablesToSharedLibrariesRelativePath() );
+    installRpath.appendPath( destinationStructure.executablesToSharedLibrariesRelativePath() );
   }
 
-  ExecutableFileWriter writer;
-  connect(&writer, &ExecutableFileWriter::message, this, &DeployApplication::verboseMessage);
-  connect(&writer, &ExecutableFileWriter::verboseMessage, this, &DeployApplication::verboseMessage);
-
-  writer.openFile(executableFilePath, mPlatform);
-  if(writer.getRunPath() != rpath){
-    const QString msg = tr("update rpath for %1").arg(executableFilePath);
-    emit verboseMessage(msg);
-    writer.setRunPath(rpath);
-  }
-  writer.close();
+  installer.setOverwriteBehavior(OverwriteBehavior::Overwrite);
+  installer.install(fileToInstall, mBinDirDestinationPath, installRpath);
 }
 
 void DeployApplication::installSharedLibraries(const BinaryDependenciesResultList & libraries)
