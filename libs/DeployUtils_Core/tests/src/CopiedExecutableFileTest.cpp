@@ -42,14 +42,6 @@ TEST_CASE("fromCopierFileAndFileToInstall")
   REQUIRE( copiedFile.sourceFileRPath() == rpath );
 }
 
-// Test helper
-TEST_CASE("makeCopiedExecutableFileFromDestinationPathAndRPath")
-{
-  const CopiedExecutableFile copiedFile = makeCopiedExecutableFileFromDestinationPathAndRPath("/opt/myapp",{"../lib"});
-
-  REQUIRE( copiedFile.destinationFileInfo().absoluteFilePath() == makeAbsolutePath("/opt/myapp") );
-  REQUIRE( copiedFile.sourceFileRPath().entryAt(0).path() == QLatin1String("../lib") );
-}
 
 // Test helper
 TEST_CASE("makeCopiedExecutableFileFromSourceAndDestinationPathAndRPath")

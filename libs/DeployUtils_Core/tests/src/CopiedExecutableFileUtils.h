@@ -53,33 +53,4 @@ makeCopiedExecutableFileFromSourceAndDestinationPathAndRPath(const std::string &
   return makeCopiedExecutableFileFromSourceAndDestinationPathAndRPath(sourcePath, destinationPath, rpath);
 }
 
-Mdt::DeployUtils::CopiedExecutableFile
-makeCopiedExecutableFileFromDestinationPathAndRPath(const std::string & path, const Mdt::DeployUtils::RPath & rpath) noexcept
-{
-  using Mdt::DeployUtils::FileCopierFile;
-  using Mdt::DeployUtils::ExecutableFileToInstall;
-  using Mdt::DeployUtils::RPath;
-  using Mdt::DeployUtils::CopiedExecutableFile;
-
-  FileCopierFile copierFile;
-  copierFile.setDestinationFileInfo( QString::fromStdString(path) );
-  copierFile.setAsBeenCopied();
-
-  const QFileInfo sourcePath( QLatin1String("/build/someFile") );
-  const auto fileToInstall = ExecutableFileToInstall::fromFilePathAndRPath(sourcePath, rpath);
-
-  return CopiedExecutableFile::fromCopierFileAndFileToInstall(copierFile, fileToInstall);
-}
-
-Mdt::DeployUtils::CopiedExecutableFile
-makeCopiedExecutableFileFromDestinationPathAndRPath(const std::string & path, const std::vector<std::string> & rpathPathList) noexcept
-{
-  using Mdt::DeployUtils::RPath;
-
-  const RPath rpath = makeRPathFromPathList(rpathPathList);
-
-  return makeCopiedExecutableFileFromDestinationPathAndRPath(path, rpath);
-}
-
-
 #endif // #ifndef COPIED_EXECUTABLE_FILE_UTILS_H
