@@ -773,7 +773,7 @@ if(MSVC)
   mdt_add_test(
     NAME CompilerFinderTest_Msvc
     TARGET compilerFinderTest_Msvc
-    DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+    DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
     SOURCE_FILES
       src/CompilerFinderTest_Msvc.cpp
   )
@@ -1023,7 +1023,7 @@ if(MSVC)
   mdt_add_test(
     NAME CopySharedLibrariesTargetDependsOnTest_Msvc
     TARGET copySharedLibrariesTargetDependsOnTest_Msvc
-    DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+    DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
     SOURCE_FILES
       src/CopySharedLibrariesTargetDependsOnTest_Msvc.cpp
   )
