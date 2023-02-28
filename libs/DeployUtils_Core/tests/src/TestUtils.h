@@ -1,6 +1,6 @@
 /****************************************************************************
  **
- ** Copyright (C) 2020-2022 Philippe Steinmann.
+ ** Copyright (C) 2020-2023 Philippe Steinmann.
  **
  ** This file is part of MdtApplication library.
  **
@@ -27,67 +27,21 @@
 #include <QString>
 #include <QStringList>
 #include <QFileInfo>
-#include <QLatin1Char>
-#include <QLatin1String>
-#include <QDir>
 #include <QTemporaryDir>
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <cassert>
 
-Mdt::DeployUtils::BuildType currentBuildType()
-{
-  using Mdt::DeployUtils::BuildType;
 
-#ifdef NDEBUG
-  return BuildType::Release;
-#else
-  return BuildType::Debug;
-#endif
-}
+Mdt::DeployUtils::BuildType currentBuildType();
 
-Mdt::DeployUtils::Platform getNonNativePlatform()
-{
-  using namespace Mdt::DeployUtils;
+Mdt::DeployUtils::Platform getNonNativePlatform();
 
-  Platform nativePlatform = Platform::nativePlatform();
+QStringList qStringListFromUtf8Strings(const std::vector<std::string> & args);
 
-  if( nativePlatform.executableFileFormat() == ExecutableFileFormat::Elf ){
-    return Platform( OperatingSystem::Windows, ExecutableFileFormat::Pe, nativePlatform.compiler(), nativePlatform.processorISA() );
-  }
-  return Platform( OperatingSystem::Linux, ExecutableFileFormat::Elf, nativePlatform.compiler(), nativePlatform.processorISA() );
-}
+QString generateStringWithNChars(int n);
 
-QStringList qStringListFromUtf8Strings(const std::vector<std::string> & args)
-{
-  QStringList arguments;
-
-  for(const auto & arg : args){
-    arguments.append( QString::fromStdString(arg) );
-  }
-
-  return arguments;
-}
-
-QString generateStringWithNChars(int n)
-{
-  assert( n > 0 );
-
-  QString str;
-
-  for(int i=0; i<n; ++i){
-    str += QString::number(i%10);
-  }
-  assert( str.length() == n );
-
-  return str;
-}
-
-QStringList getTestPrefixPath(const char * const prefixPath)
-{
-  return QString::fromLocal8Bit(prefixPath).split( QLatin1Char(',') );
-}
+QStringList getTestPrefixPath(const char * const prefixPath);
 
 template<typename Container, typename GetLibraryName>
 bool containsLibrary(const Container & libraries, GetLibraryName getLibraryName, const QString & libraryName)
@@ -105,50 +59,16 @@ bool containsLibrary(const Container & libraries, GetLibraryName getLibraryName,
   return it != libraries.cend();
 }
 
-bool containsLibrary(const QStringList & libraries, const QString & libraryName)
-{
-//   const Mdt::DeployUtils::LibraryName searchedLibraryName(libraryName);
-//
-//   for(const QString & library : libraries){
-//     const QFileInfo libraryFile(library);
-//     const Mdt::DeployUtils::LibraryName currentLibraryName( libraryFile.fileName() );
-//     if( currentLibraryName.nameWithoutDebugSuffix() == searchedLibraryName.nameWithoutDebugSuffix() ){
-//       return true;
-//     }
-//   }
+bool containsLibrary(const QStringList & libraries, const QString & libraryName);
 
-  const auto getLibraryName = [](const QString & library){
-    return library;
-  };
+bool dirContainsLibrary(const QTemporaryDir & dir, const QString & libraryName);
 
-  return containsLibrary(libraries, getLibraryName, libraryName);
-}
+bool containsQt5Core(const QStringList & libraries);
 
-bool dirContainsLibrary(const QTemporaryDir & dir, const QString & libraryName)
-{
-  assert( dir.isValid() );
+bool dirContainsQt5Core(const QTemporaryDir & dir);
 
-  return containsLibrary( QDir( dir.path() ).entryList(QDir::Files), libraryName );
-}
+bool containsTestSharedLibrary(const QStringList & libraries);
 
-bool containsQt5Core(const QStringList & libraries)
-{
-  return containsLibrary(libraries, QLatin1String("Qt5Core"));
-}
-
-bool dirContainsQt5Core(const QTemporaryDir & dir)
-{
-  return dirContainsLibrary( dir, QLatin1String("Qt5Core") );
-}
-
-bool containsTestSharedLibrary(const QStringList & libraries)
-{
-  return containsLibrary( libraries, QLatin1String("testSharedLibrary") );
-}
-
-bool dirContainsTestSharedLibrary(const QTemporaryDir & dir)
-{
-  return dirContainsLibrary( dir, QLatin1String("testSharedLibrary") );
-}
+bool dirContainsTestSharedLibrary(const QTemporaryDir & dir);
 
 #endif // #ifndef TEST_UTILS_H
