@@ -36,6 +36,7 @@ class MdtDeployUtilsCoreConan(ConanFile):
   def requirements(self):
     self.requires("MdtCMakeConfig/0.0.5@scandyna/testing")
     self.requires("qt/5.15.6")
+    self.requires("MdtExecutableFileCore/0.0.1@scandyna/testing")
     #self.requires("MdtConsoleApplication/0.4.5@scandyna/testing")
     #self.requires("MdtCommandLineParser/0.0.6@scandyna/testing")
 
@@ -97,5 +98,5 @@ class MdtDeployUtilsCoreConan(ConanFile):
   def package_info(self):
     self.cpp_info.set_property("cmake_file_name", "Mdt0DeployUtilsCore")
     self.cpp_info.set_property("cmake_target_name", "Mdt0::DeployUtilsCore")
-    self.cpp_info.requires = ["MdtCMakeConfig::MdtCMakeConfig", "qt::qtCore"]
+    self.cpp_info.requires = ["MdtCMakeConfig::MdtCMakeConfig", "qt::qtCore", "MdtExecutableFileCore::MdtExecutableFileCore"]
     self.cpp_info.libs = ["Mdt0DeployUtilsCore"]
