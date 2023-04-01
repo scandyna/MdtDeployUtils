@@ -154,13 +154,13 @@ mdt_add_test(
     src/FileMapperTest.cpp
 )
 
-mdt_add_test(
-  NAME ExecutableFileReaderUtilsImplTest
-  TARGET executableFileReaderUtilsImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ExecutableFileReaderUtilsImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ExecutableFileReaderUtilsImplTest
+#   TARGET executableFileReaderUtilsImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ExecutableFileReaderUtilsImplTest.cpp
+# )
 
 mdt_add_test(
   NAME ExecutableFileReaderUtilsImplErrorTest
@@ -226,21 +226,21 @@ add_executable(
 #     PROPERTIES LINK_FLAGS "-static"
 #   )
 
-mdt_add_test(
-  NAME ElfAlgorithmImplTest
-  TARGET elfAlgorithmImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfAlgorithmImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfAlgorithmImplTest
+#   TARGET elfAlgorithmImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfAlgorithmImplTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfFileHeaderWriterImplTest
-  TARGET elfFileHeaderWriterImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfFileHeaderWriterImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfFileHeaderWriterImplTest
+#   TARGET elfFileHeaderWriterImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfFileHeaderWriterImplTest.cpp
+# )
 
 mdt_add_test(
   NAME ElfProgramHeaderImplTest
@@ -250,37 +250,37 @@ mdt_add_test(
     src/ElfProgramHeaderImplTest.cpp
 )
 
-mdt_add_test(
-  NAME ElfProgramHeaderTableImplTest
-  TARGET elfProgramHeaderTableImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfProgramHeaderTableImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfProgramHeaderTableImplTest
+#   TARGET elfProgramHeaderTableImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfProgramHeaderTableImplTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfProgramHeaderReaderImplTest
-  TARGET elfProgramHeaderReaderImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfProgramHeaderReaderImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfProgramHeaderReaderImplTest
+#   TARGET elfProgramHeaderReaderImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfProgramHeaderReaderImplTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfProgramHeaderReaderImplErrorTest
-  TARGET elfProgramHeaderReaderImplErrorTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfProgramHeaderReaderImplErrorTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfProgramHeaderReaderImplErrorTest
+#   TARGET elfProgramHeaderReaderImplErrorTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfProgramHeaderReaderImplErrorTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfProgramHeaderWriterImplTest
-  TARGET elfProgramHeaderWriterImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfProgramHeaderWriterImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfProgramHeaderWriterImplTest
+#   TARGET elfProgramHeaderWriterImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfProgramHeaderWriterImplTest.cpp
+# )
 
 mdt_add_test(
   NAME ElfSectionHeaderImplTest
@@ -298,13 +298,13 @@ mdt_add_test(
     src/ElfSectionHeaderTableImplTest.cpp
 )
 
-mdt_add_test(
-  NAME ElfSectionHeaderWriterImplTest
-  TARGET elfSectionHeaderWriterImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfSectionHeaderWriterImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfSectionHeaderWriterImplTest
+#   TARGET elfSectionHeaderWriterImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfSectionHeaderWriterImplTest.cpp
+# )
 
 mdt_add_test(
   NAME ElfOffsetRangeImplTest
@@ -322,77 +322,77 @@ mdt_add_test(
     src/ElfSectionSegmentUtilsImplTest.cpp
 )
 
-mdt_add_test(
-  NAME ElfFileAllHeadersImplTestUtilsTest
-  TARGET elfFileAllHeadersImplTestUtilsTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfFileAllHeadersImplTestUtilsTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfFileAllHeadersImplTestUtilsTest
+#   TARGET elfFileAllHeadersImplTestUtilsTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfFileAllHeadersImplTestUtilsTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfFileAllHeadersImplTest
-  TARGET elfFileAllHeadersImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfFileAllHeadersImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfFileAllHeadersImplTest
+#   TARGET elfFileAllHeadersImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfFileAllHeadersImplTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfFileWriterFileImplTest
-  TARGET elfFileWriterFileImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfFileWriterFileImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfFileWriterFileImplTest
+#   TARGET elfFileWriterFileImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfFileWriterFileImplTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfStringTableImplTest
-  TARGET elfStringTableImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfStringTableImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfStringTableImplTest
+#   TARGET elfStringTableImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfStringTableImplTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfStringTableImplErrorTest
-  TARGET elfStringTableImplErrorTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfStringTableImplErrorTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfStringTableImplErrorTest
+#   TARGET elfStringTableImplErrorTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfStringTableImplErrorTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfStringTableWriterImplTest
-  TARGET elfStringTableWriterImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfStringTableWriterImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfStringTableWriterImplTest
+#   TARGET elfStringTableWriterImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfStringTableWriterImplTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfDynamicSectionImplTest
-  TARGET elfDynamicSectionImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfDynamicSectionImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfDynamicSectionImplTest
+#   TARGET elfDynamicSectionImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfDynamicSectionImplTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfDynamicSectionImplErrorTest
-  TARGET elfDynamicSectionImplErrorTest
-  DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfDynamicSectionImplErrorTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfDynamicSectionImplErrorTest
+#   TARGET elfDynamicSectionImplErrorTest
+#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfDynamicSectionImplErrorTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfDynamicSectionWriterImplTest
-  TARGET elfDynamicSectionWriterImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfDynamicSectionWriterImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfDynamicSectionWriterImplTest
+#   TARGET elfDynamicSectionWriterImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfDynamicSectionWriterImplTest.cpp
+# )
 
 mdt_add_test(
   NAME ElfSymbolTableImplTest
@@ -402,21 +402,21 @@ mdt_add_test(
     src/ElfSymbolTableImplTest.cpp
 )
 
-mdt_add_test(
-  NAME ElfSymbolTableReaderWriterImplTest
-  TARGET elfSymbolTableReaderWriterImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfSymbolTableReaderWriterImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfSymbolTableReaderWriterImplTest
+#   TARGET elfSymbolTableReaderWriterImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfSymbolTableReaderWriterImplTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfHashTableImplTest
-  TARGET elfHashTableImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfHashTableImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfHashTableImplTest
+#   TARGET elfHashTableImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfHashTableImplTest.cpp
+# )
 
 mdt_add_test(
   NAME ElfHashTableReaderWriterImplTest
@@ -434,13 +434,13 @@ mdt_add_test(
     src/ElfGnuHashTableImplTest.cpp
 )
 
-mdt_add_test(
-  NAME ElfGnuHashTableReaderWriterImplTest
-  TARGET elfGnuHashTableReaderWriterImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfGnuHashTableReaderWriterImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfGnuHashTableReaderWriterImplTest
+#   TARGET elfGnuHashTableReaderWriterImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfGnuHashTableReaderWriterImplTest.cpp
+# )
 
 mdt_add_test(
   NAME ElfGlobalOffsetTableImplTest
@@ -450,13 +450,13 @@ mdt_add_test(
     src/ElfGlobalOffsetTableImplTest.cpp
 )
 
-mdt_add_test(
-  NAME ElfGlobalOffsetTableReaderWriterImplTest
-  TARGET elfGlobalOffsetTableReaderWriterImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfGlobalOffsetTableReaderWriterImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfGlobalOffsetTableReaderWriterImplTest
+#   TARGET elfGlobalOffsetTableReaderWriterImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfGlobalOffsetTableReaderWriterImplTest.cpp
+# )
 
 mdt_add_test(
   NAME ElfProgramInterpreterSectionImplTest
@@ -466,21 +466,21 @@ mdt_add_test(
     src/ElfProgramInterpreterSectionImplTest.cpp
 )
 
-mdt_add_test(
-  NAME ElfProgramInterpreterSectionReaderWriterImplTest
-  TARGET elfProgramInterpreterSectionReaderWriterImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfProgramInterpreterSectionReaderWriterImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfProgramInterpreterSectionReaderWriterImplTest
+#   TARGET elfProgramInterpreterSectionReaderWriterImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfProgramInterpreterSectionReaderWriterImplTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfNoteSectionImplTest
-  TARGET elfNoteSectionImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfNoteSectionImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfNoteSectionImplTest
+#   TARGET elfNoteSectionImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfNoteSectionImplTest.cpp
+# )
 
 mdt_add_test(
   NAME ElfNoteSectionTableImplTest
@@ -490,37 +490,37 @@ mdt_add_test(
     src/ElfNoteSectionTableImplTest.cpp
 )
 
-mdt_add_test(
-  NAME ElfNoteSectionReaderWriterImplTest
-  TARGET elfNoteSectionReaderWriterImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfNoteSectionReaderWriterImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfNoteSectionReaderWriterImplTest
+#   TARGET elfNoteSectionReaderWriterImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfNoteSectionReaderWriterImplTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfNoteSectionReaderWriterImplErrorTest
-  TARGET elfNoteSectionReaderWriterImplErrorTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfNoteSectionReaderWriterImplErrorTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfNoteSectionReaderWriterImplErrorTest
+#   TARGET elfNoteSectionReaderWriterImplErrorTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfNoteSectionReaderWriterImplErrorTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfFileReaderImplTest
-  TARGET elfFileReaderImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfFileReaderImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfFileReaderImplTest
+#   TARGET elfFileReaderImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfFileReaderImplTest.cpp
+# )
 
-mdt_add_test(
-  NAME ElfFileWriterImplTest
-  TARGET elfFileWriterImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfFileWriterImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfFileWriterImplTest
+#   TARGET elfFileWriterImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfFileWriterImplTest.cpp
+# )
 
 if( UNIX AND (NOT APPLE) )
 
@@ -553,31 +553,31 @@ if( UNIX AND (NOT APPLE) )
   )
   set_target_properties(testSharedLibrary_noRunPath PROPERTIES SKIP_BUILD_RPATH TRUE)
 
-  mdt_add_test(
-    NAME ElfFileWriterImplTest_Unix
-    TARGET elfFileWriterImplTest_Unix
-    DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-    SOURCE_FILES
-      src/ElfFileWriterImplTest_Unix.cpp
-  )
+#   mdt_add_test(
+#     NAME ElfFileWriterImplTest_Unix
+#     TARGET elfFileWriterImplTest_Unix
+#     DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#     SOURCE_FILES
+#       src/ElfFileWriterImplTest_Unix.cpp
+#   )
 
-  # Make shure that the test libraries will be built before the test
-  add_dependencies(elfFileWriterImplTest_Unix
-    testSimpleExecutableDynamic
-    testSimpleExecutableDynamic_withRunPath
-    testSimpleExecutableDynamic_noRunPath
-    testSharedLibrary
-    testSharedLibrary_noRunPath
-  )
+#   # Make shure that the test libraries will be built before the test
+#   add_dependencies(elfFileWriterImplTest_Unix
+#     testSimpleExecutableDynamic
+#     testSimpleExecutableDynamic_withRunPath
+#     testSimpleExecutableDynamic_noRunPath
+#     testSharedLibrary
+#     testSharedLibrary_noRunPath
+#   )
 
-  target_compile_definitions(elfFileWriterImplTest_Unix
-    PRIVATE
-      TEST_SIMPLE_EXECUTABLE_DYNAMIC_FILE_PATH="$<TARGET_FILE:testSimpleExecutableDynamic>"
-      TEST_SIMPLE_EXECUTABLE_DYNAMIC_WITH_RUNPATH_FILE_PATH="$<TARGET_FILE:testSimpleExecutableDynamic_withRunPath>"
-      TEST_SIMPLE_EXECUTABLE_DYNAMIC_NO_RUNPATH_FILE_PATH="$<TARGET_FILE:testSimpleExecutableDynamic_noRunPath>"
-      TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>"
-      TEST_SHARED_LIBRARY_NO_RUNPATH_FILE_PATH="$<TARGET_FILE:testSharedLibrary_noRunPath>"
-  )
+#   target_compile_definitions(elfFileWriterImplTest_Unix
+#     PRIVATE
+#       TEST_SIMPLE_EXECUTABLE_DYNAMIC_FILE_PATH="$<TARGET_FILE:testSimpleExecutableDynamic>"
+#       TEST_SIMPLE_EXECUTABLE_DYNAMIC_WITH_RUNPATH_FILE_PATH="$<TARGET_FILE:testSimpleExecutableDynamic_withRunPath>"
+#       TEST_SIMPLE_EXECUTABLE_DYNAMIC_NO_RUNPATH_FILE_PATH="$<TARGET_FILE:testSimpleExecutableDynamic_noRunPath>"
+#       TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>"
+#       TEST_SHARED_LIBRARY_NO_RUNPATH_FILE_PATH="$<TARGET_FILE:testSharedLibrary_noRunPath>"
+#   )
 
 #   target_compile_definitions(elfFileWriterImplTest_Unix
 #     PRIVATE
@@ -591,175 +591,175 @@ if( UNIX AND (NOT APPLE) )
 
 endif()
 
-mdt_add_test(
-  NAME ElfFileIoEngineTest
-  TARGET elfFileIoEngineTest
-  DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfFileIoEngineTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfFileIoEngineTest
+#   TARGET elfFileIoEngineTest
+#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfFileIoEngineTest.cpp
+# )
 
 if( UNIX AND (NOT APPLE) )
 
-  mdt_add_test(
-    NAME ElfFileIoEngineTest_Unix
-    TARGET elfFileIoEngineTest_Unix
-    DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-    SOURCE_FILES
-      src/ElfFileIoEngineTest_Unix.cpp
-  )
+#   mdt_add_test(
+#     NAME ElfFileIoEngineTest_Unix
+#     TARGET elfFileIoEngineTest_Unix
+#     DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#     SOURCE_FILES
+#       src/ElfFileIoEngineTest_Unix.cpp
+#   )
 
-  # Make shure that the test libraries will be built before the test
-  add_dependencies(elfFileIoEngineTest_Unix
-    testSharedLibrary
-    testStaticLibrary
-    testExecutableDynamic
-#     testExecutableStatic
-  )
+#   # Make shure that the test libraries will be built before the test
+#   add_dependencies(elfFileIoEngineTest_Unix
+#     testSharedLibrary
+#     testStaticLibrary
+#     testExecutableDynamic
+# #     testExecutableStatic
+#   )
 
-  target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-  target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
-  target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
-  target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+#   target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+#   target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
+#   target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
+#   target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
 endif()
 
-mdt_add_test(
-  NAME ElfFileIoEngineErrorTest
-  TARGET elfFileIoEngineErrorTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfFileIoEngineErrorTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfFileIoEngineErrorTest
+#   TARGET elfFileIoEngineErrorTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfFileIoEngineErrorTest.cpp
+# )
 
 
-mdt_add_test(
-  NAME PeFileReaderImplTest
-  TARGET peFileReaderImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/PeFileReaderImplTest.cpp
-)
+# mdt_add_test(
+#   NAME PeFileReaderImplTest
+#   TARGET peFileReaderImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/PeFileReaderImplTest.cpp
+# )
 
-mdt_add_test(
-  NAME PeFileIoEngineTest
-  TARGET peFileIoEngineTest
-  DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/PeFileIoEngineTest.cpp
-)
+# mdt_add_test(
+#   NAME PeFileIoEngineTest
+#   TARGET peFileIoEngineTest
+#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/PeFileIoEngineTest.cpp
+# )
 
 if(WIN32)
 
-  mdt_add_test(
-    NAME PeFileIoEngineTest_Windows
-    TARGET peFileIoEngineTest_Windows
-    DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-    SOURCE_FILES
-      src/PeFileIoEngineTest_Windows.cpp
-  )
+#   mdt_add_test(
+#     NAME PeFileIoEngineTest_Windows
+#     TARGET peFileIoEngineTest_Windows
+#     DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#     SOURCE_FILES
+#       src/PeFileIoEngineTest_Windows.cpp
+#   )
 
-  # Make shure that the test libraries will be built before the test
-  add_dependencies(peFileIoEngineTest_Windows
-    testSharedLibrary
-    testStaticLibrary
-    testExecutableDynamic
-#     testExecutableStatic
-  )
+#   # Make shure that the test libraries will be built before the test
+#   add_dependencies(peFileIoEngineTest_Windows
+#     testSharedLibrary
+#     testStaticLibrary
+#     testExecutableDynamic
+# #     testExecutableStatic
+#   )
 
-  target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-  target_compile_definitions(peFileIoEngineTest_Windows PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
-  target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
-  target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+#   target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+#   target_compile_definitions(peFileIoEngineTest_Windows PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
+#   target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
+#   target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
 endif()
 
-mdt_add_test(
-  NAME PeFileIoEngineErrorTest
-  TARGET peFileIoEngineErrorTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/PeFileIoEngineErrorTest.cpp
-)
+# mdt_add_test(
+#   NAME PeFileIoEngineErrorTest
+#   TARGET peFileIoEngineErrorTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/PeFileIoEngineErrorTest.cpp
+# )
 
-mdt_add_test(
-  NAME ExecutableFileIoEngineTest
-  TARGET executableFileIoEngineTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ExecutableFileIoEngineTest.cpp
-)
-target_compile_definitions(executableFileIoEngineTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-target_compile_definitions(executableFileIoEngineTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+# mdt_add_test(
+#   NAME ExecutableFileIoEngineTest
+#   TARGET executableFileIoEngineTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ExecutableFileIoEngineTest.cpp
+# )
+# target_compile_definitions(executableFileIoEngineTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+# target_compile_definitions(executableFileIoEngineTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
-mdt_add_test(
-  NAME ExecutableFileIoEngineErrorTest
-  TARGET executableFileIoEngineErrorTest
-  DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ExecutableFileIoEngineErrorTest.cpp
-)
-target_compile_definitions(executableFileIoEngineErrorTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-target_compile_definitions(executableFileIoEngineErrorTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+# mdt_add_test(
+#   NAME ExecutableFileIoEngineErrorTest
+#   TARGET executableFileIoEngineErrorTest
+#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ExecutableFileIoEngineErrorTest.cpp
+# )
+# target_compile_definitions(executableFileIoEngineErrorTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+# target_compile_definitions(executableFileIoEngineErrorTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
-mdt_add_test(
-  NAME ExecutableFileReaderTest
-  TARGET executableFileReaderTest
-  DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ExecutableFileReaderTest.cpp
-)
-target_compile_definitions(executableFileReaderTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-target_compile_definitions(executableFileReaderTest PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
-target_compile_definitions(executableFileReaderTest PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
-target_compile_definitions(executableFileReaderTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
-if(MSVC)
-  target_compile_definitions(executableFileReaderTest PRIVATE COMPILER_IS_MSVC=1)
-endif()
+# mdt_add_test(
+#   NAME ExecutableFileReaderTest
+#   TARGET executableFileReaderTest
+#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ExecutableFileReaderTest.cpp
+# )
+# target_compile_definitions(executableFileReaderTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+# target_compile_definitions(executableFileReaderTest PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
+# target_compile_definitions(executableFileReaderTest PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
+# target_compile_definitions(executableFileReaderTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+# if(MSVC)
+#   target_compile_definitions(executableFileReaderTest PRIVATE COMPILER_IS_MSVC=1)
+# endif()
 
-mdt_add_test(
-  NAME ExecutableFileReaderErrorTest
-  TARGET executableFileReaderErrorTest
-  DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ExecutableFileReaderErrorTest.cpp
-)
-target_compile_definitions(executableFileReaderErrorTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-target_compile_definitions(executableFileReaderErrorTest PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
-target_compile_definitions(executableFileReaderErrorTest PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
-target_compile_definitions(executableFileReaderErrorTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+# mdt_add_test(
+#   NAME ExecutableFileReaderErrorTest
+#   TARGET executableFileReaderErrorTest
+#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ExecutableFileReaderErrorTest.cpp
+# )
+# target_compile_definitions(executableFileReaderErrorTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+# target_compile_definitions(executableFileReaderErrorTest PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
+# target_compile_definitions(executableFileReaderErrorTest PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
+# target_compile_definitions(executableFileReaderErrorTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
-if(UNIX)
-  mdt_add_test(
-    NAME ExecutableFileReaderTest_Unix
-    TARGET executableFileReaderTest_Unix
-    DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-    SOURCE_FILES
-      src/ExecutableFileReaderTest_Unix.cpp
-  )
-  target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-  target_compile_definitions(executableFileReaderTest_Unix PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
-  target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
-  target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
-endif()
+# if(UNIX)
+#   mdt_add_test(
+#     NAME ExecutableFileReaderTest_Unix
+#     TARGET executableFileReaderTest_Unix
+#     DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#     SOURCE_FILES
+#       src/ExecutableFileReaderTest_Unix.cpp
+#   )
+#   target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+#   target_compile_definitions(executableFileReaderTest_Unix PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
+#   target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
+#   target_compile_definitions(executableFileReaderTest_Unix PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+# endif()
 
-mdt_add_test(
-  NAME ExecutableFileWriterTest
-  TARGET executableFileWriterTest
-  DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ExecutableFileWriterTest.cpp
-)
-target_compile_definitions(executableFileWriterTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-target_compile_definitions(executableFileWriterTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
+# mdt_add_test(
+#   NAME ExecutableFileWriterTest
+#   TARGET executableFileWriterTest
+#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ExecutableFileWriterTest.cpp
+# )
+# target_compile_definitions(executableFileWriterTest PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
+# target_compile_definitions(executableFileWriterTest PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
 
-mdt_add_test(
-  NAME ExecutableFileWriterErrorTest
-  TARGET executableFileWriterErrorTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ExecutableFileWriterErrorTest.cpp
-)
+# mdt_add_test(
+#   NAME ExecutableFileWriterErrorTest
+#   TARGET executableFileWriterErrorTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ExecutableFileWriterErrorTest.cpp
+# )
 
 mdt_add_test(
   NAME MsvcVersionTest

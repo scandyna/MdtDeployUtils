@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2015-2022 Philippe Steinmann.
+ ** Copyright (C) 2015-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -21,28 +21,14 @@
 #ifndef MDT_DEPLOY_UTILS_OPERATING_SYSTEM_H
 #define MDT_DEPLOY_UTILS_OPERATING_SYSTEM_H
 
-#include <QMetaType>
+#include <Mdt/ExecutableFile/OperatingSystem.h>
 
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief OS enum
    */
-  enum class OperatingSystem
-  {
-    Unknown,  /*!< Unknown OS */
-    Linux,    /*!< Linux OS */
-    Windows   /*!< Windows OS */
-  };
-
-  /*! \brief Check if given OS is valid
-   */
-  inline
-  bool operatingSystemIsValid(OperatingSystem os) noexcept
-  {
-    return os != OperatingSystem::Unknown;
-  }
+  using OperatingSystem = Mdt::ExecutableFile::OperatingSystem;
 
 }} // namespace Mdt{ namespace DeployUtils{
-Q_DECLARE_METATYPE(Mdt::DeployUtils::OperatingSystem)
 
 #endif // #ifndef MDT_DEPLOY_UTILS_OPERATING_SYSTEM_H

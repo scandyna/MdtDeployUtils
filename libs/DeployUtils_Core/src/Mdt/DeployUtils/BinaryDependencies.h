@@ -24,13 +24,13 @@
 #include "FindDependencyError.h"
 #include "BinaryDependenciesResult.h"
 #include "BinaryDependenciesResultList.h"
-#include "ExecutableFileReader.h"
 #include "PathList.h"
 #include "ProcessorISA.h"
 #include "CompilerFinder.h"
 #include "BuildType.h"
 #include "Platform.h"
 #include "mdt_deployutilscore_export.h"
+#include <Mdt/ExecutableFile/ExecutableFileReader.h>
 #include <QObject>
 #include <QFileInfo>
 #include <QFileInfoList>
@@ -106,7 +106,7 @@ namespace Mdt{ namespace DeployUtils{
 
    private:
 
-    Platform setupFindDependencies(ExecutableFileReader & reader,
+    Platform setupFindDependencies(Mdt::ExecutableFile::ExecutableFileReader & reader,
                                    std::shared_ptr<AbstractSharedLibraryFinder> & shLibFinder,
                                    const PathList & searchFirstPathPrefixList,
                                    std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory,

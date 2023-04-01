@@ -10,9 +10,12 @@
 #include "FileInfoUtils.h"
 #include "FileCopier.h"
 #include "FileCopierFile.h"
-#include "ExecutableFileReader.h"
-#include "ExecutableFileWriter.h"
+#include <Mdt/ExecutableFile/ExecutableFileReader.h>
+#include <Mdt/ExecutableFile/ExecutableFileWriter.h>
 #include <cassert>
+
+using Mdt::ExecutableFile::ExecutableFileReader;
+using Mdt::ExecutableFile::ExecutableFileWriter;
 
 
 namespace Mdt{ namespace DeployUtils{

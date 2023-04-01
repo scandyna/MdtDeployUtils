@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2020-2022 Philippe Steinmann.
+ ** Copyright (C) 2020-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -26,11 +26,14 @@
 #include "Mdt/DeployUtils/MessageLogger.h"
 #include "Mdt/DeployUtils/ConsoleMessageLogger.h"
 #include "Mdt/DeployUtils/RPath.h"
-#include "Mdt/DeployUtils/ExecutableFileWriter.h"
-#include "Mdt/DeployUtils/ExecutableFileReader.h"
+#include <Mdt/ExecutableFile/ExecutableFileReader.h>
+#include <Mdt/ExecutableFile/ExecutableFileWriter.h>
 #include <QTemporaryDir>
 
 using namespace Mdt::DeployUtils;
+using Mdt::ExecutableFile::ExecutableFileReader;
+using Mdt::ExecutableFile::ExecutableFileWriter;
+
 
 #ifdef Q_OS_WIN
   constexpr bool checkRPath = false;

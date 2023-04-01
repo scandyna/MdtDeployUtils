@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2022-2022 Philippe Steinmann.
+ ** Copyright (C) 2022-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -19,7 +19,6 @@
  **
  ****************************************************************************/
 #include "QtPluginFile.h"
-#include "ExecutableFileReader.h"
 #include <QLatin1String>
 
 namespace Mdt{ namespace DeployUtils{

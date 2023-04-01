@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2011-2021 Philippe Steinmann.
+ ** Copyright (C) 2011-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -21,20 +21,14 @@
 #ifndef MDT_DEPLOY_UTILS_PROCESSOR_ISA_H
 #define MDT_DEPLOY_UTILS_PROCESSOR_ISA_H
 
-#include <QMetaType>
+#include <Mdt/ExecutableFile/ProcessorISA.h>
 
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Processor ISA enum
    */
-  enum class ProcessorISA
-  {
-    Unknown,  /*!< Unknown */
-    X86_32,   /*!< X86 32 bit processor */
-    X86_64    /*!< X86 64 bit processor */
-  };
+  using ProcessorISA = Mdt::ExecutableFile::ProcessorISA;
 
 }} // namespace Mdt{ namespace DeployUtils{
-Q_DECLARE_METATYPE(Mdt::DeployUtils::ProcessorISA)
 
 #endif // #ifndef MDT_DEPLOY_UTILS_PROCESSOR_ISA_H

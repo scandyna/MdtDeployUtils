@@ -21,15 +21,18 @@
 #include "QtDistributionDirectory.h"
 #include "QtSharedLibraryFile.h"
 #include "QtConfReader.h"
-#include "ExecutableFileReader.h"
 #include "Algorithm.h"
 #include "FileInfoUtils.h"
 #include "FileSystemUtils.h"
+#include <Mdt/ExecutableFile/ExecutableFileReader.h>
 #include <QStringBuilder>
 #include <QLatin1Char>
 #include <QLatin1String>
 #include <QDir>
 #include <cassert>
+
+using Mdt::ExecutableFile::ExecutableFileReader;
+
 
 namespace Mdt{ namespace DeployUtils{
 

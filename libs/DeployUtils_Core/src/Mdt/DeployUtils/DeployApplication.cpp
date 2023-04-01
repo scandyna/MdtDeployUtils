@@ -26,8 +26,6 @@
 #include "RPath.h"
 #include "ExecutableFileToInstall.h"
 #include "ExecutableFileInstaller.h"
-#include "ExecutableFileReader.h"
-#include "ExecutableFileWriter.h"
 #include "QtSharedLibrary.h"
 #include "QtSharedLibraryFile.h"
 #include "QtModulePlugins.h"
@@ -35,12 +33,18 @@
 #include "QtConf.h"
 #include "QtConfWriter.h"
 #include "DestinationDirectoryQtConf.h"
+#include <Mdt/ExecutableFile/ExecutableFileReader.h>
+#include <Mdt/ExecutableFile/ExecutableFileWriter.h>
 #include <QLatin1String>
 #include <QLatin1Char>
 #include <QStringBuilder>
 #include <QStringList>
 #include <QDir>
 #include <cassert>
+
+using Mdt::ExecutableFile::ExecutableFileReader;
+using Mdt::ExecutableFile::ExecutableFileWriter;
+
 
 namespace Mdt{ namespace DeployUtils{
 

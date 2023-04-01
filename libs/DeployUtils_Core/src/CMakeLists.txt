@@ -19,88 +19,85 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/Algorithm.cpp
   Mdt/DeployUtils/FileInfoUtils.cpp
   Mdt/DeployUtils/FileSystemUtils.cpp
-  Mdt/DeployUtils/RPathFormatError.cpp
   Mdt/DeployUtils/RPath.cpp
-  Mdt/DeployUtils/RPathElf.cpp
   Mdt/DeployUtils/PathList.cpp
   Mdt/DeployUtils/SearchPathList.cpp
   Mdt/DeployUtils/LibraryVersion.cpp
   Mdt/DeployUtils/LibraryNameExtension.cpp
   Mdt/DeployUtils/Impl/LibraryNameImpl.cpp
   Mdt/DeployUtils/LibraryName.cpp
-  Mdt/DeployUtils/ExecutableFileReadError.cpp
-  Mdt/DeployUtils/ExecutableFileWriteError.cpp
-  Mdt/DeployUtils/AbstractExecutableFileIoEngine.cpp
-  Mdt/DeployUtils/ExecutableFileIoEngine.cpp
+
+  # TODO: should also remove those
   Mdt/DeployUtils/Impl/NotNullTerminatedStringError.cpp
   Mdt/DeployUtils/Impl/StringTableError.cpp
   Mdt/DeployUtils/Impl/ExecutableFileReaderUtils.cpp
   Mdt/DeployUtils/Impl/ByteArraySpan.cpp
   Mdt/DeployUtils/Impl/FileMapper.cpp
-  Mdt/DeployUtils/Impl/Elf/Exceptions.cpp
-  Mdt/DeployUtils/Impl/Elf/Algorithm.cpp
-  Mdt/DeployUtils/Impl/Elf/Ident.cpp
-  Mdt/DeployUtils/Impl/Elf/FileWriterUtils.cpp
-  Mdt/DeployUtils/Impl/Elf/ProgramHeader.cpp
-  Mdt/DeployUtils/Impl/Elf/ProgramHeaderTable.cpp
-  Mdt/DeployUtils/Impl/Elf/ProgramHeaderReaderWriterCommon.cpp
-  Mdt/DeployUtils/Impl/Elf/ProgramHeaderReader.cpp
-  Mdt/DeployUtils/Impl/Elf/ProgramHeaderWriter.cpp
-  Mdt/DeployUtils/Impl/Elf/SectionIndexChangeMap.cpp
-  Mdt/DeployUtils/Impl/Elf/SectionHeader.cpp
-  Mdt/DeployUtils/Impl/Elf/SectionHeaderTable.cpp
-  Mdt/DeployUtils/Impl/Elf/SectionHeaderReaderWriterCommon.cpp
-  Mdt/DeployUtils/Impl/Elf/SectionHeaderWriter.cpp
-  Mdt/DeployUtils/Impl/Elf/FileHeader.cpp
-  Mdt/DeployUtils/Impl/Elf/FileHeaderReaderWriterCommon.cpp
-  Mdt/DeployUtils/Impl/Elf/FileHeaderWriter.cpp
-  Mdt/DeployUtils/Impl/Elf/SectionSegmentUtils.cpp
-  Mdt/DeployUtils/Impl/Elf/FileAllHeaders.cpp
-  Mdt/DeployUtils/Impl/Elf/FileAllHeadersReaderWriterCommon.cpp
-  Mdt/DeployUtils/Impl/Elf/FileAllHeadersReader.cpp
-  Mdt/DeployUtils/Impl/Elf/FileAllHeadersWriter.cpp
-  Mdt/DeployUtils/Impl/Elf/FileWriterFileLayout.cpp
-  Mdt/DeployUtils/Impl/Elf/FileWriterFile.cpp
-  Mdt/DeployUtils/Impl/Elf/StringTable.cpp
-  Mdt/DeployUtils/Impl/Elf/StringTableWriter.cpp
-  Mdt/DeployUtils/Impl/Elf/DynamicSection.cpp
-  Mdt/DeployUtils/Impl/Elf/DynamicSectionWriter.cpp
-  Mdt/DeployUtils/Impl/Elf/SymbolTable.cpp
-  Mdt/DeployUtils/Impl/Elf/SymbolTableReader.cpp
-  Mdt/DeployUtils/Impl/Elf/SymbolTableWriter.cpp
-  Mdt/DeployUtils/Impl/Elf/HashTable.cpp
-  Mdt/DeployUtils/Impl/Elf/HashTableReader.cpp
-  Mdt/DeployUtils/Impl/Elf/HashTableWriter.cpp
-  Mdt/DeployUtils/Impl/Elf/GnuHashTable.cpp
-  Mdt/DeployUtils/Impl/Elf/GnuHashTableReader.cpp
-  Mdt/DeployUtils/Impl/Elf/GnuHashTableWriter.cpp
-  Mdt/DeployUtils/Impl/Elf/GlobalOffsetTable.cpp
-  Mdt/DeployUtils/Impl/Elf/GlobalOffsetTableReaderWriterCommon.cpp
-  Mdt/DeployUtils/Impl/Elf/GlobalOffsetTableReader.cpp
-  Mdt/DeployUtils/Impl/Elf/GlobalOffsetTableWriter.cpp
-  Mdt/DeployUtils/Impl/Elf/ProgramInterpreterSection.cpp
-  Mdt/DeployUtils/Impl/Elf/ProgramInterpreterSectionReader.cpp
-  Mdt/DeployUtils/Impl/Elf/ProgramInterpreterSectionWriter.cpp
-  Mdt/DeployUtils/Impl/Elf/NoteSection.cpp
-  Mdt/DeployUtils/Impl/Elf/NoteSectionTable.cpp
-  Mdt/DeployUtils/Impl/Elf/NoteSectionReader.cpp
-  Mdt/DeployUtils/Impl/Elf/NoteSectionWriter.cpp
-  Mdt/DeployUtils/Impl/Elf/OffsetRange.cpp
-  Mdt/DeployUtils/Impl/Elf/FileOffsetChanges.cpp
-  Mdt/DeployUtils/Impl/Elf/FileReader.cpp
-  Mdt/DeployUtils/Impl/Elf/FileWriter.cpp
-  Mdt/DeployUtils/Impl/Elf/FileIoEngine.cpp
-  Mdt/DeployUtils/Impl/Elf/Debug.cpp
-  Mdt/DeployUtils/ElfFileIoEngine.cpp
-  Mdt/DeployUtils/Impl/Pe/Exceptions.cpp
-  Mdt/DeployUtils/Impl/Pe/SectionHeader.cpp
-  Mdt/DeployUtils/Impl/Pe/ImportDirectory.cpp
-  Mdt/DeployUtils/Impl/Pe/FileHeader.cpp
-  Mdt/DeployUtils/Impl/Pe/FileReader.cpp
-  Mdt/DeployUtils/Impl/Pe/Debug.cpp
-  Mdt/DeployUtils/PeFileIoEngine.cpp
-  Mdt/DeployUtils/ExecutableFileReader.cpp
-  Mdt/DeployUtils/ExecutableFileWriter.cpp
+
+#   Mdt/DeployUtils/Impl/Elf/Exceptions.cpp
+#   Mdt/DeployUtils/Impl/Elf/Algorithm.cpp
+#   Mdt/DeployUtils/Impl/Elf/Ident.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileWriterUtils.cpp
+#   Mdt/DeployUtils/Impl/Elf/ProgramHeader.cpp
+#   Mdt/DeployUtils/Impl/Elf/ProgramHeaderTable.cpp
+#   Mdt/DeployUtils/Impl/Elf/ProgramHeaderReaderWriterCommon.cpp
+#   Mdt/DeployUtils/Impl/Elf/ProgramHeaderReader.cpp
+#   Mdt/DeployUtils/Impl/Elf/ProgramHeaderWriter.cpp
+#   Mdt/DeployUtils/Impl/Elf/SectionIndexChangeMap.cpp
+#   Mdt/DeployUtils/Impl/Elf/SectionHeader.cpp
+#   Mdt/DeployUtils/Impl/Elf/SectionHeaderTable.cpp
+#   Mdt/DeployUtils/Impl/Elf/SectionHeaderReaderWriterCommon.cpp
+#   Mdt/DeployUtils/Impl/Elf/SectionHeaderWriter.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileHeader.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileHeaderReaderWriterCommon.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileHeaderWriter.cpp
+#   Mdt/DeployUtils/Impl/Elf/SectionSegmentUtils.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileAllHeaders.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileAllHeadersReaderWriterCommon.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileAllHeadersReader.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileAllHeadersWriter.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileWriterFileLayout.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileWriterFile.cpp
+#   Mdt/DeployUtils/Impl/Elf/StringTable.cpp
+#   Mdt/DeployUtils/Impl/Elf/StringTableWriter.cpp
+#   Mdt/DeployUtils/Impl/Elf/DynamicSection.cpp
+#   Mdt/DeployUtils/Impl/Elf/DynamicSectionWriter.cpp
+#   Mdt/DeployUtils/Impl/Elf/SymbolTable.cpp
+#   Mdt/DeployUtils/Impl/Elf/SymbolTableReader.cpp
+#   Mdt/DeployUtils/Impl/Elf/SymbolTableWriter.cpp
+#   Mdt/DeployUtils/Impl/Elf/HashTable.cpp
+#   Mdt/DeployUtils/Impl/Elf/HashTableReader.cpp
+#   Mdt/DeployUtils/Impl/Elf/HashTableWriter.cpp
+#   Mdt/DeployUtils/Impl/Elf/GnuHashTable.cpp
+#   Mdt/DeployUtils/Impl/Elf/GnuHashTableReader.cpp
+#   Mdt/DeployUtils/Impl/Elf/GnuHashTableWriter.cpp
+#   Mdt/DeployUtils/Impl/Elf/GlobalOffsetTable.cpp
+#   Mdt/DeployUtils/Impl/Elf/GlobalOffsetTableReaderWriterCommon.cpp
+#   Mdt/DeployUtils/Impl/Elf/GlobalOffsetTableReader.cpp
+#   Mdt/DeployUtils/Impl/Elf/GlobalOffsetTableWriter.cpp
+#   Mdt/DeployUtils/Impl/Elf/ProgramInterpreterSection.cpp
+#   Mdt/DeployUtils/Impl/Elf/ProgramInterpreterSectionReader.cpp
+#   Mdt/DeployUtils/Impl/Elf/ProgramInterpreterSectionWriter.cpp
+#   Mdt/DeployUtils/Impl/Elf/NoteSection.cpp
+#   Mdt/DeployUtils/Impl/Elf/NoteSectionTable.cpp
+#   Mdt/DeployUtils/Impl/Elf/NoteSectionReader.cpp
+#   Mdt/DeployUtils/Impl/Elf/NoteSectionWriter.cpp
+#   Mdt/DeployUtils/Impl/Elf/OffsetRange.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileOffsetChanges.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileReader.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileWriter.cpp
+#   Mdt/DeployUtils/Impl/Elf/FileIoEngine.cpp
+#   Mdt/DeployUtils/Impl/Elf/Debug.cpp
+
+
+#   Mdt/DeployUtils/Impl/Pe/Exceptions.cpp
+#   Mdt/DeployUtils/Impl/Pe/SectionHeader.cpp
+#   Mdt/DeployUtils/Impl/Pe/ImportDirectory.cpp
+#   Mdt/DeployUtils/Impl/Pe/FileHeader.cpp
+#   Mdt/DeployUtils/Impl/Pe/FileReader.cpp
+#   Mdt/DeployUtils/Impl/Pe/Debug.cpp
+
+
   Mdt/DeployUtils/FindCompilerError.cpp
   Mdt/DeployUtils/CompilerLocationType.cpp
   Mdt/DeployUtils/CompilerLocationRequest.cpp
@@ -180,6 +177,7 @@ target_include_directories(Mdt_DeployUtilsCore
 target_link_libraries(Mdt_DeployUtilsCore
   PUBLIC
     Qt5::Core
+    Mdt0::ExecutableFileCore
   PRIVATE
     Boost::boost
 )

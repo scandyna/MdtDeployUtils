@@ -11,10 +11,10 @@
 #include "TestFileUtils.h"
 #include "CopiedExecutableFileUtils.h"
 #include "Mdt/DeployUtils/ExecutableFileInstaller.h"
-#include "Mdt/DeployUtils/ExecutableFileReader.h"
 #include "Mdt/DeployUtils/CopiedExecutableFile.h"
 #include "Mdt/DeployUtils/MessageLogger.h"
 #include "Mdt/DeployUtils/ConsoleMessageLogger.h"
+#include <Mdt/ExecutableFile/ExecutableFileReader.h>
 #include <QTemporaryDir>
 #include <QString>
 #include <QLatin1String>
@@ -47,7 +47,7 @@ bool dirContainsTestExecutable(const QTemporaryDir & dir)
 
 RPath getTestExecutableRunPath(const QTemporaryDir & dir)
 {
-  ExecutableFileReader reader;
+  Mdt::ExecutableFile::ExecutableFileReader reader;
   reader.openFile( testExecutableDestinationPath(dir) );
 
   return reader.getRunPath();

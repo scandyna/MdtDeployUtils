@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2011-2021 Philippe Steinmann.
+ ** Copyright (C) 2011-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -21,17 +21,13 @@
 #ifndef MDT_DEPLOY_UTILS_COMPILER_H
 #define MDT_DEPLOY_UTILS_COMPILER_H
 
+#include <Mdt/ExecutableFile/Compiler.h>
+
 namespace Mdt{ namespace DeployUtils{
 
   /*! \brief Compiler enum
    */
-  enum class Compiler
-  {
-    Unknown,  /*!< Unknown compiler */
-    Gcc,      /*!< Gcc compiler */
-    Clang,    /*!< Clang compiler */
-    Msvc      /*!< MSVC compiler */
-  };
+  using Compiler = Mdt::ExecutableFile::Compiler;
 
 }} // namespace Mdt{ namespace DeployUtils{
 

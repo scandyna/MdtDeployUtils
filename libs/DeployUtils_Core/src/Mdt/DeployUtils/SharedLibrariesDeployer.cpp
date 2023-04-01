@@ -19,20 +19,24 @@
  **
  ****************************************************************************/
 #include "SharedLibrariesDeployer.h"
-#include "ExecutableFileReader.h"
-#include "ExecutableFileWriter.h"
 #include "BinaryDependenciesResultLibrary.h"
 #include "CompilerFinder.h"
 #include "FileCopier.h"
 #include "RPath.h"
 #include "Algorithm.h"
 #include "FileInfoUtils.h"
+#include <Mdt/ExecutableFile/ExecutableFileReader.h>
+#include <Mdt/ExecutableFile/ExecutableFileWriter.h>
 #include <QLatin1String>
 #include <QStringBuilder>
 #include <memory>
 #include <cassert>
 
 // #include <QDebug>
+
+using Mdt::ExecutableFile::ExecutableFileReader;
+using Mdt::ExecutableFile::ExecutableFileWriter;
+
 
 namespace Mdt{ namespace DeployUtils{
 

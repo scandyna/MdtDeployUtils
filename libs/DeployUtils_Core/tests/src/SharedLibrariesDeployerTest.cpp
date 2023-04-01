@@ -29,7 +29,7 @@
 #include "Mdt/DeployUtils/MessageLogger.h"
 #include "Mdt/DeployUtils/ConsoleMessageLogger.h"
 #include "Mdt/DeployUtils/RPath.h"
-#include "Mdt/DeployUtils/ExecutableFileReader.h"
+#include <Mdt/ExecutableFile/ExecutableFileReader.h>
 #include <QLatin1String>
 #include <QString>
 #include <QStringList>
@@ -50,7 +50,7 @@ const auto searchPrefixPathList = PathList::fromStringList( getTestPrefixPath(PR
 
 RPath getTestSharedLibraryRunPath(const QTemporaryDir & dir)
 {
-  ExecutableFileReader reader;
+  Mdt::ExecutableFile::ExecutableFileReader reader;
   reader.openFile( makePath(dir, "libtestSharedLibrary.so") );
 
   return reader.getRunPath();

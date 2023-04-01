@@ -22,10 +22,13 @@
 #include "FileCopier.h"
 #include "SharedLibrariesDeployer.h"
 #include "RPath.h"
-#include "ExecutableFileReader.h"
+#include <Mdt/ExecutableFile/ExecutableFileReader.h>
 #include <QStringBuilder>
 #include <QLatin1Char>
 #include <cassert>
+
+using Mdt::ExecutableFile::ExecutableFileReader;
+
 
 namespace Mdt{ namespace DeployUtils{
 

@@ -32,6 +32,8 @@
 #include <memory>
 #include <cassert>
 
+using Mdt::ExecutableFile::ExecutableFileReader;
+
 namespace Mdt{ namespace DeployUtils{
 
 BinaryDependencies::BinaryDependencies(QObject* parent)
@@ -99,7 +101,7 @@ BinaryDependencies::findDependencies(const QFileInfoList & binaryFilePathList,
   return graph.getResultList(binaryFilePathList);
 }
 
-Platform BinaryDependencies::setupFindDependencies(ExecutableFileReader & reader,
+Platform BinaryDependencies::setupFindDependencies(Mdt::ExecutableFile::ExecutableFileReader & reader,
                                                    std::shared_ptr<AbstractSharedLibraryFinder> & shLibFinder,
                                                    const PathList & searchFirstPathPrefixList,
                                                    std::shared_ptr<QtDistributionDirectory> & qtDistributionDirectory,
@@ -111,6 +113,7 @@ Platform BinaryDependencies::setupFindDependencies(ExecutableFileReader & reader
   assert( fileInfoIsAbsolutePath(target) );
 
   reader.openFile(target);
+
   const Platform platform = reader.getFilePlatform();
   reader.close();
 
