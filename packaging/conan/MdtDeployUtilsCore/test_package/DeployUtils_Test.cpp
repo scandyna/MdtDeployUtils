@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiler binaries
  **
- ** Copyright (C) 2020-2021 Philippe Steinmann.
+ ** Copyright (C) 2020-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -18,27 +18,32 @@
  ** along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **
  ****************************************************************************/
-#include <Mdt/DeployUtils/ExecutableFileReader.h>
+#include <Mdt/DeployUtils/ExecutableFileInstaller.h>
+#include <Mdt/DeployUtils/Platform.h>
 #include <QString>
+#include <QTemporaryDir>
+#include <iostream>
 #include <cassert>
+
+using namespace Mdt::DeployUtils;
 
 int main(int argc, char **argv)
 {
-  using Mdt::DeployUtils::ExecutableFileReader;
-
   assert( argc == 1 );
 
-  const QString executableFile = QString::fromLocal8Bit(argv[0]);
-  int retVal = 1;
-
-  ExecutableFileReader reader;
-  reader.openFile(executableFile);
-  if( reader.isExecutableOrSharedLibrary() ){
-    retVal = 0;
-  }else{
-    retVal = 1;
+  QTemporaryDir destinationDir;
+  if( !destinationDir.isValid() ){
+    std::cerr << "could not create temp dir " << destinationDir.path().toStdString() << std::endl;
+    return 1;
   }
-  reader.close();
 
-  return retVal;
+  ExecutableFileInstaller installer( Platform::nativePlatform() );
+
+  const auto executable = ExecutableFileToInstall::fromFilePath( QString::fromLocal8Bit(argv[0]) );
+  RPath installRPath;
+  installRPath.appendPath( QLatin1String("../lib") );
+
+  installer.install(executable, destinationDir.path(), installRPath);
+
+  return 0;
 }
