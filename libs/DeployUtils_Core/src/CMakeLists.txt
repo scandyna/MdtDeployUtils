@@ -29,7 +29,6 @@ add_library(Mdt_DeployUtilsCore
 
   # TODO: should also remove those
   Mdt/DeployUtils/Impl/ByteArraySpan.cpp
-  Mdt/DeployUtils/Impl/FileMapper.cpp
 
 #   Mdt/DeployUtils/Impl/Elf/Exceptions.cpp
 #   Mdt/DeployUtils/Impl/Elf/Algorithm.cpp

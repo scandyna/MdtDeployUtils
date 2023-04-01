@@ -146,14 +146,6 @@ mdt_add_test(
     src/ByteArraySpanTest.cpp
 )
 
-mdt_add_test(
-  NAME FileMapperTest
-  TARGET fileMapperTest
-  DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/FileMapperTest.cpp
-)
-
 
 # Create libraries to make some tests
 # Force those libraries to be a shared/static library
