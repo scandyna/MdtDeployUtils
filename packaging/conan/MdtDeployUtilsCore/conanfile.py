@@ -36,7 +36,7 @@ class MdtDeployUtilsCoreConan(ConanFile):
   def requirements(self):
     self.requires("MdtCMakeConfig/0.0.5@scandyna/testing")
     self.requires("qt/5.15.6")
-    self.requires("MdtExecutableFileCore/0.0.1@scandyna/testing")
+    self.requires("MdtExecutableFileCore/0.0.2@scandyna/testing")
     #self.requires("MdtConsoleApplication/0.4.5@scandyna/testing")
     #self.requires("MdtCommandLineParser/0.0.6@scandyna/testing")
 

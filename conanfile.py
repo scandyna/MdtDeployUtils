@@ -36,7 +36,7 @@ class MdtDeployUtilsConan(ConanFile):
     # TODO: see if required once CommandLineParser is removed (if used in tests only, move to build_requirements)
     #self.requires("MdtCommandLineArguments/0.4.4@scandyna/testing")
     self.requires("MdtCommandLineParser/0.0.6@scandyna/testing")
-    self.requires("MdtExecutableFileCore/0.0.1@scandyna/testing")
+    self.requires("MdtExecutableFileCore/0.0.2@scandyna/testing")
 
 
   # When using --profile:build xx and --profile:host xx ,

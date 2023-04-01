@@ -52,7 +52,7 @@ class MdtDeployUtilsConan(ConanFile):
     self.tool_requires("qt/5.15.6", force_host_context=True)
     self.tool_requires("MdtCommandLineParser/0.0.6@scandyna/testing", force_host_context=True)
     self.tool_requires("MdtConsoleApplication/0.4.5@scandyna/testing", force_host_context=True)
-    self.tool_requires("MdtExecutableFileCore/0.0.1@scandyna/testing", force_host_context=True)
+    self.tool_requires("MdtExecutableFileCore/0.0.2@scandyna/testing", force_host_context=True)
 
 
   # The export exports_sources attributes does not work if the conanfile.py is in a sub-folder.
