@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -19,29 +19,7 @@
  **
  ****************************************************************************/
 #include "RPath.h"
-#include <QDir>
-#include <algorithm>
 
 namespace Mdt{ namespace DeployUtils{
-
-RPathEntry::RPathEntry(const QString & path) noexcept
-  : mPath( QDir::cleanPath( path.trimmed() ) )
-{
-  assert( !mPath.isEmpty() );
-}
-
-bool operator==(const RPathEntry & a, const RPathEntry & b) noexcept
-{
-  return a.path() == b.path();
-}
-
-bool operator==(const RPath & a, const RPath & b) noexcept
-{
-  if( a.entriesCount() != b.entriesCount() ){
-    return false;
-  }
-
-  return std::equal( a.cbegin(), a.cend(), b.cbegin() );
-}
 
 }} // namespace Mdt{ namespace DeployUtils{

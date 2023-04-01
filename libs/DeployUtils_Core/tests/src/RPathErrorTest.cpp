@@ -2,7 +2,7 @@
  **
  ** MdtDeployUtils - A C++ library to help deploy C++ compiled binaries
  **
- ** Copyright (C) 2021-2021 Philippe Steinmann.
+ ** Copyright (C) 2021-2023 Philippe Steinmann.
  **
  ** This program is free software: you can redistribute it and/or modify
  ** it under the terms of the GNU Lesser General Public License as published by
@@ -21,25 +21,4 @@
 #include "catch2/catch.hpp"
 #include "Catch2QString.h"
 #include "Mdt/DeployUtils/RPath.h"
-#include "Mdt/DeployUtils/RPathElf.h"
 #include <QLatin1String>
-
-using Mdt::DeployUtils::RPathEntry;
-using Mdt::DeployUtils::RPath;
-using Mdt::DeployUtils::RPathElf;
-using Mdt::DeployUtils::RPathFormatError;
-
-TEST_CASE("ELF_rPathFromString")
-{
-  RPath rpath;
-
-  SECTION("$ORIGINa")
-  {
-    REQUIRE_THROWS_AS( rpath = RPathElf::rPathFromString( QLatin1String("$ORIGINa") ), RPathFormatError);
-  }
-
-  SECTION("${ORIGIN}a")
-  {
-    REQUIRE_THROWS_AS( rpath = RPathElf::rPathFromString( QLatin1String("${ORIGIN}a") ), RPathFormatError);
-  }
-}
