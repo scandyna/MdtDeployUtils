@@ -28,9 +28,8 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/LibraryName.cpp
 
   # TODO: should also remove those
-  Mdt/DeployUtils/Impl/NotNullTerminatedStringError.cpp
   Mdt/DeployUtils/Impl/StringTableError.cpp
-  Mdt/DeployUtils/Impl/ExecutableFileReaderUtils.cpp
+#   Mdt/DeployUtils/Impl/ExecutableFileReaderUtils.cpp
   Mdt/DeployUtils/Impl/ByteArraySpan.cpp
   Mdt/DeployUtils/Impl/FileMapper.cpp
 

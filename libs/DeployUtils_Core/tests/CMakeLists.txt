@@ -162,13 +162,13 @@ mdt_add_test(
 #     src/ExecutableFileReaderUtilsImplTest.cpp
 # )
 
-mdt_add_test(
-  NAME ExecutableFileReaderUtilsImplErrorTest
-  TARGET executableFileReaderUtilsImplErrorTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ExecutableFileReaderUtilsImplErrorTest.cpp
-)
+# mdt_add_test(
+#   NAME ExecutableFileReaderUtilsImplErrorTest
+#   TARGET executableFileReaderUtilsImplErrorTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ExecutableFileReaderUtilsImplErrorTest.cpp
+# )
 
 # Create libraries to make some tests
 # Force those libraries to be a shared/static library
