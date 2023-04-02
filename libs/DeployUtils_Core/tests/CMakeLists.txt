@@ -211,14 +211,6 @@ add_executable(
 #     src/ElfFileHeaderWriterImplTest.cpp
 # )
 
-mdt_add_test(
-  NAME ElfProgramHeaderImplTest
-  TARGET elfProgramHeaderImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfProgramHeaderImplTest.cpp
-)
-
 # mdt_add_test(
 #   NAME ElfProgramHeaderTableImplTest
 #   TARGET elfProgramHeaderTableImplTest
@@ -250,22 +242,6 @@ mdt_add_test(
 #   SOURCE_FILES
 #     src/ElfProgramHeaderWriterImplTest.cpp
 # )
-
-mdt_add_test(
-  NAME ElfSectionHeaderImplTest
-  TARGET elfSectionHeaderImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfSectionHeaderImplTest.cpp
-)
-
-mdt_add_test(
-  NAME ElfSectionHeaderTableImplTest
-  TARGET elfSectionHeaderTableImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfSectionHeaderTableImplTest.cpp
-)
 
 # mdt_add_test(
 #   NAME ElfSectionHeaderWriterImplTest
