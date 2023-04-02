@@ -196,46 +196,6 @@ add_executable(
 #   )
 
 # mdt_add_test(
-#   NAME ElfAlgorithmImplTest
-#   TARGET elfAlgorithmImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfAlgorithmImplTest.cpp
-# )
-
-# mdt_add_test(
-#   NAME ElfFileHeaderWriterImplTest
-#   TARGET elfFileHeaderWriterImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfFileHeaderWriterImplTest.cpp
-# )
-
-# mdt_add_test(
-#   NAME ElfProgramHeaderTableImplTest
-#   TARGET elfProgramHeaderTableImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfProgramHeaderTableImplTest.cpp
-# )
-
-# mdt_add_test(
-#   NAME ElfProgramHeaderReaderImplTest
-#   TARGET elfProgramHeaderReaderImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfProgramHeaderReaderImplTest.cpp
-# )
-
-# mdt_add_test(
-#   NAME ElfProgramHeaderReaderImplErrorTest
-#   TARGET elfProgramHeaderReaderImplErrorTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfProgramHeaderReaderImplErrorTest.cpp
-# )
-
-# mdt_add_test(
 #   NAME ElfProgramHeaderWriterImplTest
 #   TARGET elfProgramHeaderWriterImplTest
 #   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
