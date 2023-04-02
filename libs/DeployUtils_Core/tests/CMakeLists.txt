@@ -138,14 +138,6 @@ mdt_add_test(
     src/LibraryNameTest.cpp
 )
 
-mdt_add_test(
-  NAME ByteArraySpanTest
-  TARGET byteArraySpanTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ByteArraySpanTest.cpp
-)
-
 
 # Create libraries to make some tests
 # Force those libraries to be a shared/static library
@@ -395,13 +387,13 @@ mdt_add_test(
 #     src/ElfHashTableImplTest.cpp
 # )
 
-mdt_add_test(
-  NAME ElfHashTableReaderWriterImplTest
-  TARGET elfHashTableReaderWriterImplTest
-  DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-  SOURCE_FILES
-    src/ElfHashTableReaderWriterImplTest.cpp
-)
+# mdt_add_test(
+#   NAME ElfHashTableReaderWriterImplTest
+#   TARGET elfHashTableReaderWriterImplTest
+#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
+#   SOURCE_FILES
+#     src/ElfHashTableReaderWriterImplTest.cpp
+# )
 
 mdt_add_test(
   NAME ElfGnuHashTableImplTest

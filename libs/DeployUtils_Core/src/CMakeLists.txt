@@ -9,7 +9,10 @@ include(MdtInstallLibrary)
 
 add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/QRuntimeError.cpp
+
+  # TODO: remove ?
   Mdt/DeployUtils/FileOpenError.cpp
+
   Mdt/DeployUtils/BuildType.cpp
   Mdt/DeployUtils/Platform.cpp
   Mdt/DeployUtils/AbstractMessageLoggerBackend.cpp
@@ -28,8 +31,6 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/LibraryName.cpp
 
   # TODO: should also remove those
-  Mdt/DeployUtils/Impl/ByteArraySpan.cpp
-
 #   Mdt/DeployUtils/Impl/Elf/Exceptions.cpp
 #   Mdt/DeployUtils/Impl/Elf/Algorithm.cpp
 #   Mdt/DeployUtils/Impl/Elf/Ident.cpp
