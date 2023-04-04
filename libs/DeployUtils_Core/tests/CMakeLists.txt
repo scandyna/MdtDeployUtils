@@ -194,47 +194,6 @@ endif()
 
 
 # mdt_add_test(
-#   NAME PeFileIoEngineTest
-#   TARGET peFileIoEngineTest
-#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/PeFileIoEngineTest.cpp
-# )
-
-if(WIN32)
-
-#   mdt_add_test(
-#     NAME PeFileIoEngineTest_Windows
-#     TARGET peFileIoEngineTest_Windows
-#     DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-#     SOURCE_FILES
-#       src/PeFileIoEngineTest_Windows.cpp
-#   )
-
-#   # Make shure that the test libraries will be built before the test
-#   add_dependencies(peFileIoEngineTest_Windows
-#     testSharedLibrary
-#     testStaticLibrary
-#     testExecutableDynamic
-# #     testExecutableStatic
-#   )
-
-#   target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-#   target_compile_definitions(peFileIoEngineTest_Windows PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
-#   target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
-#   target_compile_definitions(peFileIoEngineTest_Windows PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
-
-endif()
-
-# mdt_add_test(
-#   NAME PeFileIoEngineErrorTest
-#   TARGET peFileIoEngineErrorTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/PeFileIoEngineErrorTest.cpp
-# )
-
-# mdt_add_test(
 #   NAME ExecutableFileIoEngineTest
 #   TARGET executableFileIoEngineTest
 #   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
