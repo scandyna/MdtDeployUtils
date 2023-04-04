@@ -196,93 +196,7 @@ add_executable(
 #   )
 
 
-# mdt_add_test(
-#   NAME ElfSymbolTableReaderWriterImplTest
-#   TARGET elfSymbolTableReaderWriterImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfSymbolTableReaderWriterImplTest.cpp
-# )
 
-# mdt_add_test(
-#   NAME ElfHashTableImplTest
-#   TARGET elfHashTableImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfHashTableImplTest.cpp
-# )
-
-# mdt_add_test(
-#   NAME ElfHashTableReaderWriterImplTest
-#   TARGET elfHashTableReaderWriterImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfHashTableReaderWriterImplTest.cpp
-# )
-
-# mdt_add_test(
-#   NAME ElfGnuHashTableReaderWriterImplTest
-#   TARGET elfGnuHashTableReaderWriterImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfGnuHashTableReaderWriterImplTest.cpp
-# )
-
-# mdt_add_test(
-#   NAME ElfGlobalOffsetTableReaderWriterImplTest
-#   TARGET elfGlobalOffsetTableReaderWriterImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfGlobalOffsetTableReaderWriterImplTest.cpp
-# )
-
-# mdt_add_test(
-#   NAME ElfProgramInterpreterSectionReaderWriterImplTest
-#   TARGET elfProgramInterpreterSectionReaderWriterImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfProgramInterpreterSectionReaderWriterImplTest.cpp
-# )
-
-# mdt_add_test(
-#   NAME ElfNoteSectionImplTest
-#   TARGET elfNoteSectionImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfNoteSectionImplTest.cpp
-# )
-
-# mdt_add_test(
-#   NAME ElfNoteSectionReaderWriterImplTest
-#   TARGET elfNoteSectionReaderWriterImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfNoteSectionReaderWriterImplTest.cpp
-# )
-
-# mdt_add_test(
-#   NAME ElfNoteSectionReaderWriterImplErrorTest
-#   TARGET elfNoteSectionReaderWriterImplErrorTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfNoteSectionReaderWriterImplErrorTest.cpp
-# )
-
-# mdt_add_test(
-#   NAME ElfFileReaderImplTest
-#   TARGET elfFileReaderImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfFileReaderImplTest.cpp
-# )
-
-# mdt_add_test(
-#   NAME ElfFileWriterImplTest
-#   TARGET elfFileWriterImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfFileWriterImplTest.cpp
-# )
 
 if( UNIX AND (NOT APPLE) )
 
@@ -314,42 +228,6 @@ if( UNIX AND (NOT APPLE) )
       Qt5::Core
   )
   set_target_properties(testSharedLibrary_noRunPath PROPERTIES SKIP_BUILD_RPATH TRUE)
-
-#   mdt_add_test(
-#     NAME ElfFileWriterImplTest_Unix
-#     TARGET elfFileWriterImplTest_Unix
-#     DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-#     SOURCE_FILES
-#       src/ElfFileWriterImplTest_Unix.cpp
-#   )
-
-#   # Make shure that the test libraries will be built before the test
-#   add_dependencies(elfFileWriterImplTest_Unix
-#     testSimpleExecutableDynamic
-#     testSimpleExecutableDynamic_withRunPath
-#     testSimpleExecutableDynamic_noRunPath
-#     testSharedLibrary
-#     testSharedLibrary_noRunPath
-#   )
-
-#   target_compile_definitions(elfFileWriterImplTest_Unix
-#     PRIVATE
-#       TEST_SIMPLE_EXECUTABLE_DYNAMIC_FILE_PATH="$<TARGET_FILE:testSimpleExecutableDynamic>"
-#       TEST_SIMPLE_EXECUTABLE_DYNAMIC_WITH_RUNPATH_FILE_PATH="$<TARGET_FILE:testSimpleExecutableDynamic_withRunPath>"
-#       TEST_SIMPLE_EXECUTABLE_DYNAMIC_NO_RUNPATH_FILE_PATH="$<TARGET_FILE:testSimpleExecutableDynamic_noRunPath>"
-#       TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>"
-#       TEST_SHARED_LIBRARY_NO_RUNPATH_FILE_PATH="$<TARGET_FILE:testSharedLibrary_noRunPath>"
-#   )
-
-#   target_compile_definitions(elfFileWriterImplTest_Unix
-#     PRIVATE
-#       TEST_SIMPLE_EXECUTABLE_DYNAMIC_WITH_RUNPATH_FILE_PATH="$<TARGET_FILE:testSimpleExecutableDynamic_withRunPath>"
-#   )
-# 
-#   target_compile_definitions(elfFileWriterImplTest_Unix
-#     PRIVATE
-#       TEST_SIMPLE_EXECUTABLE_DYNAMIC_NO_RUNPATH_FILE_PATH="$<TARGET_FILE:testSimpleExecutableDynamic_noRunPath>"
-#   )
 
 endif()
 
