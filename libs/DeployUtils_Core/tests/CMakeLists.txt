@@ -194,14 +194,6 @@ endif()
 
 
 # mdt_add_test(
-#   NAME PeFileReaderImplTest
-#   TARGET peFileReaderImplTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/PeFileReaderImplTest.cpp
-# )
-
-# mdt_add_test(
 #   NAME PeFileIoEngineTest
 #   TARGET peFileIoEngineTest
 #   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
