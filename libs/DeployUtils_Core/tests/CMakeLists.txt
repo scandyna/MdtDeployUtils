@@ -180,10 +180,6 @@ if(MSVC)
   )
 endif()
 
-add_executable(
-  testSimpleExecutableDynamic
-  src/TestSimpleExecutableDynamic.cpp
-)
 
   # -static cannot be used with some sanitizers
   # requires some work to make this somewhat clean
@@ -197,39 +193,6 @@ add_executable(
 
 
 
-
-if( UNIX AND (NOT APPLE) )
-
-  # TODO: either force to be dynamicly linked, or disable for static builds
-
-  add_executable(
-    testSimpleExecutableDynamic_withRunPath
-    src/TestSimpleExecutableDynamic.cpp
-  )
-  set_target_properties(testSimpleExecutableDynamic_withRunPath PROPERTIES BUILD_RPATH "XXXXX")
-
-  add_executable(
-    testSimpleExecutableDynamic_noRunPath
-    src/TestSimpleExecutableDynamic.cpp
-  )
-  set_target_properties(testSimpleExecutableDynamic_noRunPath PROPERTIES SKIP_BUILD_RPATH TRUE)
-
-  add_library(
-    testSharedLibrary_noRunPath SHARED
-    src/TestSharedLibrary.cpp
-  )
-  generate_export_header(testSharedLibrary_noRunPath BASE_NAME testSharedLibrary)
-  target_include_directories(testSharedLibrary_noRunPath
-    PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-  )
-  target_link_libraries(testSharedLibrary_noRunPath
-    PRIVATE
-      Qt5::Core
-  )
-  set_target_properties(testSharedLibrary_noRunPath PROPERTIES SKIP_BUILD_RPATH TRUE)
-
-endif()
 
 # mdt_add_test(
 #   NAME ElfFileIoEngineTest
