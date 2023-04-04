@@ -193,49 +193,6 @@ endif()
 
 
 
-
-# mdt_add_test(
-#   NAME ElfFileIoEngineTest
-#   TARGET elfFileIoEngineTest
-#   DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfFileIoEngineTest.cpp
-# )
-
-if( UNIX AND (NOT APPLE) )
-
-#   mdt_add_test(
-#     NAME ElfFileIoEngineTest_Unix
-#     TARGET elfFileIoEngineTest_Unix
-#     DEPENDENCIES Mdt::DeployUtilsCore TestLib Mdt::Catch2Main Mdt::Catch2Qt
-#     SOURCE_FILES
-#       src/ElfFileIoEngineTest_Unix.cpp
-#   )
-
-#   # Make shure that the test libraries will be built before the test
-#   add_dependencies(elfFileIoEngineTest_Unix
-#     testSharedLibrary
-#     testStaticLibrary
-#     testExecutableDynamic
-# #     testExecutableStatic
-#   )
-
-#   target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_SHARED_LIBRARY_FILE_PATH="$<TARGET_FILE:testSharedLibrary>")
-#   target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE QT5_CORE_FILE_PATH="${Qt5_CORE_SHARED_LIB_PATH}")
-#   target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_STATIC_LIBRARY_FILE_PATH="$<TARGET_FILE:testStaticLibrary>")
-#   target_compile_definitions(elfFileIoEngineTest_Unix PRIVATE TEST_DYNAMIC_EXECUTABLE_FILE_PATH="$<TARGET_FILE:testExecutableDynamic>")
-
-endif()
-
-# mdt_add_test(
-#   NAME ElfFileIoEngineErrorTest
-#   TARGET elfFileIoEngineErrorTest
-#   DEPENDENCIES Mdt::DeployUtilsCore Mdt::Catch2Main Mdt::Catch2Qt
-#   SOURCE_FILES
-#     src/ElfFileIoEngineErrorTest.cpp
-# )
-
-
 # mdt_add_test(
 #   NAME PeFileReaderImplTest
 #   TARGET peFileReaderImplTest
