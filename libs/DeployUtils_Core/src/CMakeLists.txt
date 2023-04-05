@@ -29,17 +29,6 @@ add_library(Mdt_DeployUtilsCore
   Mdt/DeployUtils/LibraryNameExtension.cpp
   Mdt/DeployUtils/Impl/LibraryNameImpl.cpp
   Mdt/DeployUtils/LibraryName.cpp
-
-  # TODO: should also remove those
-
-#   Mdt/DeployUtils/Impl/Pe/Exceptions.cpp
-#   Mdt/DeployUtils/Impl/Pe/SectionHeader.cpp
-#   Mdt/DeployUtils/Impl/Pe/ImportDirectory.cpp
-#   Mdt/DeployUtils/Impl/Pe/FileHeader.cpp
-#   Mdt/DeployUtils/Impl/Pe/FileReader.cpp
-#   Mdt/DeployUtils/Impl/Pe/Debug.cpp
-
-
   Mdt/DeployUtils/FindCompilerError.cpp
   Mdt/DeployUtils/CompilerLocationType.cpp
   Mdt/DeployUtils/CompilerLocationRequest.cpp
